@@ -12,4 +12,10 @@ In case your input file resides on EOS, you need to prepend `root://eoscms.cern.
 
 ## HGCal imaging algorithm
 
-_to be added_
+[HGCalImagingAlgo.py](HGCalImagingAlgo.py) provides the HGCAl clustering code ported from CMSSW/C++ into a stand-alone python version that can run on the HGCAL ntuples. Parameterisation of the stand-alone clustering is identical to the CMSSW/C++ version. E.g. if parameter dependSensor is set to true, setting of E_c will be interpreted in terms of the local noise, and distance metric for both 2D clustering and multi-clustering is provided in terms of cm.
+
+An example script for running different scenarios of stand-alone clustering, and comparison of sim-clusters and multi-clusters, is implemented in [hgcalReClusteringExample.py](hgcalReClusteringExample.py), while rechit calibration is implemented in [RecHitCalibration.py](RecHitCalibration.py). In order to run thre example:
+```
+python hgcalReClusteringExample.py
+
+```
