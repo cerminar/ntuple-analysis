@@ -54,7 +54,7 @@ def getRecHitsSimAssoc(rechits_raw, simcluster):
         for hitIndexArray in simClusHitAssoc[simClusIndex]:
             for hitIndex in hitIndexArray:
                 thisHit = rechits_raw[hitIndex]
-                if(not recHitAboveTreshold(thisHit, ecut, dependSensor)): continue
+                if(not recHitAboveTreshold(thisHit, ecut, dependSensor)[1]): continue
                 # independent of sim cluster, after cleaning
                 rHitsSimAssocTemp.append(thisHit)
         rHitsSimAssoc[simClusIndex]= rHitsSimAssocTemp
@@ -204,7 +204,7 @@ def main():
         # get flat list of rechist associated to sim-cluster hits
         rHitsSimAssoc = getRecHitsSimAssoc(recHitsRaw, simClusters)
         # get flat list of raw rechits which satisfy treshold condition
-        rHitsCleaned = [rechit for rechit in recHitsRaw if recHitAboveTreshold(rechit, ecut, dependSensor)]
+        rHitsCleaned = [rechit for rechit in recHitsRaw if recHitAboveTreshold(rechit, ecut, dependSensor)[1]]
         
         ### Imaging algo run at RECO step (CMSSW)
         # get flat list of all clusters 2D produced with algo at RECO step (CMSSW)
