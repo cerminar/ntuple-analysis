@@ -3,6 +3,7 @@
 # HGCal3DClustering, and HGCalDepthPreClusterer based on
 # their CMSSW implementations mainly in RecoLocalCalo/HGCalRecAlgos
 ##############################################################################
+from __future__ import print_function
 # needed for ROOT funcs/types
 import ROOT
 import math
@@ -11,6 +12,8 @@ import numpy as np
 from scipy import spatial
 # needed to extend the maximum recursion limit, for large data sets
 import sys
+
+
 sys.setrecursionlimit(100000)
 # noise thresholds and MIPs
 from RecHitCalibration import RecHitCalibration
