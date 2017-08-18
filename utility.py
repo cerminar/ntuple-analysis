@@ -17,7 +17,7 @@ multiclusterRadii = [2.,2.,2.] # in cartesian coordiantes in cm, per detector
 minClusters = 3 # request at least minClusters+1 2D clusters
 # verbosity, allowed events/layers for testing/histograming, etc.
 allowedRangeLayers = [] # layer considered for histograming e.g. [10, 20], empty for none
-allowedRangeEvents = list(range(0,3,1)) # event numbers considered for histograming, e.g. [0,1,2], empty for none
+allowedRangeEvents = list(range(0,100,1)) # event numbers considered for histograming, e.g. [0,1,2], empty for none
 verbosityLevel = 0 # 0 - only basic info (default); 1 - additional info; 2 - detailed info printed, histograms produced
 
 

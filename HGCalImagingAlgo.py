@@ -349,6 +349,7 @@ class HGCalImagingAlgo:
                 clusters_v.append(BasicCluster(energy = energy, position = position, thisCluster = cluster))
                 index += 1
             layer += 1
+            clusters_v.sort(key=getEnergy,reverse=True)
         return clusters_v
 
     # make multi-clusters starting from the 2D clusters, without KDTree
@@ -426,7 +427,8 @@ class HGCalImagingAlgo:
         # loop over all clusters
         index = 0
         for i in range(0,len(thecls)):
-            if(vused[i]==0):
+            #if(vused[i]==0):
+            if (thecls[es[i]]._usedIn3DClust ==0):
                 temp = [thecls[es[i]]]
                 if (thecls[es[i]].z>0): thecls[es[i]]._usedIn3DClust = 1
                 else: thecls[es[i]]._usedIn3DClust = -1
@@ -452,7 +454,7 @@ class HGCalImagingAlgo:
                     found = hit_kdtree.query_ball_point([to_[0],to_[1]],multiclusterRadius)
                     for k in found:
                         h_to = Hexel(); h_to.x = to_[0]; h_to.y = to_[1] # dummy object
-                        if(points[j][k]._usedIn3DClust==0 and distanceReal2(points[j][k],h_to) < multiclusterRadius*multiclusterRadius):
+                        if((points[j][k]._usedIn3DClust==0) and (distanceReal2(points[j][k],h_to) < multiclusterRadius**2)):
                             temp.append(points[j][k])
                             points[j][k]._usedIn3DClust = thecls[es[i]]._usedIn3DClust
                             used += 1
@@ -558,3 +560,6 @@ def recHitAboveTreshold(rHit, ecut, dependSensor = True):
         sigmaNoise = 0.001 * RecHitCalib.sigmaNoiseMeV(rHit.layer(), thickIndex) # returns threshold for EE, FH, BH (in case of BH thickIndex does not play a role)
     aboveTreshold = rHit.energy() >= ecut*sigmaNoise  #this checks if rechit energy is above the threshold of ecut (times the sigma noise for the sensor, if that option is set)
     return sigmaNoise, aboveTreshold
+
+def getEnergy(item):
+    return item.energy
