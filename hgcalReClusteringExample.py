@@ -184,7 +184,7 @@ def main():
     # get sample/tree
     # please give an CMSSW930 NTUP root file.
     #########################################
-    ntuple = HGCalNtuple("/Volumes/MULTIMEDIA/HGCal/Ntuple/CMSSW930_partGun_PDGid22_x1000_E30.0To30.0_NTUP.root")
+    ntuple = HGCalNtuple("root://eoscms.cern.ch//eos/cms/store/cmst3/group/hgcal/CMG_studies/Production/FlatRandomEGunProducer_pdgid211_E20_cmssw93X_withPRs_20170817/NTUP/partGun_PDGid211_x100_E20.0To20.0_NTUP_1.root") # CMSSW_9_3_0_pre3 with some pre4 PRs on top
     #ntuple = HGCalNtuple("/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production/FlatRandomPtGunProducer_predragm_PDGid22_nPart1_Pt20to100_Eta2p3to2p5_cmssw921_20170605/NTUP/partGun_PDGid22_x400_Pt20.0To100.0_NTUP_1.root") # cmssw921 with all recent fixes as of June 12
     #ntuple = HGCalNtuple("/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production/FlatRandomPtGunProducer_predragm_PDGid22_id211_id11_id15_id130_nPart1_Pt20to100_Eta2p3to2p5_cmssw921_20170606/NTUP/partGun_PDGid22_id211_id11_id15_id130_x400_Pt20.0To100.0_NTUP_1.root")# cmssw921 with all recent fixes as of June 12
     
