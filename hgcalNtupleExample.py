@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # import ROOT
+from __future__ import print_function
 from NtupleDataFormat import HGCalNtuple
 import sys
+
 
 # The purpose of this file is to demonstrate mainly the objects
 # that are in the HGCalNtuple

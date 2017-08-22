@@ -1,7 +1,10 @@
+from __future__ import print_function
 # investigate shower development based on RecHits and SimClusters
 import ROOT
 import os
 import numpy as np
+
+
 from HGCalImagingAlgo import *
 from NtupleDataFormat import HGCalNtuple
 
@@ -22,8 +25,8 @@ def getRecHitDetIds(rechits):
     recHitsList = []
     for rHit in rechits:
         recHitsList.append(rHit.detid())
-    # print "RecHits -"*10
-    # print recHitsList
+    # print("RecHits -"*10)
+    # print(recHitsList)
     recHits = np.array(recHitsList)
     return recHits
 
@@ -48,7 +51,7 @@ def getRecHitsSimAssoc(rechits_raw, simcluster):
     # get list of rechist associated to simhits
     rHitsSimAssoc = [[] for k in range(0,nSimClus)]
     for simClusIndex, simCl in enumerate(simcluster):
-        if (verbosityLevel>=1): print "Sim-cluster index: ",simClusIndex, ", pT: ",simCl.pt(), ", E: ",simCl.energy(), ", phi: ",simCl.phi(), ", eta: ",simCl.eta()
+        if (verbosityLevel>=1): print( "Sim-cluster index: ",simClusIndex, ", pT: ",simCl.pt(), ", E: ",simCl.energy(), ", phi: ",simCl.phi(), ", eta: ",simCl.eta())
         # loop over sim clusters and then rechits
         rHitsSimAssocTemp = []
         for hitIndexArray in simClusHitAssoc[simClusIndex]:
@@ -138,7 +141,7 @@ def histValue1D(fValues, histDict, tag = "hist1D_", title = "hist 1D", axunit = 
     histDict[tag]  = ROOT.TH1F(tag, title+";"+axunit+";"+ayunit, binsRangeList[0], binsRangeList[1], binsRangeList[2])
     histDict[tag].GetYaxis().SetTitleOffset(histDict[tag].GetYaxis().GetTitleOffset()*1.5)
     # loop over all values
-    if (verbosityLevel>=3): print "tag: ", tag, ", fValues: ", fValues
+    if (verbosityLevel>=3): print( "tag: ", tag, ", fValues: ", fValues)
     for value in fValues:
         histDict[tag].Fill(value)
     return histDict
@@ -147,7 +150,7 @@ def histValue1D(fValues, histDict, tag = "hist1D_", title = "hist 1D", axunit = 
 def histPrintSaveAll(histDict, outDir):
     imgType = "pdf"
     canvas = ROOT.TCanvas(outDir, outDir, 500, 500)
-    if (verbosityLevel>=3): print "histDict.items(): ", histDict.items()
+    if (verbosityLevel>=3): print( "histDict.items(): ", histDict.items())
     for key, item in histDict.items():
         # do not save empty histograms
         if (type(item) == ROOT.TH1F) or (type(item) == ROOT.TH2F) or (type(item) == ROOT.TH3F):
@@ -179,7 +182,10 @@ def main():
     histDict = {}
 
     # get sample/tree
-    ntuple = HGCalNtuple("/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production/FlatRandomPtGunProducer_predragm_PDGid22_nPart1_Pt20to100_Eta2p3to2p5_cmssw921_20170605/NTUP/partGun_PDGid22_x400_Pt20.0To100.0_NTUP_1.root") # cmssw921 with all recent fixes as of June 12
+    # please give an CMSSW930 NTUP root file.
+    #########################################
+    ntuple = HGCalNtuple("root://eoscms.cern.ch//eos/cms/store/cmst3/group/hgcal/CMG_studies/Production/FlatRandomEGunProducer_pdgid211_E20_cmssw93X_withPRs_20170817/NTUP/partGun_PDGid211_x100_E20.0To20.0_NTUP_1.root") # CMSSW_9_3_0_pre3 with some pre4 PRs on top
+    #ntuple = HGCalNtuple("/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production/FlatRandomPtGunProducer_predragm_PDGid22_nPart1_Pt20to100_Eta2p3to2p5_cmssw921_20170605/NTUP/partGun_PDGid22_x400_Pt20.0To100.0_NTUP_1.root") # cmssw921 with all recent fixes as of June 12
     #ntuple = HGCalNtuple("/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production/FlatRandomPtGunProducer_predragm_PDGid22_id211_id11_id15_id130_nPart1_Pt20to100_Eta2p3to2p5_cmssw921_20170606/NTUP/partGun_PDGid22_id211_id11_id15_id130_x400_Pt20.0To100.0_NTUP_1.root")# cmssw921 with all recent fixes as of June 12
     
     # prepare some lists for comparions
@@ -193,7 +199,7 @@ def main():
     # start event loop
     for event in ntuple:
         if (not event.entry() in allowedRangeEvents): continue # checking external condition
-        if (verbosityLevel>=1): print "\nCurrent event: ", event.entry()
+        if (verbosityLevel>=1): print( "\nCurrent event: ", event.entry())
 
         # get collections of raw rechits, sim clusters, 2D clusters, multi clusters, etc.
         recHitsRaw = event.recHits()
@@ -238,23 +244,23 @@ def main():
         rHitsClustdDID = [iNode.detid for iNode in hexelsClustered_rerun] # list of detids for clustered hexels
         # print some info if requested
         if (verbosityLevel>=1):
-            print "num of rechits associated with sim-clusters : ", len (rHitsSimAssocDID)
-            print "num of rechits clustered with imaging algo. : ", len (rHitsClustdDID)
-            print "num of clustered not found in sim-associated:", len(list(set(rHitsClustdDID)-set(rHitsSimAssocDID )))
-            print "num of sim-associated not found in clustered:", len(list(set(rHitsSimAssocDID )-set(rHitsClustdDID)))
+            print( "num of rechits associated with sim-clusters : ", len (rHitsSimAssocDID))
+            print( "num of rechits clustered with imaging algo. : ", len (rHitsClustdDID))
+            print( "num of clustered not found in sim-associated:", len(list(set(rHitsClustdDID)-set(rHitsSimAssocDID ))))
+            print( "num of sim-associated not found in clustered:", len(list(set(rHitsSimAssocDID )-set(rHitsClustdDID))))
 
         ### Compare stand-alone and reco-level clustering
         clusters2DListMultiSelected_rerun = [cls for multiCluster in multiClustersList_rerun for cls in multiCluster.thisCluster]
         # print more details if requested
         if (verbosityLevel>=1):
             ls = sorted(range(len(clusters2DListMultiSelected_rerun)), key=lambda k: clusters2DListMultiSelected_rerun[k].thisCluster[0].layer, reverse=False) # indices sorted by increasing layer number
-            for index in range(len(multiClustersList_rerun)): print "Multi-cluster (RE-RUN) index: ", index, ", No. of 2D-clusters = ", len(multiClustersList_rerun[index].thisCluster), ", Energy  = ", multiClustersList_rerun[index].energy, ", Phi = ", multiClustersList_rerun[index].phi, ", Eta = ", multiClustersList_rerun[index].eta, ", z = ", multiClustersList_rerun[index].z
+            for index in range(len(multiClustersList_rerun)): print( "Multi-cluster (RE-RUN) index: ", index, ", No. of 2D-clusters = ", len(multiClustersList_rerun[index].thisCluster), ", Energy  = ", multiClustersList_rerun[index].energy, ", Phi = ", multiClustersList_rerun[index].phi, ", Eta = ", multiClustersList_rerun[index].eta, ", z = ", multiClustersList_rerun[index].z )
             ls = sorted(range(len(clusters2DList_reco)), key=lambda k: clusters2DList_reco[k].layer(), reverse=False) # indices sorted by increasing layer number
-            for index in range(len(multiClustersList_reco)): print "Multi-cluster (RECO) index: ", index, ", No. of 2D-clusters = ", len(multiClustersList_reco[index].cluster2d()), ", Energy  = ", multiClustersList_reco[index].energy(), ", Phi = ", multiClustersList_reco[index].phi(), ", Eta = ", multiClustersList_reco[index].eta(), ", z = ", multiClustersList_reco[index].z()
-            print "num of clusters2D @reco : ", len(clusters2DList_reco)
-            print "num of clusters2D re-run: ", len(clusters2DListMultiSelected_rerun)
-            print "num of multi-cluster @reco : ", len(multiClustersList_reco)
-            print "num of multi-cluster re-run: ", len(multiClustersList_rerun)
+            for index in range(len(multiClustersList_reco)): print( "Multi-cluster (RECO) index: ", index, ", No. of 2D-clusters = ", len(multiClustersList_reco[index].cluster2d()), ", Energy  = ", multiClustersList_reco[index].energy(), ", Phi = ", multiClustersList_reco[index].phi(), ", Eta = ", multiClustersList_reco[index].eta(), ", z = ", multiClustersList_reco[index].z())
+            print( "num of clusters2D @reco : ", len(clusters2DList_reco))
+            print( "num of clusters2D re-run: ", len(clusters2DListMultiSelected_rerun))
+            print( "num of multi-cluster @reco : ", len(multiClustersList_reco))
+            print( "num of multi-cluster re-run: ", len(multiClustersList_rerun))
 
         ### Produce some basic histograms with general info (one per sample)
         if (verbosityLevel>=2):

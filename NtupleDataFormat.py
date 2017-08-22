@@ -39,7 +39,7 @@ class _Collection(object):
 
     def __iter__(self):
         """Returns generator for the objects."""
-        for index in xrange(self.size()):
+        for index in range(self.size()):
             yield self._objclass(self._tree, index, self._prefix)
 
 
@@ -62,7 +62,7 @@ class _Object(object):
         """
         super(_Object, self).__init__()
         self._tree = tree
-        self._index = index
+        self._index = int(index)
         self._prefix = prefix
 
     def __getattr__(self, attr):
@@ -131,7 +131,7 @@ class HGCalNtuple(object):
         Generator returns Event objects.
 
         """
-        for jentry in xrange(self._entries):
+        for jentry in range(self._entries):
             # get the next tree in the chain and verify
             ientry = self._tree.LoadTree(jentry)
             if ientry < 0:
@@ -289,7 +289,6 @@ class RecHits(_Collection):
         """
         super(RecHits, self).__init__(tree, prefix + "_pt", RecHit, prefix)
 
-
 ##########
 class GenParticle(_Object):
     """Class representing a GenParticle."""
@@ -319,7 +318,7 @@ class GenParticle(_Object):
     #     The generator returns TrackMatchInfo objects.
     #     """
     #     self._checkIsValid()
-    #     for imatch in xrange(self._nMatchedTracks()):
+    #     for imatch in range(self._nMatchedTracks()):
     #         yield TrackMatchInfo(self._tree, self._index, imatch, self._prefix)
 
     # def simHits(self):
