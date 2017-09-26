@@ -225,6 +225,10 @@ class Event(object):
         """Returns PFClusters object."""
         return PFClusters(self._tree, prefix)
 
+    def pfClustersFromMultiCl(self, prefix="pfclusterFromMultiCl"):
+        """Returns PFClusters object."""
+        return PFClusters(self._tree, prefix)
+
     def caloParticles(self, prefix="calopart"):
         """Returns CaloParticles object."""
         return CaloParticles(self._tree, prefix)
@@ -233,6 +237,9 @@ class Event(object):
         """Returns Tracks object."""
         return Tracks(self._tree, prefix)
 
+    def electrons(self, prefix="ecalDrivenGsfele"):
+        """Returns Electrons object."""
+        return Electrons(self._tree, prefix)
 
 ##########
 class PrimaryVertex(object):
@@ -508,3 +515,30 @@ class CaloParticles(_Collection):
         prefix -- TBranch prefix
         """
         super(CaloParticles, self).__init__(tree, prefix + "_pt", CaloParticle, prefix)
+
+##########
+class Electron(_Object):
+        """Class representing an Electron. """
+
+        def __init__(self, tree, index, prefix):
+                """Constructor.
+
+                Arguments:
+                tree    -- TTree object
+                index   -- Index of the Electron
+                prefix  -- TBranch prefix
+                """
+                super(Electron, self).__init__(tree, index, prefix)
+
+class Electrons(_Collection):
+        """Class representing a collection of Electrons. """
+
+        def __init__(self, tree, prefix):
+                """Constructor.
+
+                Arguments:
+                tree   -- TTree object
+                prefix -- TBranch prefix
+                """
+                super(Electrons, self).__init__(tree, prefix + "_pt", Electron, prefix)
+
