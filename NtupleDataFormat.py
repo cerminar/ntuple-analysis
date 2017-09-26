@@ -462,6 +462,44 @@ class PFClusters(_Collection):
 
 
 ##########
+class PFClusterFromMultiCl(_Object):
+    """Class representing a PFClusterFromMultiCl. """
+
+    def __init__(self, tree, index, prefix):
+        """Constructor.
+
+        Arguments:
+        tree    -- TTree object
+        index   -- Index of the PFCluster
+        prefix -- TBranch prefix
+        """
+        super(PFClusterFromMultiCl, self).__init__(tree, index, prefix)
+
+    def rechits(self):
+        """Loop over all RecHits associated to the PFCluster and yield them"""
+        for rechitIdx in self.rechits():
+            yield RecHit(self._tree, rechitIdx, prefix="rechit")
+
+    def __repr__(self):
+        return "PFClusterFromMultiCl position: ({x}, {y}, {z}) eta: {eta}, phi: {phi}, energy: {energy}".format(
+                        x=self.pos().x(), y=self.pos().y(), z=self.pos().z(),
+                        eta=self.eta(), phi=self.phi(),
+                        energy=self.energy())
+
+class PFClustersFromMultiCl(_Collection):
+    """Class presenting a colletion of  PFClusterFromMultiCl. """
+
+    def __init__(self, tree, prefix):
+        """Constructor.
+
+        Arguments:
+        tree -- TTree object
+        prefix -- TBranch prefix
+        """
+        super(PFClustersFromMultiCl, self).__init__(tree, prefix + "_pt", PFClusterFromMultiCl, prefix)
+
+
+##########
 class SimCluster(_Object):
     """Class representing a SimCluster."""
 
