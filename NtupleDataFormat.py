@@ -475,7 +475,7 @@ class PFClusterFromMultiCl(_Object):
         """
         super(PFClusterFromMultiCl, self).__init__(tree, index, prefix)
 
-    def rechits(self):
+    def hits(self):
         """Loop over all RecHits associated to the PFCluster and yield them"""
         for rechitIdx in self.rechits():
             yield RecHit(self._tree, rechitIdx, prefix="rechit")
