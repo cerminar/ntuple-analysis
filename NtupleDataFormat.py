@@ -568,6 +568,11 @@ class Electron(_Object):
                 """
                 super(Electron, self).__init__(tree, index, prefix)
 
+        def clustersFromMultiCl(self):
+            """Loop over all PFClusters associated to the SC and yield them"""
+            for pfclusterIdx in self.pfClusterIndex():
+                yield PFClusterFromMultiCl(self._tree, pfclusterIdx, prefix="pfclusterFromMultiCl")
+
 class Electrons(_Collection):
         """Class representing a collection of Electrons. """
 
