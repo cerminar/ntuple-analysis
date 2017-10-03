@@ -11,10 +11,10 @@ from NtupleDataFormat import HGCalNtuple
 ### Basic setup for testing (sensor dependence, treshold w.r.t noise, cartesian coordinates for multi-clustering
 dependSensor = True
 # 2D clustering parameters
-deltac = [2.,2.,2.] # in cartesian coordiantes in cm, per detector
+deltac = [2., 2., 5.] # in cartesian coordiantes in cm, per detector
 ecut = 3 # relative to the noise
 # multi-clustering parameters
-multiclusterRadii = [2.,2.,2.] # in cartesian coordiantes in cm, per detector
+multiclusterRadii = [2., 5., 5.] # in cartesian coordiantes in cm, per detector
 minClusters = 3 # request at least minClusters+1 2D clusters
 # verbosity, allowed events/layers for testing/histograming, etc.
 allowedRangeLayers = [] # layer considered for histograming e.g. [10, 20], empty for none
@@ -92,7 +92,7 @@ def histRecHitsSimAssoc(rHitsSimAssoc, currentEvent, histDict, tag = "rHitsAssoc
 def histRecHits(rHits, currentEvent, histDict, tag = "rHits_", zoomed = False):
     # sanity check
     if (histDict == None): return
-    
+
     # define hists per layer
     for layer in range(1, 41):
         if (layer in allowedRangeLayers): # testing limitation
@@ -136,7 +136,7 @@ def histHexelsClustered(hexelsClustered, currentEvent, histDict, tag = "clustHex
 def histValue1D(fValues, histDict, tag = "hist1D_", title = "hist 1D", axunit = "a.u.", binsRangeList = [10, -1, 1], ayunit = "a.u."):
     # sanity check
     if (histDict == None): return
-    
+
     # define event-level hists
     histDict[tag]  = ROOT.TH1F(tag, title+";"+axunit+";"+ayunit, binsRangeList[0], binsRangeList[1], binsRangeList[2])
     histDict[tag].GetYaxis().SetTitleOffset(histDict[tag].GetYaxis().GetTitleOffset()*1.5)
@@ -187,7 +187,7 @@ def main():
     ntuple = HGCalNtuple("root://eoscms.cern.ch//eos/cms/store/cmst3/group/hgcal/CMG_studies/Production/FlatRandomEGunProducer_pdgid211_E20_cmssw93X_withPRs_20170817/NTUP/partGun_PDGid211_x100_E20.0To20.0_NTUP_1.root") # CMSSW_9_3_0_pre3 with some pre4 PRs on top
     #ntuple = HGCalNtuple("/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production/FlatRandomPtGunProducer_predragm_PDGid22_nPart1_Pt20to100_Eta2p3to2p5_cmssw921_20170605/NTUP/partGun_PDGid22_x400_Pt20.0To100.0_NTUP_1.root") # cmssw921 with all recent fixes as of June 12
     #ntuple = HGCalNtuple("/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production/FlatRandomPtGunProducer_predragm_PDGid22_id211_id11_id15_id130_nPart1_Pt20to100_Eta2p3to2p5_cmssw921_20170606/NTUP/partGun_PDGid22_id211_id11_id15_id130_x400_Pt20.0To100.0_NTUP_1.root")# cmssw921 with all recent fixes as of June 12
-    
+
     # prepare some lists for comparions
     multiClusters_nClust2DDiff = []
     tot_nClust2D_reco = []
@@ -195,7 +195,7 @@ def main():
     tot_nClust2D_rerun = []
     clusters2D_eng_rerun = []
     clusters2DMultiSelected_eng_rerun = []
-    
+
     # start event loop
     for event in ntuple:
         if (not event.entry() in allowedRangeEvents): continue # checking external condition
@@ -206,12 +206,12 @@ def main():
         simClusters = event.simClusters()
         layerClusters = event.layerClusters()
         multiClusters = event.multiClusters()
-        
+
         # get flat list of rechist associated to sim-cluster hits
         rHitsSimAssoc = getRecHitsSimAssoc(recHitsRaw, simClusters)
         # get flat list of raw rechits which satisfy treshold condition
         rHitsCleaned = [rechit for rechit in recHitsRaw if recHitAboveTreshold(rechit, ecut, dependSensor)[1]]
-        
+
         ### Imaging algo run at RECO step (CMSSW)
         # get flat list of all clusters 2D produced with algo at RECO step (CMSSW)
         clusters2DList_reco = [cls2D for cls2D in layerClusters]
@@ -285,4 +285,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
