@@ -11,9 +11,9 @@ class GenPartHistos():
         for histo in [a for a in dir(cls) if a.startswith('h_')]:
             getattr(cls, histo).Sumw2()
 
-    def fill(cls, pt, energy, weight=1.):
-        cls.h_pt.Fill(pt, weight)
-        cls.h_energy.Fill(energy, weight)
+    def fill(cls, gps):
+        rnp.fill_hist(cls.h_pt, gps.pt)
+        rnp.fill_hist(cls.h_energy, gps.energy)
 
     def write(cls):
         for histo in [a for a in dir(cls) if a.startswith('h_')]:
@@ -74,12 +74,12 @@ class ClusterHistos():
             cls.h_layerVenergy = root_file.Get(name+'_layerVenergy')
             cls.h_layerVncells = root_file.Get(name+'_layerVncells')
 
-    def fill(cls, energy, layer, ncells, weight=1):
-        cls.h_energy.Fill(energy, weight)
-        cls.h_layer.Fill(layer, weight)
-        cls.h_ncells.Fill(ncells, weight)
-        cls.h_layerVenergy.Fill(energy, layer, weight)
-        cls.h_layerVncells.Fill(ncells, layer, weight)
+    def fill(cls, clsts):
+        rnp.fill_hist(cls.h_energy, clsts.energy)
+        rnp.fill_hist(cls.h_layer, clsts.layer)
+        rnp.fill_hist(cls.h_ncells, clsts.ncells)
+        rnp.fill_hist(cls.h_layerVenergy, clsts[['energy', 'layer']])
+        rnp.fill_hist(cls.h_layerVncells, clsts[['ncells', 'layer']])
 
     def write(cls):
         for histo in [a for a in dir(cls) if a.startswith('h_')]:
@@ -120,18 +120,18 @@ class Cluster3DHistos():
                 h_method = getattr(cls, histo)
                 h_method = root_file.Get(name+'_'+histo.split('_')[1])
 
-    def fill(cls, pt, energy, nclu, showerlenght, firstlayer, seetot, seemax, spptot, sppmax, szz, emaxe, weight=1):
-        cls.h_pt.Fill(pt, weight)
-        cls.h_energy.Fill(energy, weight)
-        cls.h_nclu.Fill(nclu, weight)
-        cls.h_showlenght.Fill(showerlenght, weight)
-        cls.h_firstlayer .Fill(firstlayer, weight)
-        cls.h_sEtaEtaTot.Fill(seetot, weight)
-        cls.h_sEtaEtaMax.Fill(seemax, weight)
-        cls.h_sPhiPhiTot.Fill(spptot, weight)
-        cls.h_sPhiPhiMax.Fill(sppmax, weight)
-        cls.h_sZZ.Fill(szz, weight)
-        cls.h_eMaxOverE.Fill(emaxe, weight)
+    def fill(cls, cl3ds):
+        rnp.fill_hist(cls.h_pt, cl3ds.pt)
+        rnp.fill_hist(cls.h_energy, cl3ds.energy)
+        rnp.fill_hist(cls.h_nclu, cl3ds.nclu)
+        rnp.fill_hist(cls.h_showlenght, cl3ds.showerlength)
+        rnp.fill_hist(cls.h_firstlayer, cl3ds.firstlayer)
+        rnp.fill_hist(cls.h_sEtaEtaTot, cl3ds.seetot)
+        rnp.fill_hist(cls.h_sEtaEtaMax, cl3ds.seemax)
+        rnp.fill_hist(cls.h_sPhiPhiTot, cl3ds.spptot)
+        rnp.fill_hist(cls.h_sPhiPhiMax, cl3ds.sppmax)
+        rnp.fill_hist(cls.h_sZZ, cl3ds.szz)
+        rnp.fill_hist(cls.h_eMaxOverE, cl3ds.emaxe)
 
     def write(cls):
         for histo in [a for a in dir(cls) if a.startswith('h_')]:

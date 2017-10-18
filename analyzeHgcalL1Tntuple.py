@@ -4,7 +4,8 @@ from __future__ import print_function
 from NtupleDataFormat import HGCalNtuple, Event
 import sys
 import root_numpy as rnp
-
+import pandas as pd
+import numpy as np
 
 # The purpose of this file is to demonstrate mainly the objects
 # that are in the HGCalNtuple
@@ -31,8 +32,8 @@ def getChain(name, files):
 def main():
     # ============================================
     # configuration bit
-    maxEvents = 1000
-    debug = 1
+    maxEvents = 1
+    debug = 3
     input_base_dir = '/Users/cerminar/cernbox/hgcal/CMSSW932/'
     #input_sample_dir = 'FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU0_20171005/NTUP/'
     #output_filename = 'histos_EleE50_PU0.root'
@@ -64,7 +65,7 @@ def main():
     for event in ntuple:
         if event.entry() >= maxEvents:
             break
-        if debug == 1 or event.entry() % 100 == 0:
+        if debug >= 2 or event.entry() % 100 == 0:
             print ("--- Event", event.entry()+1)
 
         genParts = event.getDataFrame(prefix='gen')
@@ -72,12 +73,14 @@ def main():
         triggerClusters = event.getDataFrame(prefix='cl')
         trigger3DClusters = event.getDataFrame(prefix='cl3d')
 
-        if debug == 1:
+        if debug >= 2:
             print ("# gen parts: {}".format(len(genParts)))
-        for genpart in genParts:
-            hgen.fill(genpart.pt(), genpart.energy())
+        if debug >= 3:
+            print(genParts.iloc[:3])
 
-        if(debug == 1):
+        hgen.fill(genParts)
+
+        if(debug >= 2):
             print ("# of TC: {}".format(len(triggerCells)))
 
         # if(debug == 10):
@@ -91,34 +94,25 @@ def main():
         #     print(triggerCells[['energy', 'layer']].iloc[:3])
         #     print(triggerCells[['energy', 'layer']].iloc[:3].shape)
 
-        if(debug == 3):
+        if(debug >= 3):
             print(triggerCells.iloc[:3])
         htc.fill(triggerCells)
 
-        break
-        if(debug == 1):
-            print ('# of clusters: {}'.format(len(triggerClusters)))
-        for cluster in triggerClusters:
-            if(debug == 3):
-                print('Cluster: pt: {}, energy: {}, eta: {}, phi: {}, layer: {}, ncells: {}'
-                      .format(cluster.pt(), cluster.energy(), cluster.eta(), cluster.phi(), cluster.layer(), cluster.ncells(), cluster.cells()))
-                for cell in cluster.cells():
-                    print (cell)
-                    printTC(triggerCells[cell])
-            h2dcl.fill(cluster.energy(), cluster.layer(), cluster.ncells())
+        if(debug >= 2):
+            print('# of clusters: {}'.format(len(triggerClusters)))
+        # if(debug >= 3):
+        #     print(triggerClusters.iloc[:3])
+        #     print(triggerClusters.cells.iloc[:3])
+        #     # these are all the trigger-cells used in the first 3 2D clusters
+        #     print(triggerCells[triggerCells.index.isin(np.concatenate(triggerClusters.cells.iloc[:3]))])
 
-        for cl3d in trigger3DClusters:
-            h3dcl.fill(cl3d.pt(),
-                       cl3d.energy(),
-                       cl3d.nclu(),
-                       cl3d.showerlength(),
-                       cl3d.firstlayer(),
-                       cl3d.seetot(),
-                       cl3d.seemax(),
-                       cl3d.spptot(),
-                       cl3d.sppmax(),
-                       cl3d.szz(),
-                       cl3d.emaxe())
+        h2dcl.fill(triggerClusters)
+
+        if(debug >= 2):
+            print('# of 3D clusters: {}'.format(len(trigger3DClusters)))
+        if(debug >= 3):
+            print(trigger3DClusters.iloc[:3])
+        h3dcl.fill(trigger3DClusters)
 
         # FIXME: plot resolution
 
