@@ -2,6 +2,9 @@
 # import collections
 
 import ROOT
+import numpy as np
+import pandas as pd
+import root_numpy as rnp
 
 
 class _Collection(object):
@@ -25,6 +28,7 @@ class _Collection(object):
         self._objclass = objclass
         self._prefix = prefix
 
+
     def size(self):
         """Number of objects in the collection."""
         return int(getattr(self._tree, self._sizeBranch).size())
@@ -37,6 +41,7 @@ class _Collection(object):
         """Get object 'index' in the collection."""
         return self._objclass(self._tree, index, self._prefix)
 
+    #  FIXME: major performance killer
     def __iter__(self):
         """Returns generator for the objects."""
         for index in range(self.size()):
@@ -88,6 +93,7 @@ class _Object(object):
         return self._index
 
 
+
 ##########
 class HGCalNtuple(object):
     """Class abstracting the whole ntuple/TTree.
@@ -100,7 +106,7 @@ class HGCalNtuple(object):
     itertools.izip() instead.
     """
 
-    def __init__(self, fileName, tree="ana/hgc"):
+    def __init__(self, fileNames, tree="ana/hgc"):
         """Constructor.
 
         Arguments:
@@ -108,12 +114,10 @@ class HGCalNtuple(object):
         tree     -- Name of the TTree object inside the ROOT file (default: 'ana/hgc')
         """
         super(HGCalNtuple, self).__init__()
-        self._file = ROOT.TFile.Open(fileName)
-        self._tree = self._file.Get(tree)
-        self._entries = self._tree.GetEntriesFast()
-
-    def file(self):
-        return self._file
+        self._tree = ROOT.TChain(tree)
+        for file_name in fileNames:
+            self._tree.Add(file_name)
+        self._entries = self._tree.GetEntries()
 
     def tree(self):
         return self._tree
@@ -173,6 +177,7 @@ class Event(object):
         super(Event, self).__init__()
         self._tree = tree
         self._entry = entry
+
 
     def entry(self):
         return self._entry
@@ -240,6 +245,17 @@ class Event(object):
     def electrons(self, prefix="ecalDrivenGsfele"):
         """Returns Electrons object."""
         return Electrons(self._tree, prefix)
+
+    def getDataFrame(self, prefix):
+        df = pd.DataFrame()
+        # names = [br.split('_')[1] for br in branches]
+        for branch in self._tree.GetListOfBranches():
+            name = branch.GetName()
+            if name.startswith(prefix) and name != prefix+"_n":
+                # print name
+                df[name.split('_')[1]] = pd.Series(np.array(getattr(self._tree, name)))
+        # print df
+        return df
 
 ##########
 class PrimaryVertex(object):
@@ -573,6 +589,7 @@ class Electron(_Object):
             for pfclusterIdx in self.pfClusterIndex():
                 yield PFClusterFromMultiCl(self._tree, pfclusterIdx, prefix="pfclusterFromMultiCl")
 
+
 class Electrons(_Collection):
         """Class representing a collection of Electrons. """
 
@@ -584,4 +601,3 @@ class Electrons(_Collection):
                 prefix -- TBranch prefix
                 """
                 super(Electrons, self).__init__(tree, prefix + "_pt", Electron, prefix)
-
