@@ -247,11 +247,12 @@ class Event(object):
         return Electrons(self._tree, prefix)
 
     def getDataFrame(self, prefix):
+        # should allow to pass a blacklist of branch names?
         df = pd.DataFrame()
         # names = [br.split('_')[1] for br in branches]
         for branch in self._tree.GetListOfBranches():
             name = branch.GetName()
-            if name.startswith(prefix) and name != prefix+"_n":
+            if name.startswith(prefix+'_') and name != prefix+"_n":
                 # print name
                 df[name.split('_')[1]] = pd.Series(np.array(getattr(self._tree, name)))
         # print df
