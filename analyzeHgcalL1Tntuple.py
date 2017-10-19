@@ -112,7 +112,6 @@ def analyze(params):
         # for cluster in clusters3d:
         #     print(len(cluster.clusters()))
 
-
         if(debug >= 2):
             print('# of 3D clusters: {}'.format(len(trigger3DClusters)))
         if(debug >= 3):
@@ -133,6 +132,7 @@ def analyze(params):
     return
 
 
+from multiprocessing import Pool
 
 
 def main():
@@ -158,11 +158,20 @@ def main():
     singleEleE50_PU50 = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
                                    input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU50_20171005/NTUP/',
                                    output_filename='histos_EleE50_PU50.root')
-    #test = singleEleE50_PU0
-    #test.debug = 3
-    #test.maxEvents = 10
 
-    analyze(singleEleE50_PU200)
+    electron_samples = [singleEleE50_PU0, singleEleE50_PU50, singleEleE50_PU200]
+
+    test = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
+                      input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU50_20171005/NTUP/',
+                      output_filename='histos_EleE50_PU50.root')
+
+    test_sample = [test]
+
+    nugun_samples = []
+
+    pool = Pool(2)
+    pool.map(analyze, [singleEleE50_PU200, singleEleE50_PU0, singleEleE50_PU50])
+    # analyze(singleEleE50_PU50)
 
 
 if __name__ == "__main__":
