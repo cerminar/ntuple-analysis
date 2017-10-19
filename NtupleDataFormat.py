@@ -246,17 +246,18 @@ class Event(object):
         """Returns Electrons object."""
         return Electrons(self._tree, prefix)
 
+    def trigger3DClusters(self, prefix="cl3d"):
+        return Trigger3DClusters(self._tree, prefix)
+
     def getDataFrame(self, prefix):
-        # should allow to pass a blacklist of branch names?
+        branches = [br.GetName() for br in self._tree.GetListOfBranches() if br.GetName().startswith(prefix+'_')]
+        names = [br.split('_')[1] for br in branches]
+        nd_array = rnp.tree2array(self._tree, branches=branches, start=self._entry, stop=self._entry+1)
         df = pd.DataFrame()
-        # names = [br.split('_')[1] for br in branches]
-        for branch in self._tree.GetListOfBranches():
-            name = branch.GetName()
-            if name.startswith(prefix+'_') and name != prefix+"_n":
-                # print name
-                df[name.split('_')[1]] = pd.Series(np.array(getattr(self._tree, name)))
-        # print df
+        for idx in range(0, len(branches)):
+            df[names[idx]] = nd_array[branches[idx]][0]
         return df
+
 
 ##########
 class PrimaryVertex(object):
@@ -602,3 +603,13 @@ class Electrons(_Collection):
                 prefix -- TBranch prefix
                 """
                 super(Electrons, self).__init__(tree, prefix + "_pt", Electron, prefix)
+
+
+class Trigger3DCluster(_Object):
+        def __init__(self, tree, index, prefix):
+                super(Trigger3DCluster, self).__init__(tree, index, prefix)
+
+
+class Trigger3DClusters(_Collection):
+        def __init__(self, tree, prefix):
+                super(Trigger3DClusters, self).__init__(tree, prefix + "_energy", Trigger3DCluster, prefix)
