@@ -28,34 +28,32 @@ def getChain(name, files):
     return chain
 
 
+class Parameters:
+    def __init__(cls,
+                 input_base_dir,
+                 input_sample_dir,
+                 output_filename,
+                 maxEvents=-1,
+                 debug=0):
+        cls.maxEvents = maxEvents
+        cls.debug = debug
+        cls.input_base_dir = input_base_dir
+        cls.input_sample_dir = input_sample_dir
+        cls.output_filename = output_filename
 
-def main():
-    # ============================================
-    # configuration bit
-    maxEvents = 1
-    debug = 3
-    input_base_dir = '/Users/cerminar/cernbox/hgcal/CMSSW932/'
-    #input_sample_dir = 'FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU0_20171005/NTUP/'
-    #output_filename = 'histos_EleE50_PU0.root'
 
-    # input_sample_dir = 'FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU50_20171005/NTUP/'
-    # output_filename = 'histos_EleE50_PU50.root'
+def analyze(params):
+    debug = params.debug
 
-
-    input_sample_dir = 'FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU200_20171005/NTUP/'
-    output_filename = 'histos_EleE50_PU200.root'
-
-    # ============================================
-
-    input_files = listFiles(os.path.join(input_base_dir, input_sample_dir))
-    print ('- dir {} contains {} files.'.format(input_sample_dir, len(input_files)))
+    input_files = listFiles(os.path.join(params.input_base_dir, params.input_sample_dir))
+    print ('- dir {} contains {} files.'.format(params.input_sample_dir, len(input_files)))
 
     chain = getChain('hgcalTriggerNtuplizer/HGCalTriggerNtuple', input_files)
     print ('- created TChain containing {} events'.format(chain.GetEntries()))
 
     ntuple = HGCalNtuple(input_files, tree='hgcalTriggerNtuplizer/HGCalTriggerNtuple')
 
-    output = ROOT.TFile(output_filename, "RECREATE")
+    output = ROOT.TFile(params.output_filename, "RECREATE")
     output.cd()
     hgen = histos.GenPartHistos('h_genAll')
     htc = histos.TCHistos('h_tcAll')
@@ -63,10 +61,10 @@ def main():
     h3dcl = histos.Cluster3DHistos('h_cl3dAll')
 
     for event in ntuple:
-        if event.entry() >= maxEvents:
+        if (params.maxEvents != -1 and event.entry() >= params.maxEvents):
             break
         if debug >= 2 or event.entry() % 100 == 0:
-            print ("--- Event", event.entry()+1)
+            print ("--- Event", event.entry())
 
         genParts = event.getDataFrame(prefix='gen')
         triggerCells = event.getDataFrame(prefix='tc')
@@ -100,13 +98,20 @@ def main():
 
         if(debug >= 2):
             print('# of clusters: {}'.format(len(triggerClusters)))
-        # if(debug >= 3):
-        #     print(triggerClusters.iloc[:3])
+
+        if(debug >= 3):
+            print(triggerClusters.iloc[:3])
         #     print(triggerClusters.cells.iloc[:3])
         #     # these are all the trigger-cells used in the first 3 2D clusters
         #     print(triggerCells[triggerCells.index.isin(np.concatenate(triggerClusters.cells.iloc[:3]))])
 
         h2dcl.fill(triggerClusters)
+
+        # clusters3d = event.trigger3DClusters()
+        # print('# 3D clusters old style: {}'.format(len(clusters3d)))
+        # for cluster in clusters3d:
+        #     print(len(cluster.clusters()))
+
 
         if(debug >= 2):
             print('# of 3D clusters: {}'.format(len(trigger3DClusters)))
@@ -116,9 +121,8 @@ def main():
 
         # FIXME: plot resolution
 
-
-    print ("Processed {} events/{} TOT events".format(maxEvents, ntuple.nevents()))
-    print ("Writing histos to file {}".format(output_filename))
+    print ("Processed {} events/{} TOT events".format(event.entry(), ntuple.nevents()))
+    print ("Writing histos to file {}".format(params.output_filename))
 
     output.cd()
     hgen.write()
@@ -128,59 +132,37 @@ def main():
 
     return
 
-    #
-    #
-    # inFile = sys.argv[1]
-    # ntuple = HGCalNtuple(inFile)
-    #
-    # maxEvents = 10
-    #
-    # tot_nevents = 0
-    # tot_genpart = 0
-    # tot_rechit = 0
-    # tot_cluster2d = 0
-    # tot_multiclus = 0
-    # tot_simcluster = 0
-    # tot_pfcluster = 0
-    # tot_calopart = 0
-    # tot_track = 0
-    #
-    # for event in ntuple:
-    #     if event.entry() >= maxEvents:
-    #         break
-    #     print "Event", event.entry()+1
-    #     tot_nevents += 1
-    #     genParts = event.genParticles()
-    #     tot_genpart += len(genParts)
-    #     recHits = event.recHits()
-    #     tot_rechit += len(recHits)
-    #     layerClusters = event.layerClusters()
-    #     tot_cluster2d += len(layerClusters)
-    #     multiClusters = event.multiClusters()
-    #     tot_multiclus += len(multiClusters)
-    #     simClusters = event.simClusters()
-    #     tot_simcluster += len(simClusters)
-    #     pfClusters = event.pfClusters()
-    #     tot_pfcluster += len(pfClusters)
-    #     pfClusters = event.pfClusters()
-    #     tot_pfcluster += len(pfClusters)
-    #     caloParts = event.caloParticles()
-    #     tot_calopart += len(caloParts)
-    #     tracks = event.tracks()
-    #     tot_track += len(tracks)
-    #
-    #     # for genPart in genParts:
-    #     #     print tot_nevents, "genPart pt:", genPart.pt()
-    #
-    # print "Processed %d events" % tot_nevents
-    # print "On average %f generator particles" % (float(tot_genpart) / tot_nevents)
-    # print "On average %f reconstructed hits" % (float(tot_rechit) / tot_nevents)
-    # print "On average %f layer clusters" % (float(tot_cluster2d) / tot_nevents)
-    # print "On average %f multi-clusters" % (float(tot_multiclus) / tot_nevents)
-    # print "On average %f sim-clusters" % (float(tot_simcluster) / tot_nevents)
-    # print "On average %f PF clusters" % (float(tot_pfcluster) / tot_nevents)
-    # print "On average %f calo particles" % (float(tot_calopart) / tot_nevents)
-    # print "On average %f tracks" % (float(tot_track) / tot_nevents)
+
+
+
+def main():
+    # ============================================
+    # configuration bit
+
+    #input_sample_dir = 'FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU0_20171005/NTUP/'
+    #output_filename = 'histos_EleE50_PU0.root'
+
+    # input_sample_dir = 'FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU50_20171005/NTUP/'
+    # output_filename = 'histos_EleE50_PU50.root'
+
+
+    # ============================================
+    singleEleE50_PU200 = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
+                                    input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU200_20171005/NTUP/',
+                                    output_filename='histos_EleE50_PU200.root')
+
+    singleEleE50_PU0 = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
+                                  input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU0_20171005/NTUP/',
+                                  output_filename='histos_EleE50_PU0.root')
+
+    singleEleE50_PU50 = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
+                                   input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU50_20171005/NTUP/',
+                                   output_filename='histos_EleE50_PU50.root')
+    #test = singleEleE50_PU0
+    #test.debug = 3
+    #test.maxEvents = 10
+
+    analyze(singleEleE50_PU200)
 
 
 if __name__ == "__main__":
