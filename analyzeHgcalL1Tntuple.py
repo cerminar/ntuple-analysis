@@ -55,7 +55,11 @@ def analyze(params):
 
     output = ROOT.TFile(params.output_filename, "RECREATE")
     output.cd()
+
+    # -------------------------------------------------------
+    # book histos
     hgen = histos.GenPartHistos('h_genAll')
+    hdigis = histos.DigiHistos('h_hgcDigisAll')
     htc = histos.TCHistos('h_tcAll')
     h2dcl = histos.ClusterHistos('h_clAll')
     h3dcl = histos.Cluster3DHistos('h_cl3dAll')
@@ -66,11 +70,10 @@ def analyze(params):
         if debug >= 2 or event.entry() % 100 == 0:
             print ("--- Event", event.entry())
 
-        genParts = event.getDataFrame(prefix='gen')
-        triggerCells = event.getDataFrame(prefix='tc')
-        triggerClusters = event.getDataFrame(prefix='cl')
-        trigger3DClusters = event.getDataFrame(prefix='cl3d')
 
+        # -------------------------------------------------------
+        # --- GenParticles
+        genParts = event.getDataFrame(prefix='gen')
         if debug >= 2:
             print ("# gen parts: {}".format(len(genParts)))
         if debug >= 3:
@@ -78,6 +81,19 @@ def analyze(params):
 
         hgen.fill(genParts)
 
+
+        # -------------------------------------------------------
+        # --- Digis
+        hgcDigis = event.getDataFrame(prefix='hgcdigi')
+        if debug >= 2:
+            print ('# HGCAL digis: {}'.format(len(hgcDigis)))
+        if debug >=3:
+            print (hgcDigis.iloc[:3])
+        hdigis.fill(hgcDigis)
+
+        # -------------------------------------------------------
+        # --- Trigger Cells
+        triggerCells = event.getDataFrame(prefix='tc')
         if(debug >= 2):
             print ("# of TC: {}".format(len(triggerCells)))
 
@@ -87,7 +103,10 @@ def analyze(params):
         #     print(triggerCells.size)
         #     print(triggerCells.energy)
         #     print(triggerCells.iloc[:3])
-        #     print(triggerCells[(triggerCells.subdet > 3) & (triggerCells.wafer == 9)])
+        # print(triggerCells[(triggerCells.subdet > 3) & (triggerCells.wafer == 9)])
+        # slicing and selection
+        # print(triggerCells[(triggerCells.layer >= 1) & (triggerCells.layer <= 5)][['layer', 'energy']])
+
         #     print(triggerCells[1:3])
         #     print(triggerCells[['energy', 'layer']].iloc[:3])
         #     print(triggerCells[['energy', 'layer']].iloc[:3].shape)
@@ -95,6 +114,9 @@ def analyze(params):
         if(debug >= 3):
             print(triggerCells.iloc[:3])
         htc.fill(triggerCells)
+
+        triggerClusters = event.getDataFrame(prefix='cl')
+        trigger3DClusters = event.getDataFrame(prefix='cl3d')
 
         if(debug >= 2):
             print('# of clusters: {}'.format(len(triggerClusters)))
@@ -125,6 +147,7 @@ def analyze(params):
 
     output.cd()
     hgen.write()
+    hdigis.write()
     htc.write()
     h2dcl.write()
     h3dcl.write()
@@ -145,33 +168,61 @@ def main():
     # input_sample_dir = 'FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU50_20171005/NTUP/'
     # output_filename = 'histos_EleE50_PU50.root'
 
+    ntuple_version = 'NTUP'
 
     # ============================================
     singleEleE50_PU200 = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
-                                    input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU200_20171005/NTUP/',
+                                    input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU200_20171005/{}/'.format(ntuple_version),
                                     output_filename='histos_EleE50_PU200.root')
 
     singleEleE50_PU0 = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
-                                  input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU0_20171005/NTUP/',
+                                  input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU0_20171005/{}/'.format(ntuple_version),
                                   output_filename='histos_EleE50_PU0.root')
 
     singleEleE50_PU50 = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
-                                   input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU50_20171005/NTUP/',
+                                   input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU50_20171005/{}/'.format(ntuple_version),
                                    output_filename='histos_EleE50_PU50.root')
 
-    electron_samples = [singleEleE50_PU0, singleEleE50_PU50, singleEleE50_PU200]
+    singleEleE50_PU100 = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
+                                    input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU100_20171005/{}/'.format(ntuple_version),
+                                    output_filename='histos_EleE50_PU100.root')
+
+    electron_samples = [singleEleE50_PU0, singleEleE50_PU50, singleEleE50_PU100, singleEleE50_PU200]
 
     test = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
-                      input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU50_20171005/NTUP/',
-                      output_filename='histos_EleE50_PU50.root')
+                      input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU50_20171005/{}/'.format(ntuple_version),
+                      output_filename='test.root',
+                      maxEvents=10,
+                      debug=2)
 
     test_sample = [test]
 
-    nugun_samples = []
+    nuGun_PU50 = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
+                            input_sample_dir='FlatRandomPtGunProducer_NuGunPU50_20171005/{}/'.format(ntuple_version),
+                            output_filename='histos_NuGun_PU50.root')
 
-    pool = Pool(2)
-    pool.map(analyze, [singleEleE50_PU200, singleEleE50_PU0, singleEleE50_PU50])
-    # analyze(singleEleE50_PU50)
+    nuGun_PU100 = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
+                             input_sample_dir='FlatRandomPtGunProducer_NuGunPU100_20171005/{}/'.format(ntuple_version),
+                             output_filename='histos_NuGun_PU100.root')
+
+    nuGun_PU140 = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
+                             input_sample_dir='FlatRandomPtGunProducer_NuGunPU140_20171005/{}/'.format(ntuple_version),
+                             output_filename='histos_NuGun_PU140.root')
+
+    nuGun_PU200 = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
+                             input_sample_dir='FlatRandomPtGunProducer_NuGunPU200_20171006/{}/'.format(ntuple_version),
+                             output_filename='histos_NuGun_PU200.root')
+
+    nugun_samples = [nuGun_PU50, nuGun_PU100, nuGun_PU140, nuGun_PU200]
+#
+# FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU0_20171005   FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU200_20171005 FlatRandomPtGunProducer_NuGunPU140_20171005
+# FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU100_20171005 FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU50_20171005  FlatRandomPtGunProducer_NuGunPU200_20171006
+# FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU140_20171006 FlatRandomPtGunProducer_NuGunPU100_20171005             FlatRandomPtGunProducer_NuGunPU50_20171005
+
+
+    pool = Pool(3)
+    pool.map(analyze, nugun_samples)
+    #pool.map(analyze, test_sample)
 
 
 if __name__ == "__main__":
