@@ -140,6 +140,17 @@ def analyze(params):
             print(trigger3DClusters.iloc[:3])
         h3dcl.fill(trigger3DClusters)
 
+
+        # resolution study
+        electron_PID = 11
+        print ('Electrons in GENParts:')
+        genElectrons = genParts[(abs(genParts.id) == electron_PID)]
+        print (genElectrons)
+
+        import utils as utils
+        matched_idx = utils.match_etaphi(genElectrons[['eta', 'phi']], trigger3DClusters[['eta', 'phi']], trigger3DClusters['pt'], deltaR=0.2)
+        #print (matched_idx)
+
         # FIXME: plot resolution
 
     print ("Processed {} events/{} TOT events".format(event.entry(), ntuple.nevents()))
@@ -193,7 +204,7 @@ def main():
                       input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU50_20171005/{}/'.format(ntuple_version),
                       output_filename='test.root',
                       maxEvents=10,
-                      debug=2)
+                      debug=3)
 
     test_sample = [test]
 
@@ -221,9 +232,10 @@ def main():
 
 
     pool = Pool(3)
-    pool.map(analyze, nugun_samples)
-    #pool.map(analyze, test_sample)
-
+    #pool.map(analyze, nugun_samples)
+    pool.map(analyze, test_sample)
+    #pool.map(analyze, electron_samples)
+    #analyze(test)
 
 if __name__ == "__main__":
     main()
