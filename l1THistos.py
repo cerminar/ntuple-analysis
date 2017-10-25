@@ -131,3 +131,19 @@ class Cluster3DHistos(BaseHistos):
         rnp.fill_hist(cls.h_sPhiPhiMax, cl3ds.sppmax)
         rnp.fill_hist(cls.h_sZZ, cl3ds.szz)
         rnp.fill_hist(cls.h_eMaxOverE, cl3ds.emaxe)
+
+
+class ResoHistos(BaseHistos):
+    def __init__(cls, name, root_file=None):
+        cls.h_ptRes = ROOT.TH1F(name+'_ptRes', '3D Cluster Pt reso (GeV)', 100, -10, 10)
+        cls.h_energyRes = ROOT.TH1F(name+'_energyRes', '3D Cluster Energy reso (GeV)', 100, -10, 10)
+        cls.h_ptResVeta = ROOT.TH2F(name+'_ptResVeta', '3D Cluster Pt reso (GeV) vs eta', 100, -3.5, 3.5, 100, -10, 10)
+        cls.h_energyResVeta = ROOT.TH2F(name+'_energyResVeta', '3D Cluster Pt reso (GeV) vs eta', 100, -3.5, 3.5, 100, -10, 10)
+
+        BaseHistos.__init__(cls, name, root_file)
+
+    def fill(cls, reference, target):
+        cls.h_ptRes.Fill(target.pt - reference.pt)
+        cls.h_energyRes.Fill(target.energy - reference.energy)
+        cls.h_ptResVeta.Fill(reference.eta, target.pt - reference.pt)
+        cls.h_energyResVeta.Fill(reference.eta, target.energy - reference.energy)

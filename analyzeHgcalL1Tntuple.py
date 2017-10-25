@@ -14,6 +14,7 @@ import os
 import math
 
 import l1THistos as histos
+import utils as utils
 
 
 def listFiles(input_dir):
@@ -63,6 +64,11 @@ def analyze(params):
     htc = histos.TCHistos('h_tcAll')
     h2dcl = histos.ClusterHistos('h_clAll')
     h3dcl = histos.Cluster3DHistos('h_cl3dAll')
+    htcMatch = histos.TCHistos('h_tcMatch')
+    h2dclMatch = histos.ClusterHistos('h_clMatch')
+    h3dclMatch = histos.Cluster3DHistos('h_cl3dMatch')
+
+    hreso = histos.ResoHistos('h_EleReso')
 
     for event in ntuple:
         if (params.maxEvents != -1 and event.entry() >= params.maxEvents):
@@ -140,18 +146,32 @@ def analyze(params):
             print(trigger3DClusters.iloc[:3])
         h3dcl.fill(trigger3DClusters)
 
-
         # resolution study
         electron_PID = 11
-        print ('Electrons in GENParts:')
         genElectrons = genParts[(abs(genParts.id) == electron_PID)]
-        print (genElectrons)
-
-        import utils as utils
         matched_idx = utils.match_etaphi(genElectrons[['eta', 'phi']], trigger3DClusters[['eta', 'phi']], trigger3DClusters['pt'], deltaR=0.2)
-        #print (matched_idx)
 
-        # FIXME: plot resolution
+        for idx, genElectron in genElectrons.iterrows():
+            matched3DCluster = trigger3DClusters.iloc[[matched_idx[idx]]]
+            matchedClusters = triggerClusters.iloc[matched3DCluster.clusters.item()]
+            matchedTriggerCells = triggerCells.iloc[np.concatenate(matchedClusters.cells.values)]
+
+            if debug >= 4:
+                print ('GEN electron:')
+                print (genElectron)
+                print ('Matched to 3D cluster:')
+                print (matched3DCluster)
+                print ('Matched 2D clusters:')
+                print (matchedClusters)
+                print ('matched cells:')
+                print (matchedTriggerCells)
+
+            h3dclMatch.fill(matched3DCluster)
+            h2dclMatch.fill(matchedClusters)
+            htcMatch.fill(matchedTriggerCells)
+
+            hreso.fill(reference=genElectron, target=matched3DCluster.iloc[0])
+
 
     print ("Processed {} events/{} TOT events".format(event.entry(), ntuple.nevents()))
     print ("Writing histos to file {}".format(params.output_filename))
@@ -162,7 +182,10 @@ def analyze(params):
     htc.write()
     h2dcl.write()
     h3dcl.write()
-
+    htcMatch.write()
+    h2dclMatch.write()
+    h3dclMatch.write()
+    hreso.write()
     return
 
 
@@ -204,7 +227,7 @@ def main():
                       input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU50_20171005/{}/'.format(ntuple_version),
                       output_filename='test.root',
                       maxEvents=10,
-                      debug=3)
+                      debug=2)
 
     test_sample = [test]
 
@@ -233,8 +256,8 @@ def main():
 
     pool = Pool(3)
     #pool.map(analyze, nugun_samples)
-    pool.map(analyze, test_sample)
-    #pool.map(analyze, electron_samples)
+    #pool.map(analyze, test_sample)
+    pool.map(analyze, electron_samples)
     #analyze(test)
 
 if __name__ == "__main__":
