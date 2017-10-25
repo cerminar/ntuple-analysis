@@ -91,16 +91,16 @@ class ClusterHistos(BaseHistos):
             cls.h_energy = ROOT.TH1F(name+'_energy', 'Cluster energy Pt (GeV)', 100, 0, 20)
             cls.h_layer = ROOT.TH1F(name+'_layer', 'Cluster layer #', 60, 0, 60)
             cls.h_ncells = ROOT.TH1F(name+'_ncells', 'Cluster # cells', 30, 0, 30)
-            cls.h_layerVenergy = ROOT.TH2F(name+'_layerVenergy', "Cluster Energy (GeV) vs Layer #", 100, 0, 20, 50, 0, 50)
-            cls.h_layerVncells = ROOT.TH2F(name+'_layerVncells', "Cluster #cells vs Layer #", 30, 0, 30, 50, 0, 50)
+            cls.h_layerVenergy = ROOT.TH2F(name+'_layerVenergy', "Cluster Energy (GeV) vs Layer #", 50, 0, 50, 100, 0, 20)
+            cls.h_layerVncells = ROOT.TH2F(name+'_layerVncells', "Cluster #cells vs Layer #",  50, 0, 50, 30, 0, 30)
         BaseHistos.__init__(cls, name, root_file)
 
     def fill(cls, clsts):
         rnp.fill_hist(cls.h_energy, clsts.energy)
         rnp.fill_hist(cls.h_layer, clsts.layer)
         rnp.fill_hist(cls.h_ncells, clsts.ncells)
-        rnp.fill_hist(cls.h_layerVenergy, clsts[['energy', 'layer']])
-        rnp.fill_hist(cls.h_layerVncells, clsts[['ncells', 'layer']])
+        rnp.fill_hist(cls.h_layerVenergy, clsts[['layer', 'energy']])
+        rnp.fill_hist(cls.h_layerVncells, clsts[['layer', 'ncells']])
 
 
 class Cluster3DHistos(BaseHistos):
