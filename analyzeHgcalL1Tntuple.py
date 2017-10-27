@@ -166,6 +166,13 @@ def analyze(params):
                 print ('matched cells:')
                 print (matchedTriggerCells)
 
+            print ('3D cluster energy: {}'.format(matched3DCluster.energy.sum()))
+            print ('3D cluster pt: {}'.format(matched3DCluster.pt.sum()))
+            calib_factor = 1.084
+            print ('sum 2D cluster energy: {}'.format(matchedClusters.energy.sum()*calib_factor))
+            print ('sum 2D cluster pt: {}'.format(matchedClusters.pt.sum()*calib_factor))
+
+            print ('sum TC energy: {}'.format(matchedTriggerCells.energy.sum()))
             h3dclMatch.fill(matched3DCluster)
             h2dclMatch.fill(matchedClusters)
             htcMatch.fill(matchedTriggerCells)
@@ -186,6 +193,7 @@ def analyze(params):
     h2dclMatch.write()
     h3dclMatch.write()
     hreso.write()
+    output.Close()
     return
 
 
@@ -257,8 +265,9 @@ def main():
     pool = Pool(3)
     #pool.map(analyze, nugun_samples)
     #pool.map(analyze, test_sample)
-    pool.map(analyze, electron_samples)
-    #analyze(test)
+    #pool.map(analyze, electron_samples)
+    #pool.map(analyze, [singleEleE50_PU200])
+    analyze(test)
 
 if __name__ == "__main__":
     main()
