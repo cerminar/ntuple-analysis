@@ -94,7 +94,7 @@ class TCHistos(BaseHistos):
 class ClusterHistos(BaseHistos):
     def __init__(self, name, root_file=None):
         if not root_file:
-            self.h_energy = ROOT.TH1F(name+'_energy', 'Cluster energy Pt (GeV)', 100, 0, 20)
+            self.h_energy = ROOT.TH1F(name+'_energy', 'Cluster energy (GeV)', 100, 0, 20)
             self.h_layer = ROOT.TH1F(name+'_layer', 'Cluster layer #', 60, 0, 60)
             self.h_ncells = ROOT.TH1F(name+'_ncells', 'Cluster # cells', 30, 0, 30)
             self.h_layerVenergy = ROOT.TH2F(name+'_layerVenergy', "Cluster Energy (GeV) vs Layer #", 50, 0, 50, 100, 0, 20)
@@ -153,3 +153,20 @@ class ResoHistos(BaseHistos):
         self.h_energyRes.Fill(target.energy - reference.energy)
         self.h_ptResVeta.Fill(reference.eta, target.pt - reference.pt)
         self.h_energyResVeta.Fill(reference.eta, target.energy - reference.energy)
+
+
+class GeomHistos(BaseHistos):
+    def __init__(self, name, root_file=None):
+        self.h_maxNNDistVlayer = ROOT.TH2F(name+'_maxNNDistVlayer', 'Max dist between NN vs layer', 60, 0, 60, 100, 0, 10)
+        self.h_nTCsPerLayer = ROOT.TH1F(name+'_nTCsPerLayer', '# of Trigger Cells per layer', 60, 0, 60)
+        self.h_radiusVlayer = ROOT.TH2F(name+'_radiusVlayer', '# of cells radius vs layer', 60, 0, 60, 200, 0, 200)
+        BaseHistos.__init__(self, name, root_file)
+
+    def fill(self, tcs):
+        if False:
+            ee_tcs = tcs[tcs.subdet == 3]
+            for index, tc_geom in ee_tcs.iterrows():
+                self.h_maxNNDistVlayer.Fill(tc_geom.layer, np.max(tc_geom.neighbor_distance))
+
+        rnp.fill_hist(self.h_nTCsPerLayer, tcs[tcs.subdet == 3].layer)
+        rnp.fill_hist(self.h_radiusVlayer, tcs[['layer', 'radius']])
