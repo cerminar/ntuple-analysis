@@ -17,12 +17,13 @@ def match_etaphi(ref_etaphi, trigger_etaphi, trigger_pt, deltaR=0.2):
         # Handle the -pi pi transition
         matched_sym = kdtree.query_ball_point([row.eta, row.phi-np.sign(row.phi)*2.*m.pi], deltaR)
         matched = np.unique(np.concatenate((matched, matched_sym))).astype(int)
-        #print matched
-        #print type(matched)
-        #print trigger_pt[matched]
-        #print trigger_etaphi.iloc[matched]
+        # print matched
+        # print type(matched)
+        # print trigger_pt[matched]
+        # print trigger_etaphi.iloc[matched]
         # Choose the match with highest pT
-        best_match = np.argmax(trigger_pt[matched])
-        #print best_match
-        matched_indices[index] = best_match
+        if (len(matched) != 0):
+            best_match = np.argmax(trigger_pt[matched])
+            #print best_match
+            matched_indices[index] = best_match
     return matched_indices
