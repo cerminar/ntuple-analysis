@@ -60,6 +60,7 @@ def dumpFrame2JSON(filename, frame):
 
 def analyze(params):
     debug = params.debug
+    pool = Pool(5)
 
     # read the geometry dump
     geom_file = 'test_triggergeom.root'
@@ -218,7 +219,6 @@ def analyze(params):
         # Now build DBSCAN 2D clusters
         triggerClustersDBS = pd.DataFrame()
         for zside in [-1, 1]:
-            pool = Pool(5)
             arg = [(layer, zside, tcsWithPos) for layer in range(0, 29)]
             results = pool.map(clAlgo.buildDBSCANClustersUnpack, arg)
             for clres in results:
@@ -233,8 +233,6 @@ def analyze(params):
 
         h2dclDBS.fill(triggerClustersDBS)
 
-
-
         # clusters3d = event.trigger3DClusters()
         # print('# 3D clusters old style: {}'.format(len(clusters3d)))
         # for cluster in clusters3d:
@@ -247,8 +245,11 @@ def analyze(params):
         h3dcl.fill(trigger3DClusters)
 
         trigger3DClustersDBS = pd.DataFrame()
-        trigger3DClustersDBS = trigger3DClustersDBS.append(clAlgo.build3DClusters(triggerClustersDBS[triggerClustersDBS.eta > 0]), ignore_index=True)
-        trigger3DClustersDBS = trigger3DClustersDBS.append(clAlgo.build3DClusters(triggerClustersDBS[triggerClustersDBS.eta < 0]), ignore_index=True)
+        clusterSides = [triggerClustersDBS[triggerClustersDBS.eta > 0], triggerClustersDBS[triggerClustersDBS.eta < 0]]
+        results3Dcl = pool.map(clAlgo.build3DClusters, clusterSides)
+        for res3D in results3Dcl:
+            trigger3DClustersDBS = trigger3DClustersDBS.append(res3D, ignore_index=True)
+
         if(debug >= 2):
             print('# of DBS 3D clusters: {}'.format(len(trigger3DClustersDBS)))
         if(debug >= 3):
