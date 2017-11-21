@@ -1,0 +1,7 @@
+pandas
+numpy
+ipython
+pandas
+root_numpy
+scipy
+sklearn
