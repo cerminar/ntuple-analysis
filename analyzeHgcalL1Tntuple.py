@@ -348,44 +348,46 @@ def main():
     ntuple_version = 'NTUP'
 
     # ============================================
-    singleEleE50_PU200 = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
+    basedir = '/eos/user/c/cerminar/hgcal/CMSSW932'
+    # basedir = '/Users/cerminar/cernbox/hgcal/CMSSW932/'
+    singleEleE50_PU200 = Parameters(input_base_dir=basedir,
                                     input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU200_20171005/{}/'.format(ntuple_version),
                                     output_filename='histos_EleE50_PU200.root')
 
-    singleEleE50_PU0 = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
+    singleEleE50_PU0 = Parameters(input_base_dir=basedir,
                                   input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU0_20171005/{}/'.format(ntuple_version),
                                   output_filename='histos_EleE50_PU0.root')
 
-    singleEleE50_PU50 = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
+    singleEleE50_PU50 = Parameters(input_base_dir=basedir,
                                    input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU50_20171005/{}/'.format(ntuple_version),
                                    output_filename='histos_EleE50_PU50.root')
 
-    singleEleE50_PU100 = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
+    singleEleE50_PU100 = Parameters(input_base_dir=basedir,
                                     input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU100_20171005/{}/'.format(ntuple_version),
                                     output_filename='histos_EleE50_PU100.root')
 
     electron_samples = [singleEleE50_PU0, singleEleE50_PU50, singleEleE50_PU100, singleEleE50_PU200]
 
-    test = singleEleE50_PU0
+    test = singleEleE50_PU200
     test.output_filename = 'testa.root'
     test.maxEvents = 10
     test.debug = 2
 
     test_sample = [test]
 
-    nuGun_PU50 = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
+    nuGun_PU50 = Parameters(input_base_dir=basedir,
                             input_sample_dir='FlatRandomPtGunProducer_NuGunPU50_20171005/{}/'.format(ntuple_version),
                             output_filename='histos_NuGun_PU50.root')
 
-    nuGun_PU100 = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
+    nuGun_PU100 = Parameters(input_base_dir=basedir,
                              input_sample_dir='FlatRandomPtGunProducer_NuGunPU100_20171005/{}/'.format(ntuple_version),
                              output_filename='histos_NuGun_PU100.root')
 
-    nuGun_PU140 = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
+    nuGun_PU140 = Parameters(input_base_dir=basedir,
                              input_sample_dir='FlatRandomPtGunProducer_NuGunPU140_20171005/{}/'.format(ntuple_version),
                              output_filename='histos_NuGun_PU140.root')
 
-    nuGun_PU200 = Parameters(input_base_dir='/Users/cerminar/cernbox/hgcal/CMSSW932/',
+    nuGun_PU200 = Parameters(input_base_dir=basedir,
                              input_sample_dir='FlatRandomPtGunProducer_NuGunPU200_20171006/{}/'.format(ntuple_version),
                              output_filename='histos_NuGun_PU200.root')
 
