@@ -8,7 +8,8 @@ class BaseHistos():
     def __init__(self, name, root_file=None):
         if root_file is not None:
             root_file.cd()
-            histo_names = [histo.GetName() for histo in root_file.GetListOfKeys() if name in histo.GetName()]
+            histo_names = [histo.GetName() for histo in root_file.GetListOfKeys() if name+'_' in histo.GetName()]
+            #print histo_names
             for histo_name in  histo_names:
                 hinst = root_file.Get(histo_name)
                 attr_name = 'h_'+histo_name.split('_')[2]
