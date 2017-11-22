@@ -20,11 +20,11 @@ def buildDBSCANClusters(sel_layer, sel_zside, tcs):
         return new2Dcls
 
     X = tcs_layer[['x', 'y']]
-    densities = [1, 2, 4, 6, 10, 14, 18, 18, 18, 18, 20, 20, 20, 16, 10, 6, 4, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    densities = [0.1*100, 0.2*100, 0.5*100, 0.7*100, 1.1*100, 1.3*100, 1.7*100, 1.8*100, 2.0*100, 2.2*100, 2.6*100, 2.0*100, 1.8*100, 1.4*100, 1.2*100, 0.8*100, 0.6*100, 0.4*100, 0.2*100, 0.2*100, 0.1*100, 0.05*100, 0.05*100, 0.05*100, 0.05*100, 0.05*100, 0.05*100, 0.05*100]
     db = DBSCAN(eps=3.5,
                 min_samples=densities[sel_layer-1],
                 algorithm='kd_tree',
-                n_jobs=3).fit(X, sample_weight=tcs_layer['energy']*10)
+                n_jobs=3).fit(X, sample_weight=tcs_layer['energy']*100)
     labels = db.labels_
     unique_labels = set(labels)
     tcs_layer['dbs_label'] = labels
@@ -48,7 +48,6 @@ def buildDBSCANClusters(sel_layer, sel_zside, tcs):
         else:
             cl['phi'] = [0]
         cl['cells'] = [np.array(components.index)]
-        # FIXME: broken
         cl['ncells'] = [components.shape[0]]
         new2Dcls = new2Dcls.append(cl.copy(), ignore_index=True)
     return new2Dcls
@@ -83,7 +82,6 @@ def build3DClusters(cl2D):
 
         cl3D['layers'] = [components.layer.values]
         cl3D['clusters'] = [np.array(components.index)]
-        # FIXME: broken
         cl3D['nclu'] = [components.shape[0]]
         cl3D['firstlayer'] = [np.min(components.layer.values)]
         # FIXME: placeholder
