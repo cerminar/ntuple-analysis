@@ -66,6 +66,9 @@ def dumpFrame2JSON(filename, frame):
 
 def analyze(params):
     debug = params.debug
+    computeDensity = False
+    plot2DCLDR = False
+
     pool = Pool(5)
 
     # read the geometry dump
@@ -128,7 +131,7 @@ def analyze(params):
     hresoDBS = histos.ResoHistos('h_EleResoDBS')
 
     hDensity = ROOT.TH2F('hDensity', 'E (GeV) Density per layer', 60, 0, 60, 200, 0, 10)
-
+    hDR = ROOT.TH1F('hDR', 'DR 2D clusters', 100, 0, 1)
     dump = False
 
     for event in ntuple:
@@ -167,7 +170,6 @@ def analyze(params):
             print ("# of TC: {}".format(len(triggerCells)))
 
         tcsWithPos = pd.merge(triggerCells, tc_geom_df[['id', 'x', 'y', 'radius']], on='id')
-        computeDensity = False
         if computeDensity:
             # def computeDensity(tcs):
             #     eps = 3.5
@@ -238,6 +240,10 @@ def analyze(params):
                 results = pool.map(clAlgo.buildDBSCANClustersUnpack, arg)
                 for clres in results:
                     triggerClustersDBS = triggerClustersDBS.append(clres, ignore_index=True)
+                if plot2DCLDR:
+                    for idx, cl in triggerClustersDBS[triggerClustersDBS.zside == zside].iterrows():
+                        for idx2 in range(idx+1, triggerClustersDBS[triggerClustersDBS.zside == zside].shape[0]):
+                            hDR.Fill(math.sqrt((cl.eta-triggerClustersDBS[triggerClustersDBS.zside == zside].loc[idx2].eta)**2+(cl.phi-triggerClustersDBS[triggerClustersDBS.zside == zside].loc[idx2].phi)**2))
             # for layer in range(0, 29):
             #     triggerClustersDBS = triggerClustersDBS.append(clAlgo.buildDBSCANClusters(layer, zside, tcsWithPos), ignore_index=True)
         if(debug >= 2):
@@ -299,7 +305,8 @@ def analyze(params):
                 else:
                     print (genElectrons[['eta', 'phi', 'energy']])
                     print (trigger3DClusters[['eta', 'phi', 'energy']])
-                    print (trigger3DClustersDBS[['eta', 'phi', 'energy']])
+                    if trigger3DClustersDBS.shape[0] != 0:
+                        print (trigger3DClustersDBS[['eta', 'phi', 'energy']])
                     print("ERROR: no match found for DBS!!!")
             # FIXME: understand why this is not the case
 
@@ -352,6 +359,7 @@ def analyze(params):
     hresoDBS.write()
     hTCGeom.write()
     hDensity.Write()
+    hDR.Write()
     output.Close()
 
     return
@@ -371,31 +379,31 @@ def main():
 
     ntuple_version = 'NTUP'
     run_clustering = True
-
+    plot_version = 'v1'
     # ============================================
     # basedir = '/eos/user/c/cerminar/hgcal/CMSSW932'
     basedir = '/Users/cerminar/cernbox/hgcal/CMSSW932/'
     singleEleE50_PU200 = Parameters(input_base_dir=basedir,
                                     input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU200_20171005/{}/'.format(ntuple_version),
-                                    output_filename='histos_EleE50_PU200.root',
+                                    output_filename='histos_EleE50_PU200_{}.root'.format(plot_version),
                                     clusterize=run_clustering,
                                     eventsToDump=[])
 
     singleEleE50_PU0 = Parameters(input_base_dir=basedir,
                                   input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU0_20171005/{}/'.format(ntuple_version),
-                                  output_filename='histos_EleE50_PU0.root',
+                                  output_filename='histos_EleE50_PU0_{}.root'.format(plot_version),
                                   clusterize=run_clustering,
                                   eventsToDump=[])
 
     singleEleE50_PU50 = Parameters(input_base_dir=basedir,
                                    input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU50_20171005/{}/'.format(ntuple_version),
-                                   output_filename='histos_EleE50_PU50.root',
+                                   output_filename='histos_EleE50_PU50_{}.root'.format(plot_version),
                                    clusterize=run_clustering,
                                    eventsToDump=[])
 
     singleEleE50_PU100 = Parameters(input_base_dir=basedir,
                                     input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU100_20171005/{}/'.format(ntuple_version),
-                                    output_filename='histos_EleE50_PU100.root',
+                                    output_filename='histos_EleE50_PU100_{}.root'.format(plot_version),
                                     clusterize=run_clustering,
                                     eventsToDump=[])
 
@@ -404,33 +412,33 @@ def main():
 
     nuGun_PU50 = Parameters(input_base_dir=basedir,
                             input_sample_dir='FlatRandomPtGunProducer_NuGunPU50_20171005/{}/'.format(ntuple_version),
-                            output_filename='histos_NuGun_PU50.root',
+                            output_filename='histos_NuGun_PU50_{}.root'.format(plot_version),
                             clusterize=run_clustering,
                             eventsToDump=[])
 
     nuGun_PU100 = Parameters(input_base_dir=basedir,
                              input_sample_dir='FlatRandomPtGunProducer_NuGunPU100_20171005/{}/'.format(ntuple_version),
-                             output_filename='histos_NuGun_PU100.root',
+                             output_filename='histos_NuGun_PU100_{}.root'.format(plot_version),
                              clusterize=run_clustering,
                              eventsToDump=[])
 
     nuGun_PU140 = Parameters(input_base_dir=basedir,
                              input_sample_dir='FlatRandomPtGunProducer_NuGunPU140_20171005/{}/'.format(ntuple_version),
-                             output_filename='histos_NuGun_PU140.root',
+                             output_filename='histos_NuGun_PU140_{}.root'.format(plot_version),
                              clusterize=run_clustering,
                              eventsToDump=[])
 
     nuGun_PU200 = Parameters(input_base_dir=basedir,
                              input_sample_dir='FlatRandomPtGunProducer_NuGunPU200_20171006/{}/'.format(ntuple_version),
-                             output_filename='histos_NuGun_PU200.root',
+                             output_filename='histos_NuGun_PU200_{}.root'.format(plot_version),
                              clusterize=run_clustering,
                              eventsToDump=[])
 
     nugun_samples = [nuGun_PU50, nuGun_PU100, nuGun_PU140, nuGun_PU200]
 #
-    test = copy.deepcopy(singleEleE50_PU100)
+    test = copy.deepcopy(singleEleE50_PU0)
     test.output_filename = 'test11.root'
-    test.maxEvents = 10
+    test.maxEvents = 1000
     test.debug = 2
     test.eventsToDump = [1, 2, 3, 4]
     #test.clusterize = False
