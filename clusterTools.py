@@ -55,7 +55,7 @@ def buildDBSCANClusters(sel_layer, sel_zside, tcs):
 
 def build3DClusters(cl2D):
     X = cl2D[['eta', 'phi']]
-    db = DBSCAN(eps=0.015,
+    db = DBSCAN(eps=0.03,
                 algorithm='kd_tree',
                 min_samples=10,
                 n_jobs=3).fit(X, sample_weight=cl2D['energy'])
