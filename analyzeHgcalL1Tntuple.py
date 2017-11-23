@@ -14,6 +14,7 @@ import ROOT
 import os
 import math
 import copy
+import socket
 
 import l1THistos as histos
 import utils as utils
@@ -128,8 +129,9 @@ def analyze(params):
     h3dclMatchDBS = histos.Cluster3DHistos('h_cl3dMatchDBS')
 
     hreso = histos.ResoHistos('h_EleReso')
+    hreso2D = histos.Reso2DHistos('h_ClReso')
     hresoDBS = histos.ResoHistos('h_EleResoDBS')
-
+    hreso2DDBS = histos.Reso2DHistos('h_ClResoDBS')
     hDensity = ROOT.TH2F('hDensity', 'E (GeV) Density per layer', 60, 0, 60, 200, 0, 10)
     hDR = ROOT.TH1F('hDR', 'DR 2D clusters', 100, 0, 1)
     dump = False
@@ -292,6 +294,7 @@ def analyze(params):
             matchedClusters = triggerClusters.iloc[matched3DCluster.clusters.item()]
             matchedTriggerCells = triggerCells.iloc[np.concatenate(matchedClusters.cells.values)]
 
+
             if params.clusterize:
                 if idx in matchedDBS_idx.keys():
                     matched3DClusterDBS = trigger3DClustersDBS.iloc[[matchedDBS_idx[idx]]]
@@ -301,6 +304,9 @@ def analyze(params):
                     h2dclMatchDBS.fill(matchedClustersDBS)
                     htcMatchDBS.fill(matchedTriggerCellsDBS)
                     hresoDBS.fill(reference=genElectron, target=matched3DClusterDBS.iloc[0])
+                    hreso2DDBS.fill(reference=genElectron, target=matchedClustersDBS)
+                    # print ('=== DBSCAN =========================================')
+                    # print (matchedClustersDBS)
 
                 else:
                     print (genElectrons[['eta', 'phi', 'energy']])
@@ -332,10 +338,15 @@ def analyze(params):
                 print ('sum 2D cluster pt: {}'.format(matchedClusters.pt.sum()*calib_factor))
 
                 print ('sum TC energy: {}'.format(matchedTriggerCells.energy.sum()))
+            # print ('=== NN =========================================')
+            # print (matchedClusters)
+
+
             h3dclMatch.fill(matched3DCluster)
             h2dclMatch.fill(matchedClusters)
             htcMatch.fill(matchedTriggerCells)
 
+            hreso2D.fill(reference=genElectron, target=matchedClusters)
             hreso.fill(reference=genElectron, target=matched3DCluster.iloc[0])
 
     print ("Processed {} events/{} TOT events".format(event.entry(), ntuple.nevents()))
@@ -356,7 +367,9 @@ def analyze(params):
     h3dclMatchDBS.write()
     h3dclDBS.write()
     hreso.write()
+    hreso2D.write()
     hresoDBS.write()
+    hreso2DDBS.write()
     hTCGeom.write()
     hDensity.Write()
     hDR.Write()
@@ -379,10 +392,13 @@ def main():
 
     ntuple_version = 'NTUP'
     run_clustering = True
-    plot_version = 'v1'
+    plot_version = 'v2'
     # ============================================
-    # basedir = '/eos/user/c/cerminar/hgcal/CMSSW932'
-    basedir = '/Users/cerminar/cernbox/hgcal/CMSSW932/'
+    basedir = '/eos/user/c/cerminar/hgcal/CMSSW932'
+    hostname = socket.gethostname()
+    if 'matterhorn' in hostname:
+            basedir = '/Users/cerminar/cernbox/hgcal/CMSSW932/'
+    #
     singleEleE50_PU200 = Parameters(input_base_dir=basedir,
                                     input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU200_20171005/{}/'.format(ntuple_version),
                                     output_filename='histos_EleE50_PU200_{}.root'.format(plot_version),
@@ -437,11 +453,11 @@ def main():
     nugun_samples = [nuGun_PU50, nuGun_PU100, nuGun_PU140, nuGun_PU200]
 #
     test = copy.deepcopy(singleEleE50_PU0)
-    test.output_filename = 'test11.root'
+    test.output_filename = 'test22.root'
     test.maxEvents = 1000
     test.debug = 2
     test.eventsToDump = [1, 2, 3, 4]
-    #test.clusterize = False
+    test.clusterize = True
 
     test_sample = [test]
 

@@ -9,7 +9,7 @@ class BaseHistos():
         if root_file is not None:
             root_file.cd()
             histo_names = [histo.GetName() for histo in root_file.GetListOfKeys() if name+'_' in histo.GetName()]
-            #print histo_names
+            print histo_names
             for histo_name in  histo_names:
                 hinst = root_file.Get(histo_name)
                 attr_name = 'h_'+histo_name.split('_')[2]
@@ -155,6 +155,26 @@ class ResoHistos(BaseHistos):
         self.h_ptResVeta.Fill(reference.eta, target.pt - reference.pt)
         self.h_energyResVeta.Fill(reference.eta, target.energy - reference.energy)
 
+class Reso2DHistos(BaseHistos):
+    def __init__(self, name, root_file=None):
+        self.h_etaRes = ROOT.TH1F(name+'_etaRes', 'Eta 2D cluster - GEN part', 100, -0.5, 0.5)
+        self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'Phi 2D cluster - GEN part', 100, -0.5, 0.5)
+        self.h_phiPRes = ROOT.TH1F(name+'_phiPRes', 'Phi (+) 2D cluster - GEN part', 100, -0.5, 0.5)
+        self.h_phiMRes = ROOT.TH1F(name+'_phiMRes', 'Phi (-) 2D cluster - GEN part', 100, -0.5, 0.5)
+
+        self.h_DRRes = ROOT.TH1F(name+'_DRRes', 'DR 2D cluster - GEN part', 100, -0.5, 0.5)
+        BaseHistos.__init__(self, name, root_file)
+
+    def fill(self, reference, target):
+        rnp.fill_hist(self.h_etaRes, reference.eta-target.eta)
+
+        rnp.fill_hist(self.h_phiRes, reference.phi-target.phi)
+        if reference.id < 0:
+            rnp.fill_hist(self.h_phiMRes, reference.phi-target.phi)
+        elif reference.id > 0:
+            rnp.fill_hist(self.h_phiPRes, reference.phi-target.phi)
+
+        rnp.fill_hist(self.h_DRRes, np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
 
 class GeomHistos(BaseHistos):
     def __init__(self, name, root_file=None):
