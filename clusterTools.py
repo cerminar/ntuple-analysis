@@ -41,24 +41,119 @@ def buildDBSCANClusters(sel_layer, sel_zside, tcs):
         cl['layer'] = [int(sel_layer)]
         cl['zside'] = [int(sel_zside)]
         cl['eta'] = [math.asinh(cl.z/math.sqrt(cl.x**2+cl.y**2))]
-        if cl.x.item() > 0:
-            cl['phi'] = [math.atan(cl.y/cl.x)]
-        elif cl.x.item() < 0:
-            cl['phi'] = [math.pi - math.asin(cl.y/math.sqrt(cl.x**2+cl.y**2))]
-        else:
-            cl['phi'] = [0]
+        # if cl.x.item() > 0:
+        cl['phi'] = [math.atan2(cl.y, cl.x)]
+        # elif cl.x.item() < 0:
+        #     cl['phi'] = [math.pi - math.asin(cl.y/math.sqrt(cl.x**2+cl.y**2))]
+        # else:
+        #     cl['phi'] = [0]
         cl['cells'] = [np.array(components.index)]
         cl['ncells'] = [components.shape[0]]
         new2Dcls = new2Dcls.append(cl.copy(), ignore_index=True)
     return new2Dcls
 
 
-def build3DClusters(cl2D):
+def build3DClustersEtaPhi(cl2D):
     X = cl2D[['eta', 'phi']]
-    db = DBSCAN(eps=0.03,
+    db = DBSCAN(eps=0.015,  # 0.03
                 algorithm='kd_tree',
                 min_samples=10,
                 n_jobs=3).fit(X, sample_weight=cl2D['energy'])
+    labels = db.labels_
+    unique_labels = set(labels)
+    # n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+    # print '# of 3D clusters: {}'.format(n_clusters_ )
+    cl2D['dbs_labels'] = labels
+    new3DCls = pd.DataFrame()
+    for label in unique_labels:
+        if label == -1:
+            continue
+        # print tcs_layer[tcs_layer.dbs_label == label].indexsi s
+        cl3D = pd.DataFrame()
+        calib_factor = 1.084
+        components = cl2D[cl2D.dbs_labels == label]
+        cl3D['energy'] = [components.energy.sum()*calib_factor]
+        # print components
+        cl3D['eta'] = [np.sum(components.eta*components.energy)/components.energy.sum()]
+        cl3D['phi'] = [np.sum(components.phi*components.energy)/components.energy.sum()]
+        #print cl3D.energy/np.cosh(cl3D.eta)
+        #print type(cl3D.energy/np.cosh(cl3D.eta))
+        cl3D['pt'] = [(cl3D.energy/np.cosh(cl3D.eta)).values[0]]
+
+        cl3D['layers'] = [components.layer.values]
+        cl3D['clusters'] = [np.array(components.index)]
+        cl3D['nclu'] = [components.shape[0]]
+        cl3D['firstlayer'] = [np.min(components.layer.values)]
+        # FIXME: placeholder
+        cl3D['showerlength'] = [1]
+        cl3D['seetot'] = [1]
+        cl3D['seemax'] = [1]
+        cl3D['spptot'] = [1]
+        cl3D['sppmax'] = [1]
+        cl3D['szz'] = [1]
+        cl3D['emaxe'] = [1]
+        # cl3D['color'] = [np.random.rand(3,)]
+
+        # print cl3D
+        new3DCls = new3DCls.append(cl3D, ignore_index=True)
+    return new3DCls
+
+
+def build3DClustersEtaPhi2(cl2D):
+    X = cl2D[['eta', 'phi']]
+    db = DBSCAN(eps=0.015,  # 0.03
+                algorithm='kd_tree',
+                min_samples=3,
+                n_jobs=3).fit(X)
+    labels = db.labels_
+    unique_labels = set(labels)
+    # n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+    # print '# of 3D clusters: {}'.format(n_clusters_ )
+    cl2D['dbs_labels'] = labels
+    new3DCls = pd.DataFrame()
+    for label in unique_labels:
+        if label == -1:
+            continue
+        # print tcs_layer[tcs_layer.dbs_label == label].indexsi s
+        cl3D = pd.DataFrame()
+        calib_factor = 1.084
+        components = cl2D[cl2D.dbs_labels == label]
+        cl3D['energy'] = [components.energy.sum()*calib_factor]
+        # print components
+        cl3D['eta'] = [np.sum(components.eta*components.energy)/components.energy.sum()]
+        cl3D['phi'] = [np.sum(components.phi*components.energy)/components.energy.sum()]
+        #print cl3D.energy/np.cosh(cl3D.eta)
+        #print type(cl3D.energy/np.cosh(cl3D.eta))
+        cl3D['pt'] = [(cl3D.energy/np.cosh(cl3D.eta)).values[0]]
+
+        cl3D['layers'] = [components.layer.values]
+        cl3D['clusters'] = [np.array(components.index)]
+        cl3D['nclu'] = [components.shape[0]]
+        cl3D['firstlayer'] = [np.min(components.layer.values)]
+        # FIXME: placeholder
+        cl3D['showerlength'] = [1]
+        cl3D['seetot'] = [1]
+        cl3D['seemax'] = [1]
+        cl3D['spptot'] = [1]
+        cl3D['sppmax'] = [1]
+        cl3D['szz'] = [1]
+        cl3D['emaxe'] = [1]
+        # cl3D['color'] = [np.random.rand(3,)]
+
+        # print cl3D
+        new3DCls = new3DCls.append(cl3D, ignore_index=True)
+    return new3DCls
+
+
+def build3DClustersProj(cl2D):
+    cl2D['projx'] = cl2D.x/cl2D.z
+    cl2D['projy'] = cl2D.y/cl2D.z
+
+    X = cl2D[['projx', 'projy']]
+    db = DBSCAN(eps=0.005,  # 0.03
+                algorithm='kd_tree',
+                min_samples=3,
+                n_jobs=3).fit(X)
     labels = db.labels_
     unique_labels = set(labels)
     # n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
