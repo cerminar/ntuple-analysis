@@ -65,6 +65,83 @@ def dumpFrame2JSON(filename, frame):
         f.write(frame.to_json())
 
 
+def plot3DClusterMatch(genParticles,
+                       trigger3DClusters,
+                       triggerClusters,
+                       triggerCells,
+                       histoTCMatch,
+                       histoClMatch,
+                       histo3DClMatch,
+                       histoReso,
+                       histoReso2D,
+                       histoReso2D_1t6,
+                       histoReso2D_10t20,
+                       histoReso2D_20t28,
+                       algoname,
+                       debug):
+
+    matched_idx = {}
+    if trigger3DClusters.shape[0] != 0:
+        matched_idx = utils.match_etaphi(genParticles[['eta', 'phi']],
+                                         trigger3DClusters[['eta', 'phi']],
+                                         trigger3DClusters['pt'],
+                                         deltaR=0.2)
+        # print (matched_idx)
+    for idx, genParticle in genParticles.iterrows():
+        if idx in matched_idx.keys():
+            matched3DCluster = trigger3DClusters.iloc[[matched_idx[idx]]]
+            matchedClusters = triggerClusters.iloc[matched3DCluster.clusters.item()]
+            matchedTriggerCells = triggerCells.iloc[np.concatenate(matchedClusters.cells.values)]
+            # fill the plots
+            histoTCMatch.fill(matchedTriggerCells)
+            histoClMatch.fill(matchedClusters)
+            histo3DClMatch.fill(matched3DCluster)
+
+            histoReso2D.fill(reference=genParticle, target=matchedClusters)
+            histoReso2D_1t6.fill(reference=genParticle, target=matchedClusters[matchedClusters.layer < 7])
+            histoReso2D_10t20.fill(reference=genParticle, target=matchedClusters[(matchedClusters.layer > 9) & (matchedClusters.layer < 21)])
+            histoReso2D_20t28.fill(reference=genParticle, target=matchedClusters[matchedClusters.layer > 20])
+
+            histoReso.fill(reference=genParticle, target=matched3DCluster.iloc[0])
+
+            if debug >= 4:
+                print ('--- Dump match for algo {} ---------------'.format(algoname))
+                print ('GEN particle: idx: {}'.format(idx))
+                print (genParticle)
+                print ('Matched to 3D cluster:')
+                print (matched3DCluster)
+                print ('Matched 2D clusters:')
+                print (matchedClusters)
+                print ('matched cells:')
+                print (matchedTriggerCells)
+
+                print ('3D cluster energy: {}'.format(matched3DCluster.energy.sum()))
+                print ('3D cluster pt: {}'.format(matched3DCluster.pt.sum()))
+                calib_factor = 1.084
+                print ('sum 2D cluster energy: {}'.format(matchedClusters.energy.sum()*calib_factor))
+                print ('sum 2D cluster pt: {}'.format(matchedClusters.pt.sum()*calib_factor))
+                print ('sum TC energy: {}'.format(matchedTriggerCells.energy.sum()))
+
+        else:
+            print ('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx))
+            print (genParticle)
+            print (trigger3DClusters)
+
+
+def build3DClusters(name, algorithm, triggerClusters, pool, debug):
+    trigger3DClusters = pd.DataFrame()
+    clusterSides = [triggerClusters[triggerClusters.eta > 0], triggerClusters[triggerClusters.eta < 0]]
+    results3Dcl = pool.map(algorithm, clusterSides)
+    for res3D in results3Dcl:
+        trigger3DClusters = trigger3DClusters.append(res3D, ignore_index=True)
+
+    if(debug >= 2):
+        print('# of 3D clusters {}: {}'.format(name, len(trigger3DClusters)))
+    if(debug >= 3):
+        print(trigger3DClusters.iloc[:3])
+    return trigger3DClusters
+
+
 def analyze(params):
     debug = params.debug
     computeDensity = False
@@ -119,6 +196,7 @@ def analyze(params):
 
     h3dcl = histos.Cluster3DHistos('h_cl3dAll')
     h3dclDBS = histos.Cluster3DHistos('h_cl3dDBSAll')
+    h3dclDBSp = histos.Cluster3DHistos('h_cl3dDBSpAll')
 
     htcMatch = histos.TCHistos('h_tcMatch')
     h2dclMatch = histos.ClusterHistos('h_clMatch')
@@ -128,10 +206,29 @@ def analyze(params):
     h2dclMatchDBS = histos.ClusterHistos('h_clMatchDBS')
     h3dclMatchDBS = histos.Cluster3DHistos('h_cl3dMatchDBS')
 
+    htcMatchDBSp = histos.TCHistos('h_tcMatchDBSp')
+    h2dclMatchDBSp = histos.ClusterHistos('h_clMatchDBSp')
+    h3dclMatchDBSp = histos.Cluster3DHistos('h_cl3dMatchDBSp')
+
     hreso = histos.ResoHistos('h_EleReso')
     hreso2D = histos.Reso2DHistos('h_ClReso')
+    hreso2D_1t6 = histos.Reso2DHistos('h_ClReso1t6')
+    hreso2D_10t20 = histos.Reso2DHistos('h_ClReso10t20')
+    hreso2D_20t28 = histos.Reso2DHistos('h_ClReso20t28')
+
     hresoDBS = histos.ResoHistos('h_EleResoDBS')
     hreso2DDBS = histos.Reso2DHistos('h_ClResoDBS')
+    hreso2DDBS_1t6 = histos.Reso2DHistos('h_ClResoDBS1t6')
+    hreso2DDBS_10t20 = histos.Reso2DHistos('h_ClResoDBS10t20')
+    hreso2DDBS_20t28 = histos.Reso2DHistos('h_ClResoDBS20t28')
+
+    hresoDBSp = histos.ResoHistos('h_EleResoDBSp')
+    hreso2DDBSp = histos.Reso2DHistos('h_ClResoDBSp')
+    hreso2DDBSp_1t6 = histos.Reso2DHistos('h_ClResoDBSp1t6')
+    hreso2DDBSp_10t20 = histos.Reso2DHistos('h_ClResoDBSp10t20')
+    hreso2DDBSp_20t28 = histos.Reso2DHistos('h_ClResoDBSp20t28')
+
+
     hDensity = ROOT.TH2F('hDensity', 'E (GeV) Density per layer', 60, 0, 60, 200, 0, 10)
     hDR = ROOT.TH1F('hDR', 'DR 2D clusters', 100, 0, 1)
     dump = False
@@ -269,85 +366,68 @@ def analyze(params):
 
         trigger3DClustersDBS = pd.DataFrame()
         if params.clusterize:
-            clusterSides = [triggerClustersDBS[triggerClustersDBS.eta > 0], triggerClustersDBS[triggerClustersDBS.eta < 0]]
-            results3Dcl = pool.map(clAlgo.build3DClusters, clusterSides)
-            for res3D in results3Dcl:
-                trigger3DClustersDBS = trigger3DClustersDBS.append(res3D, ignore_index=True)
+            trigger3DClustersDBS = build3DClusters('DBSCAN', clAlgo.build3DClustersEtaPhi, triggerClustersDBS, pool, debug)
 
-        if(debug >= 2):
-            print('# of DBS 3D clusters: {}'.format(len(trigger3DClustersDBS)))
-        if(debug >= 3):
-            print(trigger3DClustersDBS.iloc[:3])
         if(trigger3DClustersDBS.shape[0] != 0):
             h3dclDBS.fill(trigger3DClustersDBS)
+
+        trigger3DClustersDBSp = pd.DataFrame()
+        if params.clusterize:
+            trigger3DClustersDBSp = build3DClusters('DBSCANp', clAlgo.build3DClustersProj, triggerClustersDBS, pool, debug)
+
+        if(trigger3DClustersDBSp.shape[0] != 0):
+            h3dclDBSp.fill(trigger3DClustersDBSp)
+
 
         # resolution study
         electron_PID = 11
         genElectrons = genParts[(abs(genParts.id) == electron_PID)]
-        matched_idx = utils.match_etaphi(genElectrons[['eta', 'phi']], trigger3DClusters[['eta', 'phi']], trigger3DClusters['pt'], deltaR=0.2)
-        matchedDBS_idx = {}
-        if(trigger3DClustersDBS.shape[0] != 0):
-            matchedDBS_idx = utils.match_etaphi(genElectrons[['eta', 'phi']], trigger3DClustersDBS[['eta', 'phi']], trigger3DClustersDBS['pt'], deltaR=0.2)
 
-        for idx, genElectron in genElectrons.iterrows():
-            matched3DCluster = trigger3DClusters.iloc[[matched_idx[idx]]]
-            matchedClusters = triggerClusters.iloc[matched3DCluster.clusters.item()]
-            matchedTriggerCells = triggerCells.iloc[np.concatenate(matchedClusters.cells.values)]
+        plot3DClusterMatch(genElectrons,
+                           trigger3DClusters,
+                           triggerClusters,
+                           tcsWithPos,
+                           htcMatch,
+                           h2dclMatch,
+                           h3dclMatch,
+                           hreso,
+                           hreso2D,
+                           hreso2D_1t6,
+                           hreso2D_10t20,
+                           hreso2D_20t28,
+                           'NN',
+                           debug)
 
-
-            if params.clusterize:
-                if idx in matchedDBS_idx.keys():
-                    matched3DClusterDBS = trigger3DClustersDBS.iloc[[matchedDBS_idx[idx]]]
-                    matchedClustersDBS = triggerClustersDBS.iloc[matched3DClusterDBS.clusters.item()]
-                    matchedTriggerCellsDBS = triggerCells.iloc[np.concatenate(matchedClustersDBS.cells.values)]
-                    h3dclMatchDBS.fill(matched3DClusterDBS)
-                    h2dclMatchDBS.fill(matchedClustersDBS)
-                    htcMatchDBS.fill(matchedTriggerCellsDBS)
-                    hresoDBS.fill(reference=genElectron, target=matched3DClusterDBS.iloc[0])
-                    hreso2DDBS.fill(reference=genElectron, target=matchedClustersDBS)
-                    # print ('=== DBSCAN =========================================')
-                    # print (matchedClustersDBS)
-
-                else:
-                    print (genElectrons[['eta', 'phi', 'energy']])
-                    print (trigger3DClusters[['eta', 'phi', 'energy']])
-                    if trigger3DClustersDBS.shape[0] != 0:
-                        print (trigger3DClustersDBS[['eta', 'phi', 'energy']])
-                    print("ERROR: no match found for DBS!!!")
-            # FIXME: understand why this is not the case
-
-            if dump:
-                if genElectron.eta > 0:
-                    js_2dc_filename = 'm2dc_dump_ev_{}.json'.format(event.entry())
-                    dumpFrame2JSON(js_2dc_filename, matchedClusters)
-
-            if debug >= 4:
-                print ('GEN electron:')
-                print (genElectron)
-                print ('Matched to 3D cluster:')
-                print (matched3DCluster)
-                print ('Matched 2D clusters:')
-                print (matchedClusters)
-                print ('matched cells:')
-                print (matchedTriggerCells)
-
-                print ('3D cluster energy: {}'.format(matched3DCluster.energy.sum()))
-                print ('3D cluster pt: {}'.format(matched3DCluster.pt.sum()))
-                calib_factor = 1.084
-                print ('sum 2D cluster energy: {}'.format(matchedClusters.energy.sum()*calib_factor))
-                print ('sum 2D cluster pt: {}'.format(matchedClusters.pt.sum()*calib_factor))
-
-                print ('sum TC energy: {}'.format(matchedTriggerCells.energy.sum()))
-            # print ('=== NN =========================================')
-            # print (matchedClusters)
+        plot3DClusterMatch(genElectrons,
+                           trigger3DClustersDBS,
+                           triggerClustersDBS,
+                           tcsWithPos,
+                           htcMatchDBS,
+                           h2dclMatchDBS,
+                           h3dclMatchDBS,
+                           hresoDBS,
+                           hreso2DDBS,
+                           hreso2DDBS_1t6,
+                           hreso2DDBS_10t20,
+                           hreso2DDBS_20t28,
+                           'DBSCAN',
+                           debug)
 
 
-            h3dclMatch.fill(matched3DCluster)
-            h2dclMatch.fill(matchedClusters)
-            htcMatch.fill(matchedTriggerCells)
-
-            hreso2D.fill(reference=genElectron, target=matchedClusters)
-            hreso.fill(reference=genElectron, target=matched3DCluster.iloc[0])
+        plot3DClusterMatch(genElectrons,
+                           trigger3DClustersDBSp,
+                           triggerClustersDBS,
+                           tcsWithPos,
+                           htcMatchDBSp,
+                           h2dclMatchDBSp,
+                           h3dclMatchDBSp,
+                           hresoDBSp,
+                           hreso2DDBSp,
+                           hreso2DDBSp_1t6,
+                           hreso2DDBSp_10t20,
+                           hreso2DDBSp_20t28,
+                           'DBSCANp',
+                           debug)
 
     print ("Processed {} events/{} TOT events".format(event.entry(), ntuple.nevents()))
     print ("Writing histos to file {}".format(params.output_filename))
@@ -355,21 +435,50 @@ def analyze(params):
     output.cd()
     hgen.write()
     hdigis.write()
+
     htc.write()
     h2dcl.write()
     h2dclDBS.write()
+
     h3dcl.write()
     htcMatch.write()
     h2dclMatch.write()
     h3dclMatch.write()
+
     htcMatchDBS.write()
     h2dclMatchDBS.write()
     h3dclMatchDBS.write()
+
     h3dclDBS.write()
+
+    htcMatchDBSp.write()
+    h2dclMatchDBSp.write()
+    h3dclMatchDBSp.write()
+
+    h3dclDBSp.write()
+
+
     hreso.write()
     hreso2D.write()
+
     hresoDBS.write()
     hreso2DDBS.write()
+
+    hresoDBSp.write()
+    hreso2DDBSp.write()
+
+    hreso2D_1t6.write()
+    hreso2D_10t20.write()
+    hreso2D_20t28.write()
+
+    hreso2DDBS_1t6.write()
+    hreso2DDBS_10t20.write()
+    hreso2DDBS_20t28.write()
+
+    hreso2DDBSp_1t6.write()
+    hreso2DDBSp_10t20.write()
+    hreso2DDBSp_20t28.write()
+
     hTCGeom.write()
     hDensity.Write()
     hDR.Write()
@@ -392,7 +501,7 @@ def main():
 
     ntuple_version = 'NTUP'
     run_clustering = True
-    plot_version = 'v2'
+    plot_version = 'v3'
     # ============================================
     basedir = '/eos/user/c/cerminar/hgcal/CMSSW932'
     hostname = socket.gethostname()
@@ -453,8 +562,8 @@ def main():
     nugun_samples = [nuGun_PU50, nuGun_PU100, nuGun_PU140, nuGun_PU200]
 #
     test = copy.deepcopy(singleEleE50_PU0)
-    test.output_filename = 'test22.root'
-    test.maxEvents = 1000
+    test.output_filename = 'test44.root'
+    test.maxEvents = 100
     test.debug = 2
     test.eventsToDump = [1, 2, 3, 4]
     test.clusterize = True
