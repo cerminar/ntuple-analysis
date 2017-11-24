@@ -145,7 +145,7 @@ class ResoHistos(BaseHistos):
         self.h_ptRes = ROOT.TH1F(name+'_ptRes', '3D Cluster Pt reso (GeV)', 100, -10, 10)
         self.h_energyRes = ROOT.TH1F(name+'_energyRes', '3D Cluster Energy reso (GeV)', 200, -100, 100)
         self.h_ptResVeta = ROOT.TH2F(name+'_ptResVeta', '3D Cluster Pt reso (GeV) vs eta', 100, -3.5, 3.5, 100, -10, 10)
-        self.h_energyResVeta = ROOT.TH2F(name+'_energyResVeta', '3D Cluster Pt reso (GeV) vs eta', 100, -3.5, 3.5, 200, -100, 100)
+        self.h_energyResVeta = ROOT.TH2F(name+'_energyResVeta', '3D Cluster E reso (GeV) vs eta', 100, -3.5, 3.5, 200, -100, 100)
 
         BaseHistos.__init__(self, name, root_file)
 
@@ -191,3 +191,8 @@ class GeomHistos(BaseHistos):
 
         rnp.fill_hist(self.h_nTCsPerLayer, tcs[tcs.subdet == 3].layer)
         rnp.fill_hist(self.h_radiusVlayer, tcs[['layer', 'radius']])
+
+
+# class HstoSetMatchedClusters():
+#     def __init__(self, name):
+#
