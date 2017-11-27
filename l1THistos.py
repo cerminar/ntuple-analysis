@@ -98,17 +98,23 @@ class ClusterHistos(BaseHistos):
             self.h_energy = ROOT.TH1F(name+'_energy', 'Cluster energy (GeV)', 100, 0, 20)
             self.h_layer = ROOT.TH1F(name+'_layer', 'Cluster layer #', 60, 0, 60)
             self.h_ncells = ROOT.TH1F(name+'_ncells', 'Cluster # cells', 30, 0, 30)
+            self.h_nCoreCells = ROOT.TH1F(name+'_nCoreCells', 'Cluster # cells (core)', 30, 0, 30)
+
             self.h_layerVenergy = ROOT.TH2F(name+'_layerVenergy', "Cluster Energy (GeV) vs Layer #", 50, 0, 50, 100, 0, 20)
             self.h_layerVncells = ROOT.TH2F(name+'_layerVncells', "Cluster #cells vs Layer #",  50, 0, 50, 30, 0, 30)
+            self.h_layerVnCoreCells = ROOT.TH2F(name+'_layerVnCoreCells', "Cluster #cells vs Layer #",  50, 0, 50, 30, 0, 30)
+
         BaseHistos.__init__(self, name, root_file)
 
-    def fill(self, selfts):
-        rnp.fill_hist(self.h_energy, selfts.energy)
-        rnp.fill_hist(self.h_layer, selfts.layer)
-        rnp.fill_hist(self.h_ncells, selfts.ncells)
-        rnp.fill_hist(self.h_layerVenergy, selfts[['layer', 'energy']])
-        rnp.fill_hist(self.h_layerVncells, selfts[['layer', 'ncells']])
-
+    def fill(self, clsts):
+        rnp.fill_hist(self.h_energy, clsts.energy)
+        rnp.fill_hist(self.h_layer, clsts.layer)
+        rnp.fill_hist(self.h_ncells, clsts.ncells)
+        rnp.fill_hist(self.h_layerVenergy, clsts[['layer', 'energy']])
+        rnp.fill_hist(self.h_layerVncells, clsts[['layer', 'ncells']])
+        if 'nCoreCells' in clsts.columns:
+            rnp.fill_hist(self.h_nCoreCells, clsts.nCoreCells)
+            rnp.fill_hist(self.h_layerVnCoreCells, clsts[['layer', 'nCoreCells']])
 
 class Cluster3DHistos(BaseHistos):
     def __init__(self, name, root_file=None):
@@ -146,6 +152,8 @@ class ResoHistos(BaseHistos):
         self.h_energyRes = ROOT.TH1F(name+'_energyRes', '3D Cluster Energy reso (GeV)', 200, -100, 100)
         self.h_ptResVeta = ROOT.TH2F(name+'_ptResVeta', '3D Cluster Pt reso (GeV) vs eta', 100, -3.5, 3.5, 100, -10, 10)
         self.h_energyResVeta = ROOT.TH2F(name+'_energyResVeta', '3D Cluster E reso (GeV) vs eta', 100, -3.5, 3.5, 200, -100, 100)
+        self.h_coreEnergyRes = ROOT.TH1F(name+'_coreEnergyRes', '3D Cluster Energy reso CORE (GeV)', 200, -100, 100)
+        self.h_centralEnergyRes = ROOT.TH1F(name+'_centralEnergyRes', '3D Cluster Energy reso CENTRAL (GeV)', 200, -100, 100)
 
         BaseHistos.__init__(self, name, root_file)
 
@@ -154,6 +162,9 @@ class ResoHistos(BaseHistos):
         self.h_energyRes.Fill(target.energy - reference.energy)
         self.h_ptResVeta.Fill(reference.eta, target.pt - reference.pt)
         self.h_energyResVeta.Fill(reference.eta, target.energy - reference.energy)
+        if 'energyCore' in target:
+            self.h_coreEnergyRes.Fill(target.energyCore - reference.energy)
+            self.h_centralEnergyRes.Fill(target.energyCentral - reference.energy)
 
 class Reso2DHistos(BaseHistos):
     def __init__(self, name, root_file=None):
