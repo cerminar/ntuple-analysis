@@ -228,7 +228,7 @@ def analyze(params):
     hreso2DDBSp_10t20 = histos.Reso2DHistos('h_ClResoDBSp10t20')
     hreso2DDBSp_20t28 = histos.Reso2DHistos('h_ClResoDBSp20t28')
 
-
+    hDensityLayer = ROOT.TH2F('hDensityLayer', 'E (GeV) Density per layer', 60, 0, 60, 200, 0, 10)
     hDensity = ROOT.TH2F('hDensity', 'E (GeV) Density per layer', 60, 0, 60, 200, 0, 10)
     hDR = ROOT.TH1F('hDR', 'DR 2D clusters', 100, 0, 1)
     dump = False
@@ -269,30 +269,11 @@ def analyze(params):
             print ("# of TC: {}".format(len(triggerCells)))
 
         tcsWithPos = pd.merge(triggerCells, tc_geom_df[['id', 'x', 'y', 'radius']], on='id')
-        if computeDensity:
-            # def computeDensity(tcs):
-            #     eps = 3.5
-            #     for idx, tc in tcsWithPos_ee_layer.iterrows():
-            #         energy_list = list()
-            #         tcsinradius = tcs[((tcs.x-tc.x)**2+(tcs.y-tc.y)**2) < eps**2]
-            #         totE = np.sum(tcsinradius.energy)
-            #
-            tcsWithPos_ee = tcsWithPos[tcsWithPos.subdet == 3]
-            eps = 3.5
-            for layer in range(1, 29):
-                tcsWithPos_ee_layer = tcsWithPos_ee[tcsWithPos_ee.layer == layer]
 
-                for idx, tc in tcsWithPos_ee_layer.iterrows():
-                    energy_list = list()
 
-                    # get all TCs within eps radius from the current one
-                    tcsinradius = tcsWithPos_ee_layer[((tcsWithPos_ee_layer.x-tc.x)**2+(tcsWithPos_ee_layer.y-tc.y)**2) < eps**2]
-                    totE = np.sum(tcsinradius.energy)
-                    energy_list.append(totE)
-                    if(len(energy_list) != 0):
-                        hDensity.Fill(layer, max(energy_list))
 
-                # json.dump(data, f)
+
+                # json.dump(data, f)test_sample
         # if(debug == 10):
         #     print(triggerCells.index)
         #     print(triggerCells.columns)
@@ -330,6 +311,51 @@ def analyze(params):
         #     print(triggerCells[triggerCells.index.isin(np.concatenate(triggerClusters.cells.iloc[:3]))])
 
         h2dcl.fill(triggerClusters)
+
+
+        if computeDensity:
+            # def computeDensity(tcs):
+            #     eps = 3.5
+            #     for idx, tc in tcsWithPos_ee_layer.iterrows():
+            #         energy_list = list()
+            #         tcsinradius = tcs[((tcs.x-tc.x)**2+(tcs.y-tc.y)**2) < eps**2]
+            #         totE = np.sum(tcsinradius.energy)
+            #
+            tcsWithPos_ee = tcsWithPos[tcsWithPos.subdet == 3]
+            #triggerClusters_ee = triggerClusters[triggerClusters.subdet == 3]
+
+            eps = 3.6
+
+            for layer in range(1, 29):
+                # print ('------- Layer {}'.format(layer))
+                tcsWithPos_ee_layer = tcsWithPos_ee[tcsWithPos_ee.layer == layer]
+                # print ('   --- Cells: ')
+                # print (tcsWithPos_ee_layer)
+                triggerClusters_ee_layer = triggerClusters[triggerClusters.layer == layer]
+
+                energy_list_layer = list()
+                for idx, tc in tcsWithPos_ee_layer.iterrows():
+                    # get all TCs within eps radius from the current one
+                    tcsinradius = tcsWithPos_ee_layer[((tcsWithPos_ee_layer.x-tc.x)**2+(tcsWithPos_ee_layer.y-tc.y)**2) < eps**2]
+                    totE = np.sum(tcsinradius.energy)
+                    energy_list_layer.append(totE)
+
+                if(len(energy_list_layer) != 0):
+                    hDensityLayer.Fill(layer, max(energy_list_layer))
+
+
+                for idx, tcl in triggerClusters_ee_layer.iterrows():
+                    # print (tcl)
+                    tcsInCl = tcsWithPos_ee_layer.loc[tcl.cells]
+                    energy_list = list()
+                    for idc, tc in tcsInCl.iterrows():
+                        tcsinradius = tcsInCl[((tcsInCl.x-tc.x)**2+(tcsInCl.y-tc.y)**2) < eps**2]
+                        totE = np.sum(tcsinradius.energy)
+                        energy_list.append(totE)
+
+                    if(len(energy_list) != 0):
+                        hDensity.Fill(layer, max(energy_list))
+
 
         # Now build DBSCAN 2D clusters
         triggerClustersDBS = pd.DataFrame()
@@ -372,8 +398,8 @@ def analyze(params):
             h3dclDBS.fill(trigger3DClustersDBS)
 
         trigger3DClustersDBSp = pd.DataFrame()
-        if params.clusterize:
-            trigger3DClustersDBSp = build3DClusters('DBSCANp', clAlgo.build3DClustersProj, triggerClustersDBS, pool, debug)
+        # if params.clusterize:
+        #     trigger3DClustersDBSp = build3DClusters('DBSCANp', clAlgo.build3DClustersProj, triggerClustersDBS, pool, debug)
 
         if(trigger3DClustersDBSp.shape[0] != 0):
             h3dclDBSp.fill(trigger3DClustersDBSp)
@@ -398,36 +424,37 @@ def analyze(params):
                            'NN',
                            debug)
 
-        plot3DClusterMatch(genElectrons,
-                           trigger3DClustersDBS,
-                           triggerClustersDBS,
-                           tcsWithPos,
-                           htcMatchDBS,
-                           h2dclMatchDBS,
-                           h3dclMatchDBS,
-                           hresoDBS,
-                           hreso2DDBS,
-                           hreso2DDBS_1t6,
-                           hreso2DDBS_10t20,
-                           hreso2DDBS_20t28,
-                           'DBSCAN',
-                           debug)
+        if params.clusterize:
+            plot3DClusterMatch(genElectrons,
+                               trigger3DClustersDBS,
+                               triggerClustersDBS,
+                               tcsWithPos,
+                               htcMatchDBS,
+                               h2dclMatchDBS,
+                               h3dclMatchDBS,
+                               hresoDBS,
+                               hreso2DDBS,
+                               hreso2DDBS_1t6,
+                               hreso2DDBS_10t20,
+                               hreso2DDBS_20t28,
+                               'DBSCAN',
+                               debug)
 
 
-        plot3DClusterMatch(genElectrons,
-                           trigger3DClustersDBSp,
-                           triggerClustersDBS,
-                           tcsWithPos,
-                           htcMatchDBSp,
-                           h2dclMatchDBSp,
-                           h3dclMatchDBSp,
-                           hresoDBSp,
-                           hreso2DDBSp,
-                           hreso2DDBSp_1t6,
-                           hreso2DDBSp_10t20,
-                           hreso2DDBSp_20t28,
-                           'DBSCANp',
-                           debug)
+            # plot3DClusterMatch(genElectrons,
+            #                    trigger3DClustersDBSp,
+            #                    triggerClustersDBS,
+            #                    tcsWithPos,
+            #                    htcMatchDBSp,
+            #                    h2dclMatchDBSp,
+            #                    h3dclMatchDBSp,
+            #                    hresoDBSp,
+            #                    hreso2DDBSp,
+            #                    hreso2DDBSp_1t6,
+            #                    hreso2DDBSp_10t20,
+            #                    hreso2DDBSp_20t28,
+            #                    'DBSCANp',
+            #                    debug)
 
     print ("Processed {} events/{} TOT events".format(event.entry(), ntuple.nevents()))
     print ("Writing histos to file {}".format(params.output_filename))
@@ -481,6 +508,8 @@ def analyze(params):
 
     hTCGeom.write()
     hDensity.Write()
+    hDensityLayer.Write()
+
     hDR.Write()
     output.Close()
 
@@ -501,13 +530,39 @@ def main():
 
     ntuple_version = 'NTUP'
     run_clustering = True
-    plot_version = 'v3'
+    plot_version = 'v4'
     # ============================================
     basedir = '/eos/user/c/cerminar/hgcal/CMSSW932'
     hostname = socket.gethostname()
     if 'matterhorn' in hostname:
             basedir = '/Users/cerminar/cernbox/hgcal/CMSSW932/'
     #
+    singleEleE25_PU200 = Parameters(input_base_dir=basedir,
+                                    input_sample_dir='FlatRandomEGunProducer_EleGunE25_1p5_3_PU200_20171123/{}/'.format(ntuple_version),
+                                    output_filename='histos_EleE25_PU200_{}.root'.format(plot_version),
+                                    clusterize=run_clustering,
+                                    eventsToDump=[])
+
+    singleEleE25_PU0 = Parameters(input_base_dir=basedir,
+                                  input_sample_dir='FlatRandomEGunProducer_EleGunE25_1p5_3_PU0_20171123/{}/'.format(ntuple_version),
+                                  output_filename='histos_EleE25_PU0_{}.root'.format(plot_version),
+                                  clusterize=run_clustering,
+                                  eventsToDump=[])
+
+    singleEleE25_PU50 = Parameters(input_base_dir=basedir,
+                                   input_sample_dir='FlatRandomEGunProducer_EleGunE25_1p5_3_PU50_20171123//{}/'.format(ntuple_version),
+                                   output_filename='histos_EleE25_PU50_{}.root'.format(plot_version),
+                                   clusterize=run_clustering,
+                                   eventsToDump=[])
+
+    singleEleE25_PU100 = Parameters(input_base_dir=basedir,
+                                    input_sample_dir='FlatRandomEGunProducer_EleGunE25_1p5_3_PU100_20171123/{}/'.format(ntuple_version),
+                                    output_filename='histos_EleE25_PU100_{}.root'.format(plot_version),
+                                    clusterize=run_clustering,
+                                    eventsToDump=[])
+
+    electron_E25_samples = [singleEleE25_PU0, singleEleE25_PU200, singleEleE25_PU50, singleEleE25_PU100 ]
+
     singleEleE50_PU200 = Parameters(input_base_dir=basedir,
                                     input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU200_20171005/{}/'.format(ntuple_version),
                                     output_filename='histos_EleE50_PU200_{}.root'.format(plot_version),
@@ -561,12 +616,12 @@ def main():
 
     nugun_samples = [nuGun_PU50, nuGun_PU100, nuGun_PU140, nuGun_PU200]
 #
-    test = copy.deepcopy(singleEleE50_PU0)
-    test.output_filename = 'test44.root'
-    test.maxEvents = 100
-    test.debug = 2
+    test = copy.deepcopy(singleEleE25_PU0)
+    test.output_filename = 'testDDD.root'
+    test.maxEvents = 1000
+    test.debug = 1
     test.eventsToDump = [1, 2, 3, 4]
-    test.clusterize = True
+    test.clusterize = False
 
     test_sample = [test]
 
