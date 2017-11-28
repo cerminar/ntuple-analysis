@@ -92,6 +92,11 @@ def plot3DClusterMatch(genParticles,
             matched3DCluster = trigger3DClusters.iloc[[matched_idx[idx]]]
             matchedClusters = triggerClusters.iloc[matched3DCluster.clusters.item()]
             matchedTriggerCells = triggerCells.iloc[np.concatenate(matchedClusters.cells.values)]
+
+            if 'energyCentral' not in matched3DCluster.columns:
+                calib_factor = 1.084
+                matched3DCluster['energyCentral'] = [matchedClusters[(matchedClusters.layer > 9) & (matchedClusters.layer < 21)].energy.sum()*calib_factor]
+
             # fill the plots
             histoTCMatch.fill(matchedTriggerCells)
             histoClMatch.fill(matchedClusters)
@@ -398,8 +403,8 @@ def analyze(params):
             h3dclDBS.fill(trigger3DClustersDBS)
 
         trigger3DClustersDBSp = pd.DataFrame()
-        # if params.clusterize:
-        #     trigger3DClustersDBSp = build3DClusters('DBSCANp', clAlgo.build3DClustersProj, triggerClustersDBS, pool, debug)
+        if params.clusterize:
+            trigger3DClustersDBSp = build3DClusters('DBSCANp', clAlgo.build3DClustersProj, triggerClustersDBS, pool, debug)
 
         if(trigger3DClustersDBSp.shape[0] != 0):
             h3dclDBSp.fill(trigger3DClustersDBSp)
@@ -441,20 +446,20 @@ def analyze(params):
                                debug)
 
 
-            # plot3DClusterMatch(genElectrons,
-            #                    trigger3DClustersDBSp,
-            #                    triggerClustersDBS,
-            #                    tcsWithPos,
-            #                    htcMatchDBSp,
-            #                    h2dclMatchDBSp,
-            #                    h3dclMatchDBSp,
-            #                    hresoDBSp,
-            #                    hreso2DDBSp,
-            #                    hreso2DDBSp_1t6,
-            #                    hreso2DDBSp_10t20,
-            #                    hreso2DDBSp_20t28,
-            #                    'DBSCANp',
-            #                    debug)
+            plot3DClusterMatch(genElectrons,
+                               trigger3DClustersDBSp,
+                               triggerClustersDBS,
+                               tcsWithPos,
+                               htcMatchDBSp,
+                               h2dclMatchDBSp,
+                               h3dclMatchDBSp,
+                               hresoDBSp,
+                               hreso2DDBSp,
+                               hreso2DDBSp_1t6,
+                               hreso2DDBSp_10t20,
+                               hreso2DDBSp_20t28,
+                               'DBSCANp',
+                               debug)
 
     print ("Processed {} events/{} TOT events".format(event.entry(), ntuple.nevents()))
     print ("Writing histos to file {}".format(params.output_filename))
@@ -530,7 +535,7 @@ def main():
 
     ntuple_version = 'NTUP'
     run_clustering = True
-    plot_version = 'v4'
+    plot_version = 'v5'
     # ============================================
     basedir = '/eos/user/c/cerminar/hgcal/CMSSW932'
     hostname = socket.gethostname()
@@ -617,8 +622,8 @@ def main():
     nugun_samples = [nuGun_PU50, nuGun_PU100, nuGun_PU140, nuGun_PU200]
 #
     test = copy.deepcopy(singleEleE25_PU0)
-    test.output_filename = 'testDDD.root'
-    test.maxEvents = 1000
+    test.output_filename = 'test1111.root'
+    test.maxEvents = 10
     test.debug = 1
     test.eventsToDump = [1, 2, 3, 4]
     test.clusterize = False
