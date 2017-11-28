@@ -182,6 +182,9 @@ def build3DClustersProj(cl2D):
         # print components
         cl3D['eta'] = [np.sum(components.eta*components.energy)/components.energy.sum()]
         cl3D['phi'] = [np.sum(components.phi*components.energy)/components.energy.sum()]
+        cl3D['energyCore'] = [components.energyCore.sum()*calib_factor]
+        cl3D['energyCentral'] = [components[(components.layer > 9) & (components.layer < 21)].energy.sum()*calib_factor]
+
         #print cl3D.energy/np.cosh(cl3D.eta)
         #print type(cl3D.energy/np.cosh(cl3D.eta))
         cl3D['pt'] = [(cl3D.energy/np.cosh(cl3D.eta)).values[0]]
