@@ -164,6 +164,7 @@ class ResoHistos(BaseHistos):
         self.h_energyResVeta.Fill(reference.eta, target.energy - reference.energy)
         if 'energyCore' in target:
             self.h_coreEnergyRes.Fill(target.energyCore - reference.energy)
+        if 'energyCentral' in target:
             self.h_centralEnergyRes.Fill(target.energyCentral - reference.energy)
 
 class Reso2DHistos(BaseHistos):
