@@ -152,6 +152,8 @@ class ResoHistos(BaseHistos):
         self.h_energyRes = ROOT.TH1F(name+'_energyRes', '3D Cluster Energy reso (GeV)', 200, -100, 100)
         self.h_ptResVeta = ROOT.TH2F(name+'_ptResVeta', '3D Cluster Pt reso (GeV) vs eta', 100, -3.5, 3.5, 100, -10, 10)
         self.h_energyResVeta = ROOT.TH2F(name+'_energyResVeta', '3D Cluster E reso (GeV) vs eta', 100, -3.5, 3.5, 200, -100, 100)
+        self.h_energyResVnclu = ROOT.TH2F(name+'_energyResVnclu', '3D Cluster E reso (GeV) vs # clusters', 50, 0, 50, 200, -100, 100)
+        self.h_coreEnergyResVnclu = ROOT.TH2F(name+'_coreEnergyResVnclu', '3D Cluster E reso (GeV) vs # clusters', 50, 0, 50, 200, -100, 100)
         self.h_coreEnergyRes = ROOT.TH1F(name+'_coreEnergyRes', '3D Cluster Energy reso CORE (GeV)', 200, -100, 100)
         self.h_centralEnergyRes = ROOT.TH1F(name+'_centralEnergyRes', '3D Cluster Energy reso CENTRAL (GeV)', 200, -100, 100)
 
@@ -162,8 +164,11 @@ class ResoHistos(BaseHistos):
         self.h_energyRes.Fill(target.energy - reference.energy)
         self.h_ptResVeta.Fill(reference.eta, target.pt - reference.pt)
         self.h_energyResVeta.Fill(reference.eta, target.energy - reference.energy)
+        self.h_energyResVnclu.Fill(target.nclu, target.energy - reference.energy)
         if 'energyCore' in target:
             self.h_coreEnergyRes.Fill(target.energyCore - reference.energy)
+            self.h_coreEnergyResVnclu.Fill(target.nclu, target.energyCore - reference.energy)
+
         if 'energyCentral' in target:
             self.h_centralEnergyRes.Fill(target.energyCentral - reference.energy)
 
