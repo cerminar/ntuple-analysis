@@ -82,14 +82,21 @@ def plot3DClusterMatch(genParticles,
 
     matched_idx = {}
     if trigger3DClusters.shape[0] != 0:
-        matched_idx = utils.match_etaphi(genParticles[['eta', 'phi']],
+        matched_idx, allmatches = utils.match_etaphi(genParticles[['eta', 'phi']],
                                          trigger3DClusters[['eta', 'phi']],
                                          trigger3DClusters['pt'],
                                          deltaR=0.2)
+        # print ('-----------------------')
         # print (matched_idx)
     for idx, genParticle in genParticles.iterrows():
         if idx in matched_idx.keys():
+            # print ('-----------------------')
+            # print(genParticle)
             matched3DCluster = trigger3DClusters.iloc[[matched_idx[idx]]]
+            # print (matched3DCluster)
+            # allMatches = trigger3DClusters.iloc[allmatches[idx]]
+            # print ('--')
+            # print (allMatches)
             matchedClusters = triggerClusters.iloc[matched3DCluster.clusters.item()]
             matchedTriggerCells = triggerCells.iloc[np.concatenate(matchedClusters.cells.values)]
 
@@ -234,7 +241,10 @@ def analyze(params):
     hreso2DDBSp_20t28 = histos.Reso2DHistos('h_ClResoDBSp20t28')
 
     hDensityLayer = ROOT.TH2F('hDensityLayer', 'E (GeV) Density per layer', 60, 0, 60, 200, 0, 10)
+    hDensityTCLayer = ROOT.TH2F('hDensityTCLayer', '# TC Density per layer', 60, 0, 60, 20, 0, 20)
     hDensity = ROOT.TH2F('hDensity', 'E (GeV) Density per layer', 60, 0, 60, 200, 0, 10)
+    hDensityTC = ROOT.TH2F('hDensityTC', '# TC Density per layer', 60, 0, 60, 20, 0, 20)
+
     hDR = ROOT.TH1F('hDR', 'DR 2D clusters', 100, 0, 1)
     dump = False
 
@@ -339,27 +349,34 @@ def analyze(params):
                 triggerClusters_ee_layer = triggerClusters[triggerClusters.layer == layer]
 
                 energy_list_layer = list()
+                ntcs_list_layer = list()
                 for idx, tc in tcsWithPos_ee_layer.iterrows():
                     # get all TCs within eps radius from the current one
                     tcsinradius = tcsWithPos_ee_layer[((tcsWithPos_ee_layer.x-tc.x)**2+(tcsWithPos_ee_layer.y-tc.y)**2) < eps**2]
                     totE = np.sum(tcsinradius.energy)
+                    ntcs_list_layer.append(tcsinradius.shape[0])
                     energy_list_layer.append(totE)
 
                 if(len(energy_list_layer) != 0):
                     hDensityLayer.Fill(layer, max(energy_list_layer))
-
+                if(len(ntcs_list_layer) != 0):
+                    hDensityTCLayer.Fill(layer, max(ntcs_list_layer))
 
                 for idx, tcl in triggerClusters_ee_layer.iterrows():
                     # print (tcl)
                     tcsInCl = tcsWithPos_ee_layer.loc[tcl.cells]
                     energy_list = list()
+                    ntcs_list = list()
                     for idc, tc in tcsInCl.iterrows():
                         tcsinradius = tcsInCl[((tcsInCl.x-tc.x)**2+(tcsInCl.y-tc.y)**2) < eps**2]
                         totE = np.sum(tcsinradius.energy)
                         energy_list.append(totE)
-
+                        ntcs_list.append(tcsinradius.shape[0])
                     if(len(energy_list) != 0):
                         hDensity.Fill(layer, max(energy_list))
+                    if(len(ntcs_list) != 0):
+                        hDensityTC.Fill(layer, max(ntcs_list))
+
 
 
         # Now build DBSCAN 2D clusters
@@ -514,7 +531,8 @@ def analyze(params):
     hTCGeom.write()
     hDensity.Write()
     hDensityLayer.Write()
-
+    hDensityTC.Write()
+    hDensityTCLayer.Write()
     hDR.Write()
     output.Close()
 
@@ -535,11 +553,11 @@ def main():
 
     ntuple_version = 'NTUP'
     run_clustering = True
-    plot_version = 'v5'
+    plot_version = 'v6'
     # ============================================
     basedir = '/eos/user/c/cerminar/hgcal/CMSSW932'
     hostname = socket.gethostname()
-    if 'matterhorn' in hostname:
+    if 'matterhorn' in hostname or 'Matterhorn' in hostname:
             basedir = '/Users/cerminar/cernbox/hgcal/CMSSW932/'
     #
     singleEleE25_PU200 = Parameters(input_base_dir=basedir,
@@ -621,9 +639,9 @@ def main():
 
     nugun_samples = [nuGun_PU50, nuGun_PU100, nuGun_PU140, nuGun_PU200]
 #
-    test = copy.deepcopy(singleEleE25_PU0)
-    test.output_filename = 'test1111.root'
-    test.maxEvents = 10
+    test = copy.deepcopy(singleEleE50_PU0)
+    test.output_filename = 'test2222.root'
+    test.maxEvents = 5
     test.debug = 1
     test.eventsToDump = [1, 2, 3, 4]
     test.clusterize = False
