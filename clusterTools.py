@@ -21,7 +21,7 @@ def buildDBSCANClusters(sel_layer, sel_zside, tcs):
 
     X = tcs_layer[['x', 'y']]
     densities = [0.1*100, 0.2*100, 0.5*100, 0.7*100, 1.1*100, 1.3*100, 1.7*100, 1.8*100, 2.0*100, 2.2*100, 2.6*100, 2.0*100, 1.8*100, 1.4*100, 1.2*100, 0.8*100, 0.6*100, 0.4*100, 0.2*100, 0.2*100, 0.1*100, 0.05*100, 0.05*100, 0.05*100, 0.05*100, 0.05*100, 0.05*100, 0.05*100]
-    db = DBSCAN(eps=3.6,
+    db = DBSCAN(eps=2.5,
                 min_samples=densities[sel_layer-1],
                 algorithm='kd_tree',
                 n_jobs=3).fit(X, sample_weight=tcs_layer['energy']*100)
