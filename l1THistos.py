@@ -4,18 +4,19 @@ import root_numpy as rnp
 import numpy as np
 import pandas as pd
 
+
 class BaseHistos():
     def __init__(self, name, root_file=None):
         if root_file is not None:
             root_file.cd()
             histo_names = [histo.GetName() for histo in root_file.GetListOfKeys() if name+'_' in histo.GetName()]
             print histo_names
-            for histo_name in  histo_names:
+            for histo_name in histo_names:
                 hinst = root_file.Get(histo_name)
                 attr_name = 'h_'+histo_name.split('_')[2]
                 setattr(self, attr_name, hinst)
 #            self.h_test = root_file.Get('h_EleReso_ptRes')
-            #print 'XXXXXX'+str(self.h_test)
+            # print 'XXXXXX'+str(self.h_test)
         else:
             for histo in [a for a in dir(self) if a.startswith('h_')]:
                 getattr(self, histo).Sumw2()
@@ -116,6 +117,7 @@ class ClusterHistos(BaseHistos):
             rnp.fill_hist(self.h_nCoreCells, clsts.nCoreCells)
             rnp.fill_hist(self.h_layerVnCoreCells, clsts[['layer', 'nCoreCells']])
 
+
 class Cluster3DHistos(BaseHistos):
     def __init__(self, name, root_file=None):
         if not root_file:
@@ -148,14 +150,15 @@ class Cluster3DHistos(BaseHistos):
 
 class ResoHistos(BaseHistos):
     def __init__(self, name, root_file=None):
-        self.h_ptRes = ROOT.TH1F(name+'_ptRes', '3D Cluster Pt reso (GeV)', 100, -10, 10)
-        self.h_energyRes = ROOT.TH1F(name+'_energyRes', '3D Cluster Energy reso (GeV)', 200, -100, 100)
-        self.h_ptResVeta = ROOT.TH2F(name+'_ptResVeta', '3D Cluster Pt reso (GeV) vs eta', 100, -3.5, 3.5, 100, -10, 10)
-        self.h_energyResVeta = ROOT.TH2F(name+'_energyResVeta', '3D Cluster E reso (GeV) vs eta', 100, -3.5, 3.5, 200, -100, 100)
-        self.h_energyResVnclu = ROOT.TH2F(name+'_energyResVnclu', '3D Cluster E reso (GeV) vs # clusters', 50, 0, 50, 200, -100, 100)
-        self.h_coreEnergyResVnclu = ROOT.TH2F(name+'_coreEnergyResVnclu', '3D Cluster E reso (GeV) vs # clusters', 50, 0, 50, 200, -100, 100)
-        self.h_coreEnergyRes = ROOT.TH1F(name+'_coreEnergyRes', '3D Cluster Energy reso CORE (GeV)', 200, -100, 100)
-        self.h_centralEnergyRes = ROOT.TH1F(name+'_centralEnergyRes', '3D Cluster Energy reso CENTRAL (GeV)', 200, -100, 100)
+        if not root_file:
+            self.h_ptRes = ROOT.TH1F(name+'_ptRes', '3D Cluster Pt reso (GeV)', 100, -10, 10)
+            self.h_energyRes = ROOT.TH1F(name+'_energyRes', '3D Cluster Energy reso (GeV)', 200, -100, 100)
+            self.h_ptResVeta = ROOT.TH2F(name+'_ptResVeta', '3D Cluster Pt reso (GeV) vs eta', 100, -3.5, 3.5, 100, -10, 10)
+            self.h_energyResVeta = ROOT.TH2F(name+'_energyResVeta', '3D Cluster E reso (GeV) vs eta', 100, -3.5, 3.5, 200, -100, 100)
+            self.h_energyResVnclu = ROOT.TH2F(name+'_energyResVnclu', '3D Cluster E reso (GeV) vs # clusters', 50, 0, 50, 200, -100, 100)
+            self.h_coreEnergyResVnclu = ROOT.TH2F(name+'_coreEnergyResVnclu', '3D Cluster E reso (GeV) vs # clusters', 50, 0, 50, 200, -100, 100)
+            self.h_coreEnergyRes = ROOT.TH1F(name+'_coreEnergyRes', '3D Cluster Energy reso CORE (GeV)', 200, -100, 100)
+            self.h_centralEnergyRes = ROOT.TH1F(name+'_centralEnergyRes', '3D Cluster Energy reso CENTRAL (GeV)', 200, -100, 100)
 
         BaseHistos.__init__(self, name, root_file)
 
@@ -172,14 +175,16 @@ class ResoHistos(BaseHistos):
         if 'energyCentral' in target:
             self.h_centralEnergyRes.Fill(target.energyCentral - reference.energy)
 
+
 class Reso2DHistos(BaseHistos):
     def __init__(self, name, root_file=None):
-        self.h_etaRes = ROOT.TH1F(name+'_etaRes', 'Eta 2D cluster - GEN part', 100, -0.5, 0.5)
-        self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'Phi 2D cluster - GEN part', 100, -0.5, 0.5)
-        self.h_phiPRes = ROOT.TH1F(name+'_phiPRes', 'Phi (+) 2D cluster - GEN part', 100, -0.5, 0.5)
-        self.h_phiMRes = ROOT.TH1F(name+'_phiMRes', 'Phi (-) 2D cluster - GEN part', 100, -0.5, 0.5)
+        if not root_file:
+            self.h_etaRes = ROOT.TH1F(name+'_etaRes', 'Eta 2D cluster - GEN part', 100, -0.5, 0.5)
+            self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'Phi 2D cluster - GEN part', 100, -0.5, 0.5)
+            self.h_phiPRes = ROOT.TH1F(name+'_phiPRes', 'Phi (+) 2D cluster - GEN part', 100, -0.5, 0.5)
+            self.h_phiMRes = ROOT.TH1F(name+'_phiMRes', 'Phi (-) 2D cluster - GEN part', 100, -0.5, 0.5)
 
-        self.h_DRRes = ROOT.TH1F(name+'_DRRes', 'DR 2D cluster - GEN part', 100, -0.5, 0.5)
+            self.h_DRRes = ROOT.TH1F(name+'_DRRes', 'DR 2D cluster - GEN part', 100, -0.5, 0.5)
         BaseHistos.__init__(self, name, root_file)
 
     def fill(self, reference, target):
@@ -193,22 +198,43 @@ class Reso2DHistos(BaseHistos):
 
         rnp.fill_hist(self.h_DRRes, np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
 
+
 class GeomHistos(BaseHistos):
     def __init__(self, name, root_file=None):
-        self.h_maxNNDistVlayer = ROOT.TH2F(name+'_maxNNDistVlayer', 'Max dist between NN vs layer', 60, 0, 60, 100, 0, 10)
-        self.h_nTCsPerLayer = ROOT.TH1F(name+'_nTCsPerLayer', '# of Trigger Cells per layer', 60, 0, 60)
-        self.h_radiusVlayer = ROOT.TH2F(name+'_radiusVlayer', '# of cells radius vs layer', 60, 0, 60, 200, 0, 200)
+        if not root_file:
+            self.h_maxNNDistVlayer = ROOT.TH2F(name+'_maxNNDistVlayer', 'Max dist between NN vs layer', 60, 0, 60, 100, 0, 10)
+            self.h_minNNDistVlayer = ROOT.TH2F(name+'_minNNDistVlayer', 'Max dist between NN vs layer', 60, 0, 60, 100, 0, 10)
+
+            self.h_nTCsPerLayer = ROOT.TH1F(name+'_nTCsPerLayer', '# of Trigger Cells per layer', 60, 0, 60)
+            self.h_radiusVlayer = ROOT.TH2F(name+'_radiusVlayer', '# of cells radius vs layer', 60, 0, 60, 200, 0, 200)
         BaseHistos.__init__(self, name, root_file)
 
     def fill(self, tcs):
-        if False:
+        if True:
             ee_tcs = tcs[tcs.subdet == 3]
             for index, tc_geom in ee_tcs.iterrows():
                 self.h_maxNNDistVlayer.Fill(tc_geom.layer, np.max(tc_geom.neighbor_distance))
+                self.h_minNNDistVlayer.Fill(tc_geom.layer, np.min(tc_geom.neighbor_distance))
 
         rnp.fill_hist(self.h_nTCsPerLayer, tcs[tcs.subdet == 3].layer)
         rnp.fill_hist(self.h_radiusVlayer, tcs[['layer', 'radius']])
 
+
+class DensityHistos(BaseHistos):
+    def __init__(self, name, root_file=None):
+        if not root_file:
+            self.h_eDensityVlayer = ROOT.TH2F(name+'_eDensityVlayer', 'E (GeV) Density per layer', 60, 0, 60, 200, 0, 10)
+            self.h_nTCDensityVlayer = ROOT.TH2F(name+'_nTCDensityVlayer', '# TC Density per layer', 60, 0, 60, 20, 0, 20)
+        elif 'v7' in root_file.GetName():
+            print "v7 hack"
+            self.h_eDensityVlayer = root_file.Get(name+'eDensityVlayer')
+            self.h_nTCDensityVlayer = root_file.Get(name+'nTCDensityVlayer')
+        else:
+            BaseHistos.__init__(self, name, root_file)
+
+    def fill(self, layer, energy, nTCs):
+        self.h_eDensityVlayer.Fill(layer, energy)
+        self.h_nTCDensityVlayer.Fill(layer, nTCs)
 
 # class HstoSetMatchedClusters():
 #     def __init__(self, name):
