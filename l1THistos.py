@@ -191,9 +191,9 @@ class Reso2DHistos(BaseHistos):
         rnp.fill_hist(self.h_etaRes, reference.eta-target.eta)
 
         rnp.fill_hist(self.h_phiRes, reference.phi-target.phi)
-        if reference.id < 0:
+        if reference.pdgid < 0:
             rnp.fill_hist(self.h_phiMRes, reference.phi-target.phi)
-        elif reference.id > 0:
+        elif reference.pdgid > 0:
             rnp.fill_hist(self.h_phiPRes, reference.phi-target.phi)
 
         rnp.fill_hist(self.h_DRRes, np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
@@ -225,7 +225,7 @@ class DensityHistos(BaseHistos):
         if not root_file:
             self.h_eDensityVlayer = ROOT.TH2F(name+'_eDensityVlayer', 'E (GeV) Density per layer', 60, 0, 60, 200, 0, 10)
             self.h_nTCDensityVlayer = ROOT.TH2F(name+'_nTCDensityVlayer', '# TC Density per layer', 60, 0, 60, 20, 0, 20)
-        elif 'v7' in root_file.GetName():
+        elif 'v7' in root_file.GetName() and not "NuGun" in root_file.GetName():
             print "v7 hack"
             self.h_eDensityVlayer = root_file.Get(name+'eDensityVlayer')
             self.h_nTCDensityVlayer = root_file.Get(name+'nTCDensityVlayer')
