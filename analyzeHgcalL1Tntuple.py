@@ -207,16 +207,27 @@ def analyze(params):
     hgen = histos.GenPartHistos('h_genAll')
     hdigis = histos.DigiHistos('h_hgcDigisAll')
     htc = histos.TCHistos('h_tcAll')
-    h2dcl = histos.ClusterHistos('h_clAll')
-    h2dclDBS = histos.ClusterHistos('h_clDBSAll')
 
+    h2dcl = histos.ClusterHistos('h_clAll')
     h3dcl = histos.Cluster3DHistos('h_cl3dAll')
+
+    h2dclGEO = histos.ClusterHistos('h_clGEOAll')
+    h3dclGEO = histos.Cluster3DHistos('h_cl3dGEOAll')
+
+
+    h2dclDBS = histos.ClusterHistos('h_clDBSAll')
     h3dclDBS = histos.Cluster3DHistos('h_cl3dDBSAll')
+
     h3dclDBSp = histos.Cluster3DHistos('h_cl3dDBSpAll')
 
     htcMatch = histos.TCHistos('h_tcMatch')
     h2dclMatch = histos.ClusterHistos('h_clMatch')
     h3dclMatch = histos.Cluster3DHistos('h_cl3dMatch')
+
+    htcMatchGEO = histos.TCHistos('h_tcMatchGEO')
+    h2dclMatchGEO = histos.ClusterHistos('h_clMatchGEO')
+    h3dclMatchGEO = histos.Cluster3DHistos('h_cl3dMatchGEO')
+
 
     htcMatchDBS = histos.TCHistos('h_tcMatchDBS')
     h2dclMatchDBS = histos.ClusterHistos('h_clMatchDBS')
@@ -231,6 +242,12 @@ def analyze(params):
     hreso2D_1t6 = histos.Reso2DHistos('h_ClReso1t6')
     hreso2D_10t20 = histos.Reso2DHistos('h_ClReso10t20')
     hreso2D_20t28 = histos.Reso2DHistos('h_ClReso20t28')
+
+    hresoGEO = histos.ResoHistos('h_EleResoGEO')
+    hreso2DGEO = histos.Reso2DHistos('h_ClResoGEO')
+    hreso2DGEO_1t6 = histos.Reso2DHistos('h_ClResoGEO1t6')
+    hreso2DGEO_10t20 = histos.Reso2DHistos('h_ClResoGEO10t20')
+    hreso2DGEO_20t28 = histos.Reso2DHistos('h_ClResoGEO20t28')
 
     hresoDBS = histos.ResoHistos('h_EleResoDBS')
     hreso2DDBS = histos.Reso2DHistos('h_ClResoDBS')
@@ -271,6 +288,16 @@ def analyze(params):
             print(genParts.iloc[:3])
 
         hgen.fill(genParts)
+
+        genParticles = event.getDataFrame(prefix='genpart')
+        if debug >= 2:
+            print ("# gen particles: {}".format(len(genParticles)))
+        if debug >= 3:
+            print(genParticles)
+
+        #hgen.fill(genParts)
+
+
 
         # -------------------------------------------------------
         # --- Digis
@@ -318,7 +345,7 @@ def analyze(params):
             dumpFrame2JSON(js_2dc_filename, triggerClusters)
 
         if(debug >= 2):
-            print('# of clusters: {}'.format(len(triggerClusters)))
+            print('# of NN clusters: {}'.format(len(triggerClusters)))
 
         if(debug >= 3):
             print(triggerClusters.iloc[:3])
@@ -327,6 +354,17 @@ def analyze(params):
         #     print(triggerCells[triggerCells.index.isin(np.concatenate(triggerClusters.cells.iloc[:3]))])
 
         h2dcl.fill(triggerClusters)
+
+        triggerClustersGEO = event.getDataFrame(prefix='clGEO')
+        trigger3DClustersGEO = event.getDataFrame(prefix='cl3dGEO')
+
+        if(debug >= 2):
+            print('# of GEO clusters: {}'.format(len(triggerClustersGEO)))
+
+        if(debug >= 3):
+            print(triggerClustersGEO.iloc[:3])
+
+        h2dclGEO.fill(triggerClustersGEO)
 
         if computeDensity:
             # def computeDensity(tcs):
@@ -407,10 +445,17 @@ def analyze(params):
         #     print(len(cluster.clusters()))
 
         if(debug >= 2):
-            print('# of 3D clusters: {}'.format(len(trigger3DClusters)))
+            print('# of NN 3D clusters: {}'.format(len(trigger3DClusters)))
         if(debug >= 3):
             print(trigger3DClusters.iloc[:3])
         h3dcl.fill(trigger3DClusters)
+
+        if(debug >= 2):
+            print('# of GEO 3D clusters: {}'.format(len(trigger3DClustersGEO)))
+        if(debug >= 3):
+            print(trigger3DClustersGEO.iloc[:3])
+        h3dclGEO.fill(trigger3DClustersGEO)
+
 
         trigger3DClustersDBS = pd.DataFrame()
         if params.clusterize:
@@ -428,7 +473,7 @@ def analyze(params):
 
         # resolution study
         electron_PID = 11
-        genElectrons = genParts[(abs(genParts.id) == electron_PID)]
+        genElectrons = genParts[(abs(genParts.pdgid) == electron_PID)]
 
         plot3DClusterMatch(genElectrons,
                            trigger3DClusters,
@@ -443,6 +488,21 @@ def analyze(params):
                            hreso2D_10t20,
                            hreso2D_20t28,
                            'NN',
+                           debug)
+
+        plot3DClusterMatch(genElectrons,
+                           trigger3DClustersGEO,
+                           triggerClustersGEO,
+                           tcsWithPos,
+                           htcMatchGEO,
+                           h2dclMatchGEO,
+                           h3dclMatchGEO,
+                           hresoGEO,
+                           hreso2DGEO,
+                           hreso2DGEO_1t6,
+                           hreso2DGEO_10t20,
+                           hreso2DGEO_20t28,
+                           'GEO',
                            debug)
 
         if params.clusterize:
@@ -485,19 +545,28 @@ def analyze(params):
     hdigis.write()
 
     htc.write()
-    h2dcl.write()
-    h2dclDBS.write()
 
+    h2dcl.write()
     h3dcl.write()
+
+    h2dclGEO.write()
+    h3dclGEO.write()
+
+    h2dclDBS.write()
+    h3dclDBS.write()
+
     htcMatch.write()
     h2dclMatch.write()
     h3dclMatch.write()
 
-    htcMatchDBS.write()
+    htcMatchGEO.write()
+    h2dclMatchGEO.write()
+    h3dclMatchGEO.write()
+
+    htcMatchGEO.write()
     h2dclMatchDBS.write()
     h3dclMatchDBS.write()
 
-    h3dclDBS.write()
 
     htcMatchDBSp.write()
     h2dclMatchDBSp.write()
@@ -505,9 +574,11 @@ def analyze(params):
 
     h3dclDBSp.write()
 
-
     hreso.write()
     hreso2D.write()
+
+    hresoGEO.write()
+    hreso2DGEO.write()
 
     hresoDBS.write()
     hreso2DDBS.write()
@@ -518,6 +589,10 @@ def analyze(params):
     hreso2D_1t6.write()
     hreso2D_10t20.write()
     hreso2D_20t28.write()
+
+    hreso2DGEO_1t6.write()
+    hreso2DGEO_10t20.write()
+    hreso2DGEO_20t28.write()
 
     hreso2DDBS_1t6.write()
     hreso2DDBS_10t20.write()
@@ -552,9 +627,10 @@ def main():
     # input_sample_dir = 'FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU50_20171005/NTUP/'
     # output_filename = 'histos_EleE50_PU50.root'
 
-    ntuple_version = 'NTUP'
+    #ntuple_version = 'NTUP'
+    ntuple_version = 'NTP/v3'
     run_clustering = False
-    plot_version = 'v7'
+    plot_version = 'v9'
     # ============================================
     basedir = '/eos/user/c/cerminar/hgcal/CMSSW932'
     hostname = socket.gethostname()
@@ -643,10 +719,10 @@ def main():
 
     nugun_samples = [nuGun_PU50, nuGun_PU100, nuGun_PU140, nuGun_PU200]
 #
-    test = copy.deepcopy(nuGun_PU200)
+    test = copy.deepcopy(singleEleE50_PU0)
     #test.output_filename = 'test2222.root'
-    test.maxEvents = 100
-    test.debug = 1
+    test.maxEvents = 5
+    test.debug = 6
     test.eventsToDump = [1, 2, 3, 4]
     test.clusterize = False
     test.computeDensity = True
