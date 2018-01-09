@@ -711,6 +711,8 @@ def main():
             samp = 'all'
         batch_dir = 'batch_{}_{}_{}'.format(opt.COLLECTION, samp, plot_version)
         os.mkdir(batch_dir)
+        os.mkdir(batch_dir+'/conf/')
+        os.mkdir(batch_dir+'/logs/')
 
         # prepare the CONDOR .sub file
         condor_template_name = 'templates/batch.sub'
