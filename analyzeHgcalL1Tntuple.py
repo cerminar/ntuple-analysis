@@ -15,6 +15,7 @@ import os
 import math
 import copy
 import socket
+import datetime
 
 import l1THistos as histos
 import utils as utils
@@ -42,7 +43,9 @@ class Parameters:
                  eventsToDump,
                  maxEvents=-1,
                  computeDensity=False,
-                 debug=0):
+                 debug=0,
+                 name=''):
+        self.name=name
         self.maxEvents = maxEvents
         self.debug = debug
         self.input_base_dir = input_base_dir
@@ -51,6 +54,12 @@ class Parameters:
         self.clusterize = clusterize
         self.eventsToDump = eventsToDump
         self.computeDensity = computeDensity
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return self.name
 
 
 def convertGeomTreeToDF(tree):
@@ -164,7 +173,7 @@ def analyze(params):
     pool = Pool(5)
 
     # read the geometry dump
-    geom_file = 'test_triggergeom.root'
+    geom_file = params.input_base_dir+'/geom/test_triggergeom.root'
 
     tc_geom_tree = HGCalNtuple([geom_file], tree='hgcaltriggergeomtester/TreeTriggerCells')
     print ('read TC GEOM tree with # events: {}'.format(tc_geom_tree.nevents()))
@@ -616,118 +625,137 @@ def analyze(params):
 
 
 
+import optparse
+import ConfigParser
 
 def main():
     # ============================================
     # configuration bit
 
-    #input_sample_dir = 'FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU0_20171005/NTUP/'
-    #output_filename = 'histos_EleE50_PU0.root'
+    usage = ('usage: %prog [options]\n'
+             + '%prog -h for help')
+    parser = optparse.OptionParser(usage)
+    parser.add_option('-f', '--file', dest='CONFIGFILE', help='specify the ini configuration file')
+    parser.add_option('-c', '--collection', dest='COLLECTION', help='specify the collection to be processed')
+    parser.add_option('-s', '--sample', dest='SAMPLE', help='specify the sample (within the collection) to be processed (-1 for all)')
+    parser.add_option('-d', '--debug', dest='DEBUG', help='debug level (default is 0)', default=0)
+    parser.add_option('-n', '--nevents', dest='NEVENTS', help='# of events to process per sample (default is 10)', default=10)
+    parser.add_option("-b", "--batch", action="store_true", dest="BATCH", default=False, help="submit the jobs via CONDOR")
 
-    # input_sample_dir = 'FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU50_20171005/NTUP/'
-    # output_filename = 'histos_EleE50_PU50.root'
 
-    #ntuple_version = 'NTUP'
-    ntuple_version = 'NTP/v3'
-    run_clustering = False
-    plot_version = 'v9'
-    # ============================================
-    basedir = '/eos/user/c/cerminar/hgcal/CMSSW932'
+    global opt, args
+    (opt, args) = parser.parse_args()
+
+    cfgfile = ConfigParser.ConfigParser()
+    cfgfile.optionxform = str
+
+    cfgfile.read(opt.CONFIGFILE)
+
+    collection_dict = {}
+    collections = cfgfile.get('common', 'collections').split(',')
+    basedir = cfgfile.get('common', 'input_dir_lx')
     hostname = socket.gethostname()
     if 'matterhorn' in hostname or 'Matterhorn' in hostname:
-            basedir = '/Users/cerminar/cernbox/hgcal/CMSSW932/'
+            basedir = cfgfile.get('common', 'input_dir_local')
+    plot_version = cfgfile.get('common', 'plot_version')
+    run_clustering = False
+    if  cfgfile.get('common', 'run_clustering') == 'True':
+        run_clustering = True
+    run_density_computation = False
+    if  cfgfile.get('common', 'run_density_computation') == 'True':
+        run_density_computation = True
+
+    events_to_dump = cfgfile.get('common', 'events_to_dump').split(',')
+
+    for collection in collections:
+        samples = cfgfile.get(collection, 'samples').split(',')
+        print ('--- Collection: {} with samples: {}'.format(collection, samples))
+        sample_list = list()
+        for sample in samples:
+            params = Parameters(input_base_dir=basedir,
+                                input_sample_dir=cfgfile.get(sample, 'input_sample_dir'),
+                                output_filename='{}/plots/histos_{}_{}.root'.format(basedir, sample, plot_version),
+                                clusterize=run_clustering,
+                                eventsToDump=events_to_dump,
+                                maxEvents=opt.NEVENTS,
+                                debug=opt.DEBUG,
+                                computeDensity=run_density_computation,
+                                name=sample)
+            sample_list.append(params)
+        collection_dict[collection]=sample_list
+        #collection_dict
+
+    samples_to_process = list()
+    if opt.COLLECTION:
+        if opt.COLLECTION in collection_dict.keys():
+            if opt.SAMPLE:
+                if int(opt.SAMPLE) == -1:
+                    samples_to_process.extend(collection_dict[opt.COLLECTION])
+                else:
+                    samples_to_process.append(collection_dict[opt.COLLECTION][int(opt.SAMPLE)])
+            else:
+                print ('Collection: {}, available samples: {}'.format(opt.COLLECTION, collection_dict[opt.COLLECTION]))
+                sys.exit(0)
+        else:
+            print ('ERROR: collection {} not in the cfg file'.format(opt.COLLECTION))
+            sys.exit(10)
+    else:
+        print ('\nAvailable collections: {}'.format(collection_dict.keys()))
+        sys.exit(0)
+
+    print ('About to process samples: {}'.format(samples_to_process))
+
+    if opt.BATCH:
+        samp = opt.SAMPLE
+        if samp == '-1':
+            samp = 'all'
+        batch_dir = 'batch_{}_{}_{}'.format(opt.COLLECTION, samp, plot_version)
+        os.mkdir(batch_dir)
+
+        # prepare the CONDOR .sub file
+        condor_template_name = 'templates/batch.sub'
+        condor_template_file = open(condor_template_name)
+        condor_template = condor_template_file.read()
+        condor_template_file.close()
+
+        condor_template = condor_template.replace('TEMPL_TASKDIR', batch_dir)
+        condor_template = condor_template.replace('TEMPL_NJOBS', str(len(samples_to_process)))
+
+        condor_file_path = os.path.join(batch_dir, 'batch.sub')
+        condor_file = open(condor_file_path, 'w')
+        condor_file.write(condor_template)
+        condor_file.close()
+
+        # prepare the exec script
+        script_template_name = 'templates/run_batch.sh'
+        script_template_file = open(script_template_name)
+        script_template = script_template_file.read()
+        script_template_file.close()
+
+        script_template = script_template.replace('TEMPL_WORKDIR', os.environ["PWD"])
+        script_template = script_template.replace('TEMPL_CFG', opt.CONFIGFILE)
+        script_template = script_template.replace('TEMPL_COLL', opt.COLLECTION)
+
+        script_file_path = os.path.join(batch_dir, 'run_batch.sh')
+        script_file = open(script_file_path, 'w')
+        script_file.write(script_template)
+        script_file.close()
+
+        print('Ready for submission please run the following commands:')
+        print('condor_submit {}'.format(condor_file_path))
+        sys.exit(0)
+
+
+
+    # test = copy.deepcopy(singleEleE50_PU0)
+    # #test.output_filename = 'test2222.root'
+    # test.maxEvents = 5
+    # test.debug = 6
+    # test.eventsToDump = [1, 2, 3, 4]
+    # test.clusterize = False
+    # test.computeDensity = True
     #
-    singleEleE25_PU200 = Parameters(input_base_dir=basedir,
-                                    input_sample_dir='FlatRandomEGunProducer_EleGunE25_1p5_3_PU200_20171123/{}/'.format(ntuple_version),
-                                    output_filename='histos_EleE25_PU200_{}.root'.format(plot_version),
-                                    clusterize=run_clustering,
-                                    eventsToDump=[])
-
-    singleEleE25_PU0 = Parameters(input_base_dir=basedir,
-                                  input_sample_dir='FlatRandomEGunProducer_EleGunE25_1p5_3_PU0_20171123/{}/'.format(ntuple_version),
-                                  output_filename='histos_EleE25_PU0_{}.root'.format(plot_version),
-                                  clusterize=run_clustering,
-                                  computeDensity=False,
-                                  eventsToDump=[])
-
-    singleEleE25_PU50 = Parameters(input_base_dir=basedir,
-                                   input_sample_dir='FlatRandomEGunProducer_EleGunE25_1p5_3_PU50_20171123//{}/'.format(ntuple_version),
-                                   output_filename='histos_EleE25_PU50_{}.root'.format(plot_version),
-                                   clusterize=run_clustering,
-                                   eventsToDump=[])
-
-    singleEleE25_PU100 = Parameters(input_base_dir=basedir,
-                                    input_sample_dir='FlatRandomEGunProducer_EleGunE25_1p5_3_PU100_20171123/{}/'.format(ntuple_version),
-                                    output_filename='histos_EleE25_PU100_{}.root'.format(plot_version),
-                                    clusterize=run_clustering,
-                                    eventsToDump=[])
-
-    electron_E25_samples = [singleEleE25_PU0, singleEleE25_PU200, singleEleE25_PU50, singleEleE25_PU100]
-
-    singleEleE50_PU200 = Parameters(input_base_dir=basedir,
-                                    input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU200_20171005/{}/'.format(ntuple_version),
-                                    output_filename='histos_EleE50_PU200_{}.root'.format(plot_version),
-                                    clusterize=run_clustering,
-                                    eventsToDump=[])
-
-    singleEleE50_PU0 = Parameters(input_base_dir=basedir,
-                                  input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU0_20171005/{}/'.format(ntuple_version),
-                                  output_filename='histos_EleE50_PU0_{}.root'.format(plot_version),
-                                  clusterize=run_clustering,
-                                  computeDensity=False,
-                                  eventsToDump=[])
-
-    singleEleE50_PU50 = Parameters(input_base_dir=basedir,
-                                   input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU50_20171005/{}/'.format(ntuple_version),
-                                   output_filename='histos_EleE50_PU50_{}.root'.format(plot_version),
-                                   clusterize=run_clustering,
-                                   eventsToDump=[])
-
-    singleEleE50_PU100 = Parameters(input_base_dir=basedir,
-                                    input_sample_dir='FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU100_20171005/{}/'.format(ntuple_version),
-                                    output_filename='histos_EleE50_PU100_{}.root'.format(plot_version),
-                                    clusterize=run_clustering,
-                                    eventsToDump=[])
-
-    electron_samples = [singleEleE50_PU0, singleEleE50_PU200, singleEleE50_PU50, singleEleE50_PU100 ]
-
-    ele_pu0 = [singleEleE25_PU0, singleEleE50_PU0]
-
-    nuGun_PU50 = Parameters(input_base_dir=basedir,
-                            input_sample_dir='FlatRandomPtGunProducer_NuGunPU50_20171005/{}/'.format(ntuple_version),
-                            output_filename='histos_NuGun_PU50_{}.root'.format(plot_version),
-                            clusterize=run_clustering,
-                            eventsToDump=[])
-
-    nuGun_PU100 = Parameters(input_base_dir=basedir,
-                             input_sample_dir='FlatRandomPtGunProducer_NuGunPU100_20171005/{}/'.format(ntuple_version),
-                             output_filename='histos_NuGun_PU100_{}.root'.format(plot_version),
-                             clusterize=run_clustering,
-                             eventsToDump=[])
-
-    nuGun_PU140 = Parameters(input_base_dir=basedir,
-                             input_sample_dir='FlatRandomPtGunProducer_NuGunPU140_20171005/{}/'.format(ntuple_version),
-                             output_filename='histos_NuGun_PU140_{}.root'.format(plot_version),
-                             clusterize=run_clustering,
-                             eventsToDump=[])
-
-    nuGun_PU200 = Parameters(input_base_dir=basedir,
-                             input_sample_dir='FlatRandomPtGunProducer_NuGunPU200_20171006/{}/'.format(ntuple_version),
-                             output_filename='histos_NuGun_PU200_{}.root'.format(plot_version),
-                             clusterize=run_clustering,
-                             eventsToDump=[])
-
-    nugun_samples = [nuGun_PU50, nuGun_PU100, nuGun_PU140, nuGun_PU200]
-#
-    test = copy.deepcopy(singleEleE50_PU0)
-    #test.output_filename = 'test2222.root'
-    test.maxEvents = 5
-    test.debug = 6
-    test.eventsToDump = [1, 2, 3, 4]
-    test.clusterize = False
-    test.computeDensity = True
-
-    test_sample = [test]
+    # test_sample = [test]
 
     # pool = Pool(1)
     # pool.map(analyze, nugun_samples)
@@ -735,8 +763,8 @@ def main():
     # pool.map(analyze, electron_samples)
     # pool.map(analyze, [singleEleE50_PU200])
 
-    samples = test_sample
-    for sample in samples:
+    #samples = test_sample
+    for sample in samples_to_process:
         analyze(sample)
 
 if __name__ == "__main__":
