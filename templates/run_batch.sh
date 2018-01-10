@@ -1,3 +1,4 @@
+#!/bin/bash
 
 CLUSTERID=$1
 PROCID=$2
