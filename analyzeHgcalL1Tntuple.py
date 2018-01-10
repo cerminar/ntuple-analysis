@@ -205,8 +205,9 @@ def analyze(params):
     output = ROOT.TFile(params.output_filename, "RECREATE")
     output.cd()
 
-    hTCGeom = histos.GeomHistos('hTCGeom')
-    hTCGeom.fill(tc_geom_df[(np.abs(tc_geom_df.eta) > 1.65) & (np.abs(tc_geom_df.eta) < 2.85)])
+    if False:
+        hTCGeom = histos.GeomHistos('hTCGeom')
+        hTCGeom.fill(tc_geom_df[(np.abs(tc_geom_df.eta) > 1.65) & (np.abs(tc_geom_df.eta) < 2.85)])
 
 # for index, tc_geom in tc_geom_df.iterrows():
 #     tc_geom.max_dist_neigh = np.max(tc_geom.neighbor_distance)
@@ -214,6 +215,8 @@ def analyze(params):
     # -------------------------------------------------------
     # book histos
     hgen = histos.GenPartHistos('h_genAll')
+    hGenPartsGammas = histos.GenParticleHistos('h_genPartsGammas')
+
     hdigis = histos.DigiHistos('h_hgcDigisAll')
     htc = histos.TCHistos('h_tcAll')
 
@@ -302,10 +305,14 @@ def analyze(params):
         if debug >= 2:
             print ("# gen particles: {}".format(len(genParticles)))
         if debug >= 3:
-            print(genParticles)
+            print(genParticles[['eta', 'phi', 'pt', 'energy', 'mother', 'gen', 'pid', 'reachedEE']])
 
+        # we find the genparticles matched to the GEN info
+        genPartGenerator = genParticles[genParticles.gen > 0]
+        if debug >= 3:
+            print(genPartGenerator)
         #hgen.fill(genParts)
-
+        hGenPartsGammas.fill(genParticles[(genParticles.gen > 0) & (genParticles.pid == 22)])
 
 
         # -------------------------------------------------------
@@ -323,7 +330,7 @@ def analyze(params):
         if(debug >= 2):
             print ("# of TC: {}".format(len(triggerCells)))
 
-        tcsWithPos = pd.merge(triggerCells, tc_geom_df[['id', 'x', 'y', 'radius']], on='id')
+        tcsWithPos = pd.merge(triggerCells, tc_geom_df[['id', 'x', 'y']], on='id')
 
         # json.dump(data, f)test_sample
         # if(debug == 10):
@@ -550,73 +557,8 @@ def analyze(params):
     print ("Writing histos to file {}".format(params.output_filename))
 
     output.cd()
-    hgen.write()
-    hdigis.write()
-
-    htc.write()
-
-    h2dcl.write()
-    h3dcl.write()
-
-    h2dclGEO.write()
-    h3dclGEO.write()
-
-    h2dclDBS.write()
-    h3dclDBS.write()
-
-    htcMatch.write()
-    h2dclMatch.write()
-    h3dclMatch.write()
-
-    htcMatchGEO.write()
-    h2dclMatchGEO.write()
-    h3dclMatchGEO.write()
-
-    htcMatchGEO.write()
-    h2dclMatchDBS.write()
-    h3dclMatchDBS.write()
-
-
-    htcMatchDBSp.write()
-    h2dclMatchDBSp.write()
-    h3dclMatchDBSp.write()
-
-    h3dclDBSp.write()
-
-    hreso.write()
-    hreso2D.write()
-
-    hresoGEO.write()
-    hreso2DGEO.write()
-
-    hresoDBS.write()
-    hreso2DDBS.write()
-
-    hresoDBSp.write()
-    hreso2DDBSp.write()
-
-    hreso2D_1t6.write()
-    hreso2D_10t20.write()
-    hreso2D_20t28.write()
-
-    hreso2DGEO_1t6.write()
-    hreso2DGEO_10t20.write()
-    hreso2DGEO_20t28.write()
-
-    hreso2DDBS_1t6.write()
-    hreso2DDBS_10t20.write()
-    hreso2DDBS_20t28.write()
-
-    hreso2DDBSp_1t6.write()
-    hreso2DDBSp_10t20.write()
-    hreso2DDBSp_20t28.write()
-
-    hTCGeom.write()
-
-    hDensity_3p6.write()
-    hDensityClus_3p6.write()
-    hDensity_2p5.write()
-    hDensityClus_2p5.write()
+    hm = histos.HistoManager()
+    hm.writeHistos()
 
     hDR.Write()
     output.Close()

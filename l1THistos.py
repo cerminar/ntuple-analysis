@@ -5,8 +5,41 @@ import numpy as np
 import pandas as pd
 
 
+class HistoManager(object):
+    class __TheManager:
+        def __init__(self):
+            self.val = None
+            self.histoList = list()
+
+        def __str__(self):
+            return `self` + self.val
+
+        def addHistos(self, histo):
+            # print 'ADD histo: {}'.format(histo)
+            self.histoList.append(histo)
+
+        def writeHistos(self):
+            for histo in self.histoList:
+                histo.write()
+
+    instance = None
+
+    def __new__(cls): # __new__ always a classmethod
+        if not HistoManager.instance:
+            HistoManager.instance = HistoManager.__TheManager()
+        return HistoManager.instance
+
+    def __getattr__(self, name):
+        return getattr(self.instance, name)
+    def __setattr__(self, name):
+        return setattr(self.instance, name)
+
+
+
+
 class BaseHistos():
     def __init__(self, name, root_file=None):
+        # print 'BOOK histo: {}'.format(self)
         if root_file is not None:
             root_file.cd()
             histo_names = [histo.GetName() for histo in root_file.GetListOfKeys() if name+'_' in histo.GetName()]
@@ -20,16 +53,18 @@ class BaseHistos():
         else:
             for histo in [a for a in dir(self) if a.startswith('h_')]:
                 getattr(self, histo).Sumw2()
+            hm = HistoManager()
+            hm.addHistos(self)
 
     def write(self):
         for histo in [a for a in dir(self) if a.startswith('h_')]:
             getattr(self, histo).Write()
 
 
-class GenPartHistos():
+class GenPartHistos(BaseHistos):
     def __init__(self, name):
         self.h_pt = ROOT.TH1F(name+'_pt', 'Gen Part Pt (GeV)', 100, 0, 100)
-        self.h_energy = ROOT.TH1F(name+'_energy', 'Gen Part Energy (GeV)', 100, 0, 100)
+        self.h_energy = ROOT.TH1F(name+'_energy', 'Gen Part Energy (GeV)', 100, 0, 1000)
 
         for histo in [a for a in dir(self) if a.startswith('h_')]:
             getattr(self, histo).Sumw2()
@@ -41,6 +76,22 @@ class GenPartHistos():
     def write(self):
         for histo in [a for a in dir(self) if a.startswith('h_')]:
             getattr(self, histo).Write()
+
+
+class GenParticleHistos(BaseHistos):
+    def __init__(self, name, root_file=None):
+        if not root_file:
+            self.h_eta = ROOT.TH1F(name+'_eta', 'Gen Part eta', 100, -3, 3)
+            self.h_pt = ROOT.TH1F(name+'_pt', 'Gen Part Pt (GeV)', 100, 0, 100)
+            self.h_energy = ROOT.TH1F(name+'_energy', 'Gen Part Energy (GeV)', 100, 0, 1000)
+            self.h_reachedEE = ROOT.TH1F(name+'_reachedEE', 'Gen Part reachedEE', 4, 0, 4)
+        BaseHistos.__init__(self, name, root_file)
+
+    def fill(self, particles):
+        rnp.fill_hist(self.h_eta, particles.eta)
+        rnp.fill_hist(self.h_pt, particles.pt)
+        rnp.fill_hist(self.h_energy, particles.energy)
+        rnp.fill_hist(self.h_reachedEE, particles.reachedEE)
 
 
 class DigiHistos(BaseHistos):
@@ -156,6 +207,7 @@ class ResoHistos(BaseHistos):
             self.h_ptResVeta = ROOT.TH2F(name+'_ptResVeta', '3D Cluster Pt reso (GeV) vs eta', 100, -3.5, 3.5, 100, -10, 10)
             self.h_energyResVeta = ROOT.TH2F(name+'_energyResVeta', '3D Cluster E reso (GeV) vs eta', 100, -3.5, 3.5, 200, -100, 100)
             self.h_energyResVnclu = ROOT.TH2F(name+'_energyResVnclu', '3D Cluster E reso (GeV) vs # clusters', 50, 0, 50, 200, -100, 100)
+            # FIXME: add corresponding Pt plots
             self.h_coreEnergyResVnclu = ROOT.TH2F(name+'_coreEnergyResVnclu', '3D Cluster E reso (GeV) vs # clusters', 50, 0, 50, 200, -100, 100)
             self.h_coreEnergyRes = ROOT.TH1F(name+'_coreEnergyRes', '3D Cluster Energy reso CORE (GeV)', 200, -100, 100)
             self.h_centralEnergyRes = ROOT.TH1F(name+'_centralEnergyRes', '3D Cluster Energy reso CENTRAL (GeV)', 200, -100, 100)
@@ -223,14 +275,13 @@ class GeomHistos(BaseHistos):
 class DensityHistos(BaseHistos):
     def __init__(self, name, root_file=None):
         if not root_file:
-            self.h_eDensityVlayer = ROOT.TH2F(name+'_eDensityVlayer', 'E (GeV) Density per layer', 60, 0, 60, 200, 0, 10)
+            self.h_eDensityVlayer = ROOT.TH2F(name+'_eDensityVlayer', 'E (GeV) Density per layer', 60, 0, 60, 600, 0, 30)
             self.h_nTCDensityVlayer = ROOT.TH2F(name+'_nTCDensityVlayer', '# TC Density per layer', 60, 0, 60, 20, 0, 20)
-        elif 'v7' in root_file.GetName() and not "NuGun" in root_file.GetName():
+        elif 'v7' in root_file.GetName() and "NuGun" not in root_file.GetName():
             print "v7 hack"
             self.h_eDensityVlayer = root_file.Get(name+'eDensityVlayer')
             self.h_nTCDensityVlayer = root_file.Get(name+'nTCDensityVlayer')
-        else:
-            BaseHistos.__init__(self, name, root_file)
+        BaseHistos.__init__(self, name, root_file)
 
     def fill(self, layer, energy, nTCs):
         self.h_eDensityVlayer.Fill(layer, energy)
