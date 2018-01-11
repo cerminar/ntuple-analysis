@@ -20,9 +20,11 @@ def buildDBSCANClusters(sel_layer, sel_zside, tcs):
         return new2Dcls
 
     X = tcs_layer[['x', 'y']]
-    densities = [0.1*100, 0.2*100, 0.5*100, 0.7*100, 1.1*100, 1.3*100, 1.7*100, 1.8*100, 2.0*100, 2.2*100, 2.6*100, 2.0*100, 1.8*100, 1.4*100, 1.2*100, 0.8*100, 0.6*100, 0.4*100, 0.2*100, 0.2*100, 0.1*100, 0.05*100, 0.05*100, 0.05*100, 0.05*100, 0.05*100, 0.05*100, 0.05*100]
+    # densities = [0.1, 0.2, 0.5, 0.7, 1.1, 1.3, 1.7*, 1.8, 2.0, 2.2, 2.6, 2.0, 1.8, 1.4, 1.2, 0.8, 0.6, 0.4, 0.2, 0.2, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
+    # photon Pt35 tunes (no selection on unconverted)
+    densities = [0.05, 0.05, 0.05, 0.1, 0.25, 0.45, 1.1, 1.6, 2.5, 3.55, 4.85, 4.6, 4.35, 3.55, 3.15, 2.25, 1.8, 1.05, 1.0, 0.65, 0.5, 0.2, 0.1, 0.05, 0.05, 0.05, 0.05, 0.2]
     db = DBSCAN(eps=2.5,
-                min_samples=densities[sel_layer-1],
+                min_samples=densities[sel_layer-1]*100,
                 algorithm='kd_tree',
                 n_jobs=3).fit(X, sample_weight=tcs_layer['energy']*100)
     labels = db.labels_
@@ -85,12 +87,13 @@ def build3DClustersEtaPhi(cl2D):
         cl3D['energyCentral'] = [components[(components.layer > 9) & (components.layer < 21)].energy.sum()*calib_factor]
 
         # print components
+
         cl3D['eta'] = [np.sum(components.eta*components.energy)/components.energy.sum()]
         cl3D['phi'] = [np.sum(components.phi*components.energy)/components.energy.sum()]
         #print cl3D.energy/np.cosh(cl3D.eta)
         #print type(cl3D.energy/np.cosh(cl3D.eta))
         cl3D['pt'] = [(cl3D.energy/np.cosh(cl3D.eta)).values[0]]
-
+        cl3D['ptCore'] = [(cl3D.energyCore/np.cosh(cl3D.eta)).values[0]]
         cl3D['layers'] = [components.layer.values]
         cl3D['clusters'] = [np.array(components.index)]
         cl3D['nclu'] = [components.shape[0]]
@@ -188,6 +191,7 @@ def build3DClustersProj(cl2D):
         #print cl3D.energy/np.cosh(cl3D.eta)
         #print type(cl3D.energy/np.cosh(cl3D.eta))
         cl3D['pt'] = [(cl3D.energy/np.cosh(cl3D.eta)).values[0]]
+        cl3D['ptCore'] = [(cl3D.energyCore/np.cosh(cl3D.eta)).values[0]]
 
         cl3D['layers'] = [components.layer.values]
         cl3D['clusters'] = [np.array(components.index)]
