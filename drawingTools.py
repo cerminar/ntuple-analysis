@@ -74,7 +74,7 @@ class Sample():
             version = '_'+version
         else:
             version = ''
-        cls.histo_filename = 'histos_{}_{}{}.root'.format(cls.name, cls.pu_tag, version)
+        cls.histo_filename = '../plots/histos_{}_{}{}.root'.format(cls.name, cls.pu_tag, version)
         cls.histo_file = ROOT.TFile(cls.histo_filename)
 
 
