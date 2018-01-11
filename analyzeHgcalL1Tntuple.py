@@ -56,7 +56,17 @@ class Parameters:
         self.computeDensity = computeDensity
 
     def __str__(self):
-        return self.name
+        return 'Name: {},\n \
+                clusterize: {}\n \
+                compute density: {}\n \
+                maxEvents: {}\n \
+                output file: {}\n \
+                debug: {}'.format(self.name,
+                                  self.clusterize,
+                                  self.computeDensity,
+                                  self.maxEvents,
+                                  self.output_filename,
+                                  self.debug)
 
     def __repr__(self):
         return self.name
@@ -166,7 +176,9 @@ def build3DClusters(name, algorithm, triggerClusters, pool, debug):
 
 
 def analyze(params):
-    debug = params.debug
+    print (params)
+
+    debug = int(params.debug)
     computeDensity = params.computeDensity
     plot2DCLDR = False
 
@@ -302,10 +314,11 @@ def analyze(params):
         hgen.fill(genParts)
 
         genParticles = event.getDataFrame(prefix='genpart')
+        genParticles['pdgid'] = genParticles.pid
         if debug >= 2:
             print ("# gen particles: {}".format(len(genParticles)))
         if debug >= 3:
-            print(genParticles[['eta', 'phi', 'pt', 'energy', 'mother', 'gen', 'pid', 'reachedEE']])
+            print(genParticles[['eta', 'phi', 'pt', 'energy', 'mother', 'gen', 'pid', 'pdgid', 'reachedEE']])
 
         # we find the genparticles matched to the GEN info
         genPartGenerator = genParticles[genParticles.gen > 0]
@@ -489,9 +502,17 @@ def analyze(params):
 
         # resolution study
         electron_PID = 11
-        genElectrons = genParts[(abs(genParts.pdgid) == electron_PID)]
+        photon_PID = 22
+        genElect = genParts[(abs(genParts.pdgid) == electron_PID)]
+        genPhot = genParts[(abs(genParts.pdgid) == photon_PID)]
+        if genElect.shape[0] != 0:
+            genReference = genElect
+        elif genPhot.shape[0] != 0:
+            # we select unconverted photons
+            genReference = genParticles[(genParticles.gen > 0) & (genParticles.pid == photon_PID) & (genParticles.reachedEE == 2)]
+            # print (genReference)
 
-        plot3DClusterMatch(genElectrons,
+        plot3DClusterMatch(genReference,
                            trigger3DClusters,
                            triggerClusters,
                            tcsWithPos,
@@ -506,7 +527,7 @@ def analyze(params):
                            'NN',
                            debug)
 
-        plot3DClusterMatch(genElectrons,
+        plot3DClusterMatch(genReference,
                            trigger3DClustersGEO,
                            triggerClustersGEO,
                            tcsWithPos,
@@ -522,7 +543,7 @@ def analyze(params):
                            debug)
 
         if params.clusterize:
-            plot3DClusterMatch(genElectrons,
+            plot3DClusterMatch(genReference,
                                trigger3DClustersDBS,
                                triggerClustersDBS,
                                tcsWithPos,
@@ -538,7 +559,7 @@ def analyze(params):
                                debug)
 
 
-            plot3DClusterMatch(genElectrons,
+            plot3DClusterMatch(genReference,
                                trigger3DClustersDBSp,
                                triggerClustersDBS,
                                tcsWithPos,
@@ -619,7 +640,7 @@ def main():
                                 output_filename='{}/plots/histos_{}_{}.root'.format(basedir, sample, plot_version),
                                 clusterize=run_clustering,
                                 eventsToDump=events_to_dump,
-                                maxEvents=opt.NEVENTS,
+                                maxEvents=int(opt.NEVENTS),
                                 debug=opt.DEBUG,
                                 computeDensity=run_density_computation,
                                 name=sample)
