@@ -297,7 +297,7 @@ def analyze(params):
         if (params.maxEvents != -1 and event.entry() >= params.maxEvents):
             break
         if debug >= 2 or event.entry() % 100 == 0:
-            print ("--- Event", event.entry())
+            print ("--- Event {}, @ {}".format(event.entry(), datetime.datetime.now()))
 
         if event.entry() in params.eventsToDump:
             dump = True
