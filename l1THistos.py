@@ -62,12 +62,10 @@ class BaseHistos():
 
 
 class GenPartHistos(BaseHistos):
-    def __init__(self, name):
+    def __init__(self, name, root_file=None):
         self.h_pt = ROOT.TH1F(name+'_pt', 'Gen Part Pt (GeV)', 100, 0, 100)
         self.h_energy = ROOT.TH1F(name+'_energy', 'Gen Part Energy (GeV)', 100, 0, 1000)
-
-        for histo in [a for a in dir(self) if a.startswith('h_')]:
-            getattr(self, histo).Sumw2()
+        BaseHistos.__init__(self, name, root_file)
 
     def fill(self, gps):
         rnp.fill_hist(self.h_pt, gps.pt)
