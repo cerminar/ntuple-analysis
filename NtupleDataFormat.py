@@ -150,13 +150,14 @@ class HGCalNtuple(object):
     def getEvent(self, index):
         """Returns Event for a given index"""
         ientry = self._tree.LoadTree(index)
+        print ientry
         if ientry < 0:
             return None
-        nb = self._tree.GetEntry(ientry)  # ientry or jentry?
+        nb = self._tree.GetEntry(index)  # ientry or jentry?
         if nb <= 0:
             None
 
-        return Event(self._tree, ientry)  # ientry of jentry?
+        return Event(self._tree, index)  # ientry of jentry?
 
 
 ##########
