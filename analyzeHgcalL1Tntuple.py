@@ -20,11 +20,11 @@ import datetime
 import l1THistos as histos
 import utils as utils
 import clusterTools as clAlgo
-
+import traceback
 
 def listFiles(input_dir):
     onlyfiles = [os.path.join(input_dir, f) for f in os.listdir(input_dir) if os.path.isfile(os.path.join(input_dir, f))]
-    return onlyfiles
+    return sorted(onlyfiles)
 
 
 def getChain(name, files):
@@ -41,6 +41,7 @@ class Parameters:
                  output_filename,
                  clusterize,
                  eventsToDump,
+                 events_per_job,
                  maxEvents=-1,
                  computeDensity=False,
                  debug=0,
@@ -54,6 +55,7 @@ class Parameters:
         self.clusterize = clusterize
         self.eventsToDump = eventsToDump
         self.computeDensity = computeDensity
+        self.events_per_job = events_per_job
 
     def __str__(self):
         return 'Name: {},\n \
@@ -61,11 +63,13 @@ class Parameters:
                 compute density: {}\n \
                 maxEvents: {}\n \
                 output file: {}\n \
+                events per job: {}\n \
                 debug: {}'.format(self.name,
                                   self.clusterize,
                                   self.computeDensity,
                                   self.maxEvents,
                                   self.output_filename,
+                                  self.events_per_job,
                                   self.debug)
 
     def __repr__(self):
@@ -175,7 +179,7 @@ def build3DClusters(name, algorithm, triggerClusters, pool, debug):
     return trigger3DClusters
 
 
-def analyze(params):
+def analyze(params, batch_idx=0):
     print (params)
 
     debug = int(params.debug)
@@ -238,7 +242,6 @@ def analyze(params):
     h2dclGEO = histos.ClusterHistos('h_clGEOAll')
     h3dclGEO = histos.Cluster3DHistos('h_cl3dGEOAll')
 
-
     h2dclDBS = histos.ClusterHistos('h_clDBSAll')
     h3dclDBS = histos.Cluster3DHistos('h_cl3dDBSAll')
 
@@ -251,7 +254,6 @@ def analyze(params):
     htcMatchGEO = histos.TCHistos('h_tcMatchGEO')
     h2dclMatchGEO = histos.ClusterHistos('h_clMatchGEO')
     h3dclMatchGEO = histos.Cluster3DHistos('h_cl3dMatchGEO')
-
 
     htcMatchDBS = histos.TCHistos('h_tcMatchDBS')
     h2dclMatchDBS = histos.ClusterHistos('h_clMatchDBS')
@@ -292,12 +294,22 @@ def analyze(params):
 
     hDR = ROOT.TH1F('hDR', 'DR 2D clusters', 100, 0, 1)
     dump = False
+    range_ev = range(0, ntuple.nevents())
 
-    for event in ntuple:
-        if (params.maxEvents != -1 and event.entry() >= params.maxEvents):
+    if(params.events_per_job != -1):
+        range_ev = range(batch_idx*params.events_per_job, (batch_idx+1)*params.events_per_job)
+    #print (range_ev)
+    nev = 0
+    for evt_idx in range_ev:
+        #print(evt_idx)
+        event = ntuple.getEvent(evt_idx)
+        if (params.maxEvents != -1 and nev >= params.maxEvents):
             break
         if debug >= 2 or event.entry() % 100 == 0:
             print ("--- Event {}, @ {}".format(event.entry(), datetime.datetime.now()))
+            print ('    run: {}, lumi: {}, event: {}'.format(event.run(), event.lumi(), event.event()))
+
+        nev+=1
 
         if event.entry() in params.eventsToDump:
             dump = True
@@ -485,7 +497,6 @@ def analyze(params):
             print(trigger3DClustersGEO.iloc[:3])
         h3dclGEO.fill(trigger3DClustersGEO)
 
-
         trigger3DClustersDBS = pd.DataFrame()
         if params.clusterize:
             trigger3DClustersDBS = build3DClusters('DBSCAN', clAlgo.build3DClustersEtaPhi, triggerClustersDBS, pool, debug)
@@ -574,7 +585,7 @@ def analyze(params):
                                'DBSCANp',
                                debug)
 
-    print ("Processed {} events/{} TOT events".format(event.entry(), ntuple.nevents()))
+    print ("Processed {} events/{} TOT events".format(nev, ntuple.nevents()))
     print ("Writing histos to file {}".format(params.output_filename))
 
     output.cd()
@@ -600,10 +611,11 @@ def main():
     parser = optparse.OptionParser(usage)
     parser.add_option('-f', '--file', dest='CONFIGFILE', help='specify the ini configuration file')
     parser.add_option('-c', '--collection', dest='COLLECTION', help='specify the collection to be processed')
-    parser.add_option('-s', '--sample', dest='SAMPLE', help='specify the sample (within the collection) to be processed (-1 for all)')
+    parser.add_option('-s', '--sample', dest='SAMPLE', help='specify the sample (within the collection) to be processed ("all" to run the full collection)')
     parser.add_option('-d', '--debug', dest='DEBUG', help='debug level (default is 0)', default=0)
     parser.add_option('-n', '--nevents', dest='NEVENTS', help='# of events to process per sample (default is 10)', default=10)
     parser.add_option("-b", "--batch", action="store_true", dest="BATCH", default=False, help="submit the jobs via CONDOR")
+    parser.add_option("-r", "--run", dest="RUN", default=None, help="the batch_id to run (need to be used with the option -b)")
 
 
     global opt, args
@@ -635,27 +647,35 @@ def main():
         print ('--- Collection: {} with samples: {}'.format(collection, samples))
         sample_list = list()
         for sample in samples:
+            events_per_job = -1
+            out_file = '{}/plots/histos_{}_{}.root'.format(basedir, sample, plot_version)
+            if opt.BATCH:
+                events_per_job = int(cfgfile.get(sample, 'events_per_job'))
+                if opt.RUN:
+                    out_file = 'histos_{}_{}_{}.root'.format(sample, plot_version, opt.RUN)
+
             params = Parameters(input_base_dir=basedir,
                                 input_sample_dir=cfgfile.get(sample, 'input_sample_dir'),
-                                output_filename='{}/plots/histos_{}_{}.root'.format(basedir, sample, plot_version),
+                                output_filename=out_file,
                                 clusterize=run_clustering,
                                 eventsToDump=events_to_dump,
                                 maxEvents=int(opt.NEVENTS),
+                                events_per_job=events_per_job,
                                 debug=opt.DEBUG,
                                 computeDensity=run_density_computation,
                                 name=sample)
             sample_list.append(params)
-        collection_dict[collection]=sample_list
-        #collection_dict
+        collection_dict[collection] = sample_list
 
     samples_to_process = list()
     if opt.COLLECTION:
         if opt.COLLECTION in collection_dict.keys():
             if opt.SAMPLE:
-                if int(opt.SAMPLE) == -1:
+                if opt.SAMPLE == 'all':
                     samples_to_process.extend(collection_dict[opt.COLLECTION])
                 else:
-                    samples_to_process.append(collection_dict[opt.COLLECTION][int(opt.SAMPLE)])
+                    sel_sample = [sample for sample in collection_dict[opt.COLLECTION] if sample.name == opt.SAMPLE]
+                    samples_to_process.append(sel_sample[0])
             else:
                 print ('Collection: {}, available samples: {}'.format(opt.COLLECTION, collection_dict[opt.COLLECTION]))
                 sys.exit(0)
@@ -668,48 +688,76 @@ def main():
 
     print ('About to process samples: {}'.format(samples_to_process))
 
-    if opt.BATCH:
-        samp = opt.SAMPLE
-        if samp == '-1':
-            samp = 'all'
-        batch_dir = 'batch_{}_{}_{}'.format(opt.COLLECTION, samp, plot_version)
+    if opt.BATCH and not opt.RUN:
+        batch_dir = 'batch_{}_{}'.format(opt.COLLECTION, plot_version)
         os.mkdir(batch_dir)
         os.mkdir(batch_dir+'/conf/')
         os.mkdir(batch_dir+'/logs/')
 
-        # prepare the CONDOR .sub file
-        condor_template_name = 'templates/batch.sub'
-        condor_template_file = open(condor_template_name)
-        condor_template = condor_template_file.read()
-        condor_template_file.close()
+        dagman_sub = ''
+        for sample in samples_to_process:
+            sample_batch_dir = os.path.join(batch_dir, sample.name)
+            sample_batch_dir_logs = os.path.join(sample_batch_dir, 'logs')
+            os.mkdir(sample_batch_dir)
+            os.mkdir(sample_batch_dir_logs)
+            print(sample)
+            nevents = int(opt.NEVENTS)
+            if int(opt.NEVENTS) == -1:
+                input_files = listFiles(os.path.join(sample.input_base_dir, sample.input_sample_dir))
+                ntuple = HGCalNtuple(input_files, tree='hgcalTriggerNtuplizer/HGCalTriggerNtuple')
+                nevents = ntuple.nevents()
+            print (nevents)
+            print (sample.events_per_job)
+            n_jobs = int(nevents/sample.events_per_job)
+            if n_jobs == 0:
+                n_jobs = 1
 
-        condor_template = condor_template.replace('TEMPL_TASKDIR', batch_dir)
-        condor_template = condor_template.replace('TEMPL_NJOBS', str(len(samples_to_process)))
+            # prepare the CONDOR .sub file
+            condor_template_name = 'templates/batch.sub'
+            condor_template_file = open(condor_template_name)
+            condor_template = condor_template_file.read()
+            condor_template_file.close()
 
-        condor_file_path = os.path.join(batch_dir, 'batch.sub')
-        condor_file = open(condor_file_path, 'w')
-        condor_file.write(condor_template)
-        condor_file.close()
+            condor_template = condor_template.replace('TEMPL_TASKDIR', sample_batch_dir)
+            condor_template = condor_template.replace('TEMPL_NJOBS', str(n_jobs))
 
-        # prepare the exec script
-        script_template_name = 'templates/run_batch.sh'
-        script_template_file = open(script_template_name)
-        script_template = script_template_file.read()
-        script_template_file.close()
+            condor_file_path = os.path.join(sample_batch_dir, 'batch.sub')
+            condor_file = open(condor_file_path, 'w')
+            condor_file.write(condor_template)
+            condor_file.close()
 
-        script_template = script_template.replace('TEMPL_WORKDIR', os.environ["PWD"])
-        script_template = script_template.replace('TEMPL_CFG', opt.CONFIGFILE)
-        script_template = script_template.replace('TEMPL_COLL', opt.COLLECTION)
+            # prepare the exec script
+            script_template_name = 'templates/run_batch.sh'
+            script_template_file = open(script_template_name)
+            script_template = script_template_file.read()
+            script_template_file.close()
 
-        script_file_path = os.path.join(batch_dir, 'run_batch.sh')
-        script_file = open(script_file_path, 'w')
-        script_file.write(script_template)
-        script_file.close()
+            script_template = script_template.replace('TEMPL_WORKDIR', os.environ["PWD"])
+            script_template = script_template.replace('TEMPL_CFG', opt.CONFIGFILE)
+            script_template = script_template.replace('TEMPL_COLL', opt.COLLECTION)
+            script_template = script_template.replace('TEMPL_SAMPLE', sample.name)
+            script_template = script_template.replace('TEMPL_OUTDIR', params.input_base_dir)
+
+            script_file_path = os.path.join(sample_batch_dir, 'run_batch.sh')
+            script_file = open(script_file_path, 'w')
+            script_file.write(script_template)
+            script_file.close()
+
+            dagman_sub += 'JOB {} {}/batch.sub\n'.format(sample.name, sample.name)
+
+        dagman_file_name = os.path.join(batch_dir, 'dagman.dag')
+        dagman_file = open(dagman_file_name, 'w')
+        dagman_file.write(dagman_sub)
+        dagman_file.close()
 
         print('Ready for submission please run the following commands:')
         print('condor_submit {}'.format(condor_file_path))
+        print('condor_submit_dag {}'.format(dagman_file_name))
         sys.exit(0)
 
+    batch_idx = 0
+    if opt.BATCH and opt.RUN:
+        batch_idx =  int(opt.RUN)
 
 
     # test = copy.deepcopy(singleEleE50_PU0)
@@ -730,7 +778,14 @@ def main():
 
     #samples = test_sample
     for sample in samples_to_process:
-        analyze(sample)
+        analyze(sample, batch_idx=batch_idx)
+
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as inst:
+        print (str(inst))
+        print ("Unexpected error:", sys.exc_info()[0])
+        traceback.print_exc()
+        sys.exit(100)
