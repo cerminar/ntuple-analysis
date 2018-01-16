@@ -4,5 +4,9 @@ output                = TEMPL_TASKDIR/logs/job.$(ClusterId).$(ProcId).out
 error                 = TEMPL_TASKDIR/logs/job.$(ClusterId).$(ProcId).err
 log                   = TEMPL_TASKDIR/logs/condor.$(ClusterId).log
 +JobFlavour           = "workday"
+
 RequestCpus = 5
+
+transfer_input_files  = TEMPL_TASKDIR/copy_files.sh
++PostCmd              = "copy_files.sh"
 queue TEMPL_NJOBS

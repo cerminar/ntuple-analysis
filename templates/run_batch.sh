@@ -4,7 +4,8 @@ CLUSTERID=$1
 PROCID=$2
 
 echo "Runnin Cluster ${CLUSTERID} Job ${PROCID}"
-echo "Current dir: ${PWD}"
+BATCH_DIR=${PWD}
+echo "Current dir: ${BATCH_DIR}"
 cd TEMPL_WORKDIR
 echo "Now in dir: ${PWD}"
 
@@ -12,10 +13,11 @@ source ./setup_lxplus.sh
 source ~/scripts/setVirtualEnvWrapper.sh
 workon HGCTPGPerformance-1
 
-python analyzeHgcalL1Tntuple.py -f TEMPL_CFG -c TEMPL_COLL -s TEMPL_SAMPLE -n -1 -r ${PROCID} -b
-echo $?
-mv histos_TEMPL_SAMPLE_*.root TEMPL_OUTDIR/plots/
-echo $?
+python analyzeHgcalL1Tntuple.py -f TEMPL_CFG -c TEMPL_COLL -s TEMPL_SAMPLE -n -1 -o ${BATCH_DIR} -r ${PROCID} -b
+# echo $?
+# FIXME: to be moved to a post script?
+# mv histos_TEMPL_SAMPLE_*_${PROCID}.root TEMPL_OUTDIR/plots/
+# echo $?
 
 # OUT_CP=$?
 #

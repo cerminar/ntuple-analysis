@@ -42,6 +42,7 @@ class Parameters:
                  clusterize,
                  eventsToDump,
                  events_per_job,
+                 version,
                  maxEvents=-1,
                  computeDensity=False,
                  debug=0,
@@ -56,6 +57,7 @@ class Parameters:
         self.eventsToDump = eventsToDump
         self.computeDensity = computeDensity
         self.events_per_job = events_per_job
+        self.version = version
 
     def __str__(self):
         return 'Name: {},\n \
@@ -599,6 +601,19 @@ def analyze(params, batch_idx=0):
 
 
 
+def editTemplate(infile, outfile, params):
+    template_file = open(infile)
+    template = template_file.read()
+    template_file.close()
+
+    for param in params.keys():
+        template = template.replace(param, params[param])
+
+    out_file = open(outfile, 'w')
+    out_file.write(template)
+    out_file.close()
+
+
 import optparse
 import ConfigParser
 
@@ -616,14 +631,14 @@ def main():
     parser.add_option('-n', '--nevents', dest='NEVENTS', help='# of events to process per sample (default is 10)', default=10)
     parser.add_option("-b", "--batch", action="store_true", dest="BATCH", default=False, help="submit the jobs via CONDOR")
     parser.add_option("-r", "--run", dest="RUN", default=None, help="the batch_id to run (need to be used with the option -b)")
-
+    parser.add_option("-o", "--outdir", dest="OUTDIR", default=None, help="override the output directory for the files")
 
     global opt, args
     (opt, args) = parser.parse_args()
 
+    # read the config file
     cfgfile = ConfigParser.ConfigParser()
     cfgfile.optionxform = str
-
     cfgfile.read(opt.CONFIGFILE)
 
     collection_dict = {}
@@ -634,10 +649,10 @@ def main():
             basedir = cfgfile.get('common', 'input_dir_local')
     plot_version = cfgfile.get('common', 'plot_version')
     run_clustering = False
-    if  cfgfile.get('common', 'run_clustering') == 'True':
+    if cfgfile.get('common', 'run_clustering') == 'True':
         run_clustering = True
     run_density_computation = False
-    if  cfgfile.get('common', 'run_density_computation') == 'True':
+    if cfgfile.get('common', 'run_density_computation') == 'True':
         run_density_computation = True
 
     events_to_dump = cfgfile.get('common', 'events_to_dump').split(',')
@@ -648,17 +663,23 @@ def main():
         sample_list = list()
         for sample in samples:
             events_per_job = -1
-            out_file = '{}/plots/histos_{}_{}.root'.format(basedir, sample, plot_version)
+            out_file_name = 'histos_{}_{}.root'.format(sample, plot_version)
             if opt.BATCH:
                 events_per_job = int(cfgfile.get(sample, 'events_per_job'))
                 if opt.RUN:
-                    out_file = 'histos_{}_{}_{}.root'.format(sample, plot_version, opt.RUN)
+                    out_file_name = 'histos_{}_{}_{}.root'.format(sample, plot_version, opt.RUN)
+
+            if opt.OUTDIR:
+                out_file = os.path.join(opt.OUTDIR, out_file_name)
+            else:
+                out_file = os.path.join(os.path.join(cfgfile.get(sample, 'input_sample_dir'), 'plots'), out_file_name)
 
             params = Parameters(input_base_dir=basedir,
                                 input_sample_dir=cfgfile.get(sample, 'input_sample_dir'),
                                 output_filename=out_file,
                                 clusterize=run_clustering,
                                 eventsToDump=events_to_dump,
+                                version=plot_version,
                                 maxEvents=int(opt.NEVENTS),
                                 events_per_job=events_per_job,
                                 debug=opt.DEBUG,
@@ -695,6 +716,7 @@ def main():
         os.mkdir(batch_dir+'/logs/')
 
         dagman_sub = ''
+        dagman_dep = ''
         for sample in samples_to_process:
             sample_batch_dir = os.path.join(batch_dir, sample.name)
             sample_batch_dir_logs = os.path.join(sample_batch_dir, 'logs')
@@ -712,46 +734,52 @@ def main():
             if n_jobs == 0:
                 n_jobs = 1
 
-            # prepare the CONDOR .sub file
-            condor_template_name = 'templates/batch.sub'
-            condor_template_file = open(condor_template_name)
-            condor_template = condor_template_file.read()
-            condor_template_file.close()
+            params = {}
+            params['TEMPL_TASKDIR'] = sample_batch_dir
+            params['TEMPL_NJOBS'] = str(n_jobs)
+            params['TEMPL_WORKDIR'] = os.environ["PWD"]
+            params['TEMPL_CFG'] = opt.CONFIGFILE
+            params['TEMPL_COLL'] = opt.COLLECTION
+            params['TEMPL_SAMPLE'] = sample.name
+            params['TEMPL_OUTFILE'] = 'histos_{}_{}.root'.format(sample.name, sample.version)
+            histo_path = os.path.join(sample.input_base_dir, 'plots/')
+            unmerged_files = [os.path.join(histo_path, 'histos_{}_{}_{}.root'.format(sample.name, sample.version, job)) for job in range(0, n_jobs)]
+            params['TEMPL_INFILES'] = ' '.join(unmerged_files)
+            params['TEMPL_OUTDIR'] = histo_path
 
-            condor_template = condor_template.replace('TEMPL_TASKDIR', sample_batch_dir)
-            condor_template = condor_template.replace('TEMPL_NJOBS', str(n_jobs))
+            editTemplate(infile='templates/batch.sub',
+                         outfile=os.path.join(sample_batch_dir, 'batch.sub'),
+                         params=params)
 
-            condor_file_path = os.path.join(sample_batch_dir, 'batch.sub')
-            condor_file = open(condor_file_path, 'w')
-            condor_file.write(condor_template)
-            condor_file.close()
+            editTemplate(infile='templates/run_batch.sh',
+                         outfile=os.path.join(sample_batch_dir, 'run_batch.sh'),
+                         params=params)
 
-            # prepare the exec script
-            script_template_name = 'templates/run_batch.sh'
-            script_template_file = open(script_template_name)
-            script_template = script_template_file.read()
-            script_template_file.close()
+            editTemplate(infile='templates/copy_files.sh',
+                         outfile=os.path.join(sample_batch_dir, 'copy_files.s'),
+                         params=params)
 
-            script_template = script_template.replace('TEMPL_WORKDIR', os.environ["PWD"])
-            script_template = script_template.replace('TEMPL_CFG', opt.CONFIGFILE)
-            script_template = script_template.replace('TEMPL_COLL', opt.COLLECTION)
-            script_template = script_template.replace('TEMPL_SAMPLE', sample.name)
-            script_template = script_template.replace('TEMPL_OUTDIR', params.input_base_dir)
+            editTemplate(infile='templates/batch_hadd.sub',
+                         outfile=os.path.join(sample_batch_dir, 'batch_hadd.sub'),
+                         params=params)
 
-            script_file_path = os.path.join(sample_batch_dir, 'run_batch.sh')
-            script_file = open(script_file_path, 'w')
-            script_file.write(script_template)
-            script_file.close()
+            editTemplate(infile='templates/run_batch_hadd.sh',
+                         outfile=os.path.join(sample_batch_dir, 'run_batch_hadd.sh'),
+                         params=params)
 
-            dagman_sub += 'JOB {} {}/batch.sub\n'.format(sample.name, sample.name)
+            dagman_sub += 'JOB {} {}/batch.sub\n'.format(sample.name, sample_batch_dir)
+            dagman_sub += 'JOB {} {}/batch_hadd.sub\n'.format(sample.name+'_hadd', sample_batch_dir)
+            dagman_dep += 'PARENT {} CHILD {}\n'.format(sample.name, sample.name+'_hadd')
+
 
         dagman_file_name = os.path.join(batch_dir, 'dagman.dag')
         dagman_file = open(dagman_file_name, 'w')
         dagman_file.write(dagman_sub)
+        dagman_file.write(dagman_dep)
         dagman_file.close()
 
         print('Ready for submission please run the following commands:')
-        print('condor_submit {}'.format(condor_file_path))
+        #print('condor_submit {}'.format(condor_file_path))
         print('condor_submit_dag {}'.format(dagman_file_name))
         sys.exit(0)
 
