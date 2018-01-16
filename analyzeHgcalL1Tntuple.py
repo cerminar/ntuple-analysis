@@ -757,7 +757,7 @@ def main():
             editTemplate(infile='templates/copy_files.sh',
                          outfile=os.path.join(sample_batch_dir, 'copy_files.sh'),
                          params=params)
-            os.lchmod(os.path.join(sample_batch_dir, 'copy_files.sh'),  0754)
+            os.chmod(os.path.join(sample_batch_dir, 'copy_files.sh'),  0754)
 
             editTemplate(infile='templates/batch_hadd.sub',
                          outfile=os.path.join(sample_batch_dir, 'batch_hadd.sub'),
