@@ -311,7 +311,7 @@ def analyze(params, batch_idx=0):
             print ("--- Event {}, @ {}".format(event.entry(), datetime.datetime.now()))
             print ('    run: {}, lumi: {}, event: {}'.format(event.run(), event.lumi(), event.event()))
 
-        nev+=1
+        nev += 1
 
         if event.entry() in params.eventsToDump:
             dump = True
@@ -338,9 +338,8 @@ def analyze(params, batch_idx=0):
         genPartGenerator = genParticles[genParticles.gen > 0]
         if debug >= 3:
             print(genPartGenerator)
-        #hgen.fill(genParts)
+        # hgen.fill(genParts)
         hGenPartsGammas.fill(genParticles[(genParticles.gen > 0) & (genParticles.pid == 22)])
-
 
         # -------------------------------------------------------
         # --- Digis
@@ -758,6 +757,7 @@ def main():
             editTemplate(infile='templates/copy_files.sh',
                          outfile=os.path.join(sample_batch_dir, 'copy_files.sh'),
                          params=params)
+            os.lchmod(os.path.join(sample_batch_dir, 'copy_files.sh'),  0754)
 
             editTemplate(infile='templates/batch_hadd.sub',
                          outfile=os.path.join(sample_batch_dir, 'batch_hadd.sub'),
