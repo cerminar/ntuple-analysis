@@ -9,4 +9,6 @@ RequestCpus = 5
 
 transfer_input_files  = TEMPL_TASKDIR/copy_files.sh
 +PostCmd              = "copy_files.sh"
+
+transfer_output_files   = ""
 queue TEMPL_NJOBS

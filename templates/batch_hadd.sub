@@ -5,4 +5,5 @@ error                 = TEMPL_TASKDIR/logs/hadd.$(ClusterId).$(ProcId).err
 log                   = TEMPL_TASKDIR/logs/condor_hadd.$(ClusterId).log
 +JobFlavour           = "microcentury"
 RequestCpus = 1
+transfer_output_files   = ""
 queue
