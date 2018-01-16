@@ -7,4 +7,4 @@ BATCH_DIR=${PWD}
 echo "Current dir: ${BATCH_DIR}"
 ls -l
 
-cp histos_TEMPL_SAMPLE_*_*.root TEMPL_OUTDIR
+cp histos_TEMPL_SAMPLE_*.root TEMPL_OUTDIR
