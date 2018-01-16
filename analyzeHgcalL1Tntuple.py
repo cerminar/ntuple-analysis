@@ -756,7 +756,7 @@ def main():
                          params=params)
 
             editTemplate(infile='templates/copy_files.sh',
-                         outfile=os.path.join(sample_batch_dir, 'copy_files.s'),
+                         outfile=os.path.join(sample_batch_dir, 'copy_files.sh'),
                          params=params)
 
             editTemplate(infile='templates/batch_hadd.sub',
