@@ -9,6 +9,8 @@ echo "Current dir: ${BATCH_DIR}"
 cd TEMPL_WORKDIR
 echo "Now in dir: ${PWD}"
 
+hostname
+
 source ./setup_lxplus.sh
 source ~/scripts/setVirtualEnvWrapper.sh
 workon HGCTPGPerformance-1
