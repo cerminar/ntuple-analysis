@@ -116,6 +116,8 @@ def plot3DClusterMatch(genParticles,
         # print ('-----------------------')
         # print (matched_idx)
     allmatched2Dclusters = list()
+    matchedClustersAll = pd.DataFrame()
+
     for idx, genParticle in genParticles.iterrows():
         if idx in matched_idx.keys():
             # print ('-----------------------')
@@ -168,7 +170,8 @@ def plot3DClusterMatch(genParticles,
             print (genParticle)
             print (trigger3DClusters)
 
-    matchedClustersAll = pd.concat(allmatched2Dclusters)
+    if len(allmatched2Dclusters) != 0:
+        matchedClustersAll = pd.concat(allmatched2Dclusters)
     return matchedClustersAll
 
 def build3DClusters(name, algorithm, triggerClusters, pool, debug):
