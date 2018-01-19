@@ -661,7 +661,9 @@ def main():
     if cfgfile.get('common', 'run_density_computation') == 'True':
         run_density_computation = True
 
-    events_to_dump = [int(num) for num in cfgfile.get('common', 'events_to_dump').split(',')]
+    events_to_dump = []
+    if cfgfile.has_option('common', "events_to_dump"):
+        events_to_dump = [int(num) for num in cfgfile.get('common', 'events_to_dump').split(',')]
 
     for collection in collections:
         samples = cfgfile.get(collection, 'samples').split(',')
