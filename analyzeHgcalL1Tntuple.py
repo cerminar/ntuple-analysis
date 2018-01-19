@@ -115,6 +115,7 @@ def plot3DClusterMatch(genParticles,
                                                      deltaR=0.2)
         # print ('-----------------------')
         # print (matched_idx)
+    allmatched2Dclusters = list()
     for idx, genParticle in genParticles.iterrows():
         if idx in matched_idx.keys():
             # print ('-----------------------')
@@ -126,6 +127,7 @@ def plot3DClusterMatch(genParticles,
             # print (allMatches)
             matchedClusters = triggerClusters.iloc[matched3DCluster.clusters.item()]
             matchedTriggerCells = triggerCells.iloc[np.concatenate(matchedClusters.cells.values)]
+            allmatched2Dclusters. append(matchedClusters)
 
             if 'energyCentral' not in matched3DCluster.columns:
                 calib_factor = 1.084
@@ -158,7 +160,7 @@ def plot3DClusterMatch(genParticles,
                 print ('3D cluster pt: {}'.format(matched3DCluster.pt.sum()))
                 calib_factor = 1.084
                 print ('sum 2D cluster energy: {}'.format(matchedClusters.energy.sum()*calib_factor))
-                print ('sum 2D cluster pt: {}'.format(matchedClusters.pt.sum()*calib_factor))
+                #print ('sum 2D cluster pt: {}'.format(matchedClusters.pt.sum()*calib_factor))
                 print ('sum TC energy: {}'.format(matchedTriggerCells.energy.sum()))
 
         else:
@@ -166,6 +168,8 @@ def plot3DClusterMatch(genParticles,
             print (genParticle)
             print (trigger3DClusters)
 
+    matchedClustersAll = pd.concat(allmatched2Dclusters)
+    return matchedClustersAll
 
 def build3DClusters(name, algorithm, triggerClusters, pool, debug):
     trigger3DClusters = pd.DataFrame()
@@ -312,7 +316,6 @@ def analyze(params, batch_idx=0):
             print ('    run: {}, lumi: {}, event: {}'.format(event.run(), event.lumi(), event.event()))
 
         nev += 1
-
         if event.entry() in params.eventsToDump:
             dump = True
         else:
@@ -539,7 +542,7 @@ def analyze(params, batch_idx=0):
                            'NN',
                            debug)
 
-        plot3DClusterMatch(genReference,
+        mcl2d = plot3DClusterMatch(genReference,
                            trigger3DClustersGEO,
                            triggerClustersGEO,
                            tcsWithPos,
@@ -553,6 +556,10 @@ def analyze(params, batch_idx=0):
                            hreso2DGEO_20t28,
                            'GEO',
                            debug)
+
+        if dump:
+            js_filename = 'mcl2d_dump_ev_{}.json'.format(event.entry())
+            dumpFrame2JSON(js_filename, mcl2d)
 
         if params.clusterize:
             plot3DClusterMatch(genReference,
@@ -654,7 +661,7 @@ def main():
     if cfgfile.get('common', 'run_density_computation') == 'True':
         run_density_computation = True
 
-    events_to_dump = cfgfile.get('common', 'events_to_dump').split(',')
+    events_to_dump = [int(num) for num in cfgfile.get('common', 'events_to_dump').split(',')]
 
     for collection in collections:
         samples = cfgfile.get(collection, 'samples').split(',')
@@ -671,7 +678,7 @@ def main():
             if opt.OUTDIR:
                 out_file = os.path.join(opt.OUTDIR, out_file_name)
             else:
-                out_file = os.path.join(os.path.join(cfgfile.get(sample, 'input_sample_dir'), 'plots'), out_file_name)
+                out_file = os.path.join(os.path.join(basedir, 'plots'), out_file_name)
 
             params = Parameters(input_base_dir=basedir,
                                 input_sample_dir=cfgfile.get(sample, 'input_sample_dir'),
