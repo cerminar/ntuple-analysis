@@ -116,7 +116,10 @@ class HGCalNtuple(object):
         super(HGCalNtuple, self).__init__()
         self._tree = ROOT.TChain(tree)
         for file_name in fileNames:
-            self._tree.Add(file_name)
+            protocol = ''
+            if '/eos/user/' in file_name:
+                protocol = 'root://eosuser.cern.ch/'
+            self._tree.Add(protocol+file_name)
         self._entries = self._tree.GetEntries()
 
     def tree(self):
