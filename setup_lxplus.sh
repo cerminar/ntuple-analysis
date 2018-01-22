@@ -6,3 +6,4 @@ source ${CVMFS_TOOLS}/external/pcre/8.37/etc/profile.d/init.sh
 source ${CVMFS_TOOLS}/lcg/root/6.10.08/bin/thisroot.sh
 source ${CVMFS_TOOLS}/external/py2-pip/9.0.1-fmblme/etc/profile.d/init.sh
 source ${CVMFS_TOOLS}/external/tbb/2017_U6/etc/profile.d/init.sh
+source ${CVMFS_TOOLS}/external/xrootd/4.5.0/etc/profile.d/init.sh
