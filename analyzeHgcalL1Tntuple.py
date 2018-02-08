@@ -127,8 +127,12 @@ def plot3DClusterMatch(genParticles,
             # allMatches = trigger3DClusters.iloc[allmatches[idx]]
             # print ('--')
             # print (allMatches)
-            matchedClusters = triggerClusters.iloc[matched3DCluster.clusters.item()]
-            matchedTriggerCells = triggerCells.iloc[np.concatenate(matchedClusters.cells.values)]
+            # print (matched3DCluster.clusters.item())
+            # print (type(matched3DCluster.clusters.item()))
+            #matchedClusters = triggerClusters[ [x in matched3DCluster.clusters.item() for x in triggerClusters.id]]
+            matchedClusters = triggerClusters[triggerClusters.id.isin(matched3DCluster.clusters.item())]
+            # print (matchedClusters)
+            matchedTriggerCells = triggerCells[triggerCells.id.isin(np.concatenate(matchedClusters.cells.values))]
             allmatched2Dclusters. append(matchedClusters)
 
             if 'energyCentral' not in matched3DCluster.columns:
@@ -166,30 +170,57 @@ def plot3DClusterMatch(genParticles,
                 print ('sum TC energy: {}'.format(matchedTriggerCells.energy.sum()))
 
         else:
-            print ('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx))
-            print (genParticle)
-            print (trigger3DClusters)
+            if debug >= 5:
+                print ('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx))
+                print (genParticle)
+                print (trigger3DClusters)
 
     if len(allmatched2Dclusters) != 0:
         matchedClustersAll = pd.concat(allmatched2Dclusters)
     return matchedClustersAll
 
+
 def build3DClusters(name, algorithm, triggerClusters, pool, debug):
     trigger3DClusters = pd.DataFrame()
-    clusterSides = [triggerClusters[triggerClusters.eta > 0], triggerClusters[triggerClusters.eta < 0]]
+    if triggerClusters.empty:
+        return trigger3DClusters
+    clusterSides = [x for x in [triggerClusters[triggerClusters.eta > 0], triggerClusters[triggerClusters.eta < 0]] if not x.empty]
     results3Dcl = pool.map(algorithm, clusterSides)
     for res3D in results3Dcl:
         trigger3DClusters = trigger3DClusters.append(res3D, ignore_index=True)
 
-    if(debug >= 2):
-        print('# of 3D clusters {}: {}'.format(name, len(trigger3DClusters)))
-    if(debug >= 3):
-        print(trigger3DClusters.iloc[:3])
+    debugPrintOut(debug, name='{} 3D clusters'.format(name),
+                  toCount=trigger3DClusters,
+                  toPrint=trigger3DClusters.loc[:3])
     return trigger3DClusters
+
+
+def debugPrintOut(level, name, toCount, toPrint):
+    if level == 0:
+        return
+    if level >= 2:
+        print('# {}: {}'.format(name, len(toCount)))
+    if level >= 3:
+        print(toPrint)
+
+
+class PID:
+    electron = 11
+    photon = 22
+    pizero = 111
+    pion = 211
+    kzero = 130
+
+class Particle:
+    def __init__(self, name, pdgid):
+        self.name = name
+        self.pdgid = pdgid
+
 
 
 def analyze(params, batch_idx=0):
     print (params)
+    doAlternative = False
 
     debug = int(params.debug)
     computeDensity = params.computeDensity
@@ -197,29 +228,31 @@ def analyze(params, batch_idx=0):
 
     pool = Pool(5)
 
-    # read the geometry dump
-    geom_file = params.input_base_dir+'/geom/test_triggergeom.root'
+    tc_geom_df = pd.DataFrame()
+    if False:
+        # read the geometry dump
+        geom_file = params.input_base_dir+'/geom/test_triggergeom.root'
 
-    tc_geom_tree = HGCalNtuple([geom_file], tree='hgcaltriggergeomtester/TreeTriggerCells')
-    print ('read TC GEOM tree with # events: {}'.format(tc_geom_tree.nevents()))
-    tc_geom_df = convertGeomTreeToDF(tc_geom_tree._tree)
-    tc_geom_df['radius'] = np.sqrt(tc_geom_df['x']**2+tc_geom_df['y']**2)
-    tc_geom_df['eta'] = np.arcsinh(tc_geom_df.z/tc_geom_df.radius)
+        tc_geom_tree = HGCalNtuple([geom_file], tree='hgcaltriggergeomtester/TreeTriggerCells')
+        print ('read TC GEOM tree with # events: {}'.format(tc_geom_tree.nevents()))
+        tc_geom_df = convertGeomTreeToDF(tc_geom_tree._tree)
+        tc_geom_df['radius'] = np.sqrt(tc_geom_df['x']**2+tc_geom_df['y']**2)
+        tc_geom_df['eta'] = np.arcsinh(tc_geom_df.z/tc_geom_df.radius)
 
-    # print (tc_geom_df[:3])
-    # tc_geom_df['max_neigh_dist'] = 1
-    # a5 = tc_geom_df[tc_geom_df.neighbor_n == 5]
-    # a5['max_neigh_dist'] =  a5['neighbor_distance'].max()
-    # a6 = tc_geom_df[tc_geom_df.neighbor_n == 6]
-    # a6['max_neigh_dist'] =  a6['neighbor_distance'].max()
+        # print (tc_geom_df[:3])
+        # tc_geom_df['max_neigh_dist'] = 1
+        # a5 = tc_geom_df[tc_geom_df.neighbor_n == 5]
+        # a5['max_neigh_dist'] =  a5['neighbor_distance'].max()
+        # a6 = tc_geom_df[tc_geom_df.neighbor_n == 6]
+        # a6['max_neigh_dist'] =  a6['neighbor_distance'].max()
 
-    # for index, tc_geom in tc_geom_df.iterrows():
-    #     tc_geom.max_dist_neigh = np.max(tc_geom.neighbor_distance)
+        # for index, tc_geom in tc_geom_df.iterrows():
+        #     tc_geom.max_dist_neigh = np.max(tc_geom.neighbor_distance)
 
-    # print (tc_geom_df[:10])
+        # print (tc_geom_df[:10])
 
-    # treeTriggerCells = inputFile.Get("hgcaltriggergeomtester/TreeTriggerCells")
-    # treeCells        = inputFile.Get("hgcaltriggergeomtester/TreeCells")
+        # treeTriggerCells = inputFile.Get("hgcaltriggergeomtester/TreeTriggerCells")
+        # treeCells        = inputFile.Get("hgcaltriggergeomtester/TreeCells")
 
     input_files = listFiles(os.path.join(params.input_base_dir, params.input_sample_dir))
     print ('- dir {} contains {} files.'.format(params.input_sample_dir, len(input_files)))
@@ -243,58 +276,52 @@ def analyze(params, batch_idx=0):
     hGenPartsGammas = histos.GenParticleHistos('h_genPartsGammas')
 
     hdigis = histos.DigiHistos('h_hgcDigisAll')
-    htc = histos.TCHistos('h_tcAll')
 
-    h2dcl = histos.ClusterHistos('h_clAll')
-    h3dcl = histos.Cluster3DHistos('h_cl3dAll')
+    hsetDEF = histos.HistoSetClusters('DEF_all')
+    hsetGEO = histos.HistoSetClusters('GEO_all')
+    hsetDBS = histos.HistoSetClusters('DBS_all')
+    hsetDBSp = histos.HistoSetClusters('DBSp_all')
 
-    h2dclGEO = histos.ClusterHistos('h_clGEOAll')
-    h3dclGEO = histos.Cluster3DHistos('h_cl3dGEOAll')
+    algos = ['DEF', 'DBS']
+    particles = [Particle('ele', PID.electron),
+                 Particle('photon', PID.photon),
+                 Particle('pion', PID.pion),
+                 Particle('pizero', PID.pizero)]
 
-    h2dclDBS = histos.ClusterHistos('h_clDBSAll')
-    h3dclDBS = histos.Cluster3DHistos('h_cl3dDBSAll')
+    def bookMatchingHistos(histoClass, algos, particles):
+        retDict = {}
+        for algo in algos:
+            for particle in particles:
+                retDict[(algo, particle.name)] = histoClass(name='{}_{}'.format(algo, particle.name))
+        return retDict
 
-    h3dclDBSp = histos.Cluster3DHistos('h_cl3dDBSpAll')
+    hsetMatched = bookMatchingHistos(histos.HistoSetClusters, algos, particles)
+    hsetReso    = bookMatchingHistos(histos.HistoSetReso, algos, particles)
 
-    htcMatch = histos.TCHistos('h_tcMatch')
-    h2dclMatch = histos.ClusterHistos('h_clMatch')
-    h3dclMatch = histos.Cluster3DHistos('h_cl3dMatch')
+    # htcMatchGEO = histos.TCHistos('h_tcMatchGEO')
+    # h2dclMatchGEO = histos.ClusterHistos('h_clMatchGEO')
+    # h3dclMatchGEO = histos.Cluster3DHistos('h_cl3dMatchGEO')
 
-    htcMatchGEO = histos.TCHistos('h_tcMatchGEO')
-    h2dclMatchGEO = histos.ClusterHistos('h_clMatchGEO')
-    h3dclMatchGEO = histos.Cluster3DHistos('h_cl3dMatchGEO')
-
-    htcMatchDBS = histos.TCHistos('h_tcMatchDBS')
-    h2dclMatchDBS = histos.ClusterHistos('h_clMatchDBS')
-    h3dclMatchDBS = histos.Cluster3DHistos('h_cl3dMatchDBS')
-
-    htcMatchDBSp = histos.TCHistos('h_tcMatchDBSp')
-    h2dclMatchDBSp = histos.ClusterHistos('h_clMatchDBSp')
-    h3dclMatchDBSp = histos.Cluster3DHistos('h_cl3dMatchDBSp')
-
-    hreso = histos.ResoHistos('h_EleReso')
     hreso2D = histos.Reso2DHistos('h_ClReso')
     hreso2D_1t6 = histos.Reso2DHistos('h_ClReso1t6')
     hreso2D_10t20 = histos.Reso2DHistos('h_ClReso10t20')
     hreso2D_20t28 = histos.Reso2DHistos('h_ClReso20t28')
 
-    hresoGEO = histos.ResoHistos('h_EleResoGEO')
     hreso2DGEO = histos.Reso2DHistos('h_ClResoGEO')
     hreso2DGEO_1t6 = histos.Reso2DHistos('h_ClResoGEO1t6')
     hreso2DGEO_10t20 = histos.Reso2DHistos('h_ClResoGEO10t20')
     hreso2DGEO_20t28 = histos.Reso2DHistos('h_ClResoGEO20t28')
 
-    hresoDBS = histos.ResoHistos('h_EleResoDBS')
     hreso2DDBS = histos.Reso2DHistos('h_ClResoDBS')
     hreso2DDBS_1t6 = histos.Reso2DHistos('h_ClResoDBS1t6')
     hreso2DDBS_10t20 = histos.Reso2DHistos('h_ClResoDBS10t20')
     hreso2DDBS_20t28 = histos.Reso2DHistos('h_ClResoDBS20t28')
 
-    hresoDBSp = histos.ResoHistos('h_EleResoDBSp')
     hreso2DDBSp = histos.Reso2DHistos('h_ClResoDBSp')
     hreso2DDBSp_1t6 = histos.Reso2DHistos('h_ClResoDBSp1t6')
     hreso2DDBSp_10t20 = histos.Reso2DHistos('h_ClResoDBSp10t20')
     hreso2DDBSp_20t28 = histos.Reso2DHistos('h_ClResoDBSp20t28')
+
 
     hDensity_3p6 = histos.DensityHistos('h_dens3p6')
     hDensityClus_3p6 = histos.DensityHistos('h_densClus3p6')
@@ -307,10 +334,10 @@ def analyze(params, batch_idx=0):
 
     if(params.events_per_job != -1):
         range_ev = range(batch_idx*params.events_per_job, (batch_idx+1)*params.events_per_job)
-    #print (range_ev)
+    # print (range_ev)
     nev = 0
     for evt_idx in range_ev:
-        #print(evt_idx)
+        # print(evt_idx)
         event = ntuple.getEvent(evt_idx)
         if (params.maxEvents != -1 and nev >= params.maxEvents):
             break
@@ -323,96 +350,147 @@ def analyze(params, batch_idx=0):
             dump = True
         else:
             dump = False
-        # -------------------------------------------------------
-        # --- GenParticles
-        genParts = event.getDataFrame(prefix='gen')
-        if debug >= 2:
-            print ("# gen parts: {}".format(len(genParts)))
-        if debug >= 3:
-            print(genParts.iloc[:3])
 
-        hgen.fill(genParts)
+        # get the interesting data-frames
+        genParts = event.getDataFrame(prefix='gen')
+
+        if len(genParts[(genParts.eta > 1.7) & (genParts.eta < 2.5)]) == 0:
+            continue
 
         genParticles = event.getDataFrame(prefix='genpart')
         genParticles['pdgid'] = genParticles.pid
-        if debug >= 2:
-            print ("# gen particles: {}".format(len(genParticles)))
-        if debug >= 3:
-            print(genParticles[['eta', 'phi', 'pt', 'energy', 'mother', 'gen', 'pid', 'pdgid', 'reachedEE']])
+        hgcDigis = event.getDataFrame(prefix='hgcdigi')
+        triggerCells = event.getDataFrame(prefix='tc')
+        # this is not needed anymore in recent versions of the ntuples
+        # tcsWithPos = pd.merge(triggerCells, tc_geom_df[['id', 'x', 'y']], on='id')
+        triggerClusters = event.getDataFrame(prefix='cl')
+        triggerClusters['ncells'] = [len(x) for x in triggerClusters.cells]
+        trigger3DClusters = event.getDataFrame(prefix='cl3d')
+        trigger3DClusters['nclu'] = [len(x) for x in trigger3DClusters.clusters]
+        triggerClustersGEO = pd.DataFrame()
+        trigger3DClustersGEO = pd.DataFrame()
+        triggerClustersDBS = pd.DataFrame()
+        trigger3DClustersDBS = pd.DataFrame()
+        trigger3DClustersDBSp = pd.DataFrame()
+
+        debugPrintOut(debug, 'gen parts', toCount=genParts, toPrint=genParts)
+        debugPrintOut(debug, 'gen particles',
+                      toCount=genParticles,
+                      toPrint=genParticles[['eta', 'phi', 'pt', 'energy', 'mother', 'gen', 'pid', 'pdgid', 'reachedEE']])
+        debugPrintOut(debug, 'digis',
+                      toCount=hgcDigis,
+                      toPrint=hgcDigis.loc[:3])
+        debugPrintOut(debug, 'Trigger Cells',
+                      toCount=triggerCells,
+                      toPrint=triggerCells.loc[:3])
+        debugPrintOut(debug, '2D clusters',
+                      toCount=triggerClusters,
+                      toPrint=triggerClusters.loc[:3])
+        debugPrintOut(debug, '3D clusters',
+                      toCount=trigger3DClusters,
+                      toPrint=trigger3DClusters.loc[:3])
+
+        if params.clusterize:
+            # Now build DBSCAN 2D clusters
+            for zside in [-1, 1]:
+                arg = [(layer, zside, triggerCells) for layer in range(0, 29)]
+                results = pool.map(clAlgo.buildDBSCANClustersUnpack, arg)
+                for clres in results:
+                    triggerClustersDBS = triggerClustersDBS.append(clres, ignore_index=True)
+
+            debugPrintOut(debug, 'DBS 2D clusters',
+                          toCount=triggerClustersDBS,
+                          toPrint=triggerClustersDBS.loc[:3])
+
+            trigger3DClustersDBS = build3DClusters('DBS', clAlgo.build3DClustersEtaPhi, triggerClustersDBS, pool, debug)
+            trigger3DClustersDBSp = build3DClusters('DBSp', clAlgo.build3DClustersProj, triggerClustersDBS, pool, debug)
+
+
+        # if doAlternative:
+        #     triggerClustersGEO = event.getDataFrame(prefix='clGEO')
+        #     trigger3DClustersGEO = event.getDataFrame(prefix='cl3dGEO')
+        #     debugPrintOut(debug, 'GEO 2D clusters',
+        #                   toCount=triggerClustersGEO,
+        #                   toPrint=triggerClustersGEO.loc[:3])
+        #     debugPrintOut(debug, 'GEO 3D clusters',
+        #                   toCount=trigger3DClustersGEO,
+        #                   toPrint=trigger3DClustersGEO.loc[:3])
+
+
+
+
+        #     print(triggerCells[triggerCells.index.isin(np.concatenate(triggerClusters.cells.iloc[:3]))])
+
+        # fill histograms
+        hgen.fill(genParts)
 
         # we find the genparticles matched to the GEN info
         genPartGenerator = genParticles[genParticles.gen > 0]
-        if debug >= 3:
-            print(genPartGenerator)
-        # hgen.fill(genParts)
         hGenPartsGammas.fill(genParticles[(genParticles.gen > 0) & (genParticles.pid == 22)])
 
-        # -------------------------------------------------------
-        # --- Digis
-        hgcDigis = event.getDataFrame(prefix='hgcdigi')
-        if debug >= 2:
-            print ('# HGCAL digis: {}'.format(len(hgcDigis)))
-        if debug >= 3:
-            print (hgcDigis.iloc[:3])
         hdigis.fill(hgcDigis)
 
-        # -------------------------------------------------------
-        # --- Trigger Cells
-        triggerCells = event.getDataFrame(prefix='tc')
-        if(debug >= 2):
-            print ("# of TC: {}".format(len(triggerCells)))
+        hsetDEF.htc.fill(triggerCells)
+        hsetDEF.hcl2d.fill(triggerClusters)
+        hsetDEF.hcl3d.fill(trigger3DClusters)
 
-        tcsWithPos = pd.merge(triggerCells, tc_geom_df[['id', 'x', 'y']], on='id')
+        # if doAlternative:
+        #     h2dclGEO.fill(triggerClustersGEO)
+        #     h3dclGEO.fill(trigger3DClustersGEO)
 
-        # json.dump(data, f)test_sample
-        # if(debug == 10):
-        #     print(triggerCells.index)
-        #     print(triggerCells.columns)
-        #     print(triggerCells.size)
-        #     print(triggerCells.energy)
-        #     print(triggerCells.iloc[:3])
-        # print(triggerCells[(triggerCells.subdet > 3) & (triggerCells.wafer == 9)])
-        # slicing and selection
-        # print(triggerCells[(triggerCells.layer >= 1) & (triggerCells.layer <= 5)][['layer', 'energy']])
+        if(triggerClustersDBS.shape[0] != 0):
+            hsetDBS.hcl2d.fill(triggerClustersDBS)
+        if(trigger3DClustersDBS.shape[0] != 0):
+            hsetDBS.hcl3d.fill(trigger3DClustersDBS)
+        if(trigger3DClustersDBSp.shape[0] != 0):
+            hsetDBSp.hcl3d.fill(trigger3DClustersDBSp)
 
-        #     print(triggerCells[1:3])
-        #     print(triggerCells[['energy', 'layer']].iloc[:3])
-        #     print(triggerCells[['energy', 'layer']].iloc[:3].shape)
+        # now we try to match the Clusters to the GEN particles of various types
+        for particle in particles:
+            genReference = genParts[(abs(genParts.pdgid) == particle.pdgid)]
+            # for the photons we add a further selection
+            if particle.pdgid == PID.photon:
+                genReference = genParticles[(genParticles.gen > 0) & (genParticles.pid == PID.photon) & (genParticles.reachedEE == 2)]
+            for algo in algos:
+                tcs = triggerCells
+                cluster2ds = None
+                cluster3ds = None
+                if algo == 'DEF':
+                    cluster2ds = triggerClusters
+                    cluster3ds = trigger3DClusters
+                elif algo == 'DBS':
+                    cluster2ds = triggerClustersDBS
+                    cluster3ds = trigger3DClustersDBS
+                elif algo == 'DBSp':
+                    cluster2ds = triggerClustersDBS
+                    cluster3ds = trigger3DClustersDBSp
 
-        if(debug >= 3):
-            print(triggerCells.iloc[:3])
-        htc.fill(triggerCells)
+                hsetMatchAlgoPart = hsetMatched[(algo, particle.name)]
+                hsetResoAlgoPart = hsetReso[(algo, particle.name)]
 
-        triggerClusters = event.getDataFrame(prefix='cl')
-        trigger3DClusters = event.getDataFrame(prefix='cl3d')
+                plot3DClusterMatch(genReference,
+                                   cluster3ds,
+                                   cluster2ds,
+                                   tcs,
+                                   hsetMatchAlgoPart.htc,
+                                   hsetMatchAlgoPart.hcl2d,
+                                   hsetMatchAlgoPart.hcl3d,
+                                   hsetResoAlgoPart.hreso,
+                                   hreso2D,
+                                   hreso2D_1t6,
+                                   hreso2D_10t20,
+                                   hreso2D_20t28,
+                                   algo,
+                                   debug)
 
+
+        # dump the data-frames to JSON if needed
         if dump:
             js_filename = 'tc_dump_ev_{}.json'.format(event.entry())
-            dumpFrame2JSON(js_filename, tcsWithPos)
+            dumpFrame2JSON(js_filename, triggerCells)
             js_2dc_filename = '2dc_dump_ev_{}.json'.format(event.entry())
             dumpFrame2JSON(js_2dc_filename, triggerClusters)
 
-        if(debug >= 2):
-            print('# of NN clusters: {}'.format(len(triggerClusters)))
-
-        if(debug >= 3):
-            print(triggerClusters.iloc[:3])
-        #     print(triggerClusters.cells.iloc[:3])
-        #     # these are all the trigger-cells used in the first 3 2D clusters
-        #     print(triggerCells[triggerCells.index.isin(np.concatenate(triggerClusters.cells.iloc[:3]))])
-
-        h2dcl.fill(triggerClusters)
-
-        triggerClustersGEO = event.getDataFrame(prefix='clGEO')
-        trigger3DClustersGEO = event.getDataFrame(prefix='cl3dGEO')
-
-        if(debug >= 2):
-            print('# of GEO clusters: {}'.format(len(triggerClustersGEO)))
-
-        if(debug >= 3):
-            print(triggerClustersGEO.iloc[:3])
-
-        h2dclGEO.fill(triggerClustersGEO)
 
         if computeDensity:
             # def computeDensity(tcs):
@@ -422,7 +500,7 @@ def analyze(params, batch_idx=0):
             #         tcsinradius = tcs[((tcs.x-tc.x)**2+(tcs.y-tc.y)**2) < eps**2]
             #         totE = np.sum(tcsinradius.energy)
             #
-            tcsWithPos_ee = tcsWithPos[tcsWithPos.subdet == 3]
+            tcsWithPos_ee = triggerCells[triggerCells.subdet == 3]
             # triggerClusters_ee = triggerClusters[triggerClusters.subdet == 3]
 
             def getEnergyAndTCsInRadius(tc, tcs, radius):
@@ -465,136 +543,13 @@ def analyze(params, batch_idx=0):
                         if(len(energy_list) != 0):
                             hDensityClus.fill(layer, max(energy_list), max(ntcs_list))
 
-        # Now build DBSCAN 2D clusters
-        triggerClustersDBS = pd.DataFrame()
-        if params.clusterize:
-            for zside in [-1, 1]:
-                arg = [(layer, zside, tcsWithPos) for layer in range(0, 29)]
-                results = pool.map(clAlgo.buildDBSCANClustersUnpack, arg)
-                for clres in results:
-                    triggerClustersDBS = triggerClustersDBS.append(clres, ignore_index=True)
-                if plot2DCLDR:
-                    for idx, cl in triggerClustersDBS[triggerClustersDBS.zside == zside].iterrows():
-                        for idx2 in range(idx+1, triggerClustersDBS[triggerClustersDBS.zside == zside].shape[0]):
-                            hDR.Fill(math.sqrt((cl.eta-triggerClustersDBS[triggerClustersDBS.zside == zside].loc[idx2].eta)**2+(cl.phi-triggerClustersDBS[triggerClustersDBS.zside == zside].loc[idx2].phi)**2))
+                # if plot2DCLDR:
+                #     for idx, cl in triggerClustersDBS[triggerClustersDBS.zside == zside].iterrows():
+                #         for idx2 in range(idx+1, triggerClustersDBS[triggerClustersDBS.zside == zside].shape[0]):
+                #             hDR.Fill(math.sqrt((cl.eta-triggerClustersDBS[triggerClustersDBS.zside == zside].loc[idx2].eta)**2+(cl.phi-triggerClustersDBS[triggerClustersDBS.zside == zside].loc[idx2].phi)**2))
             # for layer in range(0, 29):
             #     triggerClustersDBS = triggerClustersDBS.append(clAlgo.buildDBSCANClusters(layer, zside, tcsWithPos), ignore_index=True)
-        if(debug >= 2):
-            print('# of DBS clusters: {}'.format(len(triggerClustersDBS)))
 
-        if(debug >= 3):
-            print(triggerClustersDBS.iloc[:3])
-        if(triggerClustersDBS.shape[0] != 0):
-            h2dclDBS.fill(triggerClustersDBS)
-
-        # clusters3d = event.trigger3DClusters()
-        # print('# 3D clusters old style: {}'.format(len(clusters3d)))
-        # for cluster in clusters3d:
-        #     print(len(cluster.clusters()))
-
-        if(debug >= 2):
-            print('# of NN 3D clusters: {}'.format(len(trigger3DClusters)))
-        if(debug >= 3):
-            print(trigger3DClusters.iloc[:3])
-        h3dcl.fill(trigger3DClusters)
-
-        if(debug >= 2):
-            print('# of GEO 3D clusters: {}'.format(len(trigger3DClustersGEO)))
-        if(debug >= 3):
-            print(trigger3DClustersGEO.iloc[:3])
-        h3dclGEO.fill(trigger3DClustersGEO)
-
-        trigger3DClustersDBS = pd.DataFrame()
-        if params.clusterize:
-            trigger3DClustersDBS = build3DClusters('DBSCAN', clAlgo.build3DClustersEtaPhi, triggerClustersDBS, pool, debug)
-
-        if(trigger3DClustersDBS.shape[0] != 0):
-            h3dclDBS.fill(trigger3DClustersDBS)
-
-        trigger3DClustersDBSp = pd.DataFrame()
-        if params.clusterize:
-            trigger3DClustersDBSp = build3DClusters('DBSCANp', clAlgo.build3DClustersProj, triggerClustersDBS, pool, debug)
-
-        if(trigger3DClustersDBSp.shape[0] != 0):
-            h3dclDBSp.fill(trigger3DClustersDBSp)
-
-        # resolution study
-        electron_PID = 11
-        photon_PID = 22
-        genElect = genParts[(abs(genParts.pdgid) == electron_PID)]
-        genPhot = genParts[(abs(genParts.pdgid) == photon_PID)]
-        if genElect.shape[0] != 0:
-            genReference = genElect
-        elif genPhot.shape[0] != 0:
-            # we select unconverted photons
-            genReference = genParticles[(genParticles.gen > 0) & (genParticles.pid == photon_PID) & (genParticles.reachedEE == 2)]
-            # print (genReference)
-
-        plot3DClusterMatch(genReference,
-                           trigger3DClusters,
-                           triggerClusters,
-                           tcsWithPos,
-                           htcMatch,
-                           h2dclMatch,
-                           h3dclMatch,
-                           hreso,
-                           hreso2D,
-                           hreso2D_1t6,
-                           hreso2D_10t20,
-                           hreso2D_20t28,
-                           'NN',
-                           debug)
-
-        mcl2d = plot3DClusterMatch(genReference,
-                           trigger3DClustersGEO,
-                           triggerClustersGEO,
-                           tcsWithPos,
-                           htcMatchGEO,
-                           h2dclMatchGEO,
-                           h3dclMatchGEO,
-                           hresoGEO,
-                           hreso2DGEO,
-                           hreso2DGEO_1t6,
-                           hreso2DGEO_10t20,
-                           hreso2DGEO_20t28,
-                           'GEO',
-                           debug)
-
-        if dump:
-            js_filename = 'mcl2d_dump_ev_{}.json'.format(event.entry())
-            dumpFrame2JSON(js_filename, mcl2d)
-
-        if params.clusterize:
-            plot3DClusterMatch(genReference,
-                               trigger3DClustersDBS,
-                               triggerClustersDBS,
-                               tcsWithPos,
-                               htcMatchDBS,
-                               h2dclMatchDBS,
-                               h3dclMatchDBS,
-                               hresoDBS,
-                               hreso2DDBS,
-                               hreso2DDBS_1t6,
-                               hreso2DDBS_10t20,
-                               hreso2DDBS_20t28,
-                               'DBSCAN',
-                               debug)
-
-
-            plot3DClusterMatch(genReference,
-                               trigger3DClustersDBSp,
-                               triggerClustersDBS,
-                               tcsWithPos,
-                               htcMatchDBSp,
-                               h2dclMatchDBSp,
-                               h3dclMatchDBSp,
-                               hresoDBSp,
-                               hreso2DDBSp,
-                               hreso2DDBSp_1t6,
-                               hreso2DDBSp_10t20,
-                               hreso2DDBSp_20t28,
-                               'DBSCANp',
-                               debug)
 
     print ("Processed {} events/{} TOT events".format(nev, ntuple.nevents()))
     print ("Writing histos to file {}".format(params.output_filename))
