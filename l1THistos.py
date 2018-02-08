@@ -100,12 +100,12 @@ class DigiHistos(BaseHistos):
     def __init__(self, name, root_file=None):
         if not root_file:
             self.h_layer = ROOT.TH1F(name+'_layer', 'Digi layer #', 60, 0, 60)
-            self.h_simenergy = ROOT.TH1F(name+'_energy', 'Digi sim-energy (GeV)', 100, 0, 2)
+            # self.h_simenergy = ROOT.TH1F(name+'_energy', 'Digi sim-energy (GeV)', 100, 0, 2)
         BaseHistos.__init__(self, name, root_file)
 
     def fill(self, digis):
         rnp.fill_hist(self.h_layer, digis.layer)
-        rnp.fill_hist(self.h_simenergy, digis.simenergy)
+        # rnp.fill_hist(self.h_simenergy, digis.simenergy)
 
 
 class TCHistos(BaseHistos):
@@ -303,6 +303,19 @@ class DensityHistos(BaseHistos):
         self.h_eDensityVlayer.Fill(layer, energy)
         self.h_nTCDensityVlayer.Fill(layer, nTCs)
 
-# class HstoSetMatchedClusters():
-#     def __init__(self, name):
-#
+
+# for convenience we define some sets
+class HistoSetClusters():
+    def __init__(self, name, root_file=None):
+        self.htc = TCHistos('h_tc_'+name, root_file)
+        self.hcl2d = ClusterHistos('h_cl2d_'+name, root_file)
+        self.hcl3d = Cluster3DHistos('h_cl3d_'+name, root_file)
+
+    def fill(self, tcs, cl2ds, cl3ds):
+        self.htc.fill(tcs)
+        self.hcl2d.fill(cl2ds)
+        self.hcl3d.fill(cl3ds)
+
+class HistoSetReso():
+    def __init__(self, name, root_file=None):
+        self.hreso = ResoHistos('h_reso_'+name, root_file)
