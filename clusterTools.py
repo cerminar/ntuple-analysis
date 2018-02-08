@@ -9,18 +9,22 @@ import math
 
 
 def buildDBSCANClustersUnpack(arg):
+    # print arg[2].loc[:10]
     return buildDBSCANClusters(sel_layer=arg[0], sel_zside=arg[1], tcs=arg[2])
 
 
 def buildDBSCANClusters(sel_layer, sel_zside, tcs):
-    tcs_layer = tcs[(tcs.layer == sel_layer) & (tcs.zside == sel_zside)]
     new2Dcls = pd.DataFrame()
 
-    if len(tcs_layer['x']) == 0:
+    tcs_layer = tcs[(tcs.layer == sel_layer) & (tcs.zside == sel_zside)].copy(deep=True)
+    if tcs_layer.empty:
         return new2Dcls
 
     X = tcs_layer[['x', 'y']]
-    densities = [0.1, 0.2, 0.5, 0.7, 1.1, 1.3, 1.7, 1.8, 2.0, 2.2, 2.6, 2.0, 1.8, 1.4, 1.2, 0.8, 0.6, 0.4, 0.2, 0.2, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
+    # tuned on 25GeV e-
+    #densities = [0.05, 0.05, 0.1, 0.25, 0.3, 0.3, 0.5, 0.45, 0.4, 0.35, 0.4, 0.25, 0.25, 0.15, 0.1, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15]
+
+    densities = [0.1, 0.2, 0.5, 0.5, 1.1, 1.3, 1.7, 1.8, 2.0, 2.2, 2.6, 2.0, 1.8, 1.4, 1.2, 0.8, 0.6, 0.4, 0.2, 0.2, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
     # photon Pt35 tunes (no selection on unconverted)
     # densities = [0.05, 0.05, 0.05, 0.1, 0.25, 0.45, 1.1, 1.6, 2.5, 3.55, 4.85, 4.6, 4.35, 3.55, 3.15, 2.25, 1.8, 1.05, 1.0, 0.65, 0.5, 0.2, 0.1, 0.05, 0.05, 0.05, 0.05, 0.2]
     db = DBSCAN(eps=2.5,
@@ -56,11 +60,78 @@ def buildDBSCANClusters(sel_layer, sel_zside, tcs):
         #     cl['phi'] = [math.pi - math.asin(cl.y/math.sqrt(cl.x**2+cl.y**2))]
         # else:
         #     cl['phi'] = [0]
-        cl['cells'] = [np.array(components.index)]
+        cl['cells'] = [np.array(components.id)]
         cl['ncells'] = [components.shape[0]]
         cl['nCoreCells'] = [components[components.core].shape[0]]
+        cl['id'] = components.iloc[0].id
+        #print components
+
         new2Dcls = new2Dcls.append(cl.copy(), ignore_index=True)
     return new2Dcls
+
+
+def buildHDBSCANClustersUnpack(arg):
+    # print arg[2].loc[:10]
+    return buildHDBSCANClusters(sel_layer=arg[0], sel_zside=arg[1], tcs=arg[2])
+
+
+def buildHDBSCANClusters(sel_layer, sel_zside, tcs):
+    new2Dcls = pd.DataFrame()
+
+    tcs_layer = tcs[(tcs.layer == sel_layer) & (tcs.zside == sel_zside)].copy(deep=True)
+    if tcs_layer.empty:
+        return new2Dcls
+
+    X = tcs_layer[['x', 'y']]
+    # tuned on 25GeV e-
+    densities = [0.05, 0.05, 0.1, 0.25, 0.3, 0.3, 0.5, 0.45, 0.4, 0.35, 0.4, 0.25, 0.25, 0.15, 0.1, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15]
+
+    #densities = [0.1, 0.2, 0.5, 0.5, 1.1, 1.3, 1.7, 1.8, 2.0, 2.2, 2.6, 2.0, 1.8, 1.4, 1.2, 0.8, 0.6, 0.4, 0.2, 0.2, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
+    # photon Pt35 tunes (no selection on unconverted)
+    # densities = [0.05, 0.05, 0.05, 0.1, 0.25, 0.45, 1.1, 1.6, 2.5, 3.55, 4.85, 4.6, 4.35, 3.55, 3.15, 2.25, 1.8, 1.05, 1.0, 0.65, 0.5, 0.2, 0.1, 0.05, 0.05, 0.05, 0.05, 0.2]
+    db = DBSCAN(eps=2.5,
+                min_samples=densities[sel_layer-1]*100,
+                algorithm='kd_tree',
+                n_jobs=3).fit(X, sample_weight=tcs_layer['energy']*100)
+    labels = db.labels_
+    unique_labels = set(labels)
+    tcs_layer['dbs_label'] = labels
+    core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+    core_samples_mask[db.core_sample_indices_] = True
+    tcs_layer['core'] = core_samples_mask
+    # print db.core_sample_indices_
+    # print tcs_layer
+
+    for label in unique_labels:
+        if label == -1:
+            continue
+        components = tcs_layer[tcs_layer.dbs_label == label]
+        cl = pd.DataFrame()
+        cl['energy'] = [components.energy.sum()]
+
+        cl['energyCore'] = [components[components.core].energy.sum()]
+        cl['x'] = [np.sum(components.x*components.energy)/components.energy.sum()]
+        cl['y'] = [np.sum(components.y*components.energy)/components.energy.sum()]
+        cl['z'] = [components.z.iloc[0]]
+        cl['layer'] = [int(sel_layer)]
+        cl['zside'] = [int(sel_zside)]
+        cl['eta'] = [math.asinh(cl.z/math.sqrt(cl.x**2+cl.y**2))]
+        # if cl.x.item() > 0:
+        cl['phi'] = [math.atan2(cl.y, cl.x)]
+        # elif cl.x.item() < 0:
+        #     cl['phi'] = [math.pi - math.asin(cl.y/math.sqrt(cl.x**2+cl.y**2))]
+        # else:
+        #     cl['phi'] = [0]
+        cl['cells'] = [np.array(components.id)]
+        cl['ncells'] = [components.shape[0]]
+        cl['nCoreCells'] = [components[components.core].shape[0]]
+        cl['id'] = components.iloc[0].id
+        #print components
+
+        new2Dcls = new2Dcls.append(cl.copy(), ignore_index=True)
+    return new2Dcls
+
+
 
 
 def build3DClustersEtaPhi(cl2D):
@@ -95,7 +166,7 @@ def build3DClustersEtaPhi(cl2D):
         cl3D['pt'] = [(cl3D.energy/np.cosh(cl3D.eta)).values[0]]
         cl3D['ptCore'] = [(cl3D.energyCore/np.cosh(cl3D.eta)).values[0]]
         cl3D['layers'] = [components.layer.values]
-        cl3D['clusters'] = [np.array(components.index)]
+        cl3D['clusters'] = [np.array(components.id)]
         cl3D['nclu'] = [components.shape[0]]
         cl3D['firstlayer'] = [np.min(components.layer.values)]
         # FIXME: placeholder
@@ -106,6 +177,8 @@ def build3DClustersEtaPhi(cl2D):
         cl3D['sppmax'] = [1]
         cl3D['szz'] = [1]
         cl3D['emaxe'] = [1]
+        cl3D['id'] = components.iloc[0].id
+
         # cl3D['color'] = [np.random.rand(3,)]
 
         # print cl3D
@@ -114,6 +187,10 @@ def build3DClustersEtaPhi(cl2D):
 
 
 def build3DClustersEtaPhi2(cl2D):
+    new3DCls = pd.DataFrame()
+
+    if cl2D.empty:
+        return new3DCls
     X = cl2D[['eta', 'phi']]
     db = DBSCAN(eps=0.015,  # 0.03
                 algorithm='kd_tree',
@@ -124,7 +201,6 @@ def build3DClustersEtaPhi2(cl2D):
     # n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
     # print '# of 3D clusters: {}'.format(n_clusters_ )
     cl2D['dbs_labels'] = labels
-    new3DCls = pd.DataFrame()
     for label in unique_labels:
         if label == -1:
             continue
