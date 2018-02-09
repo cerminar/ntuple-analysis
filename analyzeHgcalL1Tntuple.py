@@ -677,7 +677,7 @@ def main():
 
     if opt.BATCH and not opt.RUN:
         batch_dir = 'batch_{}_{}'.format(opt.COLLECTION, plot_version)
-        if not os.path.isfile(batch_dir):
+        if not os.path.exists(batch_dir):
             os.mkdir(batch_dir)
             os.mkdir(batch_dir+'/conf/')
             os.mkdir(batch_dir+'/logs/')
