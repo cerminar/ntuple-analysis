@@ -677,9 +677,10 @@ def main():
 
     if opt.BATCH and not opt.RUN:
         batch_dir = 'batch_{}_{}'.format(opt.COLLECTION, plot_version)
-        os.mkdir(batch_dir)
-        os.mkdir(batch_dir+'/conf/')
-        os.mkdir(batch_dir+'/logs/')
+        if not os.path.isfile(batch_dir):
+            os.mkdir(batch_dir)
+            os.mkdir(batch_dir+'/conf/')
+            os.mkdir(batch_dir+'/logs/')
 
         dagman_sub = ''
         dagman_dep = ''
@@ -694,11 +695,12 @@ def main():
                 input_files = listFiles(os.path.join(sample.input_base_dir, sample.input_sample_dir))
                 ntuple = HGCalNtuple(input_files, tree='hgcalTriggerNtuplizer/HGCalTriggerNtuple')
                 nevents = ntuple.nevents()
-            print (nevents)
-            print (sample.events_per_job)
+            print ('Total # of events to be processed: {}'.format(nevents))
+            print ('# of events per job: {}'.format(sample.events_per_job))
             n_jobs = int(nevents/sample.events_per_job)
             if n_jobs == 0:
                 n_jobs = 1
+            print ('# of jobs to be submitted: {}'.format(n_jobs))
 
             params = {}
             params['TEMPL_TASKDIR'] = sample_batch_dir
