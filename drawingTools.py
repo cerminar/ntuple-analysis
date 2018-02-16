@@ -67,14 +67,14 @@ def drawAndProfileX(plot2d, miny=None, maxy=None, do_profile=True, options=''):
 
 
 class Sample():
-    def __init__(cls, name, pu_tag, version=None):
+    def __init__(cls, name, label, version=None):
         cls.name = name
-        cls.pu_tag = pu_tag
+        cls.label = label
         if version:
             version = '_'+version
         else:
             version = ''
-        cls.histo_filename = '../plots/histos_{}_{}{}.root'.format(cls.name, cls.pu_tag, version)
+        cls.histo_filename = '../plots/histos_{}{}.root'.format(cls.name, version)
         cls.histo_file = ROOT.TFile(cls.histo_filename)
 
 
