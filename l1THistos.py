@@ -24,17 +24,16 @@ class HistoManager(object):
 
     instance = None
 
-    def __new__(cls): # __new__ always a classmethod
+    def __new__(cls):
         if not HistoManager.instance:
             HistoManager.instance = HistoManager.__TheManager()
         return HistoManager.instance
 
     def __getattr__(self, name):
         return getattr(self.instance, name)
+
     def __setattr__(self, name):
         return setattr(self.instance, name)
-
-
 
 
 class BaseHistos():
@@ -46,7 +45,7 @@ class BaseHistos():
             print histo_names
             for histo_name in histo_names:
                 hinst = root_file.Get(histo_name)
-                attr_name = 'h_'+histo_name.split('_')[2]
+                attr_name = 'h_'+histo_name.split(name+'_')[1]
                 setattr(self, attr_name, hinst)
 #            self.h_test = root_file.Get('h_EleReso_ptRes')
             # print 'XXXXXX'+str(self.h_test)
@@ -64,6 +63,7 @@ class BaseHistos():
     #     className = self.__class__.__name__
     #     ret = className()
     #     return ret
+
 
 class GenPartHistos(BaseHistos):
     def __init__(self, name, root_file=None):
@@ -174,6 +174,8 @@ class ClusterHistos(BaseHistos):
 class Cluster3DHistos(BaseHistos):
     def __init__(self, name, root_file=None):
         if not root_file:
+            self.h_npt05 = ROOT.TH1F(name+'_npt05', '# 3D Cluster Pt > 0.5 GeV', 200, 0, 1000)
+            self.h_npt20 = ROOT.TH1F(name+'_npt20', '# 3D Cluster Pt > 2.0 GeV', 200, 0, 1000)
             self.h_pt = ROOT.TH1F(name+'_pt', '3D Cluster Pt (GeV)', 100, 0, 100)
             self.h_energy = ROOT.TH1F(name+'_energy', '3D Cluster energy (GeV)', 1000, 0, 1000)
             self.h_nclu = ROOT.TH1F(name+'_nclu', '3D Cluster # clusters', 60, 0, 60)
@@ -189,6 +191,9 @@ class Cluster3DHistos(BaseHistos):
         BaseHistos.__init__(self, name, root_file)
 
     def fill(self, cl3ds):
+        self.h_npt05.Fill(len(cl3ds[cl3ds.pt > 0.5].index))
+        self.h_npt20.Fill(len(cl3ds[cl3ds.pt > 2.0].index))
+
         rnp.fill_hist(self.h_pt, cl3ds.pt)
         rnp.fill_hist(self.h_energy, cl3ds.energy)
         rnp.fill_hist(self.h_nclu, cl3ds.nclu)
@@ -211,6 +216,7 @@ class ResoHistos(BaseHistos):
             self.h_ptResVeta = ROOT.TH2F(name+'_ptResVeta', '3D Cluster Pt reso (GeV) vs eta', 100, -3.5, 3.5, 200, -40, 40)
             self.h_energyResVeta = ROOT.TH2F(name+'_energyResVeta', '3D Cluster E reso (GeV) vs eta', 100, -3.5, 3.5, 200, -100, 100)
             self.h_energyResVnclu = ROOT.TH2F(name+'_energyResVnclu', '3D Cluster E reso (GeV) vs # clusters', 50, 0, 50, 200, -100, 100)
+            self.h_ptResVpt = ROOT.TH2F(name+'_ptResVpt', '3D Cluster Pt reso (GeV) vs pt (GeV)', 200, 0, 100, 200, -40, 40)
 
             self.h_ptResVnclu = ROOT.TH2F(name+'_ptResVnclu', '3D Cluster Pt reso (GeV) vs # clusters', 50, 0, 50, 200, -40, 40)
 
@@ -222,6 +228,9 @@ class ResoHistos(BaseHistos):
             self.h_corePtRes = ROOT.TH1F(name+'_corePtRes', '3D Cluster Pt reso CORE (GeV)', 200, -40, 40)
 
             self.h_centralEnergyRes = ROOT.TH1F(name+'_centralEnergyRes', '3D Cluster Energy reso CENTRAL (GeV)', 200, -100, 100)
+            self.h_etaRes = ROOT.TH1F(name+'_etaRes', '3D Cluster eta reso', 100, -10, 10)
+            self.h_phiRes = ROOT.TH1F(name+'_phiRes', '3D Cluster phi reso', 100, -10, 10)
+            self.h_drRes = ROOT.TH1F(name+'_drRes', '3D Cluster DR reso', 100, -10, 10)
 
         BaseHistos.__init__(self, name, root_file)
 
@@ -229,6 +238,7 @@ class ResoHistos(BaseHistos):
         self.h_ptRes.Fill(target.pt - reference.pt)
         self.h_energyRes.Fill(target.energy - reference.energy)
         self.h_ptResVeta.Fill(reference.eta, target.pt - reference.pt)
+        self.h_ptResVpt.Fill(reference.pt, target.pt - reference.pt)
         self.h_energyResVeta.Fill(reference.eta, target.energy - reference.energy)
         self.h_energyResVnclu.Fill(target.nclu, target.energy - reference.energy)
         self.h_ptResVnclu.Fill(target.nclu, target.pt - reference.pt)
@@ -242,6 +252,9 @@ class ResoHistos(BaseHistos):
 
         if 'energyCentral' in target:
             self.h_centralEnergyRes.Fill(target.energyCentral - reference.energy)
+        self.h_etaRes.Fill(target.eta - reference.eta)
+        self.h_phiRes.Fill(target.phi - reference.phi)
+        self.h_drRes.Fill(np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
 
 
 class Reso2DHistos(BaseHistos):
@@ -251,8 +264,10 @@ class Reso2DHistos(BaseHistos):
             self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'Phi 2D cluster - GEN part', 100, -0.5, 0.5)
             self.h_phiPRes = ROOT.TH1F(name+'_phiPRes', 'Phi (+) 2D cluster - GEN part', 100, -0.5, 0.5)
             self.h_phiMRes = ROOT.TH1F(name+'_phiMRes', 'Phi (-) 2D cluster - GEN part', 100, -0.5, 0.5)
-
+            self.h_xResVlayer = ROOT.TH2F(name+'_xResVlayer', 'X resolution (cm) [(2D clus) - GEN]', 60, 0, 60, 100, -10, 10)
+            self.h_yResVlayer = ROOT.TH2F(name+'_yResVlayer', 'Y resolution (cm) [(2D clus) - GEN]', 60, 0, 60, 100, -10, 10)
             self.h_DRRes = ROOT.TH1F(name+'_DRRes', 'DR 2D cluster - GEN part', 100, -0.5, 0.5)
+
         BaseHistos.__init__(self, name, root_file)
 
     def fill(self, reference, target):
@@ -265,6 +280,15 @@ class Reso2DHistos(BaseHistos):
             rnp.fill_hist(self.h_phiPRes, reference.phi-target.phi)
 
         rnp.fill_hist(self.h_DRRes, np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
+        if reference.reachedEE == 2:
+            if 'x' in target.columns:
+                target['xres'] = reference.posx[target.layer-1]-target.x
+                # print target[['layer', 'xres']]
+                rnp.fill_hist(self.h_xResVlayer, target[['layer', 'xres']])
+            if 'y' in target.columns:
+                target['yres'] = reference.posy[target.layer-1]-target.y
+                # print target[['layer', 'yres']]
+                rnp.fill_hist(self.h_yResVlayer, target[['layer', 'yres']])
 
 
 class GeomHistos(BaseHistos):
@@ -316,6 +340,9 @@ class HistoSetClusters():
         self.hcl2d.fill(cl2ds)
         self.hcl3d.fill(cl3ds)
 
+
 class HistoSetReso():
     def __init__(self, name, root_file=None):
         self.hreso = ResoHistos('h_reso_'+name, root_file)
+        self.hresoCone = ResoHistos('h_resoCone_'+name, root_file)
+        self.hreso2D = Reso2DHistos('h_reso2D_'+name, root_file)
