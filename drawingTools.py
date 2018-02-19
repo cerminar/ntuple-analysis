@@ -106,11 +106,11 @@ def drawProfileX(histograms, labels, options=''):
     drawSame(profiles, labels, options)
 
 
-def drawSeveral(histograms, labels, options='', do_profile=False):
+def drawSeveral(histograms, labels, options='', do_profile=False, miny=None, maxy=None,):
     ydiv = int(math.ceil(float(len(histograms))/2))
     for hidx in range(0, len(histograms)):
         if do_profile:
-            drawAndProfileX(histograms[hidx], options=options, do_profile=do_profile)
+            drawAndProfileX(histograms[hidx], miny=miny, maxy=maxy, options=options, do_profile=do_profile)
         else:
             draw(histograms[hidx], options=options)
 
