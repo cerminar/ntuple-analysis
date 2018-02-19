@@ -216,7 +216,7 @@ class ResoHistos(BaseHistos):
             self.h_ptResVeta = ROOT.TH2F(name+'_ptResVeta', '3D Cluster Pt reso (GeV) vs eta', 100, -3.5, 3.5, 200, -40, 40)
             self.h_energyResVeta = ROOT.TH2F(name+'_energyResVeta', '3D Cluster E reso (GeV) vs eta', 100, -3.5, 3.5, 200, -100, 100)
             self.h_energyResVnclu = ROOT.TH2F(name+'_energyResVnclu', '3D Cluster E reso (GeV) vs # clusters', 50, 0, 50, 200, -100, 100)
-            self.h_ptResVpt = ROOT.TH2F(name+'_ptResVpt', '3D Cluster Pt reso (GeV) vs pt (GeV)', 200, 0, 100, 200, -40, 40)
+            self.h_ptResVpt = ROOT.TH2F(name+'_ptResVpt', '3D Cluster Pt reso (GeV) vs pt (GeV)', 50, 0, 100, 200, -40, 40)
 
             self.h_ptResVnclu = ROOT.TH2F(name+'_ptResVnclu', '3D Cluster Pt reso (GeV) vs # clusters', 50, 0, 50, 200, -40, 40)
 
@@ -228,9 +228,9 @@ class ResoHistos(BaseHistos):
             self.h_corePtRes = ROOT.TH1F(name+'_corePtRes', '3D Cluster Pt reso CORE (GeV)', 200, -40, 40)
 
             self.h_centralEnergyRes = ROOT.TH1F(name+'_centralEnergyRes', '3D Cluster Energy reso CENTRAL (GeV)', 200, -100, 100)
-            self.h_etaRes = ROOT.TH1F(name+'_etaRes', '3D Cluster eta reso', 100, -10, 10)
-            self.h_phiRes = ROOT.TH1F(name+'_phiRes', '3D Cluster phi reso', 100, -10, 10)
-            self.h_drRes = ROOT.TH1F(name+'_drRes', '3D Cluster DR reso', 100, -10, 10)
+            self.h_etaRes = ROOT.TH1F(name+'_etaRes', '3D Cluster eta reso', 100, -1, 1)
+            self.h_phiRes = ROOT.TH1F(name+'_phiRes', '3D Cluster phi reso', 100, -1, 1)
+            self.h_drRes = ROOT.TH1F(name+'_drRes', '3D Cluster DR reso', 100, -1, 1)
 
         BaseHistos.__init__(self, name, root_file)
 
