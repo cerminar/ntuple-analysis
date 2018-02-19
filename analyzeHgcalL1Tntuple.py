@@ -474,10 +474,10 @@ def analyze(params, batch_idx=0):
 
         # now we try to match the Clusters to the GEN particles of various types
         for particle in particles:
-            genReference = genParticles[(genParticles.gen > 0) & (genParticles.pid == particle.pdgid)]
+            genReference = genParticles[(genParticles.gen > 0) & (genParticles.pid == particle.pdgid) & (np.abs(genParticles.eta) < 2.8) & (np.abs(genParticles.eta) > 1.7)]
             # for the photons we add a further selection
             if particle.pdgid == PID.photon:
-                genReference = genParticles[(genParticles.gen > 0) & (genParticles.pid == PID.photon) & (genParticles.reachedEE == 2)]
+                genReference = genParticles[(genParticles.gen > 0) & (genParticles.pid == PID.photon) & (genParticles.reachedEE == 2) & (np.abs(genParticles.eta) < 2.8) & (np.abs(genParticles.eta) > 1.7)]
             # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
             # elif  particle.pdgid == PID.pizero:
             #     genReference = genParts[(genParts.pid == particle.pdgid)]
