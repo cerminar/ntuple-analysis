@@ -129,6 +129,7 @@ def plot3DClusterMatch(genParticles,
                        trigger3DClusters,
                        triggerClusters,
                        triggerCells,
+                       histoGen,
                        histoTCMatch,
                        histoClMatch,
                        histo3DClMatch,
@@ -153,6 +154,8 @@ def plot3DClusterMatch(genParticles,
 
     allmatched2Dclusters = list()
     matchedClustersAll = pd.DataFrame()
+    if histoGen is not None:
+        histoGen.fill(genParticles)
 
     for idx, genParticle in genParticles.iterrows():
         if idx in matched_idx.keys():
@@ -325,6 +328,10 @@ def analyze(params, batch_idx=0):
     for particle in particles:
         hGenParts[particle] = histos.GenParticleHistos('h_genParts_{}'.format(particle.name))
 
+    hGenPartsSel = {}
+    for particle in particles:
+        hGenPartsSel[particle] = histos.GenParticleHistos('h_genPartsSel_{}'.format(particle.name))
+
 
     hdigis = histos.DigiHistos('h_hgcDigisAll')
 
@@ -489,9 +496,12 @@ def analyze(params, batch_idx=0):
                 tcs = triggerCells
                 cluster2ds = None
                 cluster3ds = None
+                hgensel = None
                 if algo == 'DEF':
                     cluster2ds = triggerClusters
                     cluster3ds = trigger3DClusters
+                    # We make sure not to fill the same gen level plot more than once
+                    hgensel = hGenPartsSel[particle]
                 elif algo == 'DBS':
                     cluster2ds = triggerClustersDBS
                     cluster3ds = trigger3DClustersDBS
@@ -506,6 +516,7 @@ def analyze(params, batch_idx=0):
                                    cluster3ds,
                                    cluster2ds,
                                    tcs,
+                                   hgensel,
                                    hsetMatchAlgoPart.htc,
                                    hsetMatchAlgoPart.hcl2d,
                                    hsetMatchAlgoPart.hcl3d,
