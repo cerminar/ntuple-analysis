@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # import ROOT
-from __future__ import print_function
+#from __future__ import print_function
 from NtupleDataFormat import HGCalNtuple, Event
 import sys
 import root_numpy as rnp
@@ -95,6 +95,7 @@ def dumpFrame2JSON(filename, frame):
 def sumClustersInCone(all3DClusters, idx_incone):
     ret = pd.DataFrame()
     components = all3DClusters[all3DClusters.index.isin(idx_incone)]
+    #print
     #print (components)
     ret['energy'] = [components.energy.sum()]
     # FIXME: this needs to be better defined
@@ -118,6 +119,9 @@ def sumClustersInCone(all3DClusters, idx_incone):
     ret['szz'] = [1]
     ret['emaxe'] = [1]
     ret['id'] = [1]
+    ret['n010'] = len(components[components.pt > 0.1])
+    ret['n025'] = len(components[components.pt > 0.25])
+
     return ret
 
 
