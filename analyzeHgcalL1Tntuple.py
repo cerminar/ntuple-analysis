@@ -757,6 +757,7 @@ def main():
             unmerged_files = [os.path.join(histo_path, 'histos_{}_{}_{}.root'.format(sample.name, sample.version, job)) for job in range(0, n_jobs)]
             params['TEMPL_INFILES'] = ' '.join(unmerged_files)
             params['TEMPL_OUTDIR'] = histo_path
+            params['TEMPL_VIRTUALENV'] = os.path.basename(os.environ['VIRTUAL_ENV'])
 
             editTemplate(infile='templates/batch.sub',
                          outfile=os.path.join(sample_batch_dir, 'batch.sub'),

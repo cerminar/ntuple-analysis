@@ -13,7 +13,7 @@ hostname
 
 source ./setup_lxplus.sh
 source ~/scripts/setVirtualEnvWrapper.sh
-workon HGCTPGPerformance-1
+workon TEMPL_VIRTUALENV
 
 cd ${BATCH_DIR}
 date

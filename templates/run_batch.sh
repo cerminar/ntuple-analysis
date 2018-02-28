@@ -13,6 +13,6 @@ hostname
 
 source ./setup_lxplus.sh
 source ~/scripts/setVirtualEnvWrapper.sh
-workon HGCTPGPerformance-1
+workon TEMPL_VIRTUALENV
 
 python analyzeHgcalL1Tntuple.py -f TEMPL_CFG -c TEMPL_COLL -s TEMPL_SAMPLE -n -1 -o ${BATCH_DIR} -r ${PROCID} -b
