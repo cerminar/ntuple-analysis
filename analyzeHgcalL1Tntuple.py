@@ -743,6 +743,7 @@ def main():
 
         dagman_sub = ''
         dagman_dep = ''
+        dagman_ret = ''
         for sample in samples_to_process:
             sample_batch_dir = os.path.join(batch_dir, sample.name)
             sample_batch_dir_logs = os.path.join(sample_batch_dir, 'logs')
@@ -799,12 +800,14 @@ def main():
             dagman_sub += 'JOB {} {}/batch.sub\n'.format(sample.name, sample_batch_dir)
             dagman_sub += 'JOB {} {}/batch_hadd.sub\n'.format(sample.name+'_hadd', sample_batch_dir)
             dagman_dep += 'PARENT {} CHILD {}\n'.format(sample.name, sample.name+'_hadd')
-
+            dagman_ret += 'Retry {} 3\n'.format(sample.name)
+            dagman_ret += 'Retry {} 3\n'.format(sample.name+'_hadd')
 
         dagman_file_name = os.path.join(batch_dir, 'dagman.dag')
         dagman_file = open(dagman_file_name, 'w')
         dagman_file.write(dagman_sub)
         dagman_file.write(dagman_dep)
+        dagman_file.write(dagman_ret)
         dagman_file.close()
 
         print('Ready for submission please run the following commands:')
