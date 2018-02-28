@@ -119,6 +119,9 @@ class HGCalNtuple(object):
             protocol = ''
             if '/eos/user/' in file_name:
                 protocol = 'root://eosuser.cern.ch/'
+            elif '/eos/cms/' in file_name:
+                protocol = 'root://eoscms.cern.ch/'
+
             self._tree.Add(protocol+file_name)
         self._entries = self._tree.GetEntries()
 

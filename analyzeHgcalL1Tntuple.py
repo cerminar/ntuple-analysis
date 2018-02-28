@@ -21,9 +21,23 @@ import l1THistos as histos
 import utils as utils
 import clusterTools as clAlgo
 import traceback
+import subprocess32
+
 
 def listFiles(input_dir):
-    onlyfiles = [os.path.join(input_dir, f) for f in os.listdir(input_dir) if os.path.isfile(os.path.join(input_dir, f))]
+    onlyfiles = []
+    if not input_dir.startswith('/eos'):
+        onlyfiles = [os.path.join(input_dir, f) for f in os.listdir(input_dir) if os.path.isfile(os.path.join(input_dir, f))]
+    else:
+        # we read the input files via EOS
+        protocol = ''
+        if '/eos/user/' in input_dir:
+            protocol = 'root://eosuser.cern.ch/'
+        elif '/eos/cms/' in input_dir:
+            protocol = 'root://eoscms.cern.ch/'
+        eos_proc = subprocess32.Popen(['eos', protocol, 'ls', input_dir], stdout=subprocess32.PIPE)
+        onlyfiles = [os.path.join(input_dir, f.rstrip()) for f in eos_proc.stdout.readlines() if '.root' in f]
+
     return sorted(onlyfiles)
 
 
@@ -651,9 +665,11 @@ def main():
     collection_dict = {}
     collections = cfgfile.get('common', 'collections').split(',')
     basedir = cfgfile.get('common', 'input_dir_lx')
+    outdir = cfgfile.get('common', 'output_dir_lx')
     hostname = socket.gethostname()
     if 'matterhorn' in hostname or 'Matterhorn' in hostname:
             basedir = cfgfile.get('common', 'input_dir_local')
+            outdir = cfgfile.get('common', 'output_dir_local')
     plot_version = cfgfile.get('common', 'plot_version')
     run_clustering = False
     if cfgfile.get('common', 'run_clustering') == 'True':
@@ -681,7 +697,7 @@ def main():
             if opt.OUTDIR:
                 out_file = os.path.join(opt.OUTDIR, out_file_name)
             else:
-                out_file = os.path.join(os.path.join(basedir, 'plots'), out_file_name)
+                out_file = os.path.join(outdir, out_file_name)
 
             params = Parameters(input_base_dir=basedir,
                                 input_sample_dir=cfgfile.get(sample, 'input_sample_dir'),
