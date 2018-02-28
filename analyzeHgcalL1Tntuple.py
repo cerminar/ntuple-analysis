@@ -53,6 +53,7 @@ class Parameters:
                  input_base_dir,
                  input_sample_dir,
                  output_filename,
+                 output_dir,
                  clusterize,
                  eventsToDump,
                  events_per_job,
@@ -67,6 +68,7 @@ class Parameters:
         self.input_base_dir = input_base_dir
         self.input_sample_dir = input_sample_dir
         self.output_filename = output_filename
+        self.output_dir = output_dir
         self.clusterize = clusterize
         self.eventsToDump = eventsToDump
         self.computeDensity = computeDensity
@@ -695,13 +697,14 @@ def main():
                     out_file_name = 'histos_{}_{}_{}.root'.format(sample, plot_version, opt.RUN)
 
             if opt.OUTDIR:
-                out_file = os.path.join(opt.OUTDIR, out_file_name)
-            else:
-                out_file = os.path.join(outdir, out_file_name)
+                outdir = opt.OUTDIR
+
+            out_file = os.path.join(outdir, out_file_name)
 
             params = Parameters(input_base_dir=basedir,
                                 input_sample_dir=cfgfile.get(sample, 'input_sample_dir'),
                                 output_filename=out_file,
+                                output_dir=outdir,
                                 clusterize=run_clustering,
                                 eventsToDump=events_to_dump,
                                 version=plot_version,
@@ -770,10 +773,9 @@ def main():
             params['TEMPL_COLL'] = opt.COLLECTION
             params['TEMPL_SAMPLE'] = sample.name
             params['TEMPL_OUTFILE'] = 'histos_{}_{}.root'.format(sample.name, sample.version)
-            histo_path = os.path.join(sample.input_base_dir, 'plots/')
-            unmerged_files = [os.path.join(histo_path, 'histos_{}_{}_{}.root'.format(sample.name, sample.version, job)) for job in range(0, n_jobs)]
+            unmerged_files = [os.path.join(sample.output_dir, 'histos_{}_{}_{}.root'.format(sample.name, sample.version, job)) for job in range(0, n_jobs)]
             params['TEMPL_INFILES'] = ' '.join(unmerged_files)
-            params['TEMPL_OUTDIR'] = histo_path
+            params['TEMPL_OUTDIR'] = sample.output_dir
             params['TEMPL_VIRTUALENV'] = os.path.basename(os.environ['VIRTUAL_ENV'])
 
             editTemplate(infile='templates/batch.sub',
