@@ -141,7 +141,7 @@ def sumClustersInCone(all3DClusters, idx_incone):
     return ret
 
 
-def buildTriggerTowerCluster(allTowers, seedTower):
+def buildTriggerTowerCluster(allTowers, seedTower, debug):
     eta_seed = seedTower.eta.values[0]
     iX_seed = seedTower.iX.values[0]
     iY_seed = seedTower.iY.values[0]
@@ -151,17 +151,16 @@ def buildTriggerTowerCluster(allTowers, seedTower):
                               (allTowers.iY <= (iY_seed + 1)) &
                               (allTowers.iY >= (iY_seed - 1))]
     clusterTowers['logEnergy'] = np.log(clusterTowers.energy)
-    debug = False
-    if debug:
+    if debug >= 5:
         print '---- SEED:'
         print seedTower
         print 'Cluster components:'
         print clusterTowers
-    ret = pd.DataFrame()
+    ret = pd.DataFrame(columns=['energy', 'eta', 'phi', 'pt'])
     ret['energy'] = [clusterTowers.energy.sum()]
-    ret['eta'] = [np.sum(clusterTowers.eta*clusterTowers.energy)/ret.energy]
-    ret['phi'] = [np.sum(clusterTowers.phi*clusterTowers.energy)/ret.energy]
-    ret['pt'] = [(ret.energy/np.cosh(ret.eta)).values[0]]
+    ret['eta'] = [np.sum(clusterTowers.eta*clusterTowers.energy)/ret.energy.values[0]]
+    ret['phi'] = [np.sum(clusterTowers.phi*clusterTowers.energy)/ret.energy.values[0]]
+    ret['pt'] = [(ret.energy / np.cosh(ret.eta)).values[0]]
     return ret
 
 
@@ -207,7 +206,7 @@ def plotTriggerTowerMatch(genParticles,
             histoTowersMatch.fill(matchedTower)
             histoTowersReso.fill(reference=genParticle, target=matchedTower)
 
-            ttCluster = buildTriggerTowerCluster(triggerTowers, matchedTower)
+            ttCluster = buildTriggerTowerCluster(triggerTowers, matchedTower, debug)
             histoTowersResoCl.fill(reference=genParticle, target=ttCluster)
 
             #clustersInCone = sumClustersInCone(trigger3DClusters, allmatches[idx])
