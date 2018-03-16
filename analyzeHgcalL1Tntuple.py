@@ -233,6 +233,7 @@ def plot3DClusterMatch(genParticles,
                        triggerClusters,
                        triggerCells,
                        histoGen,
+                       histoGenMatched,
                        histoTCMatch,
                        histoClMatch,
                        histo3DClMatch,
@@ -295,6 +296,8 @@ def plot3DClusterMatch(genParticles,
             # print ('----- in cone sum:')
             # print (clustersInCone)
             histoResoCone.fill(reference=genParticle, target=clustersInCone.iloc[0])
+            if histoGenMatched is not None:
+                histoGenMatched.fill(genParticles.loc[[idx]])
 
             if debug >= 4:
                 print ('--- Dump match for algo {} ---------------'.format(algoname))
@@ -423,6 +426,13 @@ def analyze(params, batch_idx=0):
                  Particle('pion', PID.pion),
                  Particle('pizero', PID.pizero)]
 
+    def bookMatchingHistos(histoClass, algos, particles, name=''):
+        retDict = {}
+        for algo in algos:
+            for particle in particles:
+                retDict[(algo, particle.name)] = histoClass(name='{}{}_{}'.format(name, algo, particle.name))
+        return retDict
+
     # -------------------------------------------------------
     # book histos
     hgen = histos.GenPartHistos('h_genAll')
@@ -435,6 +445,8 @@ def analyze(params, batch_idx=0):
     for particle in particles:
         hGenPartsSel[particle] = histos.GenParticleHistos('h_genPartsSel_{}'.format(particle.name))
 
+    hGenPartsEff = bookMatchingHistos(histos.GenParticleHistos, algos, particles, name='h_genPartsEff_')
+
     hdigis = histos.DigiHistos('h_hgcDigisAll')
 
     hsetDEF = histos.HistoSetClusters('DEF_all')
@@ -444,12 +456,6 @@ def analyze(params, batch_idx=0):
 
     hTT_all = histos.TriggerTowerHistos('h_TT_all')
 
-    def bookMatchingHistos(histoClass, algos, particles):
-        retDict = {}
-        for algo in algos:
-            for particle in particles:
-                retDict[(algo, particle.name)] = histoClass(name='{}_{}'.format(algo, particle.name))
-        return retDict
 
     hsetMatched = bookMatchingHistos(histos.HistoSetClusters, algos, particles)
     hsetReso = bookMatchingHistos(histos.HistoSetReso, algos, particles)
@@ -619,6 +625,7 @@ def analyze(params, batch_idx=0):
                 cluster2ds = None
                 cluster3ds = None
                 hgensel = None
+                hgenseleff = None
                 if algo == 'DEF':
                     cluster2ds = triggerClusters
                     cluster3ds = trigger3DClusters
@@ -633,12 +640,13 @@ def analyze(params, batch_idx=0):
 
                 hsetMatchAlgoPart = hsetMatched[(algo, particle.name)]
                 hsetResoAlgoPart = hsetReso[(algo, particle.name)]
-
+                hgenseleff = hGenPartsEff[(algo, particle.name)]
                 plot3DClusterMatch(genReference,
                                    cluster3ds,
                                    cluster2ds,
                                    tcs,
                                    hgensel,
+                                   hgenseleff,
                                    hsetMatchAlgoPart.htc,
                                    hsetMatchAlgoPart.hcl2d,
                                    hsetMatchAlgoPart.hcl3d,
