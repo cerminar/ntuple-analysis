@@ -85,7 +85,8 @@ def drawSame(histograms, labels, options='', norm=False, logy=False):
     leg = getLegend()
     if norm:
         for hist in histograms:
-            hist.Scale(1./hist.Integral())
+            if hist.Integral() != 0:
+                hist.Scale(1./hist.Integral())
 
     max_value = max([hist.GetMaximum() for hist in histograms])
     min_value = min([hist.GetMinimum() for hist in histograms])
