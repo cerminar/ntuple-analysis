@@ -158,8 +158,11 @@ def buildTriggerTowerCluster(allTowers, seedTower, debug):
         print clusterTowers
     ret = pd.DataFrame(columns=['energy', 'eta', 'phi', 'pt'])
     ret['energy'] = [clusterTowers.energy.sum()]
+    ret['logEnergy'] = np.log(ret.energy)
     ret['eta'] = [np.sum(clusterTowers.eta*clusterTowers.energy)/ret.energy.values[0]]
     ret['phi'] = [np.sum(clusterTowers.phi*clusterTowers.energy)/ret.energy.values[0]]
+    ret['etalw'] = [np.sum(clusterTowers.eta*clusterTowers.logEnergy)/np.sum(clusterTowers.logEnergy)]
+    ret['philw'] = [np.sum(clusterTowers.phi*clusterTowers.logEnergy)/np.sum(clusterTowers.logEnergy)]
     ret['pt'] = [(ret.energy / np.cosh(ret.eta)).values[0]]
     return ret
 
@@ -225,6 +228,8 @@ def plotTriggerTowerMatch(genParticles,
                 print ('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx))
                 print (genParticle)
 
+def unpack(mytuple):
+    return mytuple[0].getDataFrame(mytuple[1])
 
 
 
@@ -504,19 +509,35 @@ def analyze(params, batch_idx=0):
         else:
             dump = False
 
+
+
         # get the interesting data-frames
         genParts = event.getDataFrame(prefix='gen')
 
         if len(genParts[(genParts.eta > 1.7) & (genParts.eta < 2.5)]) == 0:
             continue
 
-        genParticles = event.getDataFrame(prefix='genpart')
+        branches = [(event, 'genpart'), (event, 'hgcdigi'), (event, 'tc'), (event, 'cl'), (event, 'cl3d'), (event, 'tower')]
+
+        dataframes = pool.map(unpack, branches)
+        genParticles = dataframes[0]
+        hgcDigis = dataframes[1]
+        triggerCells = dataframes[2]
+        triggerClusters = dataframes[3]
+        trigger3DClusters = dataframes[4]
+        triggerTowers = dataframes[5]
+
+
+        # genParticles = event.getDataFrame(prefix='genpart')
+        # hgcDigis = event.getDataFrame(prefix='hgcdigi')
+        # triggerCells = event.getDataFrame(prefix='tc')
+        # triggerClusters = event.getDataFrame(prefix='cl')
+        # trigger3DClusters = event.getDataFrame(prefix='cl3d')
+        # triggerTowers = event.getDataFrame(prefix='tower')
+
         genParticles['pdgid'] = genParticles.pid
-        hgcDigis = event.getDataFrame(prefix='hgcdigi')
-        triggerCells = event.getDataFrame(prefix='tc')
         # this is not needed anymore in recent versions of the ntuples
         # tcsWithPos = pd.merge(triggerCells, tc_geom_df[['id', 'x', 'y']], on='id')
-        triggerClusters = event.getDataFrame(prefix='cl')
         triggerClusters['ncells'] = [len(x) for x in triggerClusters.cells]
         if 'x' not in triggerClusters.columns:
             triggerClusters = pd.merge(triggerClusters, tc_geom_df[['z', 'id']], on='id')
@@ -524,15 +545,13 @@ def analyze(params, batch_idx=0):
             triggerClusters['x'] = triggerClusters.R*np.cos(triggerClusters.phi)
             triggerClusters['y'] = triggerClusters.R*np.sin(triggerClusters.phi)
 
-        trigger3DClusters = event.getDataFrame(prefix='cl3d')
         trigger3DClusters['nclu'] = [len(x) for x in trigger3DClusters.clusters]
         triggerClustersGEO = pd.DataFrame()
         trigger3DClustersGEO = pd.DataFrame()
         triggerClustersDBS = pd.DataFrame()
         trigger3DClustersDBS = pd.DataFrame()
         trigger3DClustersDBSp = pd.DataFrame()
-        triggerTowers = event.getDataFrame(prefix='tower')
-
+        triggerTowers['HoE'] = triggerTowers.etHad/triggerTowers.etEm
 
 
         debugPrintOut(debug, 'gen parts', toCount=genParts, toPrint=genParts)
