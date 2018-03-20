@@ -215,15 +215,18 @@ class TriggerTowerHistos(BaseHistos):
             self.h_etEm = ROOT.TH1F(name+'_etEm', 'Tower Et EM (GeV)', 100, 0, 100)
             self.h_etHad = ROOT.TH1F(name+'_etHad', 'Tower Et Had (GeV)', 100, 0, 100)
             self.h_HoE = ROOT.TH1F(name+'_HoE', 'Tower H/E', 100, 0, 100)
+            self.h_HoEVpt = ROOT.TH2F(name+'_HoEVpt', 'Tower H/E vs Pt (GeV)', 100, 0, 100, 100, 0, 100)
             self.h_energy = ROOT.TH1F(name+'_energy', 'Tower energy (GeV)', 1000, 0, 1000)
             self.h_eta = ROOT.TH1F(name+'_eta', 'Tower eta', 100, -5, 5)
+
         BaseHistos.__init__(self, name, root_file)
 
     def fill(self, towers):
         rnp.fill_hist(self.h_pt, towers.pt)
         rnp.fill_hist(self.h_etEm, towers.etEm)
         rnp.fill_hist(self.h_etHad, towers.etHad)
-        rnp.fill_hist(self.h_HoE, towers.etHad/towers.etEm)
+        rnp.fill_hist(self.h_HoE, towers.HoE)
+        rnp.fill_hist(self.h_HoEVpt, towers[['pt', 'HoE']])
         rnp.fill_hist(self.h_energy, towers.energy)
         rnp.fill_hist(self.h_eta, towers.eta)
 
@@ -231,17 +234,18 @@ class TriggerTowerHistos(BaseHistos):
 class TriggerTowerResoHistos(BaseHistos):
     def __init__(self, name, root_file=None):
         if not root_file:
-            self.h_ptRes = ROOT.TH1F(name+'_ptRes', '3D Cluster Pt reso (GeV)', 200, -40, 40)
-            self.h_energyRes = ROOT.TH1F(name+'_energyRes', '3D Cluster Energy reso (GeV)', 200, -100, 100)
-            self.h_ptResVeta = ROOT.TH2F(name+'_ptResVeta', '3D Cluster Pt reso (GeV) vs eta', 100, -3.5, 3.5, 200, -40, 40)
-            self.h_energyResVeta = ROOT.TH2F(name+'_energyResVeta', '3D Cluster E reso (GeV) vs eta', 100, -3.5, 3.5, 200, -100, 100)
-            self.h_ptResVpt = ROOT.TH2F(name+'_ptResVpt', '3D Cluster Pt reso (GeV) vs pt (GeV)', 50, 0, 100, 200, -40, 40)
+            self.h_ptRes = ROOT.TH1F(name+'_ptRes', 'TT Pt reso (GeV)', 200, -40, 40)
+            self.h_energyRes = ROOT.TH1F(name+'_energyRes', 'TT Energy reso (GeV)', 200, -100, 100)
+            self.h_ptResVeta = ROOT.TH2F(name+'_ptResVeta', 'TT Pt reso (GeV) vs eta', 100, -3.5, 3.5, 200, -40, 40)
+            self.h_energyResVeta = ROOT.TH2F(name+'_energyResVeta', 'TT E reso (GeV) vs eta', 100, -3.5, 3.5, 200, -100, 100)
+            self.h_ptResVpt = ROOT.TH2F(name+'_ptResVpt', 'TT Pt reso (GeV) vs pt (GeV)', 50, 0, 100, 200, -40, 40)
             # FIXME: add corresponding Pt plots
-            self.h_etaRes = ROOT.TH1F(name+'_etaRes', '3D Cluster eta reso', 100, -0.4, 0.4)
-            self.h_phiRes = ROOT.TH1F(name+'_phiRes', '3D Cluster phi reso', 100, -0.4, 0.4)
-            self.h_drRes = ROOT.TH1F(name+'_drRes', '3D Cluster DR reso', 100, 0, 0.4)
-            self.h_n010 = ROOT.TH1F(name+'_n010', '# of 3D clus in 0.2 cone with pt>0.1GeV', 10, 0, 10)
-            self.h_n025 = ROOT.TH1F(name+'_n025', '# of 3D clus in 0.2 cone with pt>0.25GeV', 10, 0, 10)
+            self.h_etaRes = ROOT.TH1F(name+'_etaRes', 'TT eta reso', 100, -0.4, 0.4)
+            self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'TT phi reso', 100, -0.4, 0.4)
+            self.h_etalwRes = ROOT.TH1F(name+'_etalwRes', 'TT eta reso (lw)', 100, -0.4, 0.4)
+            self.h_philwRes = ROOT.TH1F(name+'_philwRes', 'TT phi reso (lw)', 100, -0.4, 0.4)
+
+            self.h_drRes = ROOT.TH1F(name+'_drRes', 'TT DR reso', 100, 0, 0.4)
         BaseHistos.__init__(self, name, root_file)
 
     def fill(self, reference, target):
@@ -254,12 +258,10 @@ class TriggerTowerResoHistos(BaseHistos):
         self.h_etaRes.Fill(target.eta - reference.eta)
         self.h_phiRes.Fill(target.phi - reference.phi)
         self.h_drRes.Fill(np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
-
-        if 'n010' in target:
-            self.h_n010.Fill(target.n010)
-        if 'n025' in target:
-            self.h_n025.Fill(target.n025)
-
+        if 'etalw' in target:
+            self.h_etalwRes.Fill(target.etalw - reference.eta)
+        if 'philw' in target:
+            self.h_philwRes.Fill(target.philw - reference.phi)
 
 
 class ResoHistos(BaseHistos):
@@ -287,7 +289,6 @@ class ResoHistos(BaseHistos):
             self.h_drRes = ROOT.TH1F(name+'_drRes', '3D Cluster DR reso', 100, 0, 0.4)
             self.h_n010 = ROOT.TH1F(name+'_n010', '# of 3D clus in 0.2 cone with pt>0.1GeV', 10, 0, 10)
             self.h_n025 = ROOT.TH1F(name+'_n025', '# of 3D clus in 0.2 cone with pt>0.25GeV', 10, 0, 10)
-
 
         BaseHistos.__init__(self, name, root_file)
 
