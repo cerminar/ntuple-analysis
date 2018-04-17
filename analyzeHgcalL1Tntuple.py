@@ -22,6 +22,7 @@ import utils as utils
 import clusterTools as clAlgo
 import traceback
 import subprocess32
+from utils import debugPrintOut
 
 
 def listFiles(input_dir):
@@ -347,15 +348,6 @@ def build3DClusters(name, algorithm, triggerClusters, pool, debug):
                   toCount=trigger3DClusters,
                   toPrint=trigger3DClusters.iloc[:3])
     return trigger3DClusters
-
-
-def debugPrintOut(level, name, toCount, toPrint):
-    if level == 0:
-        return
-    if level >= 2:
-        print('# {}: {}'.format(name, len(toCount)))
-    if level >= 3:
-        print(toPrint)
 
 
 class PID:
