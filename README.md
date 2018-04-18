@@ -39,3 +39,9 @@ python hgcalReClusteringExample.py
 The configuration of the available ntuples and of the other parameters is maintained in the file:
 
 [samples.cfg](samples.cfg)
+
+Note that the script can also be used to submit the analysis on the CERN HTCondor batch system
+
+`python analyzeHgcalL1Tntuple.py --help`
+
+for the details.
