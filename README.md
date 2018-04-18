@@ -2,6 +2,19 @@
 
 The python scripts in this repository should help you get started analysing the [HGCal ntuple](https://github.com/CMS-HGCAL/reco-ntuples).
 
+## Pre-requisites
+
+Setup a `virtualenv`. The requirements are in the file
+
+[requirements.txt](requirements.txt)
+
+For setting up the python version on lxplus you can just source the script:
+
+`source setup_lxplus.sh`
+
+
+
+
 ## General usage
 
 [NtupleDataFormat.py](NtupleDataFormat.py) provides a wrapper to the ntuple such that it can be used as if it contained classes. An example implementation can be found in [hgcalNtupleExample.py](hgcalNtupleExample.py). You need to provide an ntuple ROOT file to it:
@@ -19,3 +32,10 @@ An example script for running different scenarios of stand-alone clustering, and
 python hgcalReClusteringExample.py
 
 ```
+### HGCAL L1 TPG analysis
+
+`python analyzeHgcalL1Tntuple.py -f samples.cfg -c test_hadGUNs -s all -d 4`
+
+The configuration of the available ntuples and of the other parameters is maintained in the file:
+
+[samples.cfg](samples.cfg)
