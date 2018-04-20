@@ -31,6 +31,22 @@ def analyze(params, batch_idx=0):
     debug = int(params.debug)
     pool = Pool(5)
 
+    phi_bins = np.linspace(-1*math.pi, math.pi, 72+1)
+    eta_bins = np.linspace(1.41, 3.1, 18+1)
+
+    eta_bin_size = eta_bins[1] -  eta_bins[0]
+    eta_bin_first = eta_bins[0]+eta_bin_size/2
+    phi_bin_size = phi_bins[1] -  phi_bins[0]
+    phi_bin_first = phi_bins[0]+phi_bin_size/2
+
+    print eta_bins
+    print phi_bins
+    print 'Eta bin size: {}, first bin center: {}, # bins: {}'.format(eta_bin_size, eta_bin_first, len(eta_bins)-1)
+    print 'Phi bin size: {}, first bin center: {}, # bins: {}'.format(phi_bin_size, phi_bin_first, len(phi_bins)-1)
+
+
+
+
     tc_geom_df = pd.DataFrame()
     cell_geom_df = pd.DataFrame()
     geom_file = params.input_base_dir+'/geom/test_triggergeom_v1.root'
@@ -51,10 +67,6 @@ def analyze(params, batch_idx=0):
 
     display_mgr = display.EventDisplayManager(cell_geom=cell_geom_df,
                                               trigger_cell_geom=tc_geom_tree)
-
-
-    phi_bins = np.linspace(-1*math.pi, math.pi, 72+1)
-    eta_bins = np.linspace(1.479, 3, 18+1)
 
 
 
@@ -94,6 +106,11 @@ def analyze(params, batch_idx=0):
     # tc_geom_df['eta_bin_c'] = np.digitize(np.fabs(tc_geom_df.eta), eta_bins)-1
     tc_geom_df['phi_bin'] = np.digitize(tc_geom_df.phi, phi_bins)-1
     tc_geom_df['tt_bin'] = tc_geom_df.apply(func=lambda cell: (int(cell.eta_bin), int(cell.phi_bin)), axis=1)
+
+
+    print 'DEGUG---------------'
+    print tc_geom_df[(tc_geom_df.eta_bin < 0 ) | (tc_geom_df.eta_bin > 17 ) | (tc_geom_df.phi_bin < 0) | (tc_geom_df.phi_bin > 71)][['id', 'eta', 'phi', 'eta_bin', 'phi_bin']]
+    print 'FINE DEGUG---------------'
 
     temp_bins = pd.Series()
 
@@ -184,6 +201,9 @@ def analyze(params, batch_idx=0):
       dtype='|S10')
 
     print tc_geom_df[tc_geom_df.id.isin(missing)]
+    print "# of TCs = {}".format(len(tc_geom_df.id.unique()))
+    print "# of TCs mapped = {}".format(len(tower_tc_mapping.id.unique()))
+    print "# of bins = {}".format(len(tc_geom_df.tt_bin.unique()))
     sys.exit(0)
 
     # tc_ids_all = pd.DataFrame(columns=['wf', 'wtf', 'hgcroc'])
