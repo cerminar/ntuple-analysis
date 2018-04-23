@@ -108,6 +108,8 @@ def analyze(params, batch_idx=0):
     tc_geom_df['tt_bin'] = tc_geom_df.apply(func=lambda cell: (int(cell.eta_bin), int(cell.phi_bin)), axis=1)
 
 
+    # deal with rounding effects on pi
+    tc_geom_df.loc[tc_geom_df.phi_bin == 72, ('phi_bin')] = 71
     print 'DEGUG---------------'
     print tc_geom_df[(tc_geom_df.eta_bin < 0 ) | (tc_geom_df.eta_bin > 17 ) | (tc_geom_df.phi_bin < 0) | (tc_geom_df.phi_bin > 71)][['id', 'eta', 'phi', 'eta_bin', 'phi_bin']]
     print 'FINE DEGUG---------------'
