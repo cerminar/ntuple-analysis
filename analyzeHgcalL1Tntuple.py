@@ -232,6 +232,27 @@ def plotTriggerTowerMatch(genParticles,
 def unpack(mytuple):
     return mytuple[0].getDataFrame(mytuple[1])
 
+def computeClusterRodSharing(cl2ds, tcs):
+    cl2ds['rod_bin_max'] = pd.Series(index=cl2ds.index, dtype=object)
+    cl2ds['rod_bin_shares'] = pd.Series(index=cl2ds.index, dtype=object)
+    cl2ds['rod_bins'] = pd.Series(index=cl2ds.index, dtype=object)
+
+    for index, cl2d in cl2ds.iterrows():
+        matchedTriggerCells = tcs[tcs.id.isin(cl2d.cells)]
+        energy_sums_byRod = matchedTriggerCells.groupby(by='rod_bin', axis=0).sum()
+        bin_max = energy_sums_byRod[['energy']].idxmax()[0]
+        cl2ds.set_value(index, 'rod_bin_max', bin_max)
+        cl2ds.set_value(index, 'rod_bins', energy_sums_byRod.index.values)
+
+        shares = []
+        for iy in range(bin_max[1]-1, bin_max[1]+2):
+            for ix in range(bin_max[0]-1, bin_max[0]+2):
+                bin = (ix, iy)
+                energy = 0.
+                if bin in energy_sums_byRod.index:
+                    energy = energy_sums_byRod.loc[[bin]].energy[0]
+                shares.append(energy)
+        cl2ds.set_value(index, 'rod_bin_shares', shares)
 
 
 def plot3DClusterMatch(genParticles,
@@ -375,6 +396,7 @@ def analyze(params, batch_idx=0):
     pool = Pool(5)
 
     tc_geom_df = pd.DataFrame()
+    tc_rod_bins = pd.DataFrame()
     if True:
         # read the geometry dump
         geom_file = params.input_base_dir+'/geom/test_triggergeom.root'
@@ -385,8 +407,17 @@ def analyze(params, batch_idx=0):
         tc_geom_df['radius'] = np.sqrt(tc_geom_df['x']**2+tc_geom_df['y']**2)
         tc_geom_df['eta'] = np.arcsinh(tc_geom_df.z/tc_geom_df.radius)
 
-        #print (tc_geom_df[:3])
-        #print (tc_geom_df[tc_geom_df.id == 1712072976])
+        if False:
+            tc_rod_bins = pd.read_csv(filepath_or_buffer='TCmapping_v2.txt',
+                                      sep=' ',
+                                      names=['id', 'rod_x', 'rod_y'],
+                                      index_col=False)
+            tc_rod_bins['rod_bin'] = tc_rod_bins.apply(func=lambda cell: (int(cell.rod_x), int(cell.rod_y)), axis=1)
+
+            tc_geom_df = pd.merge(tc_geom_df, tc_rod_bins, on='id')
+
+        # print (tc_geom_df[:3])
+        # print (tc_geom_df[tc_geom_df.id == 1712072976])
         # tc_geom_df['max_neigh_dist'] = 1
         # a5 = tc_geom_df[tc_geom_df.neighbor_n == 5]
         # a5['max_neigh_dist'] =  a5['neighbor_distance'].max()
@@ -400,6 +431,8 @@ def analyze(params, batch_idx=0):
 
         # treeTriggerCells = inputFile.Get("hgcaltriggergeomtester/TreeTriggerCells")
         # treeCells        = inputFile.Get("hgcaltriggergeomtester/TreeCells")
+
+        print ('...done')
 
     input_files = listFiles(os.path.join(params.input_base_dir, params.input_sample_dir))
     print ('- dir {} contains {} files.'.format(params.input_sample_dir, len(input_files)))
@@ -519,6 +552,10 @@ def analyze(params, batch_idx=0):
         trigger3DClusters = dataframes[4]
         triggerTowers = dataframes[5]
 
+        if not tc_rod_bins.empty:
+            triggerCells = pd.merge(triggerCells,
+                                    tc_rod_bins,
+                                    on='id')
 
         # genParticles = event.getDataFrame(prefix='genpart')
         # hgcDigis = event.getDataFrame(prefix='hgcdigi')
@@ -545,6 +582,10 @@ def analyze(params, batch_idx=0):
         trigger3DClustersDBSp = pd.DataFrame()
         triggerTowers['HoE'] = triggerTowers.etHad/triggerTowers.etEm
 
+
+
+
+        # computeClusterRodSharing(triggerClusters, triggerCells)
 
         debugPrintOut(debug, 'gen parts', toCount=genParts, toPrint=genParts)
         debugPrintOut(debug, 'gen particles',
@@ -599,7 +640,7 @@ def analyze(params, batch_idx=0):
         for particle in particles:
             # if particle.pdgid != PID.pizero:
             # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
-            hGenParts[particle].fill(genParticles[(genParticles.gen > 0) & (genParticles.pid == particle.pdgid)])
+            hGenParts[particle].fill(genParticles[(genParticles.gen > 0) & (np.abs(genParticles.pid) == particle.pdgid)])
             # else:
             #     hGenParts[particle].fill(genParts[(genParts.pid == particle.pdgid)])
 
@@ -624,7 +665,7 @@ def analyze(params, batch_idx=0):
 
         # now we try to match the Clusters to the GEN particles of various types
         for particle in particles:
-            genReference = genParticles[(genParticles.gen > 0) & (genParticles.pid == particle.pdgid) & (np.abs(genParticles.eta) < 2.8) & (np.abs(genParticles.eta) > 1.7)]
+            genReference = genParticles[(genParticles.gen > 0) & (np.abs(genParticles.pid) == particle.pdgid) & (np.abs(genParticles.eta) < 2.8) & (np.abs(genParticles.eta) > 1.7)]
             # for the photons we add a further selection
             if particle.pdgid == PID.photon:
                 genReference = genParticles[(genParticles.gen > 0) & (genParticles.pid == PID.photon) & (genParticles.reachedEE == 2) & (np.abs(genParticles.eta) < 2.8) & (np.abs(genParticles.eta) > 1.7)]
