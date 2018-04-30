@@ -581,6 +581,9 @@ def analyze(params, batch_idx=0):
         trigger3DClustersDBS = pd.DataFrame()
         trigger3DClustersDBSp = pd.DataFrame()
         triggerTowers['HoE'] = triggerTowers.etHad/triggerTowers.etEm
+        if 'iX' not in triggerTowers.columns:
+            triggerTowers['iX'] = triggerTowers.hwEta
+            triggerTowers['iY'] = triggerTowers.hwPhi
 
 
 
