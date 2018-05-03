@@ -113,6 +113,8 @@ class TCHistos(BaseHistos):
         if not root_file:
             self.h_energy = ROOT.TH1F(name+'_energy', 'TC energy (GeV)', 100, 0, 2)
             self.h_subdet = ROOT.TH1F(name+'_subdet', 'TC subdet #', 8, 0, 8)
+            self.h_mipPt = ROOT.TH1F(name+'_mipPt', 'TC MIP Pt', 50, 0, 10)
+
             self.h_layer = ROOT.TProfile(name+'_layer', 'TC layer #', 60, 0, 60, 's')
             self.h_absz = ROOT.TH1F(name+'_absz', 'TC z(cm)', 100, 300, 500)
             self.h_wafertype = ROOT.TH1F(name+'_wafertype', 'Wafer type', 10, 0, 10)
@@ -129,6 +131,7 @@ class TCHistos(BaseHistos):
     def fill(self, tcs):
         rnp.fill_hist(self.h_energy, tcs.energy)
         rnp.fill_hist(self.h_subdet, tcs.subdet)
+        rnp.fill_hist(self.h_mipPt, tcs.mipPt)
         cnt = tcs.layer.value_counts().to_frame(name='counts')
         cnt['layer'] = cnt.index.values
         rnp.fill_profile(self.h_layer, cnt[['layer', 'counts']])
