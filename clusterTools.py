@@ -22,9 +22,11 @@ def buildDBSCANClusters(sel_layer, sel_zside, tcs):
 
     X = tcs_layer[['x', 'y']]
     # tuned on 25GeV e-
-    #densities = [0.05, 0.05, 0.1, 0.25, 0.3, 0.3, 0.5, 0.45, 0.4, 0.35, 0.4, 0.25, 0.25, 0.15, 0.1, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15]
+    densities = [0.05, 0.05, 0.1, 0.25, 0.3, 0.3, 0.5, 0.45, 0.4, 0.35, 0.4, 0.25, 0.25, 0.15, 0.1, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15]
 
-    densities = [0.1, 0.2, 0.5, 0.5, 1.1, 1.3, 1.7, 1.8, 2.0, 2.2, 2.6, 2.0, 1.8, 1.4, 1.2, 0.8, 0.6, 0.4, 0.2, 0.2, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
+    # densities = [0.1, 0.2, 0.5, 0.5, 1.1, 1.3, 1.7, 1.8, 2.0, 2.2, 2.6, 2.0, 1.8, 1.4, 1.2, 0.8, 0.6, 0.4, 0.2, 0.2, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
+    densities.extend([0.05 for i in range(0, 40)])
+    # print 'ECCOCI: {}'.format(len(densities))
     # photon Pt35 tunes (no selection on unconverted)
     # densities = [0.05, 0.05, 0.05, 0.1, 0.25, 0.45, 1.1, 1.6, 2.5, 3.55, 4.85, 4.6, 4.35, 3.55, 3.15, 2.25, 1.8, 1.05, 1.0, 0.65, 0.5, 0.2, 0.1, 0.05, 0.05, 0.05, 0.05, 0.2]
     db = DBSCAN(eps=2.5,
@@ -44,28 +46,7 @@ def buildDBSCANClusters(sel_layer, sel_zside, tcs):
         if label == -1:
             continue
         components = tcs_layer[tcs_layer.dbs_label == label]
-        cl = pd.DataFrame()
-        cl['energy'] = [components.energy.sum()]
-
-        cl['energyCore'] = [components[components.core].energy.sum()]
-        cl['x'] = [np.sum(components.x*components.energy)/components.energy.sum()]
-        cl['y'] = [np.sum(components.y*components.energy)/components.energy.sum()]
-        cl['z'] = [components.z.iloc[0]]
-        cl['layer'] = [int(sel_layer)]
-        cl['zside'] = [int(sel_zside)]
-        cl['eta'] = [math.asinh(cl.z/math.sqrt(cl.x**2+cl.y**2))]
-        # if cl.x.item() > 0:
-        cl['phi'] = [math.atan2(cl.y, cl.x)]
-        # elif cl.x.item() < 0:
-        #     cl['phi'] = [math.pi - math.asin(cl.y/math.sqrt(cl.x**2+cl.y**2))]
-        # else:
-        #     cl['phi'] = [0]
-        cl['cells'] = [np.array(components.id)]
-        cl['ncells'] = [components.shape[0]]
-        cl['nCoreCells'] = [components[components.core].shape[0]]
-        cl['id'] = components.iloc[0].id
-        #print components
-
+        cl = build2D(components)
         new2Dcls = new2Dcls.append(cl.copy(), ignore_index=True)
     return new2Dcls
 
@@ -106,28 +87,7 @@ def buildHDBSCANClusters(sel_layer, sel_zside, tcs):
         if label == -1:
             continue
         components = tcs_layer[tcs_layer.dbs_label == label]
-        cl = pd.DataFrame()
-        cl['energy'] = [components.energy.sum()]
-
-        cl['energyCore'] = [components[components.core].energy.sum()]
-        cl['x'] = [np.sum(components.x*components.energy)/components.energy.sum()]
-        cl['y'] = [np.sum(components.y*components.energy)/components.energy.sum()]
-        cl['z'] = [components.z.iloc[0]]
-        cl['layer'] = [int(sel_layer)]
-        cl['zside'] = [int(sel_zside)]
-        cl['eta'] = [math.asinh(cl.z/math.sqrt(cl.x**2+cl.y**2))]
-        # if cl.x.item() > 0:
-        cl['phi'] = [math.atan2(cl.y, cl.x)]
-        # elif cl.x.item() < 0:
-        #     cl['phi'] = [math.pi - math.asin(cl.y/math.sqrt(cl.x**2+cl.y**2))]
-        # else:
-        #     cl['phi'] = [0]
-        cl['cells'] = [np.array(components.id)]
-        cl['ncells'] = [components.shape[0]]
-        cl['nCoreCells'] = [components[components.core].shape[0]]
-        cl['id'] = components.iloc[0].id
-        #print components
-
+        cl = build2D(components)
         new2Dcls = new2Dcls.append(cl.copy(), ignore_index=True)
     return new2Dcls
 
@@ -136,9 +96,9 @@ def buildHDBSCANClusters(sel_layer, sel_zside, tcs):
 
 def build3DClustersEtaPhi(cl2D):
     X = cl2D[['eta', 'phi']]
-    db = DBSCAN(eps=0.015,  # 0.03
+    db = DBSCAN(eps=0.03,  # 0.03
                 algorithm='kd_tree',
-                min_samples=10,
+                min_samples=3,
                 n_jobs=3).fit(X, sample_weight=cl2D['energy'])
     labels = db.labels_
     unique_labels = set(labels)
@@ -150,38 +110,8 @@ def build3DClustersEtaPhi(cl2D):
         if label == -1:
             continue
         # print tcs_layer[tcs_layer.dbs_label == label].indexsi s
-        cl3D = pd.DataFrame()
-        calib_factor = 1.084
         components = cl2D[cl2D.dbs_labels == label]
-        cl3D['energy'] = [components.energy.sum()*calib_factor]
-        cl3D['energyCore'] = [components.energyCore.sum()*calib_factor]
-        cl3D['energyCentral'] = [components[(components.layer > 9) & (components.layer < 21)].energy.sum()*calib_factor]
-
-        # print components
-
-        cl3D['eta'] = [np.sum(components.eta*components.energy)/components.energy.sum()]
-        cl3D['phi'] = [np.sum(components.phi*components.energy)/components.energy.sum()]
-        #print cl3D.energy/np.cosh(cl3D.eta)
-        #print type(cl3D.energy/np.cosh(cl3D.eta))
-        cl3D['pt'] = [(cl3D.energy/np.cosh(cl3D.eta)).values[0]]
-        cl3D['ptCore'] = [(cl3D.energyCore/np.cosh(cl3D.eta)).values[0]]
-        cl3D['layers'] = [components.layer.values]
-        cl3D['clusters'] = [np.array(components.id)]
-        cl3D['nclu'] = [components.shape[0]]
-        cl3D['firstlayer'] = [np.min(components.layer.values)]
-        # FIXME: placeholder
-        cl3D['showerlength'] = [1]
-        cl3D['seetot'] = [1]
-        cl3D['seemax'] = [1]
-        cl3D['spptot'] = [1]
-        cl3D['sppmax'] = [1]
-        cl3D['szz'] = [1]
-        cl3D['emaxe'] = [1]
-        cl3D['id'] = components.iloc[0].id
-
-        # cl3D['color'] = [np.random.rand(3,)]
-
-        # print cl3D
+        cl3D = build3D(components)
         new3DCls = new3DCls.append(cl3D, ignore_index=True)
     return new3DCls
 
@@ -205,32 +135,9 @@ def build3DClustersEtaPhi2(cl2D):
         if label == -1:
             continue
         # print tcs_layer[tcs_layer.dbs_label == label].indexsi s
-        cl3D = pd.DataFrame()
-        calib_factor = 1.084
         components = cl2D[cl2D.dbs_labels == label]
-        cl3D['energy'] = [components.energy.sum()*calib_factor]
-        # print components
-        cl3D['eta'] = [np.sum(components.eta*components.energy)/components.energy.sum()]
-        cl3D['phi'] = [np.sum(components.phi*components.energy)/components.energy.sum()]
-        #print cl3D.energy/np.cosh(cl3D.eta)
-        #print type(cl3D.energy/np.cosh(cl3D.eta))
-        cl3D['pt'] = [(cl3D.energy/np.cosh(cl3D.eta)).values[0]]
 
-        cl3D['layers'] = [components.layer.values]
-        cl3D['clusters'] = [np.array(components.index)]
-        cl3D['nclu'] = [components.shape[0]]
-        cl3D['firstlayer'] = [np.min(components.layer.values)]
-        # FIXME: placeholder
-        cl3D['showerlength'] = [1]
-        cl3D['seetot'] = [1]
-        cl3D['seemax'] = [1]
-        cl3D['spptot'] = [1]
-        cl3D['sppmax'] = [1]
-        cl3D['szz'] = [1]
-        cl3D['emaxe'] = [1]
-        # cl3D['color'] = [np.random.rand(3,)]
-
-        # print cl3D
+        cl3D = build3D(components)
         new3DCls = new3DCls.append(cl3D, ignore_index=True)
     return new3DCls
 
@@ -254,35 +161,127 @@ def build3DClustersProj(cl2D):
         if label == -1:
             continue
         # print tcs_layer[tcs_layer.dbs_label == label].indexsi s
-        cl3D = pd.DataFrame()
-        calib_factor = 1.084
         components = cl2D[cl2D.dbs_labels == label]
-        cl3D['energy'] = [components.energy.sum()*calib_factor]
-        # print components
-        cl3D['eta'] = [np.sum(components.eta*components.energy)/components.energy.sum()]
-        cl3D['phi'] = [np.sum(components.phi*components.energy)/components.energy.sum()]
-        cl3D['energyCore'] = [components.energyCore.sum()*calib_factor]
-        cl3D['energyCentral'] = [components[(components.layer > 9) & (components.layer < 21)].energy.sum()*calib_factor]
 
-        #print cl3D.energy/np.cosh(cl3D.eta)
-        #print type(cl3D.energy/np.cosh(cl3D.eta))
-        cl3D['pt'] = [(cl3D.energy/np.cosh(cl3D.eta)).values[0]]
-        cl3D['ptCore'] = [(cl3D.energyCore/np.cosh(cl3D.eta)).values[0]]
-
-        cl3D['layers'] = [components.layer.values]
-        cl3D['clusters'] = [np.array(components.index)]
-        cl3D['nclu'] = [components.shape[0]]
-        cl3D['firstlayer'] = [np.min(components.layer.values)]
-        # FIXME: placeholder
-        cl3D['showerlength'] = [1]
-        cl3D['seetot'] = [1]
-        cl3D['seemax'] = [1]
-        cl3D['spptot'] = [1]
-        cl3D['sppmax'] = [1]
-        cl3D['szz'] = [1]
-        cl3D['emaxe'] = [1]
-        # cl3D['color'] = [np.random.rand(3,)]
-
-        # print cl3D
+        cl3D = build3D(components)
         new3DCls = new3DCls.append(cl3D, ignore_index=True)
     return new3DCls
+
+
+def build3DClustersProjTowers(cl2D):
+    new3Dclusters = pd.DataFrame()
+    for zside in [-1, 1]:
+        seeds = getClusterSeeds(cl2D[(cl2D.eta*zside > 0)])
+        for seed in seeds:
+            # print seed
+            components = getClusterComponents(seed, cl2D[(cl2D.eta*zside > 0)])
+            new3Dclusters = new3Dclusters.append(build3D(components), ignore_index=True)
+    return new3Dclusters
+
+
+def getClusterSeeds(triggerClusters):
+    rod_bin_seeds = []
+    rod_sums = triggerClusters.groupby('rod_bin_max').sum().sort_values(by='energy', ascending=False)
+    all_cluster_rod_bins = []
+    filtered_rod_sums = rod_sums[~rod_sums.index.isin(all_cluster_rod_bins)]
+    while(not filtered_rod_sums.empty):
+
+        rod_bin_seed = filtered_rod_sums.iloc[0].name
+        rod_bin_seeds.append(rod_bin_seed)
+        cluster_rod_bins = [(x, y) for x in range(rod_bin_seed[0]-1, rod_bin_seed[0]+2) for y in range(rod_bin_seed[1]-1, rod_bin_seed[1]+2)]
+        all_cluster_rod_bins.extend(cluster_rod_bins)
+        filtered_rod_sums = rod_sums[~rod_sums.index.isin(all_cluster_rod_bins)]
+
+    return rod_bin_seeds
+
+
+def getClusterComponents(rod_bin_seed, triggerClusters):
+    cluster_rod_bins = [(x, y) for x in range(rod_bin_seed[0]-1, rod_bin_seed[0]+2) for y in range(rod_bin_seed[1]-1, rod_bin_seed[1]+2)]
+    # print rod_bin_seed
+    # print cluster_rod_bins
+
+    return triggerClusters[(triggerClusters.rod_bin_max.isin(cluster_rod_bins))]
+
+
+def build2D(components):
+    cl = pd.DataFrame()
+    cl['energy'] = [components.energy.sum()]
+
+    cl['energyCore'] = [components[components.core].energy.sum()]
+    cl['x'] = [np.sum(components.x*components.energy)/components.energy.sum()]
+    cl['y'] = [np.sum(components.y*components.energy)/components.energy.sum()]
+    cl['z'] = [components.z.iloc[0]]
+    cl['layer'] = [components.layer.iloc[0]]
+    cl['zside'] = [components.zside.iloc[0]]
+    cl['eta'] = [math.asinh(cl.z/math.sqrt(cl.x**2+cl.y**2))]
+    cl['pt'] = [(cl.energy/np.cosh(cl.eta)).values[0]]
+    cl['subdet'] = components.iloc[0].subdet
+    # if cl.x.item() > 0:
+    cl['phi'] = [math.atan2(cl.y, cl.x)]
+    # elif cl.x.item() < 0:
+    #     cl['phi'] = [math.pi - math.asin(cl.y/math.sqrt(cl.x**2+cl.y**2))]
+    # else:
+    #     cl['phi'] = [0]
+    cl['cells'] = [np.array(components.id)]
+    cl['ncells'] = [components.shape[0]]
+    cl['nCoreCells'] = [components[components.core].shape[0]]
+    cl['id'] = components.iloc[0].id
+    return cl
+
+
+def build3D(components):
+    cl3D = pd.DataFrame()
+    calib_factor = 1.084
+    cl3D['energy'] = [components.energy.sum()*calib_factor]
+#     cl3D['energyCore'] = [components.energyCore.sum()*calib_factor]
+#     cl3D['energyCentral'] = [components[(components.layer > 9) & (components.layer < 21)].energy.sum()*calib_factor]
+
+    # print components
+
+    cl3D['eta'] = [np.sum(components.eta*components.energy)/components.energy.sum()]
+    cl3D['phi'] = [np.sum(components.phi*components.energy)/components.energy.sum()]
+    # print cl3D.energy/np.cosh(cl3D.eta)
+    # print type(cl3D.energy/np.cosh(cl3D.eta))
+    cl3D['pt'] = [(cl3D.energy/np.cosh(cl3D.eta)).values[0]]
+    # cl3D['ptCore'] = [(cl3D.energyCore/np.cosh(cl3D.eta)).values[0]]
+    cl3D['layers'] = [components.layer.values]
+    cl3D['clusters'] = [np.array(components.id)]
+    cl3D['nclu'] = [components.shape[0]]
+    cl3D['firstlayer'] = [np.min(components.layer.values)]
+    # FIXME: placeholder
+    cl3D['showerlength'] = [1]
+    cl3D['seetot'] = [1]
+    cl3D['seemax'] = [1]
+    cl3D['spptot'] = [1]
+    cl3D['sppmax'] = [1]
+    cl3D['szz'] = [1]
+    cl3D['emaxe'] = [1]
+    cl3D['id'] = components.iloc[0].id
+    # print cl3D
+    return cl3D
+
+
+def computeClusterRodSharing(cl2ds, tcs):
+    cl2ds['rod_bin_max'] = pd.Series(index=cl2ds.index, dtype=object)
+    cl2ds['rod_bin_shares'] = pd.Series(index=cl2ds.index, dtype=object)
+    cl2ds['rod_bins'] = pd.Series(index=cl2ds.index, dtype=object)
+
+    for index, cl2d in cl2ds.iterrows():
+        # print "---------------------"
+        # print cl2d
+        matchedTriggerCells = tcs[tcs.id.isin(cl2d.cells)]
+        # print matchedTriggerCells
+        energy_sums_byRod = matchedTriggerCells.groupby(by='rod_bin', axis=0).sum()
+        bin_max = energy_sums_byRod[['energy']].idxmax()[0]
+        cl2ds.set_value(index, 'rod_bin_max', bin_max)
+        cl2ds.set_value(index, 'rod_bins', energy_sums_byRod.index.values)
+
+        shares = []
+        for iy in range(bin_max[1]-1, bin_max[1]+2):
+            for ix in range(bin_max[0]-1, bin_max[0]+2):
+                bin = (ix, iy)
+                energy = 0.
+                if bin in energy_sums_byRod.index:
+                    energy = energy_sums_byRod.loc[[bin]].energy[0]
+                shares.append(energy)
+        cl2ds.set_value(index, 'rod_bin_shares', shares)
