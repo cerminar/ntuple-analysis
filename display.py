@@ -43,6 +43,9 @@ from bokeh.palettes import Viridis256
 from bokeh.palettes import Plasma256
 import math
 
+from buildTowerMaps import GridPoint,Grid,TowerMaps
+
+
 
 class EventDisplayManager:
     def __init__(self, cell_geom, trigger_cell_geom):
@@ -309,7 +312,7 @@ class EventDisplayManager:
             hover.point_policy = "follow_mouse"
             hover.tooltips = [
                 ("TC ID", "@id"),
-                 #("energy", "@energy GeV"),
+                 ("energy", "@energy GeV"),
                  ("(x, y)", "($x, $y)"),
                  #("CL ID", "@cl_id")
              ]
@@ -330,93 +333,6 @@ class EventDisplayManager:
             if idx in self.figures.keys():
                 plots_ee_m.append(self.figures[idx])
         show(column(plots_ee_m))
-
-
-
-
-
-class GridPoint:
-    def __init__(self, x, y, z):
-        self.x = x
-        self.y = y
-        self.z = z
-        self.phi = math.atan2(y, x)
-        self.r = math.sqrt(x**2+y**2)
-        if self.r == 0:
-            self.eta = 0
-        else:
-            self.eta = math.sinh(z/self.r)
-
-    def extrapolateXY(self, z_new):
-        r_new = 0
-        if self.eta != 0:
-            r_new = z_new/math.asinh(self.eta)
-        x_new = r_new*math.sin(self.phi)
-        y_new = r_new*math.cos(self.phi)
-        return GridPoint(x_new, y_new, z_new)
-
-    def __str__(self):
-        return '(x={}, y={}, z={}, phi={}, eta={}, r={})'.format(self.x, self.y, self.z,self.phi,self.eta, self.r)
-
-    def __repr__(self):
-        # return '(x={}, y={}, z={}, phi={}, eta={}, r={})'.format(self.x, self.y, self.z,self.phi,self.eta, self.r)
-        return '(x={}, y={}, z={})'.format(self.x, self.y, self.z)
-
-class Grid:
-    def __init__(self,
-                 x_nbins, x_min, x_max,
-                 y_nbins, y_min, y_max,
-                 z):
-        self.x_bins = np.linspace(x_min, x_max, x_nbins+1)
-        self.y_bins = np.linspace(y_min, y_max, y_nbins+1)
-        self.z = z
-        print '--- Creating new Grid a@ z: {} with nbins_x: {} nbins_y: {}'.format(self.z, self.nbins_x, self.nbins_y)
-        self.grid_points = np.ndarray(shape=(x_nbins+1, y_nbins+1), dtype=object)
-        for idx_x in range(0, x_nbins+1):
-            for idx_y in range(0, y_nbins+1):
-                self.grid_points[idx_x][idx_y] = GridPoint(self.x_bins[idx_x],
-                                                           self.y_bins[idx_y],
-                                                           z)
-
-    @property
-    def nbins_x(self):
-        return len(self.x_bins)-1
-
-    @property
-    def nbins_y(self):
-        return len(self.y_bins)-1
-
-    def getCorners(self, bin_x, bin_y):
-        return [self.grid_points[bin_x][bin_y],
-                self.grid_points[bin_x+1][bin_y],
-                self.grid_points[bin_x+1][bin_y+1],
-                self.grid_points[bin_x][bin_y+1]]
-
-    def extrapolateXY(self, z):
-        point_1 = self.grid_points[0][0].extrapolateXY(z)
-        point_2 = self.grid_points[-1][-1].extrapolateXY(z)
-        return Grid(len(self.x_bins), point_1.x, point_2.x, len(self.y_bins), point_1.y, point_2.y, z)
-        # extrapolator = np.vectorize(lambda x: x.extrapolateXY(z))
-        # return extrapolator(self.grid_points)
-
-
-class TowerMaps:
-    def __init__(self, refGridPlus, refGridMinus):
-        self.refGrid_plus = refGridPlus
-        self.refGrid_minus = refGridMinus
-        self.grid_at_z = {}
-        self.grid_at_z[self.refGrid_plus.z] = self.refGrid_plus
-        self.grid_at_z[self.refGrid_minus.z] = self.refGrid_minus
-
-    def extrapolateXY(self, z):
-        if z not in self.grid_at_z.keys():
-            newgrid = None
-            if z < 0:
-                newgrid = self.refGrid_minus.extrapolateXY(z)
-            else:
-                newgrid = self.refGrid_plus.extrapolateXY(z)
-            self.grid_at_z[newgrid.z] = newgrid
-        return self.grid_at_z[z]
 
 
 
@@ -462,6 +378,58 @@ def analyze(params, batch_idx=0):
                  Particle('pizero', PID.pizero)]
 
 
+    tc_layer = tc_geom_df[(tc_geom_df.eta < 0) & (tc_geom_df.layer == 1)]
+    tc_layer['energy'] = tc_layer.id*1000
+    gridM = Grid(x_nbins=68, x_min=-170., x_max=170.,
+                y_nbins=68, y_min=-170., y_max=170.,
+                z=-320.755005)
+
+
+    gridP = Grid(x_nbins=68, x_min=-170., x_max=170.,
+                y_nbins=68, y_min=-170., y_max=170.,
+                z=320.755005)
+
+
+    towerMap = TowerMaps(refGridPlus=gridP, refGridMinus=gridM)
+
+
+    #display.displayTriggerCells(1, tc_layer)
+    #display.displayTowers(1, -1, 3, 1, gridM)
+
+    tc_layer_1_EE = tc_geom_df[(tc_geom_df.eta < 0) & (tc_geom_df.layer == 1) & (tc_geom_df.subdet == 3)]
+    print tc_layer_1_EE.iloc[1]
+    gridEE_m_l1 = towerMap.extrapolateXY(tc_layer_1_EE.iloc[1].z)
+    print gridEE_m_l1.getCorners(34,34)
+    gridEE_m_l1.getBinCenter(65,34)
+    gridEE_m_l1.getBinCenter(64,34)
+    gridEE_m_l1.getBinCenter(42,34)
+    gridEE_m_l1.getBinCenter(43,34)
+    tc_layer_1_FH = tc_geom_df[(tc_geom_df.eta < 0) & (tc_geom_df.layer == 1) & (tc_geom_df.subdet == 4)]
+    print tc_layer_1_FH.iloc[1]
+    gridFH_m_l1 = towerMap.extrapolateXY(tc_layer_1_FH.iloc[1].z)
+    gridFH_m_l1.getBinCenter(65,34)
+    gridFH_m_l1.getBinCenter(64,34)
+    gridFH_m_l1.getBinCenter(42,34)
+    gridFH_m_l1.getBinCenter(43,34)
+
+    print gridFH_m_l1.getCorners(34,34)
+    tc_layer_1_BH = tc_geom_df[(tc_geom_df.eta < 0) & (tc_geom_df.layer == 1) & (tc_geom_df.subdet == 5)]
+    print tc_layer_1_BH.iloc[1]
+    gridBH_m_l1 = towerMap.extrapolateXY(tc_layer_1_BH.iloc[1].z)
+    print gridBH_m_l1.getCorners(34,34)
+    gridBH_m_l1.getBinCenter(65,34)
+    gridBH_m_l1.getBinCenter(64,34)
+    gridBH_m_l1.getBinCenter(42,34)
+    gridBH_m_l1.getBinCenter(43,34)
+
+    tc_layer_12_BH = tc_geom_df[(tc_geom_df.eta < 0) & (tc_geom_df.layer == 12) & (tc_geom_df.subdet == 5)]
+    print tc_layer_12_BH.iloc[1]
+    gridBH_m_l12 = towerMap.extrapolateXY(tc_layer_12_BH.iloc[1].z)
+    print gridBH_m_l12.getCorners(34,34)
+
+    #display.show(1)
+
+    sys.exit(0)
 
     input_files = listFiles(os.path.join(params.input_base_dir, params.input_sample_dir))
     print ('- dir {} contains {} files.'.format(params.input_sample_dir, len(input_files)))
