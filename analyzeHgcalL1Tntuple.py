@@ -407,8 +407,8 @@ def analyze(params, batch_idx=0):
         tc_geom_df['radius'] = np.sqrt(tc_geom_df['x']**2+tc_geom_df['y']**2)
         tc_geom_df['eta'] = np.arcsinh(tc_geom_df.z/tc_geom_df.radius)
 
-        if False:
-            tc_rod_bins = pd.read_csv(filepath_or_buffer='TCmapping_v2.txt',
+        if True:
+            tc_rod_bins = pd.read_csv(filepath_or_buffer='data/TCmapping_v2.txt',
                                       sep=' ',
                                       names=['id', 'rod_x', 'rod_y'],
                                       index_col=False)
@@ -450,7 +450,7 @@ def analyze(params, batch_idx=0):
 # for index, tc_geom in tc_geom_df.iterrows():
 #     tc_geom.max_dist_neigh = np.max(tc_geom.neighbor_distance)
 
-    algos = ['DEF', 'DBS']
+    algos = ['DEF', 'DBS', 'DBSp', 'DEFp']
     particles = [Particle('ele', PID.electron),
                  Particle('photon', PID.photon),
                  Particle('pion', PID.pion),
@@ -480,6 +480,8 @@ def analyze(params, batch_idx=0):
     hdigis = histos.DigiHistos('h_hgcDigisAll')
 
     hsetDEF = histos.HistoSetClusters('DEF_all')
+    hsetDEFp = histos.HistoSetClusters('DEFp_all')
+
     hsetGEO = histos.HistoSetClusters('GEO_all')
     hsetDBS = histos.HistoSetClusters('DBS_all')
     hsetDBSp = histos.HistoSetClusters('DBSp_all')
@@ -575,6 +577,7 @@ def analyze(params, batch_idx=0):
             triggerClusters['y'] = triggerClusters.R*np.sin(triggerClusters.phi)
 
         trigger3DClusters['nclu'] = [len(x) for x in trigger3DClusters.clusters]
+        trigger3DClustersP = pd.DataFrame()
         triggerClustersGEO = pd.DataFrame()
         trigger3DClustersGEO = pd.DataFrame()
         triggerClustersDBS = pd.DataFrame()
@@ -585,10 +588,8 @@ def analyze(params, batch_idx=0):
             triggerTowers['iX'] = triggerTowers.hwEta
             triggerTowers['iY'] = triggerTowers.hwPhi
 
-
-
-
-        # computeClusterRodSharing(triggerClusters, triggerCells)
+        if not tc_rod_bins.empty:
+            clAlgo.computeClusterRodSharing(triggerClusters, triggerCells)
 
         debugPrintOut(debug, 'gen parts', toCount=genParts, toPrint=genParts)
         debugPrintOut(debug, 'gen particles',
@@ -613,18 +614,21 @@ def analyze(params, batch_idx=0):
         if params.clusterize:
             # Now build DBSCAN 2D clusters
             for zside in [-1, 1]:
-                arg = [(layer, zside, triggerCells) for layer in range(0, 29)]
+                arg = [(layer, zside, triggerCells) for layer in range(0, 53)]
                 results = pool.map(clAlgo.buildDBSCANClustersUnpack, arg)
                 for clres in results:
                     triggerClustersDBS = triggerClustersDBS.append(clres, ignore_index=True)
+
+            if not tc_rod_bins.empty:
+                clAlgo.computeClusterRodSharing(triggerClustersDBS, triggerCells)
 
             debugPrintOut(debug, 'DBS 2D clusters',
                           toCount=triggerClustersDBS,
                           toPrint=triggerClustersDBS.iloc[:3])
 
             trigger3DClustersDBS = build3DClusters('DBS', clAlgo.build3DClustersEtaPhi, triggerClustersDBS, pool, debug)
-            trigger3DClustersDBSp = build3DClusters('DBSp', clAlgo.build3DClustersProj, triggerClustersDBS, pool, debug)
-
+            trigger3DClustersDBSp = build3DClusters('DBSp', clAlgo.build3DClustersProjTowers, triggerClustersDBS, pool, debug)
+            trigger3DClustersP = build3DClusters('DEFp', clAlgo.build3DClustersProjTowers, triggerClusters, pool, debug)
         # if doAlternative:
         #     triggerClustersGEO = event.getDataFrame(prefix='clGEO')
         #     trigger3DClustersGEO = event.getDataFrame(prefix='cl3dGEO')
@@ -652,7 +656,8 @@ def analyze(params, batch_idx=0):
         hsetDEF.htc.fill(triggerCells)
         hsetDEF.hcl2d.fill(triggerClusters)
         hsetDEF.hcl3d.fill(trigger3DClusters)
-
+        if(trigger3DClustersP.shape[0] != 0):
+            hsetDEFp.hcl3d.fill(trigger3DClustersP)
         # if doAlternative:
         #     h2dclGEO.fill(triggerClustersGEO)
         #     h3dclGEO.fill(trigger3DClustersGEO)
@@ -692,6 +697,9 @@ def analyze(params, batch_idx=0):
                 elif algo == 'DBSp':
                     cluster2ds = triggerClustersDBS
                     cluster3ds = trigger3DClustersDBSp
+                elif algo == 'DEFp':
+                    cluster2ds = triggerClusters
+                    cluster3ds = trigger3DClustersP
 
                 hsetMatchAlgoPart = hsetMatched[(algo, particle.name)]
                 hsetResoAlgoPart = hsetReso[(algo, particle.name)]
