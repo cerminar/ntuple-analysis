@@ -3,7 +3,7 @@ arguments             = $(ClusterID) $(ProcId)
 output                = TEMPL_TASKDIR/logs/job.$(ClusterId).$(ProcId).out
 error                 = TEMPL_TASKDIR/logs/job.$(ClusterId).$(ProcId).err
 log                   = TEMPL_TASKDIR/logs/condor.$(ClusterId).log
-+JobFlavour           = "workday"
++JobFlavour           = "tomorrow"
 
 RequestCpus = 5
 
