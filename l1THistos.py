@@ -412,3 +412,18 @@ class HistoSetReso():
         self.hreso = ResoHistos('h_reso_'+name, root_file)
         self.hresoCone = ResoHistos('h_resoCone_'+name, root_file)
         self.hreso2D = Reso2DHistos('h_reso2D_'+name, root_file)
+
+
+class HistoSetEff():
+    def __init__(self, name, root_file=None):
+        self.h_num = GenParticleHistos('h_effNum_'+name, root_file)
+        self.h_den = GenParticleHistos('h_effDen_'+name, root_file)
+
+    def fillNum(self, particles):
+        self.h_num.fill(particles)
+
+    def fillDen(self, particles):
+        self.h_den.fill(particles)
+
+    def computeEff(self):
+        pass
