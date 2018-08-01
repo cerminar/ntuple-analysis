@@ -530,14 +530,14 @@ def analyze(params, batch_idx=0):
 #     tc_geom.max_dist_neigh = np.max(tc_geom.neighbor_distance)
 
     particles = [Particle('nomatch', 0),
-                 Particle('ele', PID.electron),
-                 Particle('ele_A', PID.electron, '1.4 < abseta < 1.7'),
-                 Particle('ele_B', PID.electron, '1.7 <= abseta <= 2.8'),
-                 Particle('ele_C', PID.electron, 'abseta > 2.8'),
-                 Particle('photon', PID.photon),
-                 Particle('photon_A', PID.photon, '1.4 < abseta < 1.7'),
-                 Particle('photon_B', PID.photon, '1.7 <= abseta <= 2.8'),
-                 Particle('photon_C', PID.photon, 'abseta > 2.8'),
+                 Particle('ele', PID.electron, 'reachedEE == 2'),
+                 Particle('ele_A', PID.electron, '(1.4 < abseta < 1.7) & (reachedEE == 2)'),
+                 Particle('ele_B', PID.electron, '(1.7 <= abseta <= 2.8) & (reachedEE == 2)'),
+                 Particle('ele_C', PID.electron, '(abseta > 2.8) & (reachedEE == 2)'),
+                 Particle('photon', PID.photon, '(reachedEE == 2)'),
+                 Particle('photon_A', PID.photon, '(1.4 < abseta < 1.7) & (reachedEE == 2)'),
+                 Particle('photon_B', PID.photon, '(1.7 <= abseta <= 2.8) & (reachedEE == 2)'),
+                 Particle('photon_C', PID.photon, '(abseta > 2.8) & (reachedEE == 2)'),
                  Particle('pion', PID.pion)]
 
     tp_sets = []
