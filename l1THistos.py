@@ -42,7 +42,7 @@ class BaseHistos():
         if root_file is not None:
             root_file.cd()
             histo_names = [histo.GetName() for histo in root_file.GetListOfKeys() if name+'_' in histo.GetName()]
-            print histo_names
+            # print histo_names
             for histo_name in histo_names:
                 hinst = root_file.Get(histo_name)
                 attr_name = 'h_'+histo_name.split(name+'_')[1]
@@ -217,8 +217,8 @@ class TriggerTowerHistos(BaseHistos):
             self.h_pt = ROOT.TH1F(name+'_pt', 'Tower Pt (GeV)', 100, 0, 100)
             self.h_etEm = ROOT.TH1F(name+'_etEm', 'Tower Et EM (GeV)', 100, 0, 100)
             self.h_etHad = ROOT.TH1F(name+'_etHad', 'Tower Et Had (GeV)', 100, 0, 100)
-            self.h_HoE = ROOT.TH1F(name+'_HoE', 'Tower H/E', 100, 0, 100)
-            self.h_HoEVpt = ROOT.TH2F(name+'_HoEVpt', 'Tower H/E vs Pt (GeV)', 100, 0, 100, 100, 0, 100)
+            self.h_HoE = ROOT.TH1F(name+'_HoE', 'Tower H/E', 20, 0, 2)
+            self.h_HoEVpt = ROOT.TH2F(name+'_HoEVpt', 'Tower H/E vs Pt (GeV)', 100, 0, 100, 20, 0, 2)
             self.h_energy = ROOT.TH1F(name+'_energy', 'Tower energy (GeV)', 1000, 0, 1000)
             self.h_eta = ROOT.TH1F(name+'_eta', 'Tower eta', 100, -5, 5)
 
