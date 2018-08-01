@@ -7,7 +7,7 @@ c_idx = 0
 p_idx = 0
 colors = range(1, 6)
 stuff = []
-
+f_idx = 0
 
 # define some utility functions
 def newCanvas(name=None, title=None, xdiv=0, ydiv=0, form=4):
@@ -78,7 +78,7 @@ class Sample():
         cls.histo_file = ROOT.TFile(cls.histo_filename)
 
 
-def drawSame(histograms, labels, options='', norm=False, logy=False):
+def drawSame(histograms, labels, options='', norm=False, logy=False, min_y=None, max_y=None):
     global colors
     c = newCanvas()
     c.cd()
@@ -88,14 +88,18 @@ def drawSame(histograms, labels, options='', norm=False, logy=False):
             if hist.Integral() != 0:
                 hist.Scale(1./hist.Integral())
 
-    max_value = max([hist.GetMaximum() for hist in histograms])
+    max_value = max([hist.GetMaximum() for hist in histograms])*1.1
     min_value = min([hist.GetMinimum() for hist in histograms])
+    if min_y:
+        min_value = min_y
+    if max_y:
+        max_value = max_y
     for hidx in range(0, len(histograms)):
         histograms[hidx].SetLineColor(colors[hidx])
         histograms[hidx].Draw('same'+','+options)
         leg.AddEntry(histograms[hidx], labels[hidx], 'l')
 
-    histograms[0].GetYaxis().SetRangeUser(min_value, max_value*1.1)
+    histograms[0].GetYaxis().SetRangeUser(min_value, max_value)
     leg.Draw()
     c.Draw()
     if logy:
@@ -123,3 +127,26 @@ def drawProfileRatio(prof1, prof2, ymin=None, ymax=None):
     draw(hist1)
     if ymin is not None and ymax is not None:
         hist1.GetYaxis().SetRangeUser(ymin, ymax)
+
+# mean+-nsigmas*RMS.
+def drawGaussFit(histo, nsigmas, min, max):
+    minfit = histo.GetMean() - nsigmas*histo.GetRMS()
+    maxfit = histo.GetMean() + nsigmas*histo.GetRMS()
+    drawGFit(histo, min, max, minfit, maxfit)
+
+
+# Fit a histogram in the range (minfit, maxfit) with a gaussian and
+# draw it in the range (min, max)
+def drawGFit(histo, min, max, minfit, maxfit):
+    # static int i = 0
+    # i++
+    # gPad->SetGrid(1,1);
+    # gStyle->SetGridColor(15);
+    histo.GetXaxis().SetRangeUser(min,max)
+    global f_idx
+    nameF1 = "g{}".format(f_idx)
+    f_idx +=1
+    g1 = ROOT.TF1(nameF1,"gaus",minfit,maxfit)
+    g1.SetLineColor(2)
+    g1.SetLineWidth(2)
+    histo.Fit(g1,"R")
