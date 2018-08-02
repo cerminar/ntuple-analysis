@@ -83,8 +83,8 @@ class GenPartHistos(BaseHistos):
 class GenParticleHistos(BaseHistos):
     def __init__(self, name, root_file=None):
         if not root_file:
-            self.h_eta = ROOT.TH1F(name+'_eta', 'Gen Part eta', 100, -3, 3)
-            self.h_pt = ROOT.TH1F(name+'_pt', 'Gen Part Pt (GeV)', 100, 0, 100)
+            self.h_eta = ROOT.TH1F(name+'_eta', 'Gen Part eta', 50, -3, 3)
+            self.h_pt = ROOT.TH1F(name+'_pt', 'Gen Part Pt (GeV)', 50, 0, 100)
             self.h_energy = ROOT.TH1F(name+'_energy', 'Gen Part Energy (GeV)', 100, 0, 1000)
             self.h_reachedEE = ROOT.TH1F(name+'_reachedEE', 'Gen Part reachedEE', 4, 0, 4)
         BaseHistos.__init__(self, name, root_file)
@@ -414,10 +414,25 @@ class HistoSetReso():
         self.hreso2D = Reso2DHistos('h_reso2D_'+name, root_file)
 
 
+class HistoEff():
+    def __init__(self, passed, total):
+        # print dir(total)
+        for histo in [a for a in dir(total) if a.startswith('h_')]:
+            # print histo
+            hist_total = getattr(total, histo)
+            hist_passed = getattr(passed, histo)
+            setattr(self, histo, ROOT.TEfficiency(hist_passed, hist_total))
+            # getattr(self, histo).Sumw2()
+
+
 class HistoSetEff():
     def __init__(self, name, root_file=None):
+        self.name = name
         self.h_num = GenParticleHistos('h_effNum_'+name, root_file)
         self.h_den = GenParticleHistos('h_effDen_'+name, root_file)
+        self.h_eff = None
+        if root_file:
+            self.computeEff()
 
     def fillNum(self, particles):
         self.h_num.fill(particles)
@@ -426,4 +441,7 @@ class HistoSetEff():
         self.h_den.fill(particles)
 
     def computeEff(self):
+        # print "Computing eff"
+        # FIXME: workaround for v8 need to be switched back
+        self.h_eff = HistoEff(passed=self.h_den, total=self.h_num)
         pass
