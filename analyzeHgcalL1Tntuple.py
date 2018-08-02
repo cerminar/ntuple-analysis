@@ -452,8 +452,8 @@ class TPSet:
                                    cl3Ds,
                                    cl2Ds,
                                    tcs,
-                                   hgenseleff.h_num,
                                    hgenseleff.h_den,
+                                   hgenseleff.h_num,
                                    hsetMatchAlgoPart.htc,
                                    hsetMatchAlgoPart.hcl2d,
                                    hsetMatchAlgoPart.hcl3d,
@@ -689,8 +689,8 @@ def analyze(params, batch_idx=0):
         debugPrintOut(debug, 'Trigger Towers',
                       toCount=triggerTowers,
                       toPrint=triggerTowers.sort_values(by='pt', ascending=False).iloc[:10])
-        # print '# towers eta >0 {}'.format(len(triggerTowers[triggerTowers.pt > 0]))
-        # print '# towers eta <0 {}'.format(len(triggerTowers[triggerTowers.pt < 0]))
+        # print '# towers eta >0 {}'.format(len(triggerTowers[triggerTowers.eta > 0]))
+        # print '# towers eta <0 {}'.format(len(triggerTowers[triggerTowers.eta < 0]))
 
         if params.clusterize:
             # Now build DBSCAN 2D clusters
@@ -739,8 +739,7 @@ def analyze(params, batch_idx=0):
 
         hTT_all.fill(triggerTowers)
 
-        # FIXME: remove for now given the problem of TT with eta < 0
-        if False:
+        if True:
             # now we try to match the Clusters to the GEN particles of various types
             for particle in particles:
                 genReference = genParticles[(genParticles.gen > 0) & (np.abs(genParticles.pid) == particle.pdgid) & (np.abs(genParticles.eta) < 2.8) & (np.abs(genParticles.eta) > 1.7)]
@@ -875,7 +874,7 @@ def main(analyze):
     cfgfile.read(opt.CONFIGFILE)
 
     collection_dict = {}
-    collections = cfgfile.get('common', 'collections').split(',')
+    collections = [coll.strip() for coll in cfgfile.get('common', 'collections').split(',')]
     basedir = cfgfile.get('common', 'input_dir_lx')
     outdir = cfgfile.get('common', 'output_dir_lx')
     hostname = socket.gethostname()
