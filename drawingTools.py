@@ -74,7 +74,7 @@ class Sample():
             version = '_'+version
         else:
             version = ''
-        cls.histo_filename = '../plots/histos_{}{}.root'.format(cls.name, version)
+        cls.histo_filename = '../plots1/histos_{}{}.root'.format(cls.name, version)
         cls.histo_file = ROOT.TFile(cls.histo_filename)
 
 
@@ -88,12 +88,12 @@ def drawSame(histograms, labels, options='', norm=False, logy=False, min_y=None,
             if hist.Integral() != 0:
                 hist.Scale(1./hist.Integral())
 
-    max_value = max([hist.GetMaximum() for hist in histograms])*1.1
-    min_value = min([hist.GetMinimum() for hist in histograms])
-    if min_y:
-        min_value = min_y
-    if max_y:
-        max_value = max_y
+    max_value = max_y
+    min_value = min_y
+    if min_y is None:
+        min_value = min([hist.GetMinimum() for hist in histograms])
+    if max_y is None:
+        max_value = max([hist.GetMaximum() for hist in histograms])*1.1
     for hidx in range(0, len(histograms)):
         histograms[hidx].SetLineColor(colors[hidx])
         histograms[hidx].Draw('same'+','+options)
@@ -150,3 +150,20 @@ def drawGFit(histo, min, max, minfit, maxfit):
     g1.SetLineColor(2)
     g1.SetLineWidth(2)
     histo.Fit(g1,"R")
+
+
+def drawGraphsSame(histograms, labels, options='', norm=False, logy=False, min_y=None, max_y=None):
+    global colors
+    c = newCanvas()
+    c.cd()
+    leg = getLegend()
+
+    for hidx in range(0, len(histograms)):
+        histograms[hidx].SetLineColor(colors[hidx])
+        histograms[hidx].Draw('same'+','+options)
+        leg.AddEntry(histograms[hidx], labels[hidx], 'l')
+
+    leg.Draw()
+    c.Draw()
+    if logy:
+        c.SetLogy()
