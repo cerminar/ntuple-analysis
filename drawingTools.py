@@ -18,17 +18,22 @@ def newCanvas(name=None, title=None, xdiv=0, ydiv=0, form=4):
     if title is None:
         title = name
     # print name, title
-    canvas = ROOT.TCanvas(name, title, form)
+    canvas = ROOT.TCanvas(name, title)
     if(xdiv*ydiv != 0):
         canvas.Divide(xdiv, ydiv)
     return canvas
 
 
-def draw(plot, options=''):
+def draw(plot, options='', text=None):
     c = newCanvas()
     c.cd()
     plot.Draw(options)
+    if text:
+        rtext = getText(text, 0.15, 0.85)
+        rtext.Draw('same')
+
     c.Draw()
+
     return
 
 
@@ -39,11 +44,11 @@ def getLegend(x1=0.7, y1=0.71, x2=0.95, y2=0.85):
     legend.SetFillColor(0)
     legend.SetFillStyle(0)
     legend.SetBorderSize(0)
-    # legend.SetTextSize(30)
+    legend.SetTextSize(0.05)
     return legend
 
 
-def drawAndProfileX(plot2d, miny=None, maxy=None, do_profile=True, options=''):
+def drawAndProfileX(plot2d, miny=None, maxy=None, do_profile=True, options='', text=None):
     global p_idx
     if miny and maxy:
         plot2d.GetYaxis().SetRangeUser(miny, maxy)
@@ -63,6 +68,11 @@ def drawAndProfileX(plot2d, miny=None, maxy=None, do_profile=True, options=''):
         prof.SetMarkerColor(2)
         prof.SetLineColor(2)
         prof.Draw('same')
+
+    if text:
+        rtext = getText(text, 0.15, 0.85)
+        rtext.Draw('same')
+
     c.Draw()
 
 
@@ -78,30 +88,47 @@ class Sample():
         cls.histo_file = ROOT.TFile(cls.histo_filename)
 
 
-def drawSame(histograms, labels, options='', norm=False, logy=False, min_y=None, max_y=None):
+def getText(text, ndc_x, ndc_y):
+    global stuff
+    rtext = ROOT.TLatex(ndc_x, ndc_y, text)
+    stuff.append(rtext)
+    rtext.SetNDC(True)
+    # rtext.SetTextFont(40)
+    rtext.SetTextSize(0.03)
+    return rtext
+
+
+def drawSame(histograms, labels, options='', norm=False, logy=False, min_y=None, max_y=None, canv_title=None):
     global colors
-    c = newCanvas()
+    c = newCanvas(title=histograms[0].GetName())
     c.cd()
     leg = getLegend()
-    if norm:
-        for hist in histograms:
-            if hist.Integral() != 0:
-                hist.Scale(1./hist.Integral())
 
     max_value = max_y
     min_value = min_y
     if min_y is None:
-        min_value = min([hist.GetMinimum() for hist in histograms])
+        min_value = min([hist.GetBinContent(hist.GetMinimumBin()) for hist in histograms])
     if max_y is None:
-        max_value = max([hist.GetMaximum() for hist in histograms])*1.1
-    for hidx in range(0, len(histograms)):
-        histograms[hidx].SetLineColor(colors[hidx])
-        histograms[hidx].Draw('same'+','+options)
+        max_value = max([hist.GetBinContent(hist.GetMaximumBin()) for hist in histograms])*1.2
+
+    for hidx, hist in enumerate(histograms):
+        hist.SetLineColor(colors[hidx])
+        hist.SetStats(False)
+        if norm:
+            hist.DrawNormalized('same'+','+options, 1.)
+        else:
+            if hidx:
+                hist.Draw('same'+','+options)
+            else:
+                hist.Draw(options)
         leg.AddEntry(histograms[hidx], labels[hidx], 'l')
 
     histograms[0].GetYaxis().SetRangeUser(min_value, max_value)
     leg.Draw()
     c.Draw()
+    if canv_title:
+        text = getText(canv_title, 0.15, 0.85)
+        text.Draw("same")
     if logy:
         c.SetLogy()
 
@@ -111,13 +138,16 @@ def drawProfileX(histograms, labels, options=''):
     drawSame(profiles, labels, options)
 
 
-def drawSeveral(histograms, labels, options='', do_profile=False, miny=None, maxy=None,):
+def drawSeveral(histograms, labels, options='', do_profile=False, miny=None, maxy=None, text=None):
     ydiv = int(math.ceil(float(len(histograms))/2))
     for hidx in range(0, len(histograms)):
+        newtext = labels[hidx]
+        if text:
+            newtext = '{}: {}'.format(labels[hidx], text)
         if do_profile:
-            drawAndProfileX(histograms[hidx], miny=miny, maxy=maxy, options=options, do_profile=do_profile)
+            drawAndProfileX(histograms[hidx], miny=miny, maxy=maxy, options=options, do_profile=do_profile, text=newtext)
         else:
-            draw(histograms[hidx], options=options)
+            draw(histograms[hidx], options=options, text=newtext)
 
 
 def drawProfileRatio(prof1, prof2, ymin=None, ymax=None):
