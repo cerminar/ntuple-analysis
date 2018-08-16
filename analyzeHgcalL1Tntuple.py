@@ -478,8 +478,7 @@ def analyze(params, batch_idx=0):
     tc_rod_bins = pd.DataFrame()
     if True:
         # read the geometry dump
-        geom_file = params.input_base_dir+'/geom/test_triggergeom.root'
-
+        geom_file = os.path.join(params.input_base_dir, 'geom/test_triggergeom.root')
         tc_geom_tree = HGCalNtuple([geom_file], tree='hgcaltriggergeomtester/TreeTriggerCells')
         print ('read TC GEOM tree with # events: {}'.format(tc_geom_tree.nevents()))
         tc_geom_df = convertGeomTreeToDF(tc_geom_tree._tree)
@@ -531,13 +530,13 @@ def analyze(params, batch_idx=0):
 
     particles = [Particle('nomatch', 0),
                  Particle('ele', PID.electron, 'reachedEE == 2'),
-                 Particle('ele_A', PID.electron, '(1.4 < abseta < 1.7) & (reachedEE == 2)'),
-                 Particle('ele_B', PID.electron, '(1.7 <= abseta <= 2.8) & (reachedEE == 2)'),
-                 Particle('ele_C', PID.electron, '(abseta > 2.8) & (reachedEE == 2)'),
+                 Particle('eleA', PID.electron, '(1.4 < abseta < 1.7) & (reachedEE == 2)'),
+                 Particle('eleB', PID.electron, '(1.7 <= abseta <= 2.8) & (reachedEE == 2)'),
+                 Particle('eleC', PID.electron, '(abseta > 2.8) & (reachedEE == 2)'),
                  Particle('photon', PID.photon, '(reachedEE == 2)'),
-                 Particle('photon_A', PID.photon, '(1.4 < abseta < 1.7) & (reachedEE == 2)'),
-                 Particle('photon_B', PID.photon, '(1.7 <= abseta <= 2.8) & (reachedEE == 2)'),
-                 Particle('photon_C', PID.photon, '(abseta > 2.8) & (reachedEE == 2)'),
+                 Particle('photonA', PID.photon, '(1.4 < abseta < 1.7) & (reachedEE == 2)'),
+                 Particle('photonB', PID.photon, '(1.7 <= abseta <= 2.8) & (reachedEE == 2)'),
+                 Particle('photonC', PID.photon, '(abseta > 2.8) & (reachedEE == 2)'),
                  Particle('pion', PID.pion)]
 
     tp_sets = []
