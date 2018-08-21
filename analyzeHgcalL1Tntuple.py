@@ -111,6 +111,25 @@ def dumpFrame2JSON(filename, frame):
         f.write(frame.to_json())
 
 
+def computeIsolation(all3DClusters, idx_best_match, idx_incone, dr):
+    ret = pd.DataFrame()
+    # print 'index best match: {}'.format(idx_best_match)
+    # print 'indexes all in cone: {}'.format(idx_incone)
+    components = all3DClusters[(all3DClusters.index.isin(idx_incone)) & ~(all3DClusters.index == idx_best_match)]
+    # print 'components indexes: {}'.format(components.index)
+    compindr = components[np.sqrt((components.eta-all3DClusters.loc[idx_best_match].eta)**2 + (components.phi-all3DClusters.loc[idx_best_match].phi)**2) < dr]
+    if not compindr.empty:
+        # print 'components indexes in dr: {}'.format(compindr.index)
+        ret['energy'] = [compindr.energy.sum()]
+        ret['eta'] = [np.sum(compindr.eta*compindr.energy)/compindr.energy.sum()]
+        ret['pt'] = [(ret.energy/np.cosh(ret.eta)).values[0]]
+    else:
+        ret['energy'] = [0.]
+        ret['eta'] = [0.]
+        ret['pt'] = [0.]
+    return ret
+
+
 def sumClustersInCone(all3DClusters, idx_incone):
     ret = pd.DataFrame()
     components = all3DClusters[all3DClusters.index.isin(idx_incone)]
@@ -151,7 +170,7 @@ def buildTriggerTowerCluster(allTowers, seedTower, debug):
                               (allTowers.iEta >= (iEta_seed - 1)) &
                               (allTowers.iPhi <= (iPhi_seed + 1)) &
                               (allTowers.iPhi >= (iPhi_seed - 1))]
-    clusterTowers['logEnergy'] = np.log(clusterTowers.energy)
+    clusterTowers.loc[clusterTowers.index, 'logEnergy'] = np.log(clusterTowers.energy)
     if debug >= 5:
         print '---- SEED:'
         print seedTower
@@ -284,8 +303,8 @@ def plot3DClusterMatch(genParticles,
     # print ('------ all matches:')
     # print (allmatches)
 
-    allmatched2Dclusters = list()
-    matchedClustersAll = pd.DataFrame()
+    # allmatched2Dclusters = list()
+    # matchedClustersAll = pd.DataFrame()
     if histoGen is not None:
         histoGen.fill(genParticles)
 
@@ -304,11 +323,15 @@ def plot3DClusterMatch(genParticles,
             matchedClusters = triggerClusters[triggerClusters.id.isin(matched3DCluster.clusters.item())]
             # print (matchedClusters)
             matchedTriggerCells = triggerCells[triggerCells.id.isin(np.concatenate(matchedClusters.cells.values))]
-            allmatched2Dclusters. append(matchedClusters)
+            # allmatched2Dclusters. append(matchedClusters)
 
             if 'energyCentral' not in matched3DCluster.columns:
                 calib_factor = 1.084
                 matched3DCluster['energyCentral'] = [matchedClusters[(matchedClusters.layer > 9) & (matchedClusters.layer < 21)].energy.sum()*calib_factor]
+
+            iso_df = computeIsolation(trigger3DClusters, idx_best_match=best_match_indexes[idx], idx_incone=allmatches[idx], dr=0.2)
+            matched3DCluster['iso0p2'] = iso_df.energy
+            matched3DCluster['isoRel0p2'] = iso_df.pt/matched3DCluster.pt
 
             # fill the plots
             histoTCMatch.fill(matchedTriggerCells)
@@ -319,6 +342,7 @@ def plot3DClusterMatch(genParticles,
 
             # now we fill the reso plot for all the clusters in the cone
             clustersInCone = sumClustersInCone(trigger3DClusters, allmatches[idx])
+
             # print ('----- in cone sum:')
             # print (clustersInCone)
             histoResoCone.fill(reference=genParticle, target=clustersInCone.iloc[0])
@@ -351,9 +375,9 @@ def plot3DClusterMatch(genParticles,
                     print (genParticle)
                     print (trigger3DClusters)
 
-    if len(allmatched2Dclusters) != 0:
-        matchedClustersAll = pd.concat(allmatched2Dclusters)
-    return matchedClustersAll
+    # if len(allmatched2Dclusters) != 0:
+    #     matchedClustersAll = pd.concat(allmatched2Dclusters)
+    # return matchedClustersAll
 
 
 def build3DClusters(name, algorithm, triggerClusters, pool, debug):
@@ -547,8 +571,39 @@ def analyze(params, batch_idx=0):
                       particles=particles,
                       cl3D_sel='quality > 0')
 
+    tps_DEF_pt20 = TPSet('DEF_pt20',
+                         particles=particles,
+                         cl3D_sel='pt > 20')
+
+    tps_DEF_pt20_em = TPSet('DEF_pt20_em',
+                            particles=particles,
+                            cl3D_sel='(quality > 0) & (pt > 20)')
+
+    tps_DEF_pt25 = TPSet('DEF_pt25',
+                         particles=particles,
+                         cl3D_sel='pt > 25')
+
+    tps_DEF_pt25_em = TPSet('DEF_pt25_em',
+                            particles=particles,
+                            cl3D_sel='(quality > 0) & (pt > 25)')
+
+    tps_DEF_pt30 = TPSet('DEF_pt30',
+                         particles=particles,
+                         cl3D_sel='pt > 30')
+
+    tps_DEF_pt30_em = TPSet('DEF_pt30_em',
+                            particles=particles,
+                            cl3D_sel='(quality > 0) & (pt > 30)')
+
+
     tp_sets.append(tps_DEF)
     tp_sets.append(tps_DEFem)
+    tp_sets.append(tps_DEF_pt20)
+    tp_sets.append(tps_DEF_pt20_em)
+    tp_sets.append(tps_DEF_pt25)
+    tp_sets.append(tps_DEF_pt25_em)
+    tp_sets.append(tps_DEF_pt30)
+    tp_sets.append(tps_DEF_pt30_em)
 
     # -------------------------------------------------------
     # book histos
@@ -629,12 +684,20 @@ def analyze(params, batch_idx=0):
                     (event, 'tower')]
 
         dataframes = pool.map(unpack, branches)
+
+        # dataframes = []
+        # for idx, branch in enumerate(branches):
+        #     dataframes.append(unpack(branch))
+
         genParticles = dataframes[0]
         hgcDigis = dataframes[1]
         triggerCells = dataframes[2]
         triggerClusters = dataframes[3]
         trigger3DClusters = dataframes[4]
         triggerTowers = dataframes[5]
+
+        puInfo = event.getPUInfo()
+        debugPrintOut(debug, 'PU', toCount=puInfo, toPrint=puInfo)
 
         # ----------------------------------
         if not tc_rod_bins.empty:
@@ -648,11 +711,11 @@ def analyze(params, batch_idx=0):
         # this is not needed anymore in recent versions of the ntuples
         # tcsWithPos = pd.merge(triggerCells, tc_geom_df[['id', 'x', 'y']], on='id')
         triggerClusters['ncells'] = [len(x) for x in triggerClusters.cells]
-        if 'x' not in triggerClusters.columns:
-            triggerClusters = pd.merge(triggerClusters, tc_geom_df[['z', 'id']], on='id')
-            triggerClusters['R'] = triggerClusters.z/np.sinh(triggerClusters.eta)
-            triggerClusters['x'] = triggerClusters.R*np.cos(triggerClusters.phi)
-            triggerClusters['y'] = triggerClusters.R*np.sin(triggerClusters.phi)
+        # if 'x' not in triggerClusters.columns:
+        #     triggerClusters = pd.merge(triggerClusters, tc_geom_df[['z', 'id']], on='id')
+        #     triggerClusters['R'] = triggerClusters.z/np.sinh(triggerClusters.eta)
+        #     triggerClusters['x'] = triggerClusters.R*np.cos(triggerClusters.phi)
+        #     triggerClusters['y'] = triggerClusters.R*np.sin(triggerClusters.phi)
 
         trigger3DClusters['nclu'] = [len(x) for x in trigger3DClusters.clusters]
         trigger3DClustersP = pd.DataFrame()
@@ -661,7 +724,9 @@ def analyze(params, batch_idx=0):
         triggerClustersDBS = pd.DataFrame()
         trigger3DClustersDBS = pd.DataFrame()
         trigger3DClustersDBSp = pd.DataFrame()
-        triggerTowers['HoE'] = triggerTowers.etHad/triggerTowers.etEm
+
+        triggerTowers.eval('HoE = etHad/etEm', inplace=True)
+        # triggerTowers['HoE'] = triggerTowers.etHad/triggerTowers.etEm
         # if 'iX' not in triggerTowers.columns:
         #     triggerTowers['iX'] = triggerTowers.hwEta
         #     triggerTowers['iY'] = triggerTowers.hwPhi
@@ -672,7 +737,8 @@ def analyze(params, batch_idx=0):
         debugPrintOut(debug, 'gen parts', toCount=genParts, toPrint=genParts)
         debugPrintOut(debug, 'gen particles',
                       toCount=genParticles,
-                      toPrint=genParticles[['eta', 'phi', 'pt', 'energy', 'mother', 'gen', 'pid', 'pdgid', 'reachedEE']])
+                      toPrint=genParticles[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'pid', 'gen', 'reachedEE', 'fromBeamPipe']])
+        # print genParticles.columns
         debugPrintOut(debug, 'digis',
                       toCount=hgcDigis,
                       toPrint=hgcDigis.iloc[:3])
@@ -735,6 +801,12 @@ def analyze(params, batch_idx=0):
 
         tps_DEF.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
         tps_DEFem.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
+        tps_DEF_pt20.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
+        tps_DEF_pt20_em.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
+        tps_DEF_pt25.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
+        tps_DEF_pt25_em.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
+        tps_DEF_pt30.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
+        tps_DEF_pt30_em.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
 
         hTT_all.fill(triggerTowers)
 
