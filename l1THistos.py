@@ -91,10 +91,11 @@ class GenPartHistos(BaseHistos):
 class GenParticleHistos(BaseHistos):
     def __init__(self, name, root_file=None):
         if not root_file:
-            self.h_eta = ROOT.TH1F(name+'_eta', 'Gen Part eta', 50, -3, 3)
-            self.h_pt = ROOT.TH1F(name+'_pt', 'Gen Part Pt (GeV)', 50, 0, 100)
-            self.h_energy = ROOT.TH1F(name+'_energy', 'Gen Part Energy (GeV)', 100, 0, 1000)
+            self.h_eta = ROOT.TH1F(name+'_eta', 'Gen Part eta; #eta;', 50, -3, 3)
+            self.h_pt = ROOT.TH1F(name+'_pt', 'Gen Part P_{T} (GeV); p_{T} [GeV];', 50, 0, 100)
+            self.h_energy = ROOT.TH1F(name+'_energy', 'Gen Part Energy (GeV); E [GeV];', 100, 0, 1000)
             self.h_reachedEE = ROOT.TH1F(name+'_reachedEE', 'Gen Part reachedEE', 4, 0, 4)
+            self.h_fBrem = ROOT.TH1F(name+'_fBrem', 'Brem. p_{T} fraction', 30, -1, 1)
         BaseHistos.__init__(self, name, root_file)
 
     def fill(self, particles):
@@ -102,7 +103,7 @@ class GenParticleHistos(BaseHistos):
         rnp.fill_hist(self.h_pt, particles.pt)
         rnp.fill_hist(self.h_energy, particles.energy)
         rnp.fill_hist(self.h_reachedEE, particles.reachedEE)
-
+        rnp.fill_hist(self.h_fBrem, particles.reachedEE)
 
 class DigiHistos(BaseHistos):
     def __init__(self, name, root_file=None):
@@ -224,13 +225,14 @@ class Cluster3DHistos(BaseHistos):
 class TriggerTowerHistos(BaseHistos):
     def __init__(self, name, root_file=None):
         if not root_file:
-            self.h_pt = ROOT.TH1F(name+'_pt', 'Tower Pt (GeV)', 100, 0, 100)
+            self.h_pt = ROOT.TH1F(name+'_pt', 'Tower Pt (GeV); p_{T} [GeV];', 100, 0, 100)
             self.h_etEm = ROOT.TH1F(name+'_etEm', 'Tower Et EM (GeV)', 100, 0, 100)
             self.h_etHad = ROOT.TH1F(name+'_etHad', 'Tower Et Had (GeV)', 100, 0, 100)
             self.h_HoE = ROOT.TH1F(name+'_HoE', 'Tower H/E', 20, 0, 2)
-            self.h_HoEVpt = ROOT.TH2F(name+'_HoEVpt', 'Tower H/E vs Pt (GeV)', 100, 0, 100, 20, 0, 2)
+            self.h_HoEVpt = ROOT.TH2F(name+'_HoEVpt', 'Tower H/E vs Pt (GeV); H/E;', 100, 0, 100, 20, 0, 2)
             self.h_energy = ROOT.TH1F(name+'_energy', 'Tower energy (GeV)', 1000, 0, 1000)
-            self.h_eta = ROOT.TH1F(name+'_eta', 'Tower eta', 100, -5, 5)
+            self.h_eta = ROOT.TH1F(name+'_eta', 'Tower eta; #eta;', 75, -3.169, 3.169)
+            self.h_ptVeta = ROOT.TH2F(name+'_ptVeta', 'Tower P_P{T} (GeV) vs #eta; #eta; p_{T} [GeV];',  75, -3.169, 3.169, 100, 0, 100)
 
         BaseHistos.__init__(self, name, root_file)
 
@@ -242,16 +244,23 @@ class TriggerTowerHistos(BaseHistos):
         rnp.fill_hist(self.h_HoEVpt, towers[['pt', 'HoE']])
         rnp.fill_hist(self.h_energy, towers.energy)
         rnp.fill_hist(self.h_eta, towers.eta)
+        rnp.fill_hist(self.h_ptVeta, towers[['eta', 'pt']])
 
 
 class TriggerTowerResoHistos(BaseHistos):
     def __init__(self, name, root_file=None):
         if not root_file:
-            self.h_ptRes = ROOT.TH1F(name+'_ptRes', 'TT Pt reso (GeV)', 200, -40, 40)
+            self.h_ptRes = ROOT.TH1F(name+'_ptRes', 'TT Pt reso (GeV); p_{T}^{RECO}-p_{T}^{GEN} [GeV];', 200, -40, 40)
+
+            self.h_ptResVpt = ROOT.TH2F(name+'_ptResVpt', 'TT Pt reso (GeV) vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{RECO}-p_{T}^{GEN} [GeV];', 50, 0, 100, 200, -40, 40)
+            self.h_ptResVeta = ROOT.TH2F(name+'_ptResVeta', 'TT Pt reso (GeV) vs eta; #eta^{GEN}; p_{T}^{RECO}-p_{T}^{GEN} [GeV];', 100, -3.5, 3.5, 200, -40, 40)
+
+            self.h_ptResp = ROOT.TH1F(name+'_ptResp', 'TT Pt resp.; p_{T}^{RECO}/p_{T}^{GEN};', 100, 0, 2)
+            self.h_ptRespVpt = ROOT.TH2F(name+'_ptRespVpt', 'TT Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{RECO}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 2)
+            self.h_ptRespVeta = ROOT.TH2F(name+'_ptRespVeta', 'TT Pt resp. vs eta; #eta^{GEN}; p_{T}^{RECO}/p_{T}^{GEN};', 100, -3.5, 3.5, 100, 0, 2)
+
             self.h_energyRes = ROOT.TH1F(name+'_energyRes', 'TT Energy reso (GeV)', 200, -100, 100)
-            self.h_ptResVeta = ROOT.TH2F(name+'_ptResVeta', 'TT Pt reso (GeV) vs eta', 100, -3.5, 3.5, 200, -40, 40)
             self.h_energyResVeta = ROOT.TH2F(name+'_energyResVeta', 'TT E reso (GeV) vs eta', 100, -3.5, 3.5, 200, -100, 100)
-            self.h_ptResVpt = ROOT.TH2F(name+'_ptResVpt', 'TT Pt reso (GeV) vs pt (GeV)', 50, 0, 100, 200, -40, 40)
             # FIXME: add corresponding Pt plots
             self.h_etaRes = ROOT.TH1F(name+'_etaRes', 'TT eta reso', 100, -0.4, 0.4)
             self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'TT phi reso', 100, -0.4, 0.4)
@@ -263,9 +272,14 @@ class TriggerTowerResoHistos(BaseHistos):
 
     def fill(self, reference, target):
         self.h_ptRes.Fill(target.pt - reference.pt)
-        self.h_energyRes.Fill(target.energy - reference.energy)
-        self.h_ptResVeta.Fill(reference.eta, target.pt - reference.pt)
         self.h_ptResVpt.Fill(reference.pt, target.pt - reference.pt)
+        self.h_ptResVeta.Fill(reference.eta, target.pt - reference.pt)
+
+        self.h_ptResp.Fill(target.pt/reference.pt)
+        self.h_ptRespVpt.Fill(reference.pt, target.pt/reference.pt)
+        self.h_ptRespVeta.Fill(reference.eta, target.pt/reference.pt)
+
+        self.h_energyRes.Fill(target.energy - reference.energy)
         self.h_energyResVeta.Fill(reference.eta, target.energy - reference.energy)
 
         self.h_etaRes.Fill(target.eta - reference.eta)
@@ -290,7 +304,7 @@ class ResoHistos(BaseHistos):
 
             self.h_ptResp = ROOT.TH1F(name+'_ptResp', '3D Cluster Pt resp.; p_{T}^{RECO}/p_{T}^{GEN}', 100, 0, 3)
             self.h_ptRespVpt = ROOT.TH2F(name+'_ptRespVpt', '3D Cluster Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{RECO}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
-            self.h_ptRespVeta = ROOT.TH2F(name+'_ptRespVeta', '3D Cluster Pt resp. vs #eta; #eta^{GEN}; p_{T}^{RECO}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
+            self.h_ptRespVeta = ROOT.TH2F(name+'_ptRespVeta', '3D Cluster Pt resp. vs #eta; #eta^{GEN}; p_{T}^{RECO}/p_{T}^{GEN};', 50, -4, 4, 100, 0, 3)
             self.h_ptRespVnclu = ROOT.TH2F(name+'_ptRespVnclu', '3D Cluster Pt resp. vs # clus.; # 2D clust. ; p_{T}^{RECO}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
 
 
