@@ -9,6 +9,16 @@ colors = range(1, 6)
 stuff = []
 f_idx = 0
 
+ROOT.gStyle.SetPadBottomMargin(0.13)
+ROOT.gStyle.SetPadLeftMargin(0.13)
+ROOT.gStyle.SetPadRightMargin(0.30)
+
+ROOT.gStyle.SetCanvasBorderMode(0)
+ROOT.gStyle.SetCanvasColor(0)
+ROOT.gStyle.SetCanvasDefH(600)
+ROOT.gStyle.SetCanvasDefW(800)
+
+
 # define some utility functions
 def newCanvas(name=None, title=None, xdiv=0, ydiv=0, form=4):
     global c_idx
@@ -98,7 +108,7 @@ def getText(text, ndc_x, ndc_y):
     return rtext
 
 
-def drawSame(histograms, labels, options='', norm=False, logy=False, min_y=None, max_y=None, canv_title=None):
+def drawSame(histograms, labels, options='', norm=False, logy=False, min_y=None, max_y=None, text=None):
     global colors
     c = newCanvas(title=histograms[0].GetName())
     c.cd()
@@ -126,9 +136,9 @@ def drawSame(histograms, labels, options='', norm=False, logy=False, min_y=None,
     histograms[0].GetYaxis().SetRangeUser(min_value, max_value)
     leg.Draw()
     c.Draw()
-    if canv_title:
-        text = getText(canv_title, 0.15, 0.85)
-        text.Draw("same")
+    if text:
+        rtext = getText(text, 0.15, 0.85)
+        rtext.Draw("same")
     if logy:
         c.SetLogy()
 
@@ -150,14 +160,20 @@ def drawSeveral(histograms, labels, options='', do_profile=False, miny=None, max
             draw(histograms[hidx], options=options, text=newtext)
 
 
-def drawProfileRatio(prof1, prof2, ymin=None, ymax=None):
+def drawProfileRatio(prof1, prof2, ymin=None, ymax=None, text=None):
     hist1 = prof1.ProjectionX(uuid.uuid4().hex[:6])
     hist2 = prof2.ProjectionX(uuid.uuid4().hex[:6])
     hist1.Divide(hist2)
     draw(hist1)
+    if text:
+        rtext = getText(text, 0.15, 0.85)
+        rtext.Draw("same")
+
     if ymin is not None and ymax is not None:
         hist1.GetYaxis().SetRangeUser(ymin, ymax)
+    ROOT.gPad.Update()
 
+   
 # mean+-nsigmas*RMS.
 def drawGaussFit(histo, nsigmas, min, max):
     minfit = histo.GetMean() - nsigmas*histo.GetRMS()
@@ -182,7 +198,8 @@ def drawGFit(histo, min, max, minfit, maxfit):
     histo.Fit(g1,"R")
 
 
-def drawGraphsSame(histograms, labels, options='', norm=False, logy=False, min_y=None, max_y=None):
+
+def drawGraphsSame(histograms, labels, options='', norm=False, logy=False, min_y=None, max_y=None, text=None):
     global colors
     c = newCanvas()
     c.cd()
@@ -197,3 +214,6 @@ def drawGraphsSame(histograms, labels, options='', norm=False, logy=False, min_y
     c.Draw()
     if logy:
         c.SetLogy()
+    if text:
+        rtext = getText(text, 0.15, 0.85)
+        rtext.Draw("same")
