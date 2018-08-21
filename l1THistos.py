@@ -201,6 +201,9 @@ class Cluster3DHistos(BaseHistos):
             self.h_sPhiPhiMax = ROOT.TH1F(name+'_sPhiPhiMax', '3D Cluster RMS Phi (max)', 100, 0, 2)
             self.h_sZZ = ROOT.TH1F(name+'_sZZ', '3D Cluster RMS Z ???', 100, 0, 10)
             self.h_eMaxOverE = ROOT.TH1F(name+'_eMaxOverE', '3D Cluster Emax/E', 100, 0, 1)
+            self.h_iso0p2 = ROOT.TH1F(name+'_iso0p2', '3D Cluster iso DR 0.2(GeV); Iso p_{T} [GeV];', 100, 0, 100)
+            self.h_isoRel0p2 = ROOT.TH1F(name+'_isoRel0p2', '3D Cluster relative iso DR 0.2; Rel. Iso;', 100, 0, 1)
+
         BaseHistos.__init__(self, name, root_file)
 
     def fill(self, cl3ds):
@@ -220,6 +223,9 @@ class Cluster3DHistos(BaseHistos):
         rnp.fill_hist(self.h_sPhiPhiMax, cl3ds.sppmax)
         rnp.fill_hist(self.h_sZZ, cl3ds.szz)
         rnp.fill_hist(self.h_eMaxOverE, cl3ds.emaxe)
+        if 'iso0p2' in cl3ds.columns:
+            rnp.fill_hist(self.h_iso0p2, cl3ds.iso0p2)
+            rnp.fill_hist(self.h_isoRel0p2, cl3ds.isoRel0p2)
 
 
 class TriggerTowerHistos(BaseHistos):
