@@ -103,7 +103,7 @@ class GenParticleHistos(BaseHistos):
         rnp.fill_hist(self.h_pt, particles.pt)
         rnp.fill_hist(self.h_energy, particles.energy)
         rnp.fill_hist(self.h_reachedEE, particles.reachedEE)
-        rnp.fill_hist(self.h_fBrem, particles.reachedEE)
+        rnp.fill_hist(self.h_fBrem, particles.fBrem)
 
 class DigiHistos(BaseHistos):
     def __init__(self, name, root_file=None):
@@ -161,13 +161,13 @@ class TCHistos(BaseHistos):
 class ClusterHistos(BaseHistos):
     def __init__(self, name, root_file=None):
         if not root_file:
-            self.h_energy = ROOT.TH1F(name+'_energy', 'Cluster energy (GeV)', 100, 0, 30)
-            self.h_layer = ROOT.TH1F(name+'_layer', 'Cluster layer #', 60, 0, 60)
-            self.h_ncells = ROOT.TH1F(name+'_ncells', 'Cluster # cells', 30, 0, 30)
+            self.h_energy = ROOT.TH1F(name+'_energy', 'Cluster energy (GeV); E [GeV];', 100, 0, 30)
+            self.h_layer = ROOT.TH1F(name+'_layer', 'Cluster layer #; layer #;', 60, 0, 60)
+            self.h_ncells = ROOT.TH1F(name+'_ncells', 'Cluster # cells; # TC components;', 30, 0, 30)
             self.h_nCoreCells = ROOT.TH1F(name+'_nCoreCells', 'Cluster # cells (core)', 30, 0, 30)
 
-            self.h_layerVenergy = ROOT.TH2F(name+'_layerVenergy', "Cluster Energy (GeV) vs Layer #", 50, 0, 50, 100, 0, 20)
-            self.h_layerVncells = ROOT.TH2F(name+'_layerVncells', "Cluster #cells vs Layer #",  50, 0, 50, 30, 0, 30)
+            self.h_layerVenergy = ROOT.TH2F(name+'_layerVenergy', "Cluster Energy (GeV) vs Layer #; layer; E [GeV];", 50, 0, 50, 100, 0, 20)
+            self.h_layerVncells = ROOT.TH2F(name+'_layerVncells', "Cluster #cells vs Layer #; layer; # TC components;",  50, 0, 50, 30, 0, 30)
             self.h_layerVnCoreCells = ROOT.TH2F(name+'_layerVnCoreCells', "Cluster #cells vs Layer #",  50, 0, 50, 30, 0, 30)
 
         BaseHistos.__init__(self, name, root_file)
@@ -186,13 +186,13 @@ class ClusterHistos(BaseHistos):
 class Cluster3DHistos(BaseHistos):
     def __init__(self, name, root_file=None):
         if not root_file:
-            self.h_npt05 = ROOT.TH1F(name+'_npt05', '# 3D Cluster Pt > 0.5 GeV', 1000, 0, 1000)
-            self.h_npt20 = ROOT.TH1F(name+'_npt20', '# 3D Cluster Pt > 2.0 GeV', 1000, 0, 1000)
-            self.h_pt = ROOT.TH1F(name+'_pt', '3D Cluster Pt (GeV)', 100, 0, 100)
-            self.h_eta = ROOT.TH1F(name+'_eta', '3D Cluster eta', 100, -4, 4)
-            self.h_energy = ROOT.TH1F(name+'_energy', '3D Cluster energy (GeV)', 1000, 0, 1000)
-            self.h_nclu = ROOT.TH1F(name+'_nclu', '3D Cluster # clusters', 60, 0, 60)
-            self.h_ncluVpt = ROOT.TH2F(name+'_ncluVpt', '3D Cluster # clusters vs pt', 60, 0, 60, 100, 0, 100)
+            self.h_npt05 = ROOT.TH1F(name+'_npt05', '# 3D Cluster Pt > 0.5 GeV; # 3D clusters in cone;', 1000, 0, 1000)
+            self.h_npt20 = ROOT.TH1F(name+'_npt20', '# 3D Cluster Pt > 2.0 GeV; # 3D clusters in cone;', 1000, 0, 1000)
+            self.h_pt = ROOT.TH1F(name+'_pt', '3D Cluster Pt (GeV); p_{T} [GeV]', 100, 0, 100)
+            self.h_eta = ROOT.TH1F(name+'_eta', '3D Cluster eta; #eta;', 100, -4, 4)
+            self.h_energy = ROOT.TH1F(name+'_energy', '3D Cluster energy (GeV); E [GeV]', 1000, 0, 1000)
+            self.h_nclu = ROOT.TH1F(name+'_nclu', '3D Cluster # clusters; # 2D components;', 60, 0, 60)
+            self.h_ncluVpt = ROOT.TH2F(name+'_ncluVpt', '3D Cluster # clusters vs pt; # 2D components; p_{T} [GeV]', 60, 0, 60, 100, 0, 100)
             self.h_showlenght = ROOT.TH1F(name+'_showlenght', '3D Cluster showerlenght', 60, 0, 60)
             self.h_firstlayer = ROOT.TH1F(name+'_firstlayer', '3D Cluster first layer', 30, 0, 30)
             self.h_sEtaEtaTot = ROOT.TH1F(name+'_sEtaEtaTot', '3D Cluster RMS Eta', 100, 0, 0.1)
