@@ -557,10 +557,12 @@ def analyze(params, batch_idx=0):
                  Particle('eleA', PID.electron, '(1.4 < abseta < 1.7) & (reachedEE == 2)'),
                  Particle('eleB', PID.electron, '(1.7 <= abseta <= 2.8) & (reachedEE == 2)'),
                  Particle('eleC', PID.electron, '(abseta > 2.8) & (reachedEE == 2)'),
+                 Particle('eleD', PID.electron, '(abseta < 2.4) & (reachedEE == 2)'),
                  Particle('photon', PID.photon, '(reachedEE == 2)'),
                  Particle('photonA', PID.photon, '(1.4 < abseta < 1.7) & (reachedEE == 2)'),
                  Particle('photonB', PID.photon, '(1.7 <= abseta <= 2.8) & (reachedEE == 2)'),
                  Particle('photonC', PID.photon, '(abseta > 2.8) & (reachedEE == 2)'),
+                 Particle('photonD', PID.photon, '(abseta < 2.4) & (reachedEE == 2)'),
                  Particle('pion', PID.pion)]
 
     tp_sets = []
