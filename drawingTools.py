@@ -18,7 +18,6 @@ ROOT.gStyle.SetCanvasColor(0)
 ROOT.gStyle.SetCanvasDefH(600)
 ROOT.gStyle.SetCanvasDefW(800)
 
-
 # define some utility functions
 def newCanvas(name=None, title=None, xdiv=0, ydiv=0, form=4):
     global c_idx
@@ -31,6 +30,8 @@ def newCanvas(name=None, title=None, xdiv=0, ydiv=0, form=4):
     canvas = ROOT.TCanvas(name, title)
     if(xdiv*ydiv != 0):
         canvas.Divide(xdiv, ydiv)
+    global stuff
+    stuff.append(canvas)
     return canvas
 
 
@@ -173,7 +174,7 @@ def drawProfileRatio(prof1, prof2, ymin=None, ymax=None, text=None):
         hist1.GetYaxis().SetRangeUser(ymin, ymax)
     ROOT.gPad.Update()
 
-   
+
 # mean+-nsigmas*RMS.
 def drawGaussFit(histo, nsigmas, min, max):
     minfit = histo.GetMean() - nsigmas*histo.GetRMS()
