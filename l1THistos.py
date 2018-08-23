@@ -103,7 +103,7 @@ class GenParticleHistos(BaseHistos):
         rnp.fill_hist(self.h_pt, particles.pt)
         rnp.fill_hist(self.h_energy, particles.energy)
         rnp.fill_hist(self.h_reachedEE, particles.reachedEE)
-        rnp.fill_hist(self.h_fBrem, particles.fBrem)
+        rnp.fill_hist(self.h_fBrem, particles.fbrem)
 
 class DigiHistos(BaseHistos):
     def __init__(self, name, root_file=None):
