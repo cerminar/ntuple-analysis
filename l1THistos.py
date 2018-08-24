@@ -105,6 +105,7 @@ class GenParticleHistos(BaseHistos):
         rnp.fill_hist(self.h_reachedEE, particles.reachedEE)
         rnp.fill_hist(self.h_fBrem, particles.fbrem)
 
+
 class DigiHistos(BaseHistos):
     def __init__(self, name, root_file=None):
         if not root_file:
@@ -115,6 +116,22 @@ class DigiHistos(BaseHistos):
     def fill(self, digis):
         rnp.fill_hist(self.h_layer, digis.layer)
         # rnp.fill_hist(self.h_simenergy, digis.simenergy)
+
+
+class RateHistos(BaseHistos):
+    def __init__(self, name, root_file=None):
+        if not root_file:
+            self.h_norm = ROOT.TH1F(name+'_norm', '# of events', 1, 1, 2)
+            self.h_pt = ROOT.TH1F(name+'_pt', '# events; p_{T} [GeV];', 100, 0, 100)
+            # self.h_simenergy = ROOT.TH1F(name+'_energy', 'Digi sim-energy (GeV)', 100, 0, 2)
+        BaseHistos.__init__(self, name, root_file)
+
+    def fill(self, pt):
+        for ptf in range(0, int(pt)+1):
+            self.h_pt.Fill(ptf)
+
+    def fill_norm(self):
+        self.h_norm.Fill(1)
 
 
 class TCHistos(BaseHistos):
@@ -313,7 +330,6 @@ class ResoHistos(BaseHistos):
             self.h_ptRespVeta = ROOT.TH2F(name+'_ptRespVeta', '3D Cluster Pt resp. vs #eta; #eta^{GEN}; p_{T}^{RECO}/p_{T}^{GEN};', 50, -4, 4, 100, 0, 3)
             self.h_ptRespVnclu = ROOT.TH2F(name+'_ptRespVnclu', '3D Cluster Pt resp. vs # clus.; # 2D clust. ; p_{T}^{RECO}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
 
-
             # FIXME: add corresponding Pt plots
             self.h_coreEnergyResVnclu = ROOT.TH2F(name+'_coreEnergyResVnclu', '3D Cluster E reso (GeV) vs # clusters', 50, 0, 50, 200, -100, 100)
             self.h_corePtResVnclu = ROOT.TH2F(name+'_corePtResVnclu', '3D Cluster Pt reso (GeV) vs # clusters', 50, 0, 50, 200, -40, 40)
@@ -444,8 +460,6 @@ class HistoSetClusters():
         #     self.htc.annotateTitles(name)
         #     self.hcl2d.annotateTitles(name)
         #     self.hcl3d.annotateTitles(name)
-
-
 
     def fill(self, tcs, cl2ds, cl3ds):
         self.htc.fill(tcs)

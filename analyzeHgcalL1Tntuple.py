@@ -199,9 +199,9 @@ def plotTriggerTowerMatch(genParticles,
     best_match_indexes = {}
     if triggerTowers.shape[0] != 0:
         best_match_indexes, allmatches = utils.match_etaphi(genParticles[['eta', 'phi']],
-                                                     triggerTowers[['eta', 'phi']],
-                                                     triggerTowers['pt'],
-                                                     deltaR=0.2)
+                                                            triggerTowers[['eta', 'phi']],
+                                                            triggerTowers['pt'],
+                                                            deltaR=0.2)
         # print ('-----------------------')
         # print (best_match_indexes)
     # print ('------ best match: ')
@@ -431,6 +431,8 @@ class TPSet:
         self.h_tpset = {}
         self.h_resoset = {}
         self.h_effset = {}
+        self.rate_selections = {}
+        self.h_rate = {}
 
     def book_histos(self):
         for particle in self.particles:
@@ -441,6 +443,11 @@ class TPSet:
                 # we also book the resolution plots
                 self.h_resoset[particle.name] = histos.HistoSetReso(histo_name)
                 self.h_effset[particle.name] = histos.HistoSetEff(histo_name)
+
+    def book_rate_histos(self, selections):
+        self.rate_selections = selections
+        for name, selection in self.rate_selections.iteritems():
+            self.h_rate[name] = histos.RateHistos(name='{}_{}'.format(self.name, name))
 
     def fill_histos(self, all_tcs, all_cl2Ds, all_cl3Ds, all_genParticles, debug):
         tcs = all_tcs
@@ -486,6 +493,20 @@ class TPSet:
                                    hsetResoAlgoPart.hreso2D,
                                    self.name,
                                    debug)
+
+        for name, h_rate in self.h_rate.iteritems():
+            selection = self.rate_selections[name]
+            sel_clusters = cl3Ds.query(selection)
+            # print '--- ALL: ------------------'
+            # print cl3Ds
+            # print '--- SEL {}: {} ------------'.format(name, selection)
+            # print sel_clusters
+            trigger_clusters = sel_clusters[['pt']].sort_values(by='pt', ascending=False)
+            # print '--- SORTED ----------------'
+            # print trigger_clusters
+            if not trigger_clusters.empty:
+                h_rate.fill(trigger_clusters.iloc[0].pt)
+            h_rate.fill_norm()
 
 
 def analyze(params, batch_idx=0):
@@ -623,6 +644,15 @@ def analyze(params, batch_idx=0):
 
     for tp_set in tp_sets:
         tp_set.book_histos()
+
+    rate_selections = {'all': 'pt >= 0',
+                       'etaA': 'abs(eta) < 1.7',
+                       'etaB': '(abs(eta) > 1.7) & (abs(eta) < 2.8)',
+                       'etaC': 'abs(eta) > 2.8',
+                       'etaD': 'abs(eta) < 2.4'}
+
+    tps_DEF.book_rate_histos(rate_selections)
+    tps_DEFem.book_rate_histos(rate_selections)
 
     hTT_all = histos.TriggerTowerHistos('h_TT_all')
     # TT_algos = ['TTMATCH']
