@@ -4,7 +4,7 @@ output                = TEMPL_TASKDIR/logs/hadd.$(ClusterId).$(ProcId).out
 error                 = TEMPL_TASKDIR/logs/hadd.$(ClusterId).$(ProcId).err
 log                   = TEMPL_TASKDIR/logs/condor_hadd.$(ClusterId).log
 +JobFlavour           = "microcentury"
-RequestCpus = 1
+RequestCpus = 3
 
 transfer_input_files  = TEMPL_TASKDIR/copy_files.sh
 +PostCmd              = "copy_files.sh"
