@@ -26,23 +26,7 @@ import traceback
 import subprocess32
 from utils import debugPrintOut
 
-
-def listFiles(input_dir):
-    onlyfiles = []
-    if not input_dir.startswith('/eos'):
-        onlyfiles = [os.path.join(input_dir, f) for f in os.listdir(input_dir) if os.path.isfile(os.path.join(input_dir, f))]
-    else:
-        # we read the input files via EOS
-        protocol = ''
-        if '/eos/user/' in input_dir:
-            protocol = 'root://eosuser.cern.ch/'
-        elif '/eos/cms/' in input_dir:
-            protocol = 'root://eoscms.cern.ch/'
-        eos_proc = subprocess32.Popen(['eos', protocol, 'ls', input_dir], stdout=subprocess32.PIPE)
-        onlyfiles = [os.path.join(input_dir, f.rstrip()) for f in eos_proc.stdout.readlines() if '.root' in f]
-
-    return sorted(onlyfiles)
-
+import file_manager as fm
 
 def getChain(name, files):
     chain = ROOT.TChain(name)
@@ -557,11 +541,36 @@ def analyze(params, batch_idx=0):
 
         print ('...done')
 
-    input_files = listFiles(os.path.join(params.input_base_dir, params.input_sample_dir))
-    print ('- dir {} contains {} files.'.format(params.input_sample_dir, len(input_files)))
+    tree_name = 'hgcalTriggerNtuplizer/HGCalTriggerNtuple'
+    input_files = []
+    range_ev = range(0, params.maxEvents)
 
-    ntuple = HGCalNtuple(input_files, tree='hgcalTriggerNtuplizer/HGCalTriggerNtuple')
+    if params.events_per_job == -1:
+        print 'This is interactive processing...'
+        input_files = fm.get_files_for_processing(input_dir=os.path.join(params.input_base_dir, params.input_sample_dir),
+                                                  tree=tree_name,
+                                                  nev_toprocess=params.maxEvents,
+                                                  debug=debug)
+    else:
+        print 'This is batch processing...'
+        input_files, range_ev = fm.get_files_and_events_for_batchprocessing(input_dir=os.path.join(params.input_base_dir, params.input_sample_dir),
+                                                                            tree=tree_name,
+                                                                            nev_toprocess=params.maxEvents,
+                                                                            nev_perjob=params.events_per_job,
+                                                                            batch_id=batch_idx,
+                                                                            debug=debug)
+
+    # print ('- dir {} contains {} files.'.format(params.input_sample_dir, len(input_files)))
+    print '- will read {} files from dir {}:'.format(len(input_files), params.input_sample_dir)
+    for file_name in input_files:
+        print '        - {}'.format(file_name)
+
+    ntuple = HGCalNtuple(input_files, tree=tree_name)
+    if params.maxEvents == -1:
+        range_ev = range(0, ntuple.nevents())
+
     print ('- created TChain containing {} events'.format(ntuple.nevents()))
+    print ('- reading from event: {} to event {}'.format(range_ev[0], range_ev[-1]))
 
     output = ROOT.TFile(params.output_filename, "RECREATE")
     output.cd()
@@ -617,7 +626,6 @@ def analyze(params, batch_idx=0):
     tps_DEF_pt30_em = TPSet('DEF_pt30_em',
                             particles=particles,
                             cl3D_sel='(quality > 0) & (pt > 30)')
-
 
     tp_sets.append(tps_DEF)
     tp_sets.append(tps_DEFem)
@@ -677,13 +685,11 @@ def analyze(params, batch_idx=0):
 
     hDR = ROOT.TH1F('hDR', 'DR 2D clusters', 100, 0, 1)
     dump = False
-    range_ev = range(0, ntuple.nevents())
+    # print (range_ev)
 
     # -------------------------------------------------------
     # event loop
-    if(params.events_per_job != -1):
-        range_ev = range(batch_idx*params.events_per_job, (batch_idx+1)*params.events_per_job)
-    # print (range_ev)
+
     nev = 0
     for evt_idx in range_ev:
         # print(evt_idx)
@@ -967,6 +973,7 @@ def main(analyze):
     parser.add_option("-b", "--batch", action="store_true", dest="BATCH", default=False, help="submit the jobs via CONDOR")
     parser.add_option("-r", "--run", dest="RUN", default=None, help="the batch_id to run (need to be used with the option -b)")
     parser.add_option("-o", "--outdir", dest="OUTDIR", default=None, help="override the output directory for the files")
+    # parser.add_option("-i", "--inputJson", dest="INPUT", default='input.json', help="list of input files and properties in JSON format")
 
     global opt, args
     (opt, args) = parser.parse_args()
@@ -1067,7 +1074,7 @@ def main(analyze):
             print(sample)
             nevents = int(opt.NEVENTS)
             if int(opt.NEVENTS) == -1:
-                input_files = listFiles(os.path.join(sample.input_base_dir, sample.input_sample_dir))
+                input_files = fm.listFiles(os.path.join(sample.input_base_dir, sample.input_sample_dir))
                 ntuple = HGCalNtuple(input_files, tree='hgcalTriggerNtuplizer/HGCalTriggerNtuple')
                 nevents = ntuple.nevents()
             print ('Total # of events to be processed: {}'.format(nevents))
@@ -1086,7 +1093,12 @@ def main(analyze):
             params['TEMPL_SAMPLE'] = sample.name
             params['TEMPL_OUTFILE'] = 'histos_{}_{}.root'.format(sample.name, sample.version)
             unmerged_files = [os.path.join(sample.output_dir, 'histos_{}_{}_{}.root'.format(sample.name, sample.version, job)) for job in range(0, n_jobs)]
-            params['TEMPL_INFILES'] = ' '.join(unmerged_files)
+            protocol = ''
+            if '/eos/user/' in sample.output_dir:
+                protocol = 'root://eosuser.cern.ch/'
+            elif '/eos/cms/' in sample.output_dir:
+                protocol = 'root://eoscms.cern.ch/'
+            params['TEMPL_INFILES'] = (' '+protocol).join(unmerged_files)
             params['TEMPL_OUTDIR'] = sample.output_dir
             params['TEMPL_VIRTUALENV'] = os.path.basename(os.environ['VIRTUAL_ENV'])
 
