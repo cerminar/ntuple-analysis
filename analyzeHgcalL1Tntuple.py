@@ -1081,7 +1081,6 @@ def main(analyze):
                                                                debug=opt.DEBUG)
             print ('Total # of events to be processed: {}'.format(nevents))
             print ('# of events per job: {}'.format(sample.events_per_job))
-            n_jobs = int(nevents/sample.events_per_job)
             if n_jobs == 0:
                 n_jobs = 1
             print ('# of jobs to be submitted: {}'.format(n_jobs))
