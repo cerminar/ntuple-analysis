@@ -1065,6 +1065,8 @@ def main(analyze):
             os.mkdir(batch_dir+'/logs/')
 
         dagman_sub = ''
+        dagman_spl = ''
+        dagman_spl_retry = ''
         dagman_dep = ''
         dagman_ret = ''
         for sample in samples_to_process:
@@ -1124,11 +1126,21 @@ def main(analyze):
                          outfile=os.path.join(sample_batch_dir, 'run_batch_hadd.sh'),
                          params=params)
 
-            dagman_sub += 'JOB {} {}/batch.sub\n'.format(sample.name, sample_batch_dir)
+            for jid in range(0, n_jobs):
+                dagman_spl += 'JOB {}_{} {}/batch.sub\n'.format(sample.name, jid, sample_batch_dir)
+                dagman_spl += 'VARS {}_{} JOB_ID="{}"\n'.format(sample.name, jid, jid)
+                dagman_spl_retry += 'Retry {}_{} 3\n'.format(sample.name, jid)
+
+            dagman_sub += 'SPLICE {} {}.spl\n'.format(sample.name, sample.name)
             dagman_sub += 'JOB {} {}/batch_hadd.sub\n'.format(sample.name+'_hadd', sample_batch_dir)
             dagman_dep += 'PARENT {} CHILD {}\n'.format(sample.name, sample.name+'_hadd')
-            dagman_ret += 'Retry {} 3\n'.format(sample.name)
+            # dagman_ret += 'Retry {} 3\n'.format(sample.name)
             dagman_ret += 'Retry {} 3\n'.format(sample.name+'_hadd')
+
+        dagman_splice = open(os.path.join(batch_dir, '{}.spl'.format(sample.name)), 'w')
+        dagman_splice.write(dagman_spl)
+        dagman_splice.write(dagman_spl_retry)
+        dagman_splice.close()
 
         dagman_file_name = os.path.join(batch_dir, 'dagman.dag')
         dagman_file = open(dagman_file_name, 'w')
