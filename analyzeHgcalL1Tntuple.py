@@ -657,7 +657,8 @@ def analyze(params, batch_idx=0):
                        'etaA': 'abs(eta) < 1.7',
                        'etaB': '(abs(eta) > 1.7) & (abs(eta) < 2.8)',
                        'etaC': 'abs(eta) > 2.8',
-                       'etaD': 'abs(eta) < 2.4'}
+                       'etaD': 'abs(eta) < 2.4',
+                       'etaE': '(abs(eta) > 1.7) & (abs(eta) < 2.7)'}
 
     tps_DEF.book_rate_histos(rate_selections)
     tps_DEFem.book_rate_histos(rate_selections)
