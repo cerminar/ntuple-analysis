@@ -1073,10 +1073,11 @@ def main(analyze):
             os.mkdir(sample_batch_dir_logs)
             print(sample)
             nevents = int(opt.NEVENTS)
-            if int(opt.NEVENTS) == -1:
-                input_files = fm.listFiles(os.path.join(sample.input_base_dir, sample.input_sample_dir))
-                ntuple = HGCalNtuple(input_files, tree='hgcalTriggerNtuplizer/HGCalTriggerNtuple')
-                nevents = ntuple.nevents()
+            n_jobs = fm.get_number_of_jobs_for_batchprocessing(input_dir=os.path.join(sample.input_base_dir, sample.input_sample_dir),
+                                                               tree='hgcalTriggerNtuplizer/HGCalTriggerNtuple',
+                                                               nev_toprocess=nevents,
+                                                               nev_perjob=sample.events_per_job,
+                                                               debug=opt.DEBUG)
             print ('Total # of events to be processed: {}'.format(nevents))
             print ('# of events per job: {}'.format(sample.events_per_job))
             n_jobs = int(nevents/sample.events_per_job)

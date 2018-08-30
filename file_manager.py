@@ -51,6 +51,11 @@ def get_files_and_events_for_batchprocessing(input_dir, tree, nev_toprocess, nev
     return get_njobs(nev_toprocess, nev_perjob, metadata, debug)[batch_id]
 
 
+def get_number_of_jobs_for_batchprocessing(input_dir, tree, nev_toprocess, nev_perjob, debug=0):
+    metadata = get_metadata(input_dir, tree, debug)
+    return len(get_njobs(nev_toprocess, nev_perjob, metadata, debug).keys())
+
+
 def get_metadata(input_dir, tree, debug=0):
     json_name = 'metadata.json'
     file_metadata = {}
