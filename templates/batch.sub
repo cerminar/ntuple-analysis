@@ -1,13 +1,13 @@
-executable            = TEMPL_TASKDIR/run_batch.sh
+executable            = run_batch.sh
 arguments             = $(ClusterID) $(JOB_ID)
-output                = TEMPL_TASKDIR/logs/job.$(ClusterId).$(ProcId).out
-error                 = TEMPL_TASKDIR/logs/job.$(ClusterId).$(ProcId).err
-log                   = TEMPL_TASKDIR/logs/condor.$(ClusterId).log
+output                = logs/job.$(ClusterId).$(ProcId).out
+error                 = logs/job.$(ClusterId).$(ProcId).err
+log                   = logs/condor.$(ClusterId).log
 +JobFlavour           = "tomorrow"
 
 RequestCpus = 2
 
-transfer_input_files  = TEMPL_TASKDIR/copy_files.sh,TEMPL_TASKDIR/TEMPL_CFG
+transfer_input_files  = copy_files.sh,TEMPL_CFG
 +PostCmd              = "copy_files.sh"
 
 

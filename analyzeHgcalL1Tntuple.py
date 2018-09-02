@@ -7,6 +7,7 @@ import root_numpy as rnp
 import pandas as pd
 import numpy as np
 from multiprocessing import Pool
+from shutil import copyfile
 
 # The purpose of this file is to demonstrate mainly the objects
 # that are in the HGCalNtuple
@@ -1149,6 +1150,9 @@ def main(analyze):
         dagman_file.write(dagman_ret)
         dagman_file.close()
 
+        # copy the config file in the batch directory
+        copyfile(opt.CONFIGFILE, os.path.join(sample_batch_dir, opt.CONFIGFILE))
+        #cp TEMPL_TASKDIR/TEMPL_CFG
         print('Ready for submission please run the following commands:')
         # print('condor_submit {}'.format(condor_file_path))
         print('condor_submit_dag {}'.format(dagman_file_name))
