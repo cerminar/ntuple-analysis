@@ -1138,10 +1138,14 @@ def main(analyze):
             # dagman_ret += 'Retry {} 3\n'.format(sample.name)
             dagman_ret += 'Retry {} 3\n'.format(sample.name+'_hadd')
 
-        dagman_splice = open(os.path.join(sample_batch_dir, '{}.spl'.format(sample.name)), 'w')
-        dagman_splice.write(dagman_spl)
-        dagman_splice.write(dagman_spl_retry)
-        dagman_splice.close()
+            dagman_splice = open(os.path.join(sample_batch_dir, '{}.spl'.format(sample.name)), 'w')
+            dagman_splice.write(dagman_spl)
+            dagman_splice.write(dagman_spl_retry)
+            dagman_splice.close()
+
+            # copy the config file in the batch directory
+            copyfile(opt.CONFIGFILE, os.path.join(sample_batch_dir, opt.CONFIGFILE))
+
 
         dagman_file_name = os.path.join(batch_dir, 'dagman.dag')
         dagman_file = open(dagman_file_name, 'w')
@@ -1150,8 +1154,6 @@ def main(analyze):
         dagman_file.write(dagman_ret)
         dagman_file.close()
 
-        # copy the config file in the batch directory
-        copyfile(opt.CONFIGFILE, os.path.join(sample_batch_dir, opt.CONFIGFILE))
         #cp TEMPL_TASKDIR/TEMPL_CFG
         print('Ready for submission please run the following commands:')
         # print('condor_submit {}'.format(condor_file_path))
