@@ -486,11 +486,11 @@ class TPSet:
             # print cl3Ds
             # print '--- SEL {}: {} ------------'.format(name, selection)
             # print sel_clusters
-            trigger_clusters = sel_clusters[['pt']].sort_values(by='pt', ascending=False)
+            trigger_clusters = sel_clusters[['pt', 'eta']].sort_values(by='pt', ascending=False)
             # print '--- SORTED ----------------'
             # print trigger_clusters
             if not trigger_clusters.empty:
-                h_rate.fill(trigger_clusters.iloc[0].pt)
+                h_rate.fill(trigger_clusters.iloc[0].pt, trigger_clusters.iloc[0].eta)
             h_rate.fill_norm()
 
 
@@ -585,6 +585,9 @@ def analyze(params, batch_idx=0):
 
     particles = [Particle('nomatch', 0),
                  Particle('ele', PID.electron, 'reachedEE == 2'),
+                 Particle('elePt20', PID.electron, '(reachedEE == 2) & (pt > 20)'),
+                 Particle('elePt30', PID.electron, '(reachedEE == 2) & (pt > 30)'),
+                 Particle('elePt40', PID.electron, '(reachedEE == 2) & (pt > 40)'),
                  Particle('eleA', PID.electron, '(1.4 < abseta < 1.7) & (reachedEE == 2)'),
                  Particle('eleB', PID.electron, '(1.7 <= abseta <= 2.8) & (reachedEE == 2)'),
                  Particle('eleC', PID.electron, '(abseta > 2.8) & (reachedEE == 2)'),
@@ -649,7 +652,7 @@ def analyze(params, batch_idx=0):
     for particle in particles:
         hGenPartsSel[particle] = histos.GenParticleHistos('h_genPartsSel_{}'.format(particle.name))
 
-    hdigis = histos.DigiHistos('h_hgcDigisAll')
+    # hdigis = histos.DigiHistos('h_hgcDigisAll')
 
     for tp_set in tp_sets:
         tp_set.book_histos()
@@ -717,7 +720,7 @@ def analyze(params, batch_idx=0):
         #     continue
 
         branches = [(event, 'genpart'),
-                    (event, 'hgcdigi'),
+                    # (event, 'hgcdigi'),
                     (event, 'tc'),
                     (event, 'cl'),
                     (event, 'cl3d'),
@@ -730,11 +733,11 @@ def analyze(params, batch_idx=0):
         #     dataframes.append(unpack(branch))
 
         genParticles = dataframes[0]
-        hgcDigis = dataframes[1]
-        triggerCells = dataframes[2]
-        triggerClusters = dataframes[3]
-        trigger3DClusters = dataframes[4]
-        triggerTowers = dataframes[5]
+        # hgcDigis = dataframes[1]
+        triggerCells = dataframes[1]
+        triggerClusters = dataframes[2]
+        trigger3DClusters = dataframes[3]
+        triggerTowers = dataframes[4]
 
         puInfo = event.getPUInfo()
         debugPrintOut(debug, 'PU', toCount=puInfo, toPrint=puInfo)
@@ -779,9 +782,9 @@ def analyze(params, batch_idx=0):
                       toCount=genParticles,
                       toPrint=genParticles[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'pid', 'gen', 'reachedEE', 'fromBeamPipe']])
         # print genParticles.columns
-        debugPrintOut(debug, 'digis',
-                      toCount=hgcDigis,
-                      toPrint=hgcDigis.iloc[:3])
+        # debugPrintOut(debug, 'digis',
+        #               toCount=hgcDigis,
+        #               toPrint=hgcDigis.iloc[:3])
         debugPrintOut(debug, 'Trigger Cells',
                       toCount=triggerCells,
                       toPrint=triggerCells.iloc[:3])
@@ -837,7 +840,7 @@ def analyze(params, batch_idx=0):
             # else:
             #     hGenParts[particle].fill(genParts[(genParts.pid == particle.pdgid)])
 
-        hdigis.fill(hgcDigis)
+        # hdigis.fill(hgcDigis)
 
         tps_DEF.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
         tps_DEFem.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
