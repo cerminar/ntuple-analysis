@@ -1066,11 +1066,11 @@ def main(analyze):
             os.mkdir(batch_dir+'/logs/')
 
         dagman_sub = ''
-        dagman_spl = ''
-        dagman_spl_retry = ''
         dagman_dep = ''
         dagman_ret = ''
         for sample in samples_to_process:
+            dagman_spl = ''
+            dagman_spl_retry = ''
             sample_batch_dir = os.path.join(batch_dir, sample.name)
             sample_batch_dir_logs = os.path.join(sample_batch_dir, 'logs')
             os.mkdir(sample_batch_dir)
@@ -1081,7 +1081,7 @@ def main(analyze):
                                                                tree='hgcalTriggerNtuplizer/HGCalTriggerNtuple',
                                                                nev_toprocess=nevents,
                                                                nev_perjob=sample.events_per_job,
-                                                               debug=opt.DEBUG)
+                                                               debug=int(opt.DEBUG))
             print ('Total # of events to be processed: {}'.format(nevents))
             print ('# of events per job: {}'.format(sample.events_per_job))
             if n_jobs == 0:
@@ -1128,7 +1128,7 @@ def main(analyze):
                          params=params)
 
             for jid in range(0, n_jobs):
-                dagman_spl += 'JOB {}_{} batch.sub\n'.format(sample.name, jid)
+                dagman_spl += 'JOB Job_{} batch.sub\n'.format(jid)
                 dagman_spl += 'VARS {}_{} JOB_ID="{}"\n'.format(sample.name, jid, jid)
                 dagman_spl_retry += 'Retry {}_{} 3\n'.format(sample.name, jid)
 
