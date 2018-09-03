@@ -4,6 +4,7 @@ from NtupleDataFormat import HGCalNtuple
 import json
 import uuid
 
+
 def copy_from_eos(input_dir, file_name, target_file_name):
     protocol = ''
     if '/eos/user/' in input_dir:
@@ -12,6 +13,7 @@ def copy_from_eos(input_dir, file_name, target_file_name):
         protocol = 'root://eoscms.cern.ch/'
     eos_proc = subprocess32.Popen(['eos', protocol, 'cp', os.path.join(input_dir, file_name), target_file_name], stdout=subprocess32.PIPE)
     print eos_proc.stdout.readlines()
+    return eos_proc.returncode
 
 
 def copy_to_eos(file_name, target_dir, target_file_name):
@@ -22,6 +24,8 @@ def copy_to_eos(file_name, target_dir, target_file_name):
         protocol = 'root://eoscms.cern.ch/'
     eos_proc = subprocess32.Popen(['eos', protocol, 'cp', file_name, os.path.join(target_dir, target_file_name)], stdout=subprocess32.PIPE)
     print eos_proc.stdout.readlines()
+    # eos_proc.wait()
+    return eos_proc.returncode
 
 
 def listFiles(input_dir, match='.root'):
@@ -41,6 +45,19 @@ def listFiles(input_dir, match='.root'):
     return sorted(onlyfiles)
 
 
+def stage_files(files_to_stage):
+    ret_files = []
+    for file_name in files_to_stage:
+        copy_from_eos(os.path.dirname(file_name), os.path.basename(file_name), os.path.basename(file_name))
+        # FIXME: this is a very loose check...
+        if os.path.isfile(os.path.basename(file_name)):
+            ret_files.append(os.path.basename(file_name))
+        else:
+            ret_files.append(file_name)
+    # print ret_files
+    return ret_files
+
+
 def get_files_for_processing(input_dir, tree, nev_toprocess, debug=0):
     metadata = get_metadata(input_dir, tree, debug)
     return get_files_to_process(nev_toprocess, metadata, debug)
@@ -48,7 +65,9 @@ def get_files_for_processing(input_dir, tree, nev_toprocess, debug=0):
 
 def get_files_and_events_for_batchprocessing(input_dir, tree, nev_toprocess, nev_perjob, batch_id, debug=0):
     metadata = get_metadata(input_dir, tree, debug)
-    return get_njobs(nev_toprocess, nev_perjob, metadata, debug)[batch_id]
+    file_list, event_range = get_njobs(nev_toprocess, nev_perjob, metadata, debug)[batch_id]
+    # return stage_files(files_to_stage=file_list), event_range
+    return file_list, event_range
 
 
 def get_number_of_jobs_for_batchprocessing(input_dir, tree, nev_toprocess, nev_perjob, debug=0):
@@ -118,6 +137,7 @@ def get_files_to_process(nev_toprocess, metadata, debug=0):
 
 
 def get_njobs(nev_toprocess, nev_perjob, metadata, debug=0):
+
     needed_files = sorted(get_files_to_process(nev_toprocess, metadata))
     nevents_tot = 0
     comulative = {}
@@ -162,9 +182,6 @@ def get_njobs(nev_toprocess, nev_perjob, metadata, debug=0):
             print '   # ev in files: {}'.format(totv)
         ret[job_id] = (files_perjob, eventrange)
     return ret
-
-
-
 
 
 if __name__ == "__main__":
