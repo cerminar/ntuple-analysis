@@ -158,9 +158,9 @@ class HGCalNtuple(object):
         ientry = self._tree.LoadTree(index)
         if ientry < 0:
             return None
-        nb = self._tree.GetEntry(index)  # ientry or jentry?
-        if nb <= 0:
-            None
+        # nb = self._tree.GetEntry(index)  # ientry or jentry?
+        # if nb <= 0:
+        #     None
 
         return Event(self._tree, index)  # ientry of jentry?
 
