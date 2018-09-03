@@ -1133,7 +1133,7 @@ def main(analyze):
             for jid in range(0, n_jobs):
                 dagman_spl += 'JOB Job_{} batch.sub\n'.format(jid)
                 dagman_spl += 'VARS Job_{} JOB_ID="{}"\n'.format(jid, jid)
-                dagman_spl_retry += 'Retry {}_{} 3\n'.format(sample.name, jid)
+                dagman_spl_retry += 'Retry Job_{} 3\n'.format(jid)
 
             dagman_sub += 'SPLICE {} {}.spl DIR {}\n'.format(sample.name, sample.name, sample_batch_dir)
             dagman_sub += 'JOB {} {}/batch_hadd.sub\n'.format(sample.name+'_hadd', sample_batch_dir)
