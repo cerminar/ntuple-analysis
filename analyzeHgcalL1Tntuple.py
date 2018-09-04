@@ -943,7 +943,7 @@ def analyze(params, batch_idx=0):
 
     lastfile = ntuple.tree().GetFile()
     print 'Read bytes: {}, # of transaction: {}'.format(lastfile.GetBytesRead(),  lastfile.GetReadCalls())
-    ntuple.tree().PrintCacheStats()
+    ntuple.tree().PrintCacheStats('cachedbranches')
 
     output.cd()
     hm = histos.HistoManager()
