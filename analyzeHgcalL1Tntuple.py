@@ -567,8 +567,9 @@ def analyze(params, batch_idx=0):
         print '        - {}'.format(file_name)
 
     ntuple = HGCalNtuple(input_files, tree=tree_name)
-    if params.maxEvents == -1:
-        range_ev = range(0, ntuple.nevents())
+    if params.events_per_job == -1:
+        if params.maxEvents == -1:
+            range_ev = range(0, ntuple.nevents())
 
     print ('- created TChain containing {} events'.format(ntuple.nevents()))
     print ('- reading from event: {} to event {}'.format(range_ev[0], range_ev[-1]))
