@@ -39,7 +39,7 @@ def match_etaphi(ref_etaphi, trigger_etaphi, trigger_pt, deltaR=0.2):
 def debugPrintOut(level, name, toCount, toPrint):
     if level == 0:
         return
-    if level >= 2:
-        print('# {}: {}'.format(name, len(toCount)))
     if level >= 3:
+        print('# {}: {}'.format(name, len(toCount)))
+    if level >= 4:
         print(toPrint)
