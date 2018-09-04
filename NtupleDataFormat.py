@@ -128,6 +128,7 @@ class HGCalNtuple(object):
         self._tree.SetCacheSize(cachesize)
         self._tree.SetCacheLearnEntries(1)
         # self._tree.SetCacheEntryRange(efirst,elast)
+        print 'Cache size: {}'.format(self._tree.GetCacheSize())
 
 
     def tree(self):
