@@ -124,6 +124,11 @@ class HGCalNtuple(object):
 
             self._tree.Add(protocol+file_name)
         self._entries = self._tree.GetEntries()
+        cachesize = 400000000
+        self._tree.SetCacheSize(cachesize)
+        self._tree.SetCacheLearnEntries(1)
+        # self._tree.SetCacheEntryRange(efirst,elast)
+
 
     def tree(self):
         return self._tree
