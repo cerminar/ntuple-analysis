@@ -941,7 +941,7 @@ def analyze(params, batch_idx=0):
     print ("Processed {} events/{} TOT events".format(nev, ntuple.nevents()))
     print ("Writing histos to file {}".format(params.output_filename))
 
-    lastfile = tuple.tree().GetFile()
+    lastfile = ntuple.tree().GetFile()
     print 'Read bytes: {}, # of transaction: {}'.format(lastfile.GetBytesRead(),  lastfile.GetReadCalls())
 
     output.cd()
