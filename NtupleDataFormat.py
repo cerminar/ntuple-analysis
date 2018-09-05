@@ -115,6 +115,7 @@ class HGCalNtuple(object):
         """
         super(HGCalNtuple, self).__init__()
         self._tree = ROOT.TChain(tree)
+
         for file_name in fileNames:
             protocol = ''
             if '/eos/user/' in file_name:
@@ -123,13 +124,29 @@ class HGCalNtuple(object):
                 protocol = 'root://eoscms.cern.ch/'
 
             self._tree.Add(protocol+file_name)
-        self._entries = self._tree.GetEntries()
-        cachesize = 400000000
-        self._tree.SetCacheSize(cachesize)
-        self._tree.SetCacheLearnEntries(1)
-        # self._tree.SetCacheEntryRange(efirst,elast)
+
         print 'Cache size: {}'.format(self._tree.GetCacheSize())
 
+        self._entries = self._tree.GetEntries()
+
+
+    def setCache(self, learn_events=-1, entry_range=None):
+        print 'Resetting cache: {}'.format(self._tree.SetCacheSize(0))
+        cachesize = 400000000
+        print 'Setting new cache size: {}'.format(self._tree.SetCacheSize(cachesize))
+        if learn_events != -1:
+            print 'Setting # of entries for cache learning: {} to {}'.format(self._tree.SetCacheLearnEntries(learn_events), learn_events)
+        else:
+            print self._tree.AddBranchToCache("*", True)
+            # print self._tree.AddBranchToCache("cl_layer")
+            self._tree.StopCacheLearningPhase()
+
+        if entry_range:
+            print 'Setting cache entry range: {}'.format(self._tree.SetCacheEntryRange(entry_range[0], entry_range[-1]))
+        print 'Cache size: {}'.format(self._tree.GetCacheSize())
+
+    def PrintCacheStats(self):
+        self._tree.PrintCacheStats('cachedbranches')
 
     def tree(self):
         return self._tree
