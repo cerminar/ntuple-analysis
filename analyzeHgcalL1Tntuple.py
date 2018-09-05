@@ -540,7 +540,8 @@ def analyze(params, batch_idx=0):
 
         # treeTriggerCells = inputFile.Get("hgcaltriggergeomtester/TreeTriggerCells")
         # treeCells        = inputFile.Get("hgcaltriggergeomtester/TreeCells")
-        tc_geom_tree.PrintCacheStats()
+        if debug > 4:
+            tc_geom_tree.PrintCacheStats()
         print ('...done')
 
     tree_name = 'hgcalTriggerNtuplizer/HGCalTriggerNtuple'
@@ -945,7 +946,8 @@ def analyze(params, batch_idx=0):
 
     lastfile = ntuple.tree().GetFile()
     print 'Read bytes: {}, # of transaction: {}'.format(lastfile.GetBytesRead(),  lastfile.GetReadCalls())
-    ntuple.PrintCacheStats()
+    if debug > 4:
+        ntuple.PrintCacheStats()
 
     output.cd()
     hm = histos.HistoManager()
