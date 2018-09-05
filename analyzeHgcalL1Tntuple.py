@@ -545,7 +545,7 @@ def analyze(params, batch_idx=0):
 
     tree_name = 'hgcalTriggerNtuplizer/HGCalTriggerNtuple'
     input_files = []
-    range_ev = range(0, params.maxEvents)
+    range_ev = (0, params.maxEvents)
 
     if params.events_per_job == -1:
         print 'This is interactive processing...'
@@ -570,10 +570,10 @@ def analyze(params, batch_idx=0):
     ntuple = HGCalNtuple(input_files, tree=tree_name)
     if params.events_per_job == -1:
         if params.maxEvents == -1:
-            range_ev = range(0, ntuple.nevents())
+            range_ev = (0, ntuple.nevents())
 
     print ('- created TChain containing {} events'.format(ntuple.nevents()))
-    print ('- reading from event: {} to event {}'.format(range_ev[0], range_ev[-1]))
+    print ('- reading from event: {} to event {}'.format(range_ev[0], range_ev[1]))
 
     ntuple.setCache(learn_events=1, entry_range=range_ev)
     output = ROOT.TFile(params.output_filename, "RECREATE")
@@ -699,7 +699,7 @@ def analyze(params, batch_idx=0):
     # event loop
 
     nev = 0
-    for evt_idx in range_ev:
+    for evt_idx in range(range_ev[0], range_ev[1]+1):
         # print(evt_idx)
         event = ntuple.getEvent(evt_idx)
         if (params.maxEvents != -1 and nev >= params.maxEvents):
