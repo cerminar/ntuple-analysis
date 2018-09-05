@@ -510,6 +510,7 @@ def analyze(params, batch_idx=0):
         # read the geometry dump
         geom_file = os.path.join(params.input_base_dir, 'geom/test_triggergeom.root')
         tc_geom_tree = HGCalNtuple([geom_file], tree='hgcaltriggergeomtester/TreeTriggerCells')
+        tc_geom_tree.setCache(learn_events=100)
         print ('read TC GEOM tree with # events: {}'.format(tc_geom_tree.nevents()))
         tc_geom_df = convertGeomTreeToDF(tc_geom_tree._tree)
         tc_geom_df['radius'] = np.sqrt(tc_geom_df['x']**2+tc_geom_df['y']**2)
@@ -539,7 +540,7 @@ def analyze(params, batch_idx=0):
 
         # treeTriggerCells = inputFile.Get("hgcaltriggergeomtester/TreeTriggerCells")
         # treeCells        = inputFile.Get("hgcaltriggergeomtester/TreeCells")
-
+        tc_geom_tree.PrintCacheStats()
         print ('...done')
 
     tree_name = 'hgcalTriggerNtuplizer/HGCalTriggerNtuple'
@@ -574,6 +575,7 @@ def analyze(params, batch_idx=0):
     print ('- created TChain containing {} events'.format(ntuple.nevents()))
     print ('- reading from event: {} to event {}'.format(range_ev[0], range_ev[-1]))
 
+    ntuple.setCache(learn_events=1, entry_range=range_ev)
     output = ROOT.TFile(params.output_filename, "RECREATE")
     output.cd()
 
@@ -727,11 +729,11 @@ def analyze(params, batch_idx=0):
                     (event, 'cl3d'),
                     (event, 'tower')]
 
-        dataframes = pool.map(unpack, branches)
+        # dataframes = pool.map(unpack, branches)
 
-        # dataframes = []
-        # for idx, branch in enumerate(branches):
-        #     dataframes.append(unpack(branch))
+        dataframes = []
+        for idx, branch in enumerate(branches):
+            dataframes.append(unpack(branch))
 
         genParticles = dataframes[0]
         # hgcDigis = dataframes[1]
@@ -943,7 +945,7 @@ def analyze(params, batch_idx=0):
 
     lastfile = ntuple.tree().GetFile()
     print 'Read bytes: {}, # of transaction: {}'.format(lastfile.GetBytesRead(),  lastfile.GetReadCalls())
-    ntuple.tree().PrintCacheStats('cachedbranches')
+    ntuple.PrintCacheStats()
 
     output.cd()
     hm = histos.HistoManager()
