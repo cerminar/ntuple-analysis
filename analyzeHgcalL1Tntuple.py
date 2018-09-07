@@ -540,7 +540,7 @@ def analyze(params, batch_idx=0):
 
         # treeTriggerCells = inputFile.Get("hgcaltriggergeomtester/TreeTriggerCells")
         # treeCells        = inputFile.Get("hgcaltriggergeomtester/TreeCells")
-        if debug > 4:
+        if debug == -4:
             tc_geom_tree.PrintCacheStats()
         print ('...done')
 
@@ -946,7 +946,7 @@ def analyze(params, batch_idx=0):
 
     lastfile = ntuple.tree().GetFile()
     print 'Read bytes: {}, # of transaction: {}'.format(lastfile.GetBytesRead(),  lastfile.GetReadCalls())
-    if debug > 4:
+    if debug == -4:
         ntuple.PrintCacheStats()
 
     output.cd()
