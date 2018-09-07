@@ -109,7 +109,16 @@ def getText(text, ndc_x, ndc_y):
     return rtext
 
 
-def drawSame(histograms, labels, options='', norm=False, logy=False, min_y=None, max_y=None, text=None):
+def drawSame(histograms,
+             labels,
+             options='',
+             norm=False,
+             logy=False,
+             min_y=None,
+             max_y=None,
+             text=None,
+             y_axis_label=None,
+             x_axis_label=None):
     global colors
     c = newCanvas(title=histograms[0].GetName())
     c.cd()
@@ -135,6 +144,11 @@ def drawSame(histograms, labels, options='', norm=False, logy=False, min_y=None,
         leg.AddEntry(histograms[hidx], labels[hidx], 'l')
 
     histograms[0].GetYaxis().SetRangeUser(min_value, max_value)
+    if y_axis_label:
+        histograms[0].GetYaxis().SetTitle(y_axis_label)
+    if x_axis_label:
+            histograms[0].GetXaxis().SetTitle(x_axis_label)
+
     leg.Draw()
     c.Draw()
     if text:
@@ -142,6 +156,7 @@ def drawSame(histograms, labels, options='', norm=False, logy=False, min_y=None,
         rtext.Draw("same")
     if logy:
         c.SetLogy()
+    c.Update()
 
 
 def drawProfileX(histograms, labels, options=''):
@@ -199,7 +214,6 @@ def drawGFit(histo, min, max, minfit, maxfit):
     histo.Fit(g1,"R")
 
 
-
 def drawGraphsSame(histograms, labels, options='', norm=False, logy=False, min_y=None, max_y=None, text=None):
     global colors
     c = newCanvas()
@@ -211,6 +225,13 @@ def drawGraphsSame(histograms, labels, options='', norm=False, logy=False, min_y
         histograms[hidx].Draw('same'+','+options)
         leg.AddEntry(histograms[hidx], labels[hidx], 'l')
 
+    max_value = max_y
+    min_value = min_y
+    if min_y is None:
+        min_value = min([hist.GetBinContent(hist.GetMinimumBin()) for hist in histograms])
+    if max_y is None:
+        max_value = max([hist.GetBinContent(hist.GetMaximumBin()) for hist in histograms])*1.2
+    histograms[0].GetYaxis().SetRangeUser(min_value, max_value)
     leg.Draw()
     c.Draw()
     if logy:
@@ -218,3 +239,4 @@ def drawGraphsSame(histograms, labels, options='', norm=False, logy=False, min_y
     if text:
         rtext = getText(text, 0.15, 0.85)
         rtext.Draw("same")
+    c.Update()
