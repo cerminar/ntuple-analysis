@@ -60,14 +60,16 @@ def stage_files(files_to_stage):
 
 def get_files_for_processing(input_dir, tree, nev_toprocess, debug=0):
     metadata = get_metadata(input_dir, tree, debug)
+    # return ['./ntuple_1417.root']
     return get_files_to_process(nev_toprocess, metadata, debug)
+    # return stage_files(files_to_stage=get_files_to_process(nev_toprocess, metadata, debug))
 
 
 def get_files_and_events_for_batchprocessing(input_dir, tree, nev_toprocess, nev_perjob, batch_id, debug=0):
     metadata = get_metadata(input_dir, tree, debug)
     file_list, event_range = get_njobs(nev_toprocess, nev_perjob, metadata, debug)[batch_id]
-    # return stage_files(files_to_stage=file_list), event_range
-    return file_list, event_range
+    return stage_files(files_to_stage=file_list), event_range
+    # return file_list, event_range
 
 
 def get_number_of_jobs_for_batchprocessing(input_dir, tree, nev_toprocess, nev_perjob, debug=0):
@@ -108,7 +110,6 @@ def get_metadata(input_dir, tree, debug=0):
         os.remove(unique_filename)
 
     return file_metadata
-
 
 
 def get_files_to_process(nev_toprocess, metadata, debug=0):
