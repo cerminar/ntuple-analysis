@@ -3,9 +3,9 @@ arguments             = $(ClusterID) $(JOB_ID)
 output                = logs/job.$(ClusterId).$(ProcId).out
 error                 = logs/job.$(ClusterId).$(ProcId).err
 log                   = logs/condor.$(ClusterId).log
-+JobFlavour           = "tomorrow"
++JobFlavour           = "workday"
 
-RequestCpus = 2
+RequestCpus = 1
 
 transfer_input_files  = copy_files.sh,TEMPL_CFG
 +PostCmd              = "copy_files.sh"
