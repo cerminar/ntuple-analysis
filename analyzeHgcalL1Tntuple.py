@@ -282,7 +282,7 @@ def plot3DClusterMatch(genParticles,
         best_match_indexes, allmatches = utils.match_etaphi(genParticles[['eta', 'phi']],
                                                             trigger3DClusters[['eta', 'phi']],
                                                             trigger3DClusters['pt'],
-                                                            deltaR=0.2)
+                                                            deltaR=0.1)
     # print ('------ best match: ')
     # print (best_match_indexes)
     # print ('------ all matches:')
@@ -1109,12 +1109,12 @@ def main(analyze):
             params['TEMPL_SAMPLE'] = sample.name
             params['TEMPL_OUTFILE'] = 'histos_{}_{}.root'.format(sample.name, sample.version)
             unmerged_files = [os.path.join(sample.output_dir, 'histos_{}_{}_{}.root'.format(sample.name, sample.version, job)) for job in range(0, n_jobs)]
-            protocol = ''
-            if '/eos/user/' in sample.output_dir:
-                protocol = 'root://eosuser.cern.ch/'
-            elif '/eos/cms/' in sample.output_dir:
-                protocol = 'root://eoscms.cern.ch/'
-            params['TEMPL_INFILES'] = (' '+protocol).join(unmerged_files)
+            # protocol = ''
+            # if '/eos/user/' in sample.output_dir:
+            #     protocol = 'root://eosuser.cern.ch/'
+            # elif '/eos/cms/' in sample.output_dir:
+            #     protocol = 'root://eoscms.cern.ch/'
+            params['TEMPL_INFILES'] = ' '.join(unmerged_files)
             params['TEMPL_OUTDIR'] = sample.output_dir
             params['TEMPL_VIRTUALENV'] = os.path.basename(os.environ['VIRTUAL_ENV'])
 
@@ -1139,6 +1139,14 @@ def main(analyze):
                          outfile=os.path.join(sample_batch_dir, 'run_batch_hadd.sh'),
                          params=params)
 
+            editTemplate(infile='templates/batch_cleanup.sub',
+                         outfile=os.path.join(sample_batch_dir, 'batch_cleanup.sub'),
+                         params=params)
+
+            editTemplate(infile='templates/run_batch_cleanup.sh',
+                         outfile=os.path.join(sample_batch_dir, 'run_batch_cleanup.sh'),
+                         params=params)
+
             for jid in range(0, n_jobs):
                 dagman_spl += 'JOB Job_{} batch.sub\n'.format(jid)
                 dagman_spl += 'VARS Job_{} JOB_ID="{}"\n'.format(jid, jid)
@@ -1146,7 +1154,11 @@ def main(analyze):
 
             dagman_sub += 'SPLICE {} {}.spl DIR {}\n'.format(sample.name, sample.name, sample_batch_dir)
             dagman_sub += 'JOB {} {}/batch_hadd.sub\n'.format(sample.name+'_hadd', sample_batch_dir)
+            dagman_sub += 'JOB {} {}/batch_cleanup.sub\n'.format(sample.name+'_cleanup', sample_batch_dir)
+
             dagman_dep += 'PARENT {} CHILD {}\n'.format(sample.name, sample.name+'_hadd')
+            dagman_dep += 'PARENT {} CHILD {}\n'.format(sample.name+'_hadd', sample.name+'_cleanup')
+
             # dagman_ret += 'Retry {} 3\n'.format(sample.name)
             dagman_ret += 'Retry {} 3\n'.format(sample.name+'_hadd')
 
@@ -1157,7 +1169,6 @@ def main(analyze):
 
             # copy the config file in the batch directory
             copyfile(opt.CONFIGFILE, os.path.join(sample_batch_dir, opt.CONFIGFILE))
-
 
         dagman_file_name = os.path.join(batch_dir, 'dagman.dag')
         dagman_file = open(dagman_file_name, 'w')

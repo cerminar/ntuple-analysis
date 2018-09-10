@@ -1,0 +1,10 @@
+executable            = TEMPL_TASKDIR/run_batch_cleanup.sh
+arguments             = $(ClusterID) $(ProcId)
+output                = TEMPL_TASKDIR/logs/hadd.$(ClusterId).$(ProcId).out
+error                 = TEMPL_TASKDIR/logs/hadd.$(ClusterId).$(ProcId).err
+log                   = TEMPL_TASKDIR/logs/condor_hadd.$(ClusterId).log
++JobFlavour           = "espresso"
+RequestCpus = 1
+
+transfer_output_files   = ""
+queue
