@@ -118,8 +118,11 @@ def drawSame(histograms,
              max_y=None,
              text=None,
              y_axis_label=None,
-             x_axis_label=None):
+             x_axis_label=None,
+             v_lines=None,
+             h_lines=None):
     global colors
+    global stuff
     c = newCanvas(title=histograms[0].GetName())
     c.cd()
     leg = getLegend()
@@ -156,6 +159,19 @@ def drawSame(histograms,
         rtext.Draw("same")
     if logy:
         c.SetLogy()
+
+    if v_lines:
+        for v_line_x in v_lines:
+            aline = ROOT.TLine(v_line_x, c.GetUymin(), v_line_x,  c.GetUymax())
+            aline.SetLineStyle(2)
+            aline.Draw("same")
+            stuff.append(aline)
+    if h_lines:
+        for h_line_y in h_lines:
+            aline = ROOT.TLine(c.GetUxmin(), h_line_y, c.GetUxmax(),  h_line_y)
+            aline.SetLineStyle(2)
+            aline.Draw("same")
+            stuff.append(aline)
     c.Update()
 
 
