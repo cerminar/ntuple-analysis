@@ -592,7 +592,7 @@ def analyze(params, batch_idx=0):
                  Particle('elePt20', PID.electron, '(reachedEE == 2) & (pt > 20)'),
                  Particle('elePt30', PID.electron, '(reachedEE == 2) & (pt > 30)'),
                  Particle('elePt40', PID.electron, '(reachedEE == 2) & (pt > 40)'),
-                 Particle('eleA', PID.electron, '(abseta =< 1.52) & (reachedEE == 2)'),
+                 Particle('eleA', PID.electron, '(abseta <= 1.52) & (reachedEE == 2)'),
                  Particle('eleB', PID.electron, '(1.52 < abseta <= 1.7) & (reachedEE == 2)'),
                  Particle('eleC', PID.electron, '(1.7 < abseta <= 2.4) & (reachedEE == 2)'),
                  Particle('eleD', PID.electron, '(2.4 < abseta <= 2.8) & (reachedEE == 2)'),
