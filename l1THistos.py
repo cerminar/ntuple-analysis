@@ -291,7 +291,7 @@ class TriggerTowerResoHistos(BaseHistos):
 
             self.h_ptResp = ROOT.TH1F(name+'_ptResp', 'TT Pt resp.; p_{T}^{L1}/p_{T}^{GEN};', 100, 0, 2)
             self.h_ptRespVpt = ROOT.TH2F(name+'_ptRespVpt', 'TT Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 2)
-            self.h_ptRespVeta = ROOT.TH2F(name+'_ptRespVeta', 'TT Pt resp. vs eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};', 100, -3.5, 3.5, 100, 0, 2)
+            self.h_ptRespVeta = ROOT.TH2F(name+'_ptRespVeta', 'TT Pt resp. vs |#eta|; |#eta^{GEN}|; p_{T}^{L1}/p_{T}^{GEN};', 34, 1.4, 3.1, 100, 0, 2)
 
             self.h_energyRes = ROOT.TH1F(name+'_energyRes', 'TT Energy reso (GeV)', 200, -100, 100)
             self.h_energyResVeta = ROOT.TH2F(name+'_energyResVeta', 'TT E reso (GeV) vs eta', 100, -3.5, 3.5, 200, -100, 100)
@@ -311,7 +311,7 @@ class TriggerTowerResoHistos(BaseHistos):
 
         self.h_ptResp.Fill(target.pt/reference.pt)
         self.h_ptRespVpt.Fill(reference.pt, target.pt/reference.pt)
-        self.h_ptRespVeta.Fill(reference.eta, target.pt/reference.pt)
+        self.h_ptRespVeta.Fill(abs(reference.eta), target.pt/reference.pt)
 
         self.h_energyRes.Fill(target.energy - reference.energy)
         self.h_energyResVeta.Fill(reference.eta, target.energy - reference.energy)
