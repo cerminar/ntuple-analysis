@@ -592,15 +592,16 @@ def analyze(params, batch_idx=0):
                  Particle('elePt20', PID.electron, '(reachedEE == 2) & (pt > 20)'),
                  Particle('elePt30', PID.electron, '(reachedEE == 2) & (pt > 30)'),
                  Particle('elePt40', PID.electron, '(reachedEE == 2) & (pt > 40)'),
-                 Particle('eleA', PID.electron, '(1.4 < abseta < 1.7) & (reachedEE == 2)'),
-                 Particle('eleB', PID.electron, '(1.7 <= abseta <= 2.8) & (reachedEE == 2)'),
-                 Particle('eleC', PID.electron, '(abseta > 2.8) & (reachedEE == 2)'),
-                 Particle('eleD', PID.electron, '(abseta < 2.4) & (reachedEE == 2)'),
-                 Particle('eleAAA', PID.electron, '(abseta <= 1.52) & (reachedEE == 2)'),
-                 Particle('eleAA', PID.electron, '(abseta <= 1.6) & (reachedEE == 2)'),
-                 Particle('eleBB', PID.electron, '(1.6 < abseta <= 2.4) & (reachedEE == 2)'),
-                 Particle('eleCC', PID.electron, '(2.4 < abseta <= 2.8) & (reachedEE == 2)'),
-                 Particle('eleDD', PID.electron, '(abseta > 2.8) & (reachedEE == 2)'),
+                 Particle('eleA', PID.electron, '(abseta =< 1.52) & (reachedEE == 2)'),
+                 Particle('eleB', PID.electron, '(1.52 < abseta <= 1.7) & (reachedEE == 2)'),
+                 Particle('eleC', PID.electron, '(1.7 < abseta <= 2.4) & (reachedEE == 2)'),
+                 Particle('eleD', PID.electron, '(2.4 < abseta <= 2.8) & (reachedEE == 2)'),
+                 Particle('eleE', PID.electron, '(abseta > 2.8) & (reachedEE == 2)'),
+                 Particle('eleAB', PID.electron, '(abseta <= 1.7) & (reachedEE == 2)'),
+                 Particle('eleABC', PID.electron, '(abseta <= 2.4) & (reachedEE == 2)'),
+                 Particle('eleBC', PID.electron, '(1.52 < abseta <= 2.4) & (reachedEE == 2)'),
+                 Particle('eleBCD', PID.electron, '(1.52 < abseta <= 2.8) & (reachedEE == 2)'),
+                 Particle('eleBCDE', PID.electron, '(abseta > 1.52) & (reachedEE == 2)'),
                  Particle('photon', PID.photon, '(reachedEE == 2)'),
                  Particle('photonA', PID.photon, '(1.4 < abseta < 1.7) & (reachedEE == 2)'),
                  Particle('photonB', PID.photon, '(1.7 <= abseta <= 2.8) & (reachedEE == 2)'),
@@ -616,6 +617,14 @@ def analyze(params, batch_idx=0):
                       particles=particles,
                       cl3D_sel='quality > 0')
 
+    tps_DEF_pt10 = TPSet('DEF_pt10',
+                         particles=particles,
+                         cl3D_sel='pt > 10')
+
+    tps_DEF_pt10_em = TPSet('DEF_pt10_em',
+                            particles=particles,
+                            cl3D_sel='(quality > 0) & (pt > 10)')
+
     tps_DEF_pt20 = TPSet('DEF_pt20',
                          particles=particles,
                          cl3D_sel='pt > 20')
@@ -623,6 +632,7 @@ def analyze(params, batch_idx=0):
     tps_DEF_pt20_em = TPSet('DEF_pt20_em',
                             particles=particles,
                             cl3D_sel='(quality > 0) & (pt > 20)')
+
 
     tps_DEF_pt25 = TPSet('DEF_pt25',
                          particles=particles,
@@ -642,6 +652,8 @@ def analyze(params, batch_idx=0):
 
     tp_sets.append(tps_DEF)
     tp_sets.append(tps_DEFem)
+    tp_sets.append(tps_DEF_pt10)
+    tp_sets.append(tps_DEF_pt10_em)
     tp_sets.append(tps_DEF_pt20)
     tp_sets.append(tps_DEF_pt20_em)
     tp_sets.append(tps_DEF_pt25)
@@ -667,11 +679,16 @@ def analyze(params, batch_idx=0):
         tp_set.book_histos()
 
     rate_selections = {'all': 'pt >= 0',
-                       'etaA': 'abs(eta) < 1.7',
-                       'etaB': '(abs(eta) > 1.7) & (abs(eta) < 2.8)',
-                       'etaC': 'abs(eta) > 2.8',
-                       'etaD': 'abs(eta) < 2.4',
-                       'etaE': '(abs(eta) > 1.7) & (abs(eta) < 2.7)'}
+                       'etaA': 'abs(eta) <= 1.52',
+                       'etaB': '(1.52 < abs(eta) <= 1.7)',
+                       'etaC': '(1.7 < abs(eta) <= 2.4)',
+                       'etaD': '(2.4 < abs(eta) <= 2.8)',
+                       'etaE': '(abs(eta) > 2.8)',
+                       'etaAB': 'abs(eta) <= 1.7',
+                       'etaABC': 'abs(eta) <= 2.4',
+                       'etaBC': '(1.52 < abs(eta) <= 2.4)',
+                       'etaBCD': '(1.52 < abs(eta) <= 2.8)',
+                       'etaBCDE': '(1.52 < abs(eta))'}
 
     tps_DEF.book_rate_histos(rate_selections)
     tps_DEFem.book_rate_histos(rate_selections)
@@ -853,6 +870,8 @@ def analyze(params, batch_idx=0):
 
         tps_DEF.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
         tps_DEFem.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
+        tps_DEF_pt10.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
+        tps_DEF_pt10_em.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
         tps_DEF_pt20.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
         tps_DEF_pt20_em.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
         tps_DEF_pt25.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
