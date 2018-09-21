@@ -1241,6 +1241,8 @@ def main(analyze):
         dagman_file.write(dagman_ret)
         dagman_file.close()
 
+        # create targz file of the code from git
+        git_proc = subprocess32.Popen(['git', 'archive', '--format=tar.gz', 'HEAD', '-o',  os.path.join(batch_dir, 'ntuple-tools.tar.gz')], stdout=subprocess32.PIPE)
         #cp TEMPL_TASKDIR/TEMPL_CFG
         print('Ready for submission please run the following commands:')
         # print('condor_submit {}'.format(condor_file_path))

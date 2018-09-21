@@ -7,7 +7,7 @@ log                   = logs/condor.$(ClusterId).log
 
 RequestCpus = 1
 
-transfer_input_files  = copy_files.sh,TEMPL_CFG
+transfer_input_files  = copy_files.sh,TEMPL_CFG,../ntuple-tools.tar.gz
 +PostCmd              = "copy_files.sh"
 
 
