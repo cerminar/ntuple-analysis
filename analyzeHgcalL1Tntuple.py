@@ -365,6 +365,27 @@ def plot3DClusterMatch(genParticles,
     # return matchedClustersAll
 
 
+
+def get_calibrated_clusters(calib_factors, input_3Dclusters):
+    calibrated_clusters = input_3Dclusters.copy(deep=True)
+    def apply_calibration(cluster):
+        calib_factor = 1
+        calib_factor_tmp = calib_factors[(calib_factors.eta_l < abs(cluster.eta)) &
+                                         (calib_factors.eta_h >= abs(cluster.eta)) &
+                                         (calib_factors.pt_l < cluster.pt) &
+                                         (calib_factors.pt_h >= cluster.pt)]
+        if not calib_factor_tmp.empty:
+            # print 'cluster pt: {}, eta: {}, calib_factor: {}'.format(cluster.pt, cluster.eta, calib_factor_tmp.calib.values[0])
+            # print calib_factor_tmp
+            calib_factor = 1./calib_factor_tmp.calib.values[0]
+        # print cluster
+        cluster.pt = cluster.pt*calib_factor
+        return cluster
+        #input_3Dclusters[(input_3Dclusters.eta_l > abs(cluster.eta)) & ()]
+    calibrated_clusters = calibrated_clusters.apply(apply_calibration, axis=1)
+    return calibrated_clusters
+
+
 def build3DClusters(name, algorithm, triggerClusters, pool, debug):
     trigger3DClusters = pd.DataFrame()
     if triggerClusters.empty:
@@ -617,6 +638,10 @@ def analyze(params, batch_idx=0):
                       particles=particles,
                       cl3D_sel='quality > 0')
 
+    tps_DEFem_calib = TPSet('DEF_em_calib',
+                            particles=particles,
+                            cl3D_sel='quality > 0')
+
     tps_DEF_pt10 = TPSet('DEF_pt10',
                          particles=particles,
                          cl3D_sel='pt > 10')
@@ -652,6 +677,7 @@ def analyze(params, batch_idx=0):
 
     tp_sets.append(tps_DEF)
     tp_sets.append(tps_DEFem)
+    tp_sets.append(tps_DEFem_calib)
     tp_sets.append(tps_DEF_pt10)
     tp_sets.append(tps_DEF_pt10_em)
     tp_sets.append(tps_DEF_pt20)
@@ -692,6 +718,7 @@ def analyze(params, batch_idx=0):
 
     tps_DEF.book_rate_histos(rate_selections)
     tps_DEFem.book_rate_histos(rate_selections)
+    tps_DEFem_calib.book_rate_histos(rate_selections)
 
     hTT_all = histos.TriggerTowerHistos('h_TT_all')
     # TT_algos = ['TTMATCH']
@@ -717,6 +744,13 @@ def analyze(params, batch_idx=0):
     hDR = ROOT.TH1F('hDR', 'DR 2D clusters', 100, 0, 1)
     dump = False
     # print (range_ev)
+
+
+    # def apply_calibrations(original_clusters, calibration_file_name):
+    calibration_file_name = 'data/calib_v0.json'
+    calib_factors = pd.read_json(calibration_file_name)
+    print calib_factors
+
 
     # -------------------------------------------------------
     # event loop
@@ -793,6 +827,7 @@ def analyze(params, batch_idx=0):
         triggerClustersDBS = pd.DataFrame()
         trigger3DClustersDBS = pd.DataFrame()
         trigger3DClustersDBSp = pd.DataFrame()
+        trigger3DClustersCalib = pd.DataFrame()
 
         triggerTowers.eval('HoE = etHad/etEm', inplace=True)
         # triggerTowers['HoE'] = triggerTowers.etHad/triggerTowers.etEm
@@ -825,6 +860,10 @@ def analyze(params, batch_idx=0):
                       toPrint=triggerTowers.sort_values(by='pt', ascending=False).iloc[:10])
         # print '# towers eta >0 {}'.format(len(triggerTowers[triggerTowers.eta > 0]))
         # print '# towers eta <0 {}'.format(len(triggerTowers[triggerTowers.eta < 0]))
+
+        trigger3DClustersCalib = get_calibrated_clusters(calib_factors, trigger3DClusters[(trigger3DClusters.quality > 0)])
+        # print trigger3DClusters[:3]
+        # print trigger3DClustersCalib[:3]
 
         if params.clusterize:
             # Now build DBSCAN 2D clusters
@@ -870,6 +909,7 @@ def analyze(params, batch_idx=0):
 
         tps_DEF.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
         tps_DEFem.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
+        tps_DEFem_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
         tps_DEF_pt10.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
         tps_DEF_pt10_em.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
         tps_DEF_pt20.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
