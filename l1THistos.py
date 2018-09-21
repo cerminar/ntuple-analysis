@@ -340,6 +340,7 @@ class ResoHistos(BaseHistos):
             self.h_ptRespVpt = ROOT.TH2F(name+'_ptRespVpt', '3D Cluster Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
             self.h_ptRespVeta = ROOT.TH2F(name+'_ptRespVeta', '3D Cluster Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};', 50, -4, 4, 100, 0, 3)
             self.h_ptRespVnclu = ROOT.TH2F(name+'_ptRespVnclu', '3D Cluster Pt resp. vs # clus.; # 2D clust. ; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
+            self.h_ptRespVetaVptL1 = ROOT.TH3F(name+'_ptRespVetaVptL1', '3D Cluster Pt resp. vs #eta and vs pT; #eta^{L1}; p_{T}^{L1} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 30, 1, 4, 50, 0, 100, 100, 0, 3)
 
             # FIXME: add corresponding Pt plots
             self.h_coreEnergyResVnclu = ROOT.TH2F(name+'_coreEnergyResVnclu', '3D Cluster E reso (GeV) vs # clusters', 50, 0, 50, 200, -100, 100)
@@ -370,6 +371,7 @@ class ResoHistos(BaseHistos):
         self.h_ptRespVeta.Fill(reference.eta, target.pt/reference.pt)
         self.h_ptRespVpt.Fill(reference.pt, target.pt/reference.pt)
         self.h_ptRespVnclu.Fill(target.nclu, target.pt/reference.pt)
+        self.h_ptRespVetaVptL1.Fill(abs(target.eta), target.pt, target.pt/reference.pt)
 
         if 'energyCore' in target:
             self.h_coreEnergyRes.Fill(target.energyCore - reference.energy)
