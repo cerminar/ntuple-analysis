@@ -11,7 +11,7 @@ echo "Current dir: ${BATCH_DIR}"
 #
 hostname
 
-tar xvfz ntuple-tools.tar.gz
+tar xfz ntuple-tools.tar.gz
 
 source ./setup_lxplus.sh
 source ./setVirtualEnvWrapper.sh
