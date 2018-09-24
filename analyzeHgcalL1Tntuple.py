@@ -650,6 +650,10 @@ def analyze(params, batch_idx=0):
                             particles=particles,
                             cl3D_sel='(quality > 0) & (pt > 10)')
 
+    tps_DEF_pt10_em_calib = TPSet('DEF_pt10_em_calib',
+                            particles=particles,
+                            cl3D_sel='(quality > 0) & (pt > 10)')
+
     tps_DEF_pt20 = TPSet('DEF_pt20',
                          particles=particles,
                          cl3D_sel='pt > 20')
@@ -658,12 +662,19 @@ def analyze(params, batch_idx=0):
                             particles=particles,
                             cl3D_sel='(quality > 0) & (pt > 20)')
 
+    tps_DEF_pt20_em_calib = TPSet('DEF_pt20_em_calib',
+                            particles=particles,
+                            cl3D_sel='(quality > 0) & (pt > 20)')
 
     tps_DEF_pt25 = TPSet('DEF_pt25',
                          particles=particles,
                          cl3D_sel='pt > 25')
 
     tps_DEF_pt25_em = TPSet('DEF_pt25_em',
+                            particles=particles,
+                            cl3D_sel='(quality > 0) & (pt > 25)')
+
+    tps_DEF_pt25_em_calib = TPSet('DEF_pt25_em_calib',
                             particles=particles,
                             cl3D_sel='(quality > 0) & (pt > 25)')
 
@@ -675,17 +686,26 @@ def analyze(params, batch_idx=0):
                             particles=particles,
                             cl3D_sel='(quality > 0) & (pt > 30)')
 
+    tps_DEF_pt30_em_calib = TPSet('DEF_pt30_em_calib',
+                            particles=particles,
+                            cl3D_sel='(quality > 0) & (pt > 30)')
+
+
     tp_sets.append(tps_DEF)
     tp_sets.append(tps_DEFem)
     tp_sets.append(tps_DEFem_calib)
     tp_sets.append(tps_DEF_pt10)
-    tp_sets.append(tps_DEF_pt10_em)
     tp_sets.append(tps_DEF_pt20)
-    tp_sets.append(tps_DEF_pt20_em)
     tp_sets.append(tps_DEF_pt25)
-    tp_sets.append(tps_DEF_pt25_em)
     tp_sets.append(tps_DEF_pt30)
+    tp_sets.append(tps_DEF_pt10_em)
+    tp_sets.append(tps_DEF_pt20_em)
+    tp_sets.append(tps_DEF_pt25_em)
     tp_sets.append(tps_DEF_pt30_em)
+    tp_sets.append(tps_DEF_pt10_em_calib)
+    tp_sets.append(tps_DEF_pt20_em_calib)
+    tp_sets.append(tps_DEF_pt25_em_calib)
+    tp_sets.append(tps_DEF_pt30_em_calib)
 
     # -------------------------------------------------------
     # book histos
@@ -911,13 +931,18 @@ def analyze(params, batch_idx=0):
         tps_DEFem.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
         tps_DEFem_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
         tps_DEF_pt10.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
-        tps_DEF_pt10_em.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
         tps_DEF_pt20.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
-        tps_DEF_pt20_em.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
         tps_DEF_pt25.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
-        tps_DEF_pt25_em.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
         tps_DEF_pt30.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
+        tps_DEF_pt10_em.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
+        tps_DEF_pt20_em.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
+        tps_DEF_pt25_em.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
         tps_DEF_pt30_em.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
+        tps_DEF_pt10_em_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
+        tps_DEF_pt20_em_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
+        tps_DEF_pt25_em_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
+        tps_DEF_pt30_em_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
+
 
         hTT_all.fill(triggerTowers)
 
