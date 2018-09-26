@@ -31,7 +31,7 @@ def copy_to_eos(file_name, target_dir, target_file_name):
 def listFiles(input_dir, match='.root'):
     onlyfiles = []
     if not input_dir.startswith('/eos'):
-        onlyfiles = [os.path.join(input_dir, f) for f in os.listdir(input_dir) if os.path.isfile(os.path.join(input_dir, f))]
+        onlyfiles = [os.path.join(input_dir, f) for f in os.listdir(input_dir) if os.path.isfile(os.path.join(input_dir, f)) and match in f]
     else:
         # we read the input files via EOS
         protocol = ''
