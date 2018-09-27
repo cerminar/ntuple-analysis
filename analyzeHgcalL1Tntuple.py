@@ -767,7 +767,7 @@ def analyze(params, batch_idx=0):
 
 
     # def apply_calibrations(original_clusters, calibration_file_name):
-    calibration_file_name = 'data/calib_v0.json'
+    calibration_file_name = 'data/calib_v1.json'
     calib_factors = pd.read_json(calibration_file_name)
     print calib_factors
 
