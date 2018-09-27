@@ -87,18 +87,6 @@ def drawAndProfileX(plot2d, miny=None, maxy=None, do_profile=True, options='', t
     c.Draw()
 
 
-class Sample():
-    def __init__(cls, name, label, version=None):
-        cls.name = name
-        cls.label = label
-        if version:
-            version = '_'+version
-        else:
-            version = ''
-        cls.histo_filename = '../plots1/histos_{}{}.root'.format(cls.name, version)
-        cls.histo_file = ROOT.TFile(cls.histo_filename)
-
-
 def getText(text, ndc_x, ndc_y):
     global stuff
     rtext = ROOT.TLatex(ndc_x, ndc_y, text)
@@ -220,17 +208,24 @@ def drawGFit(histo, min, max, minfit, maxfit):
     # i++
     # gPad->SetGrid(1,1);
     # gStyle->SetGridColor(15);
-    histo.GetXaxis().SetRangeUser(min,max)
+    histo.GetXaxis().SetRangeUser(min, max)
     global f_idx
     nameF1 = "g{}".format(f_idx)
     f_idx +=1
-    g1 = ROOT.TF1(nameF1,"gaus",minfit,maxfit)
+    g1 = ROOT.TF1(nameF1, "gaus", minfit, maxfit)
     g1.SetLineColor(2)
     g1.SetLineWidth(2)
     histo.Fit(g1,"R")
 
 
-def drawGraphsSame(histograms, labels, options='', norm=False, logy=False, min_y=None, max_y=None, text=None):
+def drawGraphsSame(histograms,
+                   labels,
+                   options='',
+                   norm=False,
+                   logy=False,
+                   min_y=None,
+                   max_y=None,
+                   text=None):
     global colors
     c = newCanvas()
     c.cd()
