@@ -42,10 +42,9 @@ class BaseHistos():
         # print 'BOOK histo: {}'.format(self)
         if root_file is not None:
             root_file.cd()
-            histo_names = [histo.GetName() for histo in root_file.GetListOfKeys() if name+'_' in histo.GetName()]
+            selhistos = [(histo.ReadObj(), histo.GetName()) for histo in root_file.GetListOfKeys() if name+'_' in histo.GetName()]
             # print histo_names
-            for histo_name in histo_names:
-                hinst = root_file.Get(histo_name)
+            for hinst, histo_name in selhistos:
                 attr_name = 'h_'+histo_name.split(name+'_')[1]
                 setattr(self, attr_name, hinst)
 #            self.h_test = root_file.Get('h_EleReso_ptRes')
@@ -520,5 +519,5 @@ class HistoSetEff():
 
     def computeEff(self):
         # print "Computing eff"
-        self.h_eff = HistoEff(passed=self.h_num, total=self.h_den)
-        pass
+        if self.h_eff is None:
+            self.h_eff = HistoEff(passed=self.h_num, total=self.h_den, debug=False)
