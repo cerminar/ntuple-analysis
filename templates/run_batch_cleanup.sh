@@ -12,7 +12,7 @@ echo "Now in dir: ${PWD}"
 hostname
 
 source ./setup_lxplus.sh
-source ~/setVirtualEnvWrapper.sh
+source ./setVirtualEnvWrapper.sh
 workon TEMPL_VIRTUALENV
 
 cd ${BATCH_DIR}
