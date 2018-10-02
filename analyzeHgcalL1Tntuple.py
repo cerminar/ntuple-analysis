@@ -4,6 +4,7 @@
 from NtupleDataFormat import HGCalNtuple, Event
 import sys
 import root_numpy as rnp
+import root_numpy.tmva as rnptmva
 import pandas as pd
 import numpy as np
 from multiprocessing import Pool
@@ -14,6 +15,7 @@ from shutil import copyfile
 import ROOT
 import os
 import math
+import array
 import copy
 import socket
 import datetime
@@ -638,9 +640,20 @@ def analyze(params, batch_idx=0):
                       particles=particles,
                       cl3D_sel='quality > 0')
 
+    tps_DEFemL = TPSet('DEF_emL',
+                      particles=particles,
+                      cl3D_sel='bdt_out > 0')
+
+
     tps_DEFem_calib = TPSet('DEF_em_calib',
                             particles=particles,
                             cl3D_sel='quality > 0')
+
+    tps_DEFemL_calib = TPSet('DEF_emL_calib',
+                            particles=particles,
+                            cl3D_sel='bdt_out > 0')
+
+
 
     tps_DEF_pt10 = TPSet('DEF_pt10',
                          particles=particles,
@@ -650,9 +663,18 @@ def analyze(params, batch_idx=0):
                             particles=particles,
                             cl3D_sel='(quality > 0) & (pt > 10)')
 
+    tps_DEF_pt10_emL = TPSet('DEF_pt10_emL',
+                            particles=particles,
+                            cl3D_sel='(bdt_out > 0) & (pt > 10)')
+
     tps_DEF_pt10_em_calib = TPSet('DEF_pt10_em_calib',
                             particles=particles,
                             cl3D_sel='(quality > 0) & (pt > 10)')
+
+    tps_DEF_pt10_emL_calib = TPSet('DEF_pt10_emL_calib',
+                            particles=particles,
+                            cl3D_sel='(bdt_out > 0) & (pt > 10)')
+
 
     tps_DEF_pt20 = TPSet('DEF_pt20',
                          particles=particles,
@@ -662,9 +684,18 @@ def analyze(params, batch_idx=0):
                             particles=particles,
                             cl3D_sel='(quality > 0) & (pt > 20)')
 
+    tps_DEF_pt20_emL = TPSet('DEF_pt20_emL',
+                            particles=particles,
+                            cl3D_sel='(bdt_out > 0) & (pt > 20)')
+
+
     tps_DEF_pt20_em_calib = TPSet('DEF_pt20_em_calib',
                             particles=particles,
                             cl3D_sel='(quality > 0) & (pt > 20)')
+
+    tps_DEF_pt20_emL_calib = TPSet('DEF_pt20_emL_calib',
+                            particles=particles,
+                            cl3D_sel='(bdt_out > 0) & (pt > 20)')
 
     tps_DEF_pt25 = TPSet('DEF_pt25',
                          particles=particles,
@@ -674,9 +705,18 @@ def analyze(params, batch_idx=0):
                             particles=particles,
                             cl3D_sel='(quality > 0) & (pt > 25)')
 
+    tps_DEF_pt25_emL = TPSet('DEF_pt25_emL',
+                            particles=particles,
+                            cl3D_sel='(bdt_out > 0) & (pt > 25)')
+
     tps_DEF_pt25_em_calib = TPSet('DEF_pt25_em_calib',
                             particles=particles,
                             cl3D_sel='(quality > 0) & (pt > 25)')
+
+    tps_DEF_pt25_emL_calib = TPSet('DEF_pt25_emL_calib',
+                            particles=particles,
+                            cl3D_sel='(bdt_out > 0) & (pt > 25)')
+
 
     tps_DEF_pt30 = TPSet('DEF_pt30',
                          particles=particles,
@@ -690,10 +730,19 @@ def analyze(params, batch_idx=0):
                             particles=particles,
                             cl3D_sel='(quality > 0) & (pt > 30)')
 
+    tps_DEF_pt30_emL = TPSet('DEF_pt30_emL',
+                            particles=particles,
+                            cl3D_sel='(bdt_out > 0) & (pt > 30)')
+
+    tps_DEF_pt30_emL_calib = TPSet('DEF_pt30_emL_calib',
+                            particles=particles,
+                            cl3D_sel='(bdt_out > 0) & (pt > 30)')
 
     tp_sets.append(tps_DEF)
     tp_sets.append(tps_DEFem)
     tp_sets.append(tps_DEFem_calib)
+    tp_sets.append(tps_DEFemL)
+    tp_sets.append(tps_DEFemL_calib)
     tp_sets.append(tps_DEF_pt10)
     tp_sets.append(tps_DEF_pt20)
     tp_sets.append(tps_DEF_pt25)
@@ -706,6 +755,14 @@ def analyze(params, batch_idx=0):
     tp_sets.append(tps_DEF_pt20_em_calib)
     tp_sets.append(tps_DEF_pt25_em_calib)
     tp_sets.append(tps_DEF_pt30_em_calib)
+    tp_sets.append(tps_DEF_pt10_emL)
+    tp_sets.append(tps_DEF_pt20_emL)
+    tp_sets.append(tps_DEF_pt25_emL)
+    tp_sets.append(tps_DEF_pt30_emL)
+    tp_sets.append(tps_DEF_pt10_emL_calib)
+    tp_sets.append(tps_DEF_pt20_emL_calib)
+    tp_sets.append(tps_DEF_pt25_emL_calib)
+    tp_sets.append(tps_DEF_pt30_emL_calib)
 
     # -------------------------------------------------------
     # book histos
@@ -771,6 +828,21 @@ def analyze(params, batch_idx=0):
     calib_factors = pd.read_json(calibration_file_name)
     print calib_factors
 
+
+    # setup the EGID classifies
+    mva_classifier = ROOT.TMVA.Reader()
+
+    mva_classifier.AddVariable('pt_cl', array.array('f', [0.]))
+    mva_classifier.AddVariable('eta_cl', array.array('f', [0.]))
+    mva_classifier.AddVariable('coreShowerLength_cl', array.array('f', [0.]))
+    mva_classifier.AddVariable('firstLayer_cl', array.array('f', [0.]))
+    mva_classifier.AddVariable('hOverE_cl', array.array('f', [0.]))
+    # (this is a variable I created by dividing the eMax variable by the total energy of the cluster)
+    mva_classifier.AddVariable('eMaxOverE_cl', array.array('f', [0.]))
+    mva_classifier.AddVariable('sigmaZZ_cl', array.array('f', [0.]))
+    mva_classifier.AddVariable('sigmaRRTot_cl', array.array('f', [0.]))
+
+    mva_classifier.BookMVA("BDT", "data/MVAnalysis_Comb_BDT.weights.xml")
 
     # -------------------------------------------------------
     # event loop
@@ -841,6 +913,26 @@ def analyze(params, batch_idx=0):
         #     triggerClusters['y'] = triggerClusters.R*np.sin(triggerClusters.phi)
 
         trigger3DClusters['nclu'] = [len(x) for x in trigger3DClusters.clusters]
+
+        trigger3DClusters['eMaxOverE'] = trigger3DClusters.emaxe/trigger3DClusters.energy
+        # FIXME: this needs to be computed
+        def compute_hoe(cluster):
+            # print cluster
+            components = triggerClusters[triggerClusters.id.isin(cluster.clusters)]
+            e_energy = components[components.layer <= 28].energy.sum()
+            h_enery = components[components.layer > 28].energy.sum()
+            if e_energy != 0.:
+                cluster.hoe = h_enery/e_energy
+            return cluster
+        trigger3DClusters['hoe'] = 999.
+        trigger3DClusters = trigger3DClusters.apply(compute_hoe, axis=1)
+
+
+        trigger3DClusters['bdt_out'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'eMaxOverE', 'szz', 'srrtot']])
+        # trigger3DClusters['bdt_l'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'eMaxOverE', 'szz', 'srrtot']], 0.8)
+        # trigger3DClusters['bdt_t'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'eMaxOverE', 'szz', 'srrtot']], 0.95)
+
+
         trigger3DClustersP = pd.DataFrame()
         triggerClustersGEO = pd.DataFrame()
         trigger3DClustersGEO = pd.DataFrame()
@@ -930,6 +1022,9 @@ def analyze(params, batch_idx=0):
         tps_DEF.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
         tps_DEFem.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
         tps_DEFem_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
+        tps_DEFemL.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
+        tps_DEFemL_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
+
         tps_DEF_pt10.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
         tps_DEF_pt20.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
         tps_DEF_pt25.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
@@ -942,6 +1037,14 @@ def analyze(params, batch_idx=0):
         tps_DEF_pt20_em_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
         tps_DEF_pt25_em_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
         tps_DEF_pt30_em_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
+        tps_DEF_pt10_emL.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
+        tps_DEF_pt20_emL.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
+        tps_DEF_pt25_emL.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
+        tps_DEF_pt30_emL.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
+        tps_DEF_pt10_emL_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
+        tps_DEF_pt20_emL_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
+        tps_DEF_pt25_emL_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
+        tps_DEF_pt30_emL_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
 
 
         hTT_all.fill(triggerTowers)
