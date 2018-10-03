@@ -913,8 +913,6 @@ def analyze(params, batch_idx=0):
         #     triggerClusters['y'] = triggerClusters.R*np.sin(triggerClusters.phi)
 
         trigger3DClusters['nclu'] = [len(x) for x in trigger3DClusters.clusters]
-
-        trigger3DClusters['eMaxOverE'] = trigger3DClusters.emaxe/trigger3DClusters.energy
         # FIXME: this needs to be computed
         def compute_hoe(cluster):
             # print cluster
@@ -927,8 +925,7 @@ def analyze(params, batch_idx=0):
         trigger3DClusters['hoe'] = 999.
         trigger3DClusters = trigger3DClusters.apply(compute_hoe, axis=1)
 
-
-        trigger3DClusters['bdt_out'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'eMaxOverE', 'szz', 'srrtot']])
+        trigger3DClusters['bdt_out'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'emaxe', 'szz', 'srrtot']])
         # trigger3DClusters['bdt_l'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'eMaxOverE', 'szz', 'srrtot']], 0.8)
         # trigger3DClusters['bdt_t'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'eMaxOverE', 'szz', 'srrtot']], 0.95)
 
