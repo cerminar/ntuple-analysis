@@ -210,4 +210,9 @@ if __name__ == "__main__":
     #             target_file_name='metadata.json')
 
     print jobs
+    print 'NON EOS CASE'
+    print listFiles(input_dir='/Users/cerminar/Workspace/hgcal-analysis/ntuple-tools/data/', match='.root')
+    print listFiles(input_dir='/Users/cerminar/Workspace/hgcal-analysis/ntuple-tools/data/', match='metradata.json')
+    print get_files_for_processing(input_dir='/Users/cerminar/Workspace/hgcal-analysis/ntuple-tools/data/',
+                                   tree = 'hgcalTriggerNtuplizer/HGCalTriggerNtuple', nev_toprocess=10, debug=0)
 # get_njobs(nev_toprocess=-1, nev_perjob=500, metadata=file_metadata)
