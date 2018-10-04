@@ -30,13 +30,8 @@ import subprocess32
 from utils import debugPrintOut
 
 import file_manager as fm
-
-def getChain(name, files):
-    chain = ROOT.TChain(name)
-    for file_name in files:
-        chain.Add(file_name)
-    return chain
-
+import selections as selections
+import plotters as plotters
 
 class Parameters:
     def __init__(self,
@@ -98,54 +93,6 @@ def dumpFrame2JSON(filename, frame):
         f.write(frame.to_json())
 
 
-def computeIsolation(all3DClusters, idx_best_match, idx_incone, dr):
-    ret = pd.DataFrame()
-    # print 'index best match: {}'.format(idx_best_match)
-    # print 'indexes all in cone: {}'.format(idx_incone)
-    components = all3DClusters[(all3DClusters.index.isin(idx_incone)) & ~(all3DClusters.index == idx_best_match)]
-    # print 'components indexes: {}'.format(components.index)
-    compindr = components[np.sqrt((components.eta-all3DClusters.loc[idx_best_match].eta)**2 + (components.phi-all3DClusters.loc[idx_best_match].phi)**2) < dr]
-    if not compindr.empty:
-        # print 'components indexes in dr: {}'.format(compindr.index)
-        ret['energy'] = [compindr.energy.sum()]
-        ret['eta'] = [np.sum(compindr.eta*compindr.energy)/compindr.energy.sum()]
-        ret['pt'] = [(ret.energy/np.cosh(ret.eta)).values[0]]
-    else:
-        ret['energy'] = [0.]
-        ret['eta'] = [0.]
-        ret['pt'] = [0.]
-    return ret
-
-
-def sumClustersInCone(all3DClusters, idx_incone):
-    ret = pd.DataFrame()
-    components = all3DClusters[all3DClusters.index.isin(idx_incone)]
-    ret['energy'] = [components.energy.sum()]
-    # FIXME: this needs to be better defined
-    ret['energyCore'] = [components.energy.sum()]
-    ret['energyCentral'] = [components.energy.sum()]
-
-    ret['eta'] = [np.sum(components.eta*components.energy)/components.energy.sum()]
-    ret['phi'] = [np.sum(components.phi*components.energy)/components.energy.sum()]
-    ret['pt'] = [(ret.energy/np.cosh(ret.eta)).values[0]]
-    ret['ptCore'] = [(ret.energyCore/np.cosh(ret.eta)).values[0]]
-    # ret['layers'] = [np.unique(np.concatenate(components.layers.values))]
-    ret['clusters'] = [np.concatenate(components.clusters.values)]
-    ret['nclu'] = [components.nclu.sum()]
-    ret['firstlayer'] = [np.min(components.firstlayer.values)]
-    # FIXME: placeholder
-    ret['showerlength'] = [1]
-    ret['seetot'] = [1]
-    ret['seemax'] = [1]
-    ret['spptot'] = [1]
-    ret['sppmax'] = [1]
-    ret['szz'] = [1]
-    ret['emaxe'] = [1]
-    ret['id'] = [1]
-    ret['n010'] = len(components[components.pt > 0.1])
-    ret['n025'] = len(components[components.pt > 0.25])
-
-    return ret
 
 
 def buildTriggerTowerCluster(allTowers, seedTower, debug):
@@ -264,110 +211,6 @@ def computeClusterRodSharing(cl2ds, tcs):
         cl2ds.set_value(index, 'rod_bin_shares', shares)
 
 
-def plot3DClusterMatch(genParticles,
-                       trigger3DClusters,
-                       triggerClusters,
-                       triggerCells,
-                       histoGen,
-                       histoGenMatched,
-                       histoTCMatch,
-                       histoClMatch,
-                       histo3DClMatch,
-                       histoReso,
-                       histoResoCone,
-                       histoReso2D,
-                       algoname,
-                       debug):
-
-    best_match_indexes = {}
-    if not trigger3DClusters.empty:
-        best_match_indexes, allmatches = utils.match_etaphi(genParticles[['eta', 'phi']],
-                                                            trigger3DClusters[['eta', 'phi']],
-                                                            trigger3DClusters['pt'],
-                                                            deltaR=0.1)
-    # print ('------ best match: ')
-    # print (best_match_indexes)
-    # print ('------ all matches:')
-    # print (allmatches)
-
-    # allmatched2Dclusters = list()
-    # matchedClustersAll = pd.DataFrame()
-    if histoGen is not None:
-        histoGen.fill(genParticles)
-
-    for idx, genParticle in genParticles.iterrows():
-        if idx in best_match_indexes.keys():
-            # print ('-----------------------')
-            #  print(genParticle)
-            matched3DCluster = trigger3DClusters.loc[[best_match_indexes[idx]]]
-            # print (matched3DCluster)
-            # allMatches = trigger3DClusters.iloc[allmatches[idx]]
-            # print ('--')
-            # print (allMatches)
-            # print (matched3DCluster.clusters.item())
-            # print (type(matched3DCluster.clusters.item()))
-            # matchedClusters = triggerClusters[ [x in matched3DCluster.clusters.item() for x in triggerClusters.id]]
-            matchedClusters = triggerClusters[triggerClusters.id.isin(matched3DCluster.clusters.item())]
-            # print (matchedClusters)
-            matchedTriggerCells = triggerCells[triggerCells.id.isin(np.concatenate(matchedClusters.cells.values))]
-            # allmatched2Dclusters. append(matchedClusters)
-
-            if 'energyCentral' not in matched3DCluster.columns:
-                calib_factor = 1.084
-                matched3DCluster['energyCentral'] = [matchedClusters[(matchedClusters.layer > 9) & (matchedClusters.layer < 21)].energy.sum()*calib_factor]
-
-            iso_df = computeIsolation(trigger3DClusters, idx_best_match=best_match_indexes[idx], idx_incone=allmatches[idx], dr=0.2)
-            matched3DCluster['iso0p2'] = iso_df.energy
-            matched3DCluster['isoRel0p2'] = iso_df.pt/matched3DCluster.pt
-
-            # fill the plots
-            histoTCMatch.fill(matchedTriggerCells)
-            histoClMatch.fill(matchedClusters)
-            histo3DClMatch.fill(matched3DCluster)
-            histoReso2D.fill(reference=genParticle, target=matchedClusters)
-            histoReso.fill(reference=genParticle, target=matched3DCluster.iloc[0])
-
-            # now we fill the reso plot for all the clusters in the cone
-            clustersInCone = sumClustersInCone(trigger3DClusters, allmatches[idx])
-
-            # print ('----- in cone sum:')
-            # print (clustersInCone)
-            histoResoCone.fill(reference=genParticle, target=clustersInCone.iloc[0])
-            if histoGenMatched is not None:
-                histoGenMatched.fill(genParticles.loc[[idx]])
-
-            if debug >= 4:
-                print ('--- Dump match for algo {} ---------------'.format(algoname))
-                print ('GEN particle: idx: {}'.format(idx))
-                print (genParticle)
-                print ('Matched to 3D cluster:')
-                print (matched3DCluster)
-                print ('Matched 2D clusters:')
-                print (matchedClusters)
-                print ('matched cells:')
-                print (matchedTriggerCells)
-
-                print ('3D cluster energy: {}'.format(matched3DCluster.energy.sum()))
-                print ('3D cluster pt: {}'.format(matched3DCluster.pt.sum()))
-                calib_factor = 1.084
-                print ('sum 2D cluster energy: {}'.format(matchedClusters.energy.sum()*calib_factor))
-                # print ('sum 2D cluster pt: {}'.format(matchedClusters.pt.sum()*calib_factor))
-                print ('sum TC energy: {}'.format(matchedTriggerCells.energy.sum()))
-                print ('Sum of matched clusters in cone:')
-                print (clustersInCone)
-        else:
-            if debug >= 5:
-                print ('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx))
-                if debug >= 2:
-                    print (genParticle)
-                    print (trigger3DClusters)
-
-    # if len(allmatched2Dclusters) != 0:
-    #     matchedClustersAll = pd.concat(allmatched2Dclusters)
-    # return matchedClustersAll
-
-
-
 def get_calibrated_clusters(calib_factors, input_3Dclusters):
     calibrated_clusters = input_3Dclusters.copy(deep=True)
     def apply_calibration(cluster):
@@ -402,15 +245,7 @@ def build3DClusters(name, algorithm, triggerClusters, pool, debug):
                   toPrint=trigger3DClusters.iloc[:3])
     return trigger3DClusters
 
-
-class PID:
-    electron = 11
-    photon = 22
-    pizero = 111
-    pion = 211
-    kzero = 130
-
-
+# FIXME: soon obsolete
 class Particle:
     def __init__(self,
                  name,
@@ -419,103 +254,6 @@ class Particle:
         self.name = name
         self.pdgid = pdgid
         self.sel = selection
-
-
-class TPSet:
-    def __init__(self,
-                 name,
-                 tc_sel=None,
-                 cl2D_sel=None,
-                 cl3D_sel=None,
-                 particles=None):
-        self.name = name
-        # selection on the TPs
-        self.tc_sel = tc_sel
-        self.cl2D_sel = cl2D_sel
-        self.cl3D_sel = cl3D_sel
-        # particles for the matching
-        self.particles = particles
-        # histogram sets
-        self.h_tpset = {}
-        self.h_resoset = {}
-        self.h_effset = {}
-        self.rate_selections = {}
-        self.h_rate = {}
-
-    def book_histos(self):
-        for particle in self.particles:
-            histo_name = '{}_{}'.format(self.name, particle.name)
-            # we book the histos for TCs, 2Dcl and 3Dcl
-            self.h_tpset[particle.name] = histos.HistoSetClusters(histo_name)
-            if particle.name != 'nomatch' and particle.pdgid != 0:
-                # we also book the resolution plots
-                self.h_resoset[particle.name] = histos.HistoSetReso(histo_name)
-                self.h_effset[particle.name] = histos.HistoSetEff(histo_name)
-
-    def book_rate_histos(self, selections):
-        self.rate_selections = selections
-        for name, selection in self.rate_selections.iteritems():
-            self.h_rate[name] = histos.RateHistos(name='{}_{}'.format(self.name, name))
-
-    def fill_histos(self, all_tcs, all_cl2Ds, all_cl3Ds, all_genParticles, debug):
-        tcs = all_tcs
-        cl2Ds = all_cl2Ds
-        cl3Ds = all_cl3Ds
-        if self.tc_sel:
-            tcs = all_tcs.query(self.tc_sel)
-        if self.cl2D_sel:
-            cl2Ds = all_cl2Ds.query(self.cl2D_sel)
-        if self.cl3D_sel:
-            # print 'APPLY 3D cl SELECTION: {}'.format(self.cl3D_sel)
-            cl3Ds = all_cl3Ds.query(self.cl3D_sel)
-        debugPrintOut(debug, '{}_{}'.format(self.name, 'TCs'), tcs, tcs[:3])
-        debugPrintOut(debug, '{}_{}'.format(self.name, 'CL2D'), cl2Ds, cl2Ds[:3])
-        debugPrintOut(debug, '{}_{}'.format(self.name, 'CL3D'), cl3Ds, cl3Ds[:3])
-
-        for particle in self.particles:
-            if particle.pdgid == 0:
-                # we just fill without any matching
-                self.h_tpset[particle.name].fill(tcs, cl2Ds, cl3Ds)
-            else:
-                genReference = all_genParticles[(all_genParticles.gen > 0) & (np.abs(all_genParticles.pid) == particle.pdgid)]
-                # FIXME: eta range selection was 1.7 2.8
-                if particle.sel:
-                    genReference = genReference.query(particle.sel)
-                    # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
-                    # elif  particle.pdgid == PID.pizero:
-                    #     genReference = genParts[(genParts.pid == particle.pdgid)]
-                hsetMatchAlgoPart = self.h_tpset[particle.name]
-                hsetResoAlgoPart = self.h_resoset[particle.name]
-                hgenseleff = self.h_effset[particle.name]
-                plot3DClusterMatch(genReference,
-                                   cl3Ds,
-                                   cl2Ds,
-                                   tcs,
-                                   hgenseleff.h_den,
-                                   hgenseleff.h_num,
-                                   hsetMatchAlgoPart.htc,
-                                   hsetMatchAlgoPart.hcl2d,
-                                   hsetMatchAlgoPart.hcl3d,
-                                   hsetResoAlgoPart.hreso,
-                                   hsetResoAlgoPart.hresoCone,
-                                   hsetResoAlgoPart.hreso2D,
-                                   self.name,
-                                   debug)
-
-        for name, h_rate in self.h_rate.iteritems():
-            selection = self.rate_selections[name]
-            sel_clusters = cl3Ds.query(selection)
-            # print '--- ALL: ------------------'
-            # print cl3Ds
-            # print '--- SEL {}: {} ------------'.format(name, selection)
-            # print sel_clusters
-            trigger_clusters = sel_clusters[['pt', 'eta']].sort_values(by='pt', ascending=False)
-            # print '--- SORTED ----------------'
-            # print trigger_clusters
-            if not trigger_clusters.empty:
-                h_rate.fill(trigger_clusters.iloc[0].pt, trigger_clusters.iloc[0].eta)
-            h_rate.fill_norm()
-
 
 def analyze(params, batch_idx=0):
     print (params)
@@ -610,160 +348,51 @@ def analyze(params, batch_idx=0):
 # for index, tc_geom in tc_geom_df.iterrows():
 #     tc_geom.max_dist_neigh = np.max(tc_geom.neighbor_distance)
 
+    # ---------------------------------------------------
+    # TP sets
+    tp_def = plotters.TPSet('DEF', 'NNDR')
+    tp_def_calib = plotters.TPSet('DEFCalib', 'NNDR + calib. v1')
+    gen_set = plotters.GenSet('GEN', '')
+
+    # instantiate all the plotters
+    plotter_collection = []
+
+    tp_selectors = [plotters.TPGenSelector(tp_def, selections.tp_id_selections),
+                    plotters.TPGenSelector(tp_def_calib, selections.tp_id_selections)]
+    plotter_collection.extend([plotters.TpPlotter(select) for select in tp_selectors])
+
+    tp_rate_selectors = [plotters.TPGenSelector(tp_def, selections.tp_rate_selections),
+                         plotters.TPGenSelector(tp_def_calib, selections.tp_rate_selections)]
+    plotter_collection.extend([plotters.RatePlotter(select) for select in tp_rate_selectors])
+
+    tp_match_selectors = [plotters.TPGenSelector(tp_def, selections.tp_match_selections,
+                                                 gen_set, selections.gen_ee_selections),
+                          plotters.TPGenSelector(tp_def_calib, selections.tp_match_selections,
+                                                 gen_set, selections.gen_ee_selections)]
+    plotter_collection.extend([plotters.GenMatchPlotter(select) for select in tp_match_selectors])
+
+    # FIXME: this should be removed migrating everythng to the new plotters
     particles = [Particle('nomatch', 0),
-                 Particle('ele', PID.electron, 'reachedEE == 2'),
-                 Particle('elePt20', PID.electron, '(reachedEE == 2) & (pt > 20)'),
-                 Particle('elePt30', PID.electron, '(reachedEE == 2) & (pt > 30)'),
-                 Particle('elePt40', PID.electron, '(reachedEE == 2) & (pt > 40)'),
-                 Particle('eleA', PID.electron, '(abseta <= 1.52) & (reachedEE == 2)'),
-                 Particle('eleB', PID.electron, '(1.52 < abseta <= 1.7) & (reachedEE == 2)'),
-                 Particle('eleC', PID.electron, '(1.7 < abseta <= 2.4) & (reachedEE == 2)'),
-                 Particle('eleD', PID.electron, '(2.4 < abseta <= 2.8) & (reachedEE == 2)'),
-                 Particle('eleE', PID.electron, '(abseta > 2.8) & (reachedEE == 2)'),
-                 Particle('eleAB', PID.electron, '(abseta <= 1.7) & (reachedEE == 2)'),
-                 Particle('eleABC', PID.electron, '(abseta <= 2.4) & (reachedEE == 2)'),
-                 Particle('eleBC', PID.electron, '(1.52 < abseta <= 2.4) & (reachedEE == 2)'),
-                 Particle('eleBCD', PID.electron, '(1.52 < abseta <= 2.8) & (reachedEE == 2)'),
-                 Particle('eleBCDE', PID.electron, '(abseta > 1.52) & (reachedEE == 2)'),
-                 Particle('photon', PID.photon, '(reachedEE == 2)'),
-                 Particle('photonA', PID.photon, '(1.4 < abseta < 1.7) & (reachedEE == 2)'),
-                 Particle('photonB', PID.photon, '(1.7 <= abseta <= 2.8) & (reachedEE == 2)'),
-                 Particle('photonC', PID.photon, '(abseta > 2.8) & (reachedEE == 2)'),
-                 Particle('photonD', PID.photon, '(abseta < 2.4) & (reachedEE == 2)'),
-                 Particle('pion', PID.pion)]
-
-    tp_sets = []
-    tps_DEF = TPSet('DEF',
-                    particles=particles)
-
-    tps_DEFem = TPSet('DEF_em',
-                      particles=particles,
-                      cl3D_sel='quality > 0')
-
-    tps_DEFemL = TPSet('DEF_emL',
-                      particles=particles,
-                      cl3D_sel='bdt_out > 0')
-
-
-    tps_DEFem_calib = TPSet('DEF_em_calib',
-                            particles=particles,
-                            cl3D_sel='quality > 0')
-
-    tps_DEFemL_calib = TPSet('DEF_emL_calib',
-                            particles=particles,
-                            cl3D_sel='bdt_out > 0')
-
-
-
-    tps_DEF_pt10 = TPSet('DEF_pt10',
-                         particles=particles,
-                         cl3D_sel='pt > 10')
-
-    tps_DEF_pt10_em = TPSet('DEF_pt10_em',
-                            particles=particles,
-                            cl3D_sel='(quality > 0) & (pt > 10)')
-
-    tps_DEF_pt10_emL = TPSet('DEF_pt10_emL',
-                            particles=particles,
-                            cl3D_sel='(bdt_out > 0) & (pt > 10)')
-
-    tps_DEF_pt10_em_calib = TPSet('DEF_pt10_em_calib',
-                            particles=particles,
-                            cl3D_sel='(quality > 0) & (pt > 10)')
-
-    tps_DEF_pt10_emL_calib = TPSet('DEF_pt10_emL_calib',
-                            particles=particles,
-                            cl3D_sel='(bdt_out > 0) & (pt > 10)')
-
-
-    tps_DEF_pt20 = TPSet('DEF_pt20',
-                         particles=particles,
-                         cl3D_sel='pt > 20')
-
-    tps_DEF_pt20_em = TPSet('DEF_pt20_em',
-                            particles=particles,
-                            cl3D_sel='(quality > 0) & (pt > 20)')
-
-    tps_DEF_pt20_emL = TPSet('DEF_pt20_emL',
-                            particles=particles,
-                            cl3D_sel='(bdt_out > 0) & (pt > 20)')
-
-
-    tps_DEF_pt20_em_calib = TPSet('DEF_pt20_em_calib',
-                            particles=particles,
-                            cl3D_sel='(quality > 0) & (pt > 20)')
-
-    tps_DEF_pt20_emL_calib = TPSet('DEF_pt20_emL_calib',
-                            particles=particles,
-                            cl3D_sel='(bdt_out > 0) & (pt > 20)')
-
-    tps_DEF_pt25 = TPSet('DEF_pt25',
-                         particles=particles,
-                         cl3D_sel='pt > 25')
-
-    tps_DEF_pt25_em = TPSet('DEF_pt25_em',
-                            particles=particles,
-                            cl3D_sel='(quality > 0) & (pt > 25)')
-
-    tps_DEF_pt25_emL = TPSet('DEF_pt25_emL',
-                            particles=particles,
-                            cl3D_sel='(bdt_out > 0) & (pt > 25)')
-
-    tps_DEF_pt25_em_calib = TPSet('DEF_pt25_em_calib',
-                            particles=particles,
-                            cl3D_sel='(quality > 0) & (pt > 25)')
-
-    tps_DEF_pt25_emL_calib = TPSet('DEF_pt25_emL_calib',
-                            particles=particles,
-                            cl3D_sel='(bdt_out > 0) & (pt > 25)')
-
-
-    tps_DEF_pt30 = TPSet('DEF_pt30',
-                         particles=particles,
-                         cl3D_sel='pt > 30')
-
-    tps_DEF_pt30_em = TPSet('DEF_pt30_em',
-                            particles=particles,
-                            cl3D_sel='(quality > 0) & (pt > 30)')
-
-    tps_DEF_pt30_em_calib = TPSet('DEF_pt30_em_calib',
-                            particles=particles,
-                            cl3D_sel='(quality > 0) & (pt > 30)')
-
-    tps_DEF_pt30_emL = TPSet('DEF_pt30_emL',
-                            particles=particles,
-                            cl3D_sel='(bdt_out > 0) & (pt > 30)')
-
-    tps_DEF_pt30_emL_calib = TPSet('DEF_pt30_emL_calib',
-                            particles=particles,
-                            cl3D_sel='(bdt_out > 0) & (pt > 30)')
-
-    tp_sets.append(tps_DEF)
-    tp_sets.append(tps_DEFem)
-    tp_sets.append(tps_DEFem_calib)
-    tp_sets.append(tps_DEFemL)
-    tp_sets.append(tps_DEFemL_calib)
-    tp_sets.append(tps_DEF_pt10)
-    tp_sets.append(tps_DEF_pt20)
-    tp_sets.append(tps_DEF_pt25)
-    tp_sets.append(tps_DEF_pt30)
-    tp_sets.append(tps_DEF_pt10_em)
-    tp_sets.append(tps_DEF_pt20_em)
-    tp_sets.append(tps_DEF_pt25_em)
-    tp_sets.append(tps_DEF_pt30_em)
-    tp_sets.append(tps_DEF_pt10_em_calib)
-    tp_sets.append(tps_DEF_pt20_em_calib)
-    tp_sets.append(tps_DEF_pt25_em_calib)
-    tp_sets.append(tps_DEF_pt30_em_calib)
-    tp_sets.append(tps_DEF_pt10_emL)
-    tp_sets.append(tps_DEF_pt20_emL)
-    tp_sets.append(tps_DEF_pt25_emL)
-    tp_sets.append(tps_DEF_pt30_emL)
-    tp_sets.append(tps_DEF_pt10_emL_calib)
-    tp_sets.append(tps_DEF_pt20_emL_calib)
-    tp_sets.append(tps_DEF_pt25_emL_calib)
-    tp_sets.append(tps_DEF_pt30_emL_calib)
-
+                 Particle('ele', plotters.PID.electron, 'reachedEE == 2'),
+                 Particle('elePt20', plotters.PID.electron, '(reachedEE == 2) & (pt > 20)'),
+                 Particle('elePt30', plotters.PID.electron, '(reachedEE == 2) & (pt > 30)'),
+                 Particle('elePt40', plotters.PID.electron, '(reachedEE == 2) & (pt > 40)'),
+                 Particle('eleA', plotters.PID.electron, '(abseta <= 1.52) & (reachedEE == 2)'),
+                 Particle('eleB', plotters.PID.electron, '(1.52 < abseta <= 1.7) & (reachedEE == 2)'),
+                 Particle('eleC', plotters.PID.electron, '(1.7 < abseta <= 2.4) & (reachedEE == 2)'),
+                 Particle('eleD', plotters.PID.electron, '(2.4 < abseta <= 2.8) & (reachedEE == 2)'),
+                 Particle('eleE', plotters.PID.electron, '(abseta > 2.8) & (reachedEE == 2)'),
+                 Particle('eleAB', plotters.PID.electron, '(abseta <= 1.7) & (reachedEE == 2)'),
+                 Particle('eleABC', plotters.PID.electron, '(abseta <= 2.4) & (reachedEE == 2)'),
+                 Particle('eleBC', plotters.PID.electron, '(1.52 < abseta <= 2.4) & (reachedEE == 2)'),
+                 Particle('eleBCD', plotters.PID.electron, '(1.52 < abseta <= 2.8) & (reachedEE == 2)'),
+                 Particle('eleBCDE', plotters.PID.electron, '(abseta > 1.52) & (reachedEE == 2)'),
+                 Particle('photon', plotters.PID.photon, '(reachedEE == 2)'),
+                 Particle('photonA', plotters.PID.photon, '(1.4 < abseta < 1.7) & (reachedEE == 2)'),
+                 Particle('photonB', plotters.PID.photon, '(1.7 <= abseta <= 2.8) & (reachedEE == 2)'),
+                 Particle('photonC', plotters.PID.photon, '(abseta > 2.8) & (reachedEE == 2)'),
+                 Particle('photonD', plotters.PID.photon, '(abseta < 2.4) & (reachedEE == 2)'),
+                 Particle('pion', plotters.PID.pion)]
     # -------------------------------------------------------
     # book histos
     hgen = histos.GenPartHistos('h_genAll')
@@ -778,24 +407,10 @@ def analyze(params, batch_idx=0):
 
     # hdigis = histos.DigiHistos('h_hgcDigisAll')
 
-    for tp_set in tp_sets:
-        tp_set.book_histos()
+    for plotter in plotter_collection:
+        plotter.book_histos()
 
-    rate_selections = {'all': 'pt >= 0',
-                       'etaA': 'abs(eta) <= 1.52',
-                       'etaB': '(1.52 < abs(eta) <= 1.7)',
-                       'etaC': '(1.7 < abs(eta) <= 2.4)',
-                       'etaD': '(2.4 < abs(eta) <= 2.8)',
-                       'etaE': '(abs(eta) > 2.8)',
-                       'etaAB': 'abs(eta) <= 1.7',
-                       'etaABC': 'abs(eta) <= 2.4',
-                       'etaBC': '(1.52 < abs(eta) <= 2.4)',
-                       'etaBCD': '(1.52 < abs(eta) <= 2.8)',
-                       'etaBCDE': '(1.52 < abs(eta))'}
 
-    tps_DEF.book_rate_histos(rate_selections)
-    tps_DEFem.book_rate_histos(rate_selections)
-    tps_DEFem_calib.book_rate_histos(rate_selections)
 
     hTT_all = histos.TriggerTowerHistos('h_TT_all')
     # TT_algos = ['TTMATCH']
@@ -1008,7 +623,7 @@ def analyze(params, batch_idx=0):
 
         # we find the genparticles matched to the GEN info
         for particle in particles:
-            # if particle.pdgid != PID.pizero:
+            # if particle.pdgid != plotters.PID.pizero:
             # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
             hGenParts[particle].fill(genParticles[(genParticles.gen > 0) & (np.abs(genParticles.pid) == particle.pdgid)])
             # else:
@@ -1016,33 +631,12 @@ def analyze(params, batch_idx=0):
 
         # hdigis.fill(hgcDigis)
 
-        tps_DEF.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
-        tps_DEFem.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
-        tps_DEFem_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
-        tps_DEFemL.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
-        tps_DEFemL_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
+        tp_def.set_collections(triggerCells, triggerClusters, trigger3DClusters)
+        tp_def_calib.set_collections(triggerCells, triggerClusters, trigger3DClustersCalib)
+        gen_set.set_collections(genParticles)
 
-        tps_DEF_pt10.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
-        tps_DEF_pt20.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
-        tps_DEF_pt25.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
-        tps_DEF_pt30.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
-        tps_DEF_pt10_em.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
-        tps_DEF_pt20_em.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
-        tps_DEF_pt25_em.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
-        tps_DEF_pt30_em.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
-        tps_DEF_pt10_em_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
-        tps_DEF_pt20_em_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
-        tps_DEF_pt25_em_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
-        tps_DEF_pt30_em_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
-        tps_DEF_pt10_emL.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
-        tps_DEF_pt20_emL.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
-        tps_DEF_pt25_emL.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
-        tps_DEF_pt30_emL.fill_histos(triggerCells, triggerClusters, trigger3DClusters, genParticles, debug)
-        tps_DEF_pt10_emL_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
-        tps_DEF_pt20_emL_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
-        tps_DEF_pt25_emL_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
-        tps_DEF_pt30_emL_calib.fill_histos(triggerCells, triggerClusters, trigger3DClustersCalib, genParticles, debug)
-
+        for plotter in plotter_collection:
+            plotter.fill_histos(debug=debug)
 
         hTT_all.fill(triggerTowers)
 
@@ -1051,10 +645,10 @@ def analyze(params, batch_idx=0):
             for particle in particles:
                 genReference = genParticles[(genParticles.gen > 0) & (np.abs(genParticles.pid) == particle.pdgid) & (np.abs(genParticles.eta) < 2.8) & (np.abs(genParticles.eta) > 1.7)]
                 # for the photons we add a further selection
-                if particle.pdgid == PID.photon:
-                    genReference = genParticles[(genParticles.gen > 0) & (genParticles.pid == PID.photon) & (genParticles.reachedEE == 2) & (np.abs(genParticles.eta) < 2.8) & (np.abs(genParticles.eta) > 1.7)]
+                if particle.pdgid == plotters.PID.photon:
+                    genReference = genParticles[(genParticles.gen > 0) & (genParticles.pid == plotters.PID.photon) & (genParticles.reachedEE == 2) & (np.abs(genParticles.eta) < 2.8) & (np.abs(genParticles.eta) > 1.7)]
                 # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
-                # elif  particle.pdgid == PID.pizero:
+                # elif  particle.pdgid == plotters.PID.pizero:
                 #     genReference = genParts[(genParts.pid == particle.pdgid)]
                 plotTriggerTowerMatch(genReference,
                                       None,
