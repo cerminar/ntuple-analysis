@@ -1,7 +1,7 @@
 executable            = run_batch.sh
 arguments             = $(ClusterID) $(JOB_ID)
-output                = logs/job.$(ClusterId).$(ProcId).out
-error                 = logs/job.$(ClusterId).$(ProcId).err
+output                = logs/job_$(JOB_ID).$(ClusterId).$(ProcId).out
+error                 = logs/job_$(JOB_ID).$(ClusterId).$(ProcId).err
 log                   = logs/condor.$(ClusterId).log
 +JobFlavour           = "workday"
 
