@@ -156,10 +156,10 @@ class TCHistos(BaseHistos):
             self.h_wafertype = ROOT.TH1F(name+'_wafertype', 'Wafer type', 10, 0, 10)
             self.h_layerVenergy = ROOT.TH2F(name+'_layerVenergy', "Energy (GeV) vs Layer #", 60, 0, 60, 100, 0, 2)
             self.h_energyVeta = ROOT.TH2F(name+'_energyVeta', "Energy (GeV) vs Eta", 100, -3.5, 3.5, 100, 0, 2)
-            self.h_energyVetaL1t5 = ROOT.TH2F(name+'_energyVetaL1t5', "Energy (GeV) vs Eta (layers 1 to 5)", 100, -3.5, 3.5, 100, 0, 2)
-            self.h_energyVetaL6t10 = ROOT.TH2F(name+'_energyVetaL6t10', "Energy (GeV) vs Eta (layers 6 to 10)", 100, -3.5, 3.5, 100, 0, 2)
-            self.h_energyVetaL11t20 = ROOT.TH2F(name+'_energyVetaL11t20', "Energy (GeV) vs Eta (layers 11 to 20)", 100, -3.5, 3.5, 100, 0, 2)
-            self.h_energyVetaL21t60 = ROOT.TH2F(name+'_energyVetaL21t60', "Energy (GeV) vs Eta (layers 21 to 60)", 100, -3.5, 3.5, 100, 0, 2)
+            # self.h_energyVetaL1t5 = ROOT.TH2F(name+'_energyVetaL1t5', "Energy (GeV) vs Eta (layers 1 to 5)", 100, -3.5, 3.5, 100, 0, 2)
+            # self.h_energyVetaL6t10 = ROOT.TH2F(name+'_energyVetaL6t10', "Energy (GeV) vs Eta (layers 6 to 10)", 100, -3.5, 3.5, 100, 0, 2)
+            # self.h_energyVetaL11t20 = ROOT.TH2F(name+'_energyVetaL11t20', "Energy (GeV) vs Eta (layers 11 to 20)", 100, -3.5, 3.5, 100, 0, 2)
+            # self.h_energyVetaL21t60 = ROOT.TH2F(name+'_energyVetaL21t60', "Energy (GeV) vs Eta (layers 21 to 60)", 100, -3.5, 3.5, 100, 0, 2)
             self.h_energyPetaVphi = ROOT.TProfile2D(name+'_energyPetaVphi', "Energy profile (GeV) vs Eta and Phi", 100, -3.5, 3.5, 100, -3.2, 3.2)
 
         BaseHistos.__init__(self, name, root_file)
@@ -178,10 +178,10 @@ class TCHistos(BaseHistos):
         rnp.fill_hist(self.h_layerVenergy, tcs[['layer', 'energy']])
         rnp.fill_hist(self.h_energyVeta, tcs[['eta', 'energy']])
         rnp.fill_hist(self.h_energyVeta, tcs[['eta', 'energy']])
-        rnp.fill_hist(self.h_energyVetaL1t5, tcs[(tcs.layer >= 1) & (tcs.layer <= 5)][['eta', 'energy']])
-        rnp.fill_hist(self.h_energyVetaL6t10, tcs[(tcs.layer >= 6) & (tcs.layer <= 10)][['eta', 'energy']])
-        rnp.fill_hist(self.h_energyVetaL11t20, tcs[(tcs.layer >= 11) & (tcs.layer <= 20)][['eta', 'energy']])
-        rnp.fill_hist(self.h_energyVetaL21t60, tcs[(tcs.layer >= 21) & (tcs.layer <= 60)][['eta', 'energy']])
+        # rnp.fill_hist(self.h_energyVetaL1t5, tcs[(tcs.layer >= 1) & (tcs.layer <= 5)][['eta', 'energy']])
+        # rnp.fill_hist(self.h_energyVetaL6t10, tcs[(tcs.layer >= 6) & (tcs.layer <= 10)][['eta', 'energy']])
+        # rnp.fill_hist(self.h_energyVetaL11t20, tcs[(tcs.layer >= 11) & (tcs.layer <= 20)][['eta', 'energy']])
+        # rnp.fill_hist(self.h_energyVetaL21t60, tcs[(tcs.layer >= 21) & (tcs.layer <= 60)][['eta', 'energy']])
         rnp.fill_profile(self.h_energyPetaVphi, tcs[['eta', 'phi', 'energy']])
 
 
@@ -191,11 +191,11 @@ class ClusterHistos(BaseHistos):
             self.h_energy = ROOT.TH1F(name+'_energy', 'Cluster energy (GeV); E [GeV];', 100, 0, 30)
             self.h_layer = ROOT.TH1F(name+'_layer', 'Cluster layer #; layer #;', 60, 0, 60)
             self.h_ncells = ROOT.TH1F(name+'_ncells', 'Cluster # cells; # TC components;', 30, 0, 30)
-            self.h_nCoreCells = ROOT.TH1F(name+'_nCoreCells', 'Cluster # cells (core)', 30, 0, 30)
+            # self.h_nCoreCells = ROOT.TH1F(name+'_nCoreCells', 'Cluster # cells (core)', 30, 0, 30)
 
             self.h_layerVenergy = ROOT.TH2F(name+'_layerVenergy', "Cluster Energy (GeV) vs Layer #; layer; E [GeV];", 50, 0, 50, 100, 0, 20)
             self.h_layerVncells = ROOT.TH2F(name+'_layerVncells', "Cluster #cells vs Layer #; layer; # TC components;",  50, 0, 50, 30, 0, 30)
-            self.h_layerVnCoreCells = ROOT.TH2F(name+'_layerVnCoreCells', "Cluster #cells vs Layer #",  50, 0, 50, 30, 0, 30)
+            # self.h_layerVnCoreCells = ROOT.TH2F(name+'_layerVnCoreCells', "Cluster #cells vs Layer #",  50, 0, 50, 30, 0, 30)
 
         BaseHistos.__init__(self, name, root_file)
 
@@ -205,9 +205,9 @@ class ClusterHistos(BaseHistos):
         rnp.fill_hist(self.h_ncells, clsts.ncells)
         rnp.fill_hist(self.h_layerVenergy, clsts[['layer', 'energy']])
         rnp.fill_hist(self.h_layerVncells, clsts[['layer', 'ncells']])
-        if 'nCoreCells' in clsts.columns:
-            rnp.fill_hist(self.h_nCoreCells, clsts.nCoreCells)
-            rnp.fill_hist(self.h_layerVnCoreCells, clsts[['layer', 'nCoreCells']])
+        # if 'nCoreCells' in clsts.columns:
+        #     rnp.fill_hist(self.h_nCoreCells, clsts.nCoreCells)
+        #     rnp.fill_hist(self.h_layerVnCoreCells, clsts[['layer', 'nCoreCells']])
 
 
 class Cluster3DHistos(BaseHistos):
@@ -264,7 +264,7 @@ class TriggerTowerHistos(BaseHistos):
             self.h_etEm = ROOT.TH1F(name+'_etEm', 'Tower Et EM (GeV)', 100, 0, 100)
             self.h_etHad = ROOT.TH1F(name+'_etHad', 'Tower Et Had (GeV)', 100, 0, 100)
             self.h_HoE = ROOT.TH1F(name+'_HoE', 'Tower H/E', 20, 0, 2)
-            self.h_HoEVpt = ROOT.TH2F(name+'_HoEVpt', 'Tower H/E vs Pt (GeV); H/E;', 100, 0, 100, 20, 0, 2)
+            self.h_HoEVpt = ROOT.TH2F(name+'_HoEVpt', 'Tower H/E vs Pt (GeV); H/E;', 50, 0, 100, 20, 0, 2)
             self.h_energy = ROOT.TH1F(name+'_energy', 'Tower energy (GeV)', 1000, 0, 1000)
             self.h_eta = ROOT.TH1F(name+'_eta', 'Tower eta; #eta;', 75, -3.169, 3.169)
             self.h_ptVeta = ROOT.TH2F(name+'_ptVeta', 'Tower P_P{T} (GeV) vs #eta; #eta; p_{T} [GeV];',  75, -3.169, 3.169, 100, 0, 100)
@@ -343,14 +343,13 @@ class ResoHistos(BaseHistos):
             self.h_ptRespVnclu = ROOT.TH2F(name+'_ptRespVnclu', '3D Cluster Pt resp. vs # clus.; # 2D clust. ; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
             self.h_ptRespVetaVptL1 = ROOT.TH3F(name+'_ptRespVetaVptL1', '3D Cluster Pt resp. vs #eta and vs pT; #eta^{L1}; p_{T}^{L1} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 30, 1, 4, 50, 0, 100, 100, 0, 3)
 
-            # FIXME: add corresponding Pt plots
-            self.h_coreEnergyResVnclu = ROOT.TH2F(name+'_coreEnergyResVnclu', '3D Cluster E reso (GeV) vs # clusters', 50, 0, 50, 200, -100, 100)
-            self.h_corePtResVnclu = ROOT.TH2F(name+'_corePtResVnclu', '3D Cluster Pt reso (GeV) vs # clusters', 50, 0, 50, 200, -40, 40)
+            # self.h_coreEnergyResVnclu = ROOT.TH2F(name+'_coreEnergyResVnclu', '3D Cluster E reso (GeV) vs # clusters', 50, 0, 50, 200, -100, 100)
+            # self.h_corePtResVnclu = ROOT.TH2F(name+'_corePtResVnclu', '3D Cluster Pt reso (GeV) vs # clusters', 50, 0, 50, 200, -40, 40)
+            #
+            # self.h_coreEnergyRes = ROOT.TH1F(name+'_coreEnergyRes', '3D Cluster Energy reso CORE (GeV)', 200, -100, 100)
+            # self.h_corePtRes = ROOT.TH1F(name+'_corePtRes', '3D Cluster Pt reso CORE (GeV)', 200, -40, 40)
 
-            self.h_coreEnergyRes = ROOT.TH1F(name+'_coreEnergyRes', '3D Cluster Energy reso CORE (GeV)', 200, -100, 100)
-            self.h_corePtRes = ROOT.TH1F(name+'_corePtRes', '3D Cluster Pt reso CORE (GeV)', 200, -40, 40)
-
-            self.h_centralEnergyRes = ROOT.TH1F(name+'_centralEnergyRes', '3D Cluster Energy reso CENTRAL (GeV)', 200, -100, 100)
+            # self.h_centralEnergyRes = ROOT.TH1F(name+'_centralEnergyRes', '3D Cluster Energy reso CENTRAL (GeV)', 200, -100, 100)
             self.h_etaRes = ROOT.TH1F(name+'_etaRes', '3D Cluster eta reso', 100, -0.4, 0.4)
             self.h_phiRes = ROOT.TH1F(name+'_phiRes', '3D Cluster phi reso', 100, -0.4, 0.4)
             self.h_drRes = ROOT.TH1F(name+'_drRes', '3D Cluster DR reso', 100, 0, 0.4)
@@ -374,15 +373,15 @@ class ResoHistos(BaseHistos):
         self.h_ptRespVnclu.Fill(target.nclu, target.pt/reference.pt)
         self.h_ptRespVetaVptL1.Fill(abs(target.eta), target.pt, target.pt/reference.pt)
 
-        if 'energyCore' in target:
-            self.h_coreEnergyRes.Fill(target.energyCore - reference.energy)
-            self.h_corePtRes.Fill(target.ptCore - reference.pt)
+        # if 'energyCore' in target:
+        #     self.h_coreEnergyRes.Fill(target.energyCore - reference.energy)
+        #     self.h_corePtRes.Fill(target.ptCore - reference.pt)
+        #
+        #     self.h_coreEnergyResVnclu.Fill(target.nclu, target.energyCore - reference.energy)
+        #     self.h_corePtResVnclu.Fill(target.nclu, target.ptCore - reference.pt)
 
-            self.h_coreEnergyResVnclu.Fill(target.nclu, target.energyCore - reference.energy)
-            self.h_corePtResVnclu.Fill(target.nclu, target.ptCore - reference.pt)
-
-        if 'energyCentral' in target:
-            self.h_centralEnergyRes.Fill(target.energyCentral - reference.energy)
+        # if 'energyCentral' in target:
+        #     self.h_centralEnergyRes.Fill(target.energyCentral - reference.energy)
         self.h_etaRes.Fill(target.eta - reference.eta)
         self.h_phiRes.Fill(target.phi - reference.phi)
         self.h_drRes.Fill(np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
@@ -523,3 +522,30 @@ class HistoSetEff():
         # print "Computing eff"
         if self.h_eff is None:
             self.h_eff = HistoEff(passed=self.h_num, total=self.h_den, debug=False)
+
+
+
+# if __name__ == "__main__":
+#     import sys
+#     def createHisto(Class):
+#         return Class(name='pippo_{}'.format(Class))
+#
+#     @profile
+#     def createAll():
+#         histos = []
+#         histos.append(createHisto(Reso2DHistos))
+#         # print sys.getsizeof(createHisto(Reso2DHistos))
+#         histos.append(createHisto(GenParticleHistos))
+#         histos.append(createHisto(RateHistos))
+#         histos.append(createHisto(TCHistos))
+#         histos.append(createHisto(ClusterHistos))
+#         createHisto(Cluster3DHistos)
+#         createHisto(TriggerTowerHistos)
+#         createHisto(TriggerTowerResoHistos)
+#         createHisto(ResoHistos)
+#
+#         return histos
+#
+#
+#
+#     createAll()
