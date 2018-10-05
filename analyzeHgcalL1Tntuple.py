@@ -168,21 +168,6 @@ def analyze(params, batch_idx=0):
 
             tc_geom_df = pd.merge(tc_geom_df, tc_rod_bins, on='id')
 
-        # print (tc_geom_df[:3])
-        # print (tc_geom_df[tc_geom_df.id == 1712072976])
-        # tc_geom_df['max_neigh_dist'] = 1
-        # a5 = tc_geom_df[tc_geom_df.neighbor_n == 5]
-        # a5['max_neigh_dist'] =  a5['neighbor_distance'].max()
-        # a6 = tc_geom_df[tc_geom_df.neighbor_n == 6]
-        # a6['max_neigh_dist'] =  a6['neighbor_distance'].max()
-
-        # for index, tc_geom in tc_geom_df.iterrows():
-        #     tc_geom.max_dist_neigh = np.max(tc_geom.neighbor_distance)
-
-        # print (tc_geom_df[:10])
-
-        # treeTriggerCells = inputFile.Get("hgcaltriggergeomtester/TreeTriggerCells")
-        # treeCells        = inputFile.Get("hgcaltriggergeomtester/TreeCells")
         if debug == -4:
             tc_geom_tree.PrintCacheStats()
         print ('...done')
