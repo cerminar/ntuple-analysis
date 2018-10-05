@@ -1,4 +1,4 @@
-from plotters import Selection,PID,add_selections
+from plotters import Selection, PID, add_selections
 # ---------------------------------------------------
 # TP selections
 tp_id_selections = [Selection('all', '', ''),
@@ -25,13 +25,15 @@ tp_eta_selections = [Selection('all', '', ''),
                      Selection('EtaBCD', '1.52 < |#eta^{L1}| <= 2.8', '1.52 < abs(eta) <= 2.8'),
                      Selection('EtaBCDE', '1.52 < |#eta^{L1}|', '1.52 < abs(eta)')]
 
+
 tp_rate_selections = add_selections(tp_id_selections, tp_eta_selections)
 
 tp_match_selections = add_selections(tp_id_selections, tp_pt_selections)
 
 gen_part_selections = [Selection('Ele', 'e', 'abs(pdgid) == {}'.format(PID.electron)),
-                       Selection('Phot', '#gamma', 'abs(pdgid) == {}'.format(PID.photon)),
-                       Selection('Pion', '#pi', 'abs(pdgid) == {}'.format(PID.pion))]
+                       # Selection('Phot', '#gamma', 'abs(pdgid) == {}'.format(PID.photon)),
+                       # Selection('Pion', '#pi', 'abs(pdgid) == {}'.format(PID.pion))
+                       ]
 
 gen_ee_selections = [Selection('', '', 'reachedEE == 2')]
 
@@ -57,12 +59,16 @@ gen_part_ee_sel = add_selections(gen_part_selections, gen_ee_selections)
 gen_part_ee_pt_sel = add_selections(gen_part_ee_sel, gen_pt_selections)
 gen_part_ee_eta_sel = add_selections(gen_part_ee_sel, gen_eta_selections)
 
-gen_ee_selections = []
-gen_ee_selections += gen_part_ee_sel
-gen_ee_selections += gen_part_ee_pt_sel
-gen_ee_selections += gen_part_ee_eta_sel
+gen_part_selections = []
+gen_part_selections += gen_part_ee_sel
+gen_part_selections += gen_part_ee_pt_sel
+gen_part_selections += gen_part_ee_eta_sel
+
+gen_part_sel_genplotting = [Selection('all')]
+gen_part_sel_genplotting += gen_part_ee_sel
+
 
 
 if __name__ == "__main__":
-    for sel in gen_ee_selections:
+    for sel in gen_part_selections:
         print sel

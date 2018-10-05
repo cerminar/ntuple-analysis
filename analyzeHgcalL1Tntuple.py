@@ -337,10 +337,11 @@ def analyze(params, batch_idx=0):
                                plotters.RatePlotter(tp_def_calib, selections.tp_rate_selections)])
     plotter_collection.extend([plotters.GenMatchPlotter(tp_def, gen_set,
                                                         selections.tp_match_selections,
-                                                        selections.gen_ee_selections),
+                                                        selections.gen_part_selections),
                                plotters.GenMatchPlotter(tp_def_calib, gen_set,
                                                         selections.tp_match_selections,
-                                                        selections.gen_ee_selections)])
+                                                        selections.gen_part_selections)])
+    plotter_collection.extend([plotters.GenPlotter(gen_set, selections.gen_part_sel_genplotting)])
 
     # FIXME: this should be removed migrating everythng to the new plotters
     particles = [Particle('nomatch', 0),
@@ -366,14 +367,6 @@ def analyze(params, batch_idx=0):
                  Particle('pion', plotters.PID.pion)]
     # -------------------------------------------------------
     # book histos
-    hgen = histos.GenPartHistos('h_genAll')
-
-    hGenParts = {}
-    for particle in particles:
-        hGenParts[particle] = histos.GenParticleHistos('h_genParts_{}'.format(particle.name))
-
-    # hdigis = histos.DigiHistos('h_hgcDigisAll')
-
     for plotter in plotter_collection:
         plotter.book_histos()
 
@@ -586,18 +579,7 @@ def analyze(params, batch_idx=0):
         #     print(triggerCells[triggerCells.index.isin(np.concatenate(triggerClusters.cells.iloc[:3]))])
 
         # fill histograms
-        hgen.fill(genParts)
-
-        # we find the genparticles matched to the GEN info
-        for particle in particles:
-            # if particle.pdgid != plotters.PID.pizero:
-            # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
-            hGenParts[particle].fill(genParticles[(genParticles.gen > 0) & (np.abs(genParticles.pid) == particle.pdgid)])
-            # else:
-            #     hGenParts[particle].fill(genParts[(genParts.pid == particle.pdgid)])
-
         # hdigis.fill(hgcDigis)
-
         tp_def.set_collections(triggerCells, triggerClusters, trigger3DClusters)
         tp_def_calib.set_collections(triggerCells, triggerClusters, trigger3DClustersCalib)
         gen_set.set_collections(genParticles)

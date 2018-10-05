@@ -122,6 +122,25 @@ class TPPlotter:
             self.h_tpset[tp_sel.name].fill(tcs, cl2Ds, cl3Ds)
 
 
+class GenPlotter:
+    def __init__(self, gen_set, gen_selections=[Selection('all')]):
+        self.gen_set = gen_set
+        self.gen_selections = gen_selections
+        self.h_gen = {}
+
+    def book_histos(self):
+        for selection in self.gen_selections:
+            self.h_gen[selection.name] = histos.GenParticleHistos(name='h_genParts_{}'.format(selection.name))
+
+    def fill_histos(self, debug=False):
+        gen_parts = self.gen_set.gen_df[self.gen_set.gen_df.gen > 0]
+        for gen_sel in self.gen_selections:
+            if gen_sel.name != 'all':
+                gen_parts = gen_parts.query(gen_sel.selection)
+            self.h_gen[gen_sel.name].fill(gen_parts)
+
+
+
 class GenMatchPlotter:
     def __init__(self, tp_set, gen_set,
                  tp_selections=[Selection('all')], gen_selections=[Selection('all')]):
