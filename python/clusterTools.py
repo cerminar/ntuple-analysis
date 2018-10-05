@@ -8,6 +8,33 @@ from sklearn.preprocessing import StandardScaler
 import math
 
 
+
+def buildTriggerTowerCluster(allTowers, seedTower, debug):
+    eta_seed = seedTower.eta.values[0]
+    iEta_seed = seedTower.iEta.values[0]
+    iPhi_seed = seedTower.iPhi.values[0]
+    clusterTowers = allTowers[(allTowers.eta*eta_seed > 0) &
+                              (allTowers.iEta <= (iEta_seed + 1)) &
+                              (allTowers.iEta >= (iEta_seed - 1)) &
+                              (allTowers.iPhi <= (iPhi_seed + 1)) &
+                              (allTowers.iPhi >= (iPhi_seed - 1))]
+    clusterTowers.loc[clusterTowers.index, 'logEnergy'] = np.log(clusterTowers.energy)
+    if debug >= 5:
+        print '---- SEED:'
+        print seedTower
+        print 'Cluster components:'
+        print clusterTowers
+    ret = pd.DataFrame(columns=['energy', 'eta', 'phi', 'pt'])
+    ret['energy'] = [clusterTowers.energy.sum()]
+    ret['logEnergy'] = np.log(ret.energy)
+    ret['eta'] = [np.sum(clusterTowers.eta*clusterTowers.energy)/ret.energy.values[0]]
+    ret['phi'] = [np.sum(clusterTowers.phi*clusterTowers.energy)/ret.energy.values[0]]
+    ret['etalw'] = [np.sum(clusterTowers.eta*clusterTowers.logEnergy)/np.sum(clusterTowers.logEnergy)]
+    ret['philw'] = [np.sum(clusterTowers.phi*clusterTowers.logEnergy)/np.sum(clusterTowers.logEnergy)]
+    ret['pt'] = [(ret.energy / np.cosh(ret.eta)).values[0]]
+    return ret
+
+
 def buildDBSCANClustersUnpack(arg):
     # print arg[2].loc[:10]
     return buildDBSCANClusters(sel_layer=arg[0], sel_zside=arg[1], tcs=arg[2])

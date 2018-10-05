@@ -22,16 +22,16 @@ import datetime
 import optparse
 import ConfigParser
 
-import l1THistos as histos
-import utils as utils
-import clusterTools as clAlgo
+import python.l1THistos as histos
+import python.utils as utils
+import python.clusterTools as clAlgo
 import traceback
 import subprocess32
-from utils import debugPrintOut
+from python.utils import debugPrintOut
 
-import file_manager as fm
-import selections as selections
-import plotters as plotters
+import python.file_manager as fm
+import python.selections as selections
+import python.plotters as plotters
 
 class Parameters:
     def __init__(self,
@@ -95,32 +95,6 @@ def dumpFrame2JSON(filename, frame):
 
 
 
-def buildTriggerTowerCluster(allTowers, seedTower, debug):
-    eta_seed = seedTower.eta.values[0]
-    iEta_seed = seedTower.iEta.values[0]
-    iPhi_seed = seedTower.iPhi.values[0]
-    clusterTowers = allTowers[(allTowers.eta*eta_seed > 0) &
-                              (allTowers.iEta <= (iEta_seed + 1)) &
-                              (allTowers.iEta >= (iEta_seed - 1)) &
-                              (allTowers.iPhi <= (iPhi_seed + 1)) &
-                              (allTowers.iPhi >= (iPhi_seed - 1))]
-    clusterTowers.loc[clusterTowers.index, 'logEnergy'] = np.log(clusterTowers.energy)
-    if debug >= 5:
-        print '---- SEED:'
-        print seedTower
-        print 'Cluster components:'
-        print clusterTowers
-    ret = pd.DataFrame(columns=['energy', 'eta', 'phi', 'pt'])
-    ret['energy'] = [clusterTowers.energy.sum()]
-    ret['logEnergy'] = np.log(ret.energy)
-    ret['eta'] = [np.sum(clusterTowers.eta*clusterTowers.energy)/ret.energy.values[0]]
-    ret['phi'] = [np.sum(clusterTowers.phi*clusterTowers.energy)/ret.energy.values[0]]
-    ret['etalw'] = [np.sum(clusterTowers.eta*clusterTowers.logEnergy)/np.sum(clusterTowers.logEnergy)]
-    ret['philw'] = [np.sum(clusterTowers.phi*clusterTowers.logEnergy)/np.sum(clusterTowers.logEnergy)]
-    ret['pt'] = [(ret.energy / np.cosh(ret.eta)).values[0]]
-    return ret
-
-
 def plotTriggerTowerMatch(genParticles,
                           histoGen,
                           triggerTowers,
@@ -163,7 +137,7 @@ def plotTriggerTowerMatch(genParticles,
             histoTowersMatch.fill(matchedTower)
             histoTowersReso.fill(reference=genParticle, target=matchedTower)
 
-            ttCluster = buildTriggerTowerCluster(triggerTowers, matchedTower, debug)
+            ttCluster = clAlgo.buildTriggerTowerCluster(triggerTowers, matchedTower, debug)
             histoTowersResoCl.fill(reference=genParticle, target=ttCluster)
 
             # clustersInCone = sumClustersInCone(trigger3DClusters, allmatches[idx])
@@ -255,6 +229,7 @@ class Particle:
         self.pdgid = pdgid
         self.sel = selection
 
+# @profile
 def analyze(params, batch_idx=0):
     print (params)
     doAlternative = False
@@ -267,7 +242,7 @@ def analyze(params, batch_idx=0):
 
     tc_geom_df = pd.DataFrame()
     tc_rod_bins = pd.DataFrame()
-    if True:
+    if False:
         # read the geometry dump
         geom_file = os.path.join(params.input_base_dir, 'geom/test_triggergeom.root')
         tc_geom_tree = HGCalNtuple([geom_file], tree='hgcaltriggergeomtester/TreeTriggerCells')
@@ -356,20 +331,16 @@ def analyze(params, batch_idx=0):
 
     # instantiate all the plotters
     plotter_collection = []
-
-    tp_selectors = [plotters.TPGenSelector(tp_def, selections.tp_id_selections),
-                    plotters.TPGenSelector(tp_def_calib, selections.tp_id_selections)]
-    plotter_collection.extend([plotters.TpPlotter(select) for select in tp_selectors])
-
-    tp_rate_selectors = [plotters.TPGenSelector(tp_def, selections.tp_rate_selections),
-                         plotters.TPGenSelector(tp_def_calib, selections.tp_rate_selections)]
-    plotter_collection.extend([plotters.RatePlotter(select) for select in tp_rate_selectors])
-
-    tp_match_selectors = [plotters.TPGenSelector(tp_def, selections.tp_match_selections,
-                                                 gen_set, selections.gen_ee_selections),
-                          plotters.TPGenSelector(tp_def_calib, selections.tp_match_selections,
-                                                 gen_set, selections.gen_ee_selections)]
-    plotter_collection.extend([plotters.GenMatchPlotter(select) for select in tp_match_selectors])
+    plotter_collection.extend([plotters.TPPlotter(tp_def, selections.tp_id_selections),
+                               plotters.TPPlotter(tp_def_calib, selections.tp_id_selections)])
+    plotter_collection.extend([plotters.RatePlotter(tp_def, selections.tp_rate_selections),
+                               plotters.RatePlotter(tp_def_calib, selections.tp_rate_selections)])
+    plotter_collection.extend([plotters.GenMatchPlotter(tp_def, gen_set,
+                                                        selections.tp_match_selections,
+                                                        selections.gen_ee_selections),
+                               plotters.GenMatchPlotter(tp_def_calib, gen_set,
+                                                        selections.tp_match_selections,
+                                                        selections.gen_ee_selections)])
 
     # FIXME: this should be removed migrating everythng to the new plotters
     particles = [Particle('nomatch', 0),
@@ -400,10 +371,6 @@ def analyze(params, batch_idx=0):
     hGenParts = {}
     for particle in particles:
         hGenParts[particle] = histos.GenParticleHistos('h_genParts_{}'.format(particle.name))
-
-    hGenPartsSel = {}
-    for particle in particles:
-        hGenPartsSel[particle] = histos.GenParticleHistos('h_genPartsSel_{}'.format(particle.name))
 
     # hdigis = histos.DigiHistos('h_hgcDigisAll')
 

@@ -37,7 +37,7 @@ class GenSet:
 
 
 class Selection:
-    def __init__(self, name, label, selection):
+    def __init__(self, name, label='', selection=''):
         self.name = name
         self.label = label
         self.selection = selection
@@ -75,60 +75,45 @@ def add_selections(list1, list2):
     return ret
 
 
-class TPGenSelector:
-    def __init__(self, tp_set, tp_selections=[], gen_set=None, gen_selections=[]):
+class RatePlotter:
+    def __init__(self, tp_set, tp_selections=[Selection('all')]):
         self.tp_set = tp_set
         self.tp_selections = tp_selections
-        self.gen_set = gen_set
-        self.gen_selections = gen_selections
-
-
-
-
-# tp_rate_selectors = [TPGenSelector(tp_def, add_selections(tp_id_selections, tp_eta_selections)),
-#                      TPGenSelector(tp_def_calib, add_selections(tp_id_selections, tp_eta_selections))]
-#
-# tp_match_selectors = [TPGenSelector(tp_def, add_selections(tp_id_selections, tp_pt_selections)),
-#                       TPGenSelector(tp_def_calib, add_selections(tp_id_selections, tp_pt_selections))]
-
-
-class RatePlotter:
-    def __init__(self, selector):
-        self.selector = selector
         self.h_rate = {}
 
     def book_histos(self):
-        tp_name = self.selector.tp_set.name
-        for selection in self.selector.tp_selections:
+        tp_name = self.tp_set.name
+        for selection in self.tp_selections:
             self.h_rate[selection.name] = histos.RateHistos(name='{}_{}'.format(tp_name, selection.name))
 
     def fill_histos(self, debug=False):
-        for selection in self.selector.tp_selections:
+        for selection in self.tp_selections:
             if selection.name != 'all':
-                sel_clusters = self.selector.tp_set.cl3d_df.query(selection.selection)
+                sel_clusters = self.tp_set.cl3d_df.query(selection.selection)
             else:
-                sel_clusters = self.selector.tp_set.cl3d_df
+                sel_clusters = self.tp_set.cl3d_df
             trigger_clusters = sel_clusters[['pt', 'eta']].sort_values(by='pt', ascending=False)
             if not trigger_clusters.empty:
                 self.h_rate[selection.name].fill(trigger_clusters.iloc[0].pt, trigger_clusters.iloc[0].eta)
             self.h_rate[selection.name].fill_norm()
 
 
-class TpPlotter:
-    def __init__(self, selector):
-        self.selector = selector
+class TPPlotter:
+    def __init__(self, tp_set, tp_selections=[Selection('all')]):
+        self.tp_set = tp_set
+        self.tp_selections = tp_selections
         self.h_tpset = {}
 
     def book_histos(self):
-        tp_name = self.selector.tp_set.name
-        for selection in self.selector.tp_selections:
+        tp_name = self.tp_set.name
+        for selection in self.tp_selections:
             self.h_tpset[selection.name] = histos.HistoSetClusters(name='{}_{}_nomatch'.format(tp_name, selection.name))
 
     def fill_histos(self, debug=False):
-        tcs = self.selector.tp_set.tc_df
-        cl2Ds = self.selector.tp_set.cl2d_df
-        cl3Ds = self.selector.tp_set.cl3d_df
-        for tp_sel in self.selector.tp_selections:
+        tcs = self.tp_set.tc_df
+        cl2Ds = self.tp_set.cl2d_df
+        cl3Ds = self.tp_set.cl3d_df
+        for tp_sel in self.tp_selections:
             if tp_sel.name != 'all':
                 cl3Ds = cl3Ds.query(tp_sel.selection)
             # debugPrintOut(debug, '{}_{}'.format(self.name, 'TCs'), tcs, tcs[:3])
@@ -138,8 +123,12 @@ class TpPlotter:
 
 
 class GenMatchPlotter:
-    def __init__(self, selector):
-        self.selector = selector
+    def __init__(self, tp_set, gen_set,
+                 tp_selections=[Selection('all')], gen_selections=[Selection('all')]):
+        self.tp_set = tp_set
+        self.tp_selections = tp_selections
+        self.gen_set = gen_set
+        self.gen_selections = gen_selections
         self.h_tpset = {}
         self.h_resoset = {}
         self.h_effset = {}
@@ -295,25 +284,25 @@ class GenMatchPlotter:
         # return matchedClustersAll
 
     def book_histos(self):
-        for tp_sel in self.selector.tp_selections:
-            for gen_sel in self.selector.gen_selections:
-                histo_name = '{}_{}_{}'.format(self.selector.tp_set.name, tp_sel.name, gen_sel.name)
+        for tp_sel in self.tp_selections:
+            for gen_sel in self.gen_selections:
+                histo_name = '{}_{}_{}'.format(self.tp_set.name, tp_sel.name, gen_sel.name)
                 self.h_tpset[histo_name] = histos.HistoSetClusters(histo_name)
                 self.h_resoset[histo_name] = histos.HistoSetReso(histo_name)
                 self.h_effset[histo_name] = histos.HistoSetEff(histo_name)
 
     def fill_histos(self, debug=False):
 
-        tcs = self.selector.tp_set.tc_df
-        cl2Ds = self.selector.tp_set.cl2d_df
-        cl3Ds = self.selector.tp_set.cl3d_df
-        for tp_sel in self.selector.tp_selections:
+        tcs = self.tp_set.tc_df
+        cl2Ds = self.tp_set.cl2d_df
+        cl3Ds = self.tp_set.cl3d_df
+        for tp_sel in self.tp_selections:
             if tp_sel.name != 'all':
                 cl3Ds = cl3Ds.query(tp_sel.selection)
-            for gen_sel in self.selector.gen_selections:
-                histo_name = '{}_{}_{}'.format(self.selector.tp_set.name, tp_sel.name, gen_sel.name)
+            for gen_sel in self.gen_selections:
+                histo_name = '{}_{}_{}'.format(self.tp_set.name, tp_sel.name, gen_sel.name)
                 # FIXME: how to pass this
-                genReference = self.selector.gen_set.gen_df[(self.selector.gen_set.gen_df.gen > 0)]
+                genReference = self.gen_set.gen_df[(self.gen_set.gen_df.gen > 0)]
                 if gen_sel.name != 'all':
                     genReference = genReference.query(gen_sel.selection)
                     # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
@@ -334,7 +323,7 @@ class GenMatchPlotter:
                                         h_resoset.hreso,
                                         h_resoset.hresoCone,
                                         h_resoset.hreso2D,
-                                        self.selector.tp_set.name,
+                                        self.tp_set.name,
                                         debug)
 
 
