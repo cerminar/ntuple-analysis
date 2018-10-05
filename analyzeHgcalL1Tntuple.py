@@ -33,6 +33,7 @@ import python.file_manager as fm
 import python.selections as selections
 import python.plotters as plotters
 
+
 class Parameters:
     def __init__(self,
                  input_base_dir,
@@ -95,94 +96,10 @@ def dumpFrame2JSON(filename, frame):
 
 
 
-def plotTriggerTowerMatch(genParticles,
-                          histoGen,
-                          triggerTowers,
-                          histoTowersMatch,
-                          histoTowersReso,
-                          histoTowersResoCl,
-                          algoname,
-                          debug):
-
-    best_match_indexes = {}
-    if triggerTowers.shape[0] != 0:
-        best_match_indexes, allmatches = utils.match_etaphi(genParticles[['eta', 'phi']],
-                                                            triggerTowers[['eta', 'phi']],
-                                                            triggerTowers['pt'],
-                                                            deltaR=0.2)
-        # print ('-----------------------')
-        # print (best_match_indexes)
-    # print ('------ best match: ')
-    # print (best_match_indexes)
-    # print ('------ all matches:')
-    # print (allmatches)
-
-    if histoGen is not None:
-        histoGen.fill(genParticles)
-
-    for idx, genParticle in genParticles.iterrows():
-        if idx in best_match_indexes.keys():
-            # print ('-----------------------')
-            #  print(genParticle)
-            matchedTower = triggerTowers.loc[[best_match_indexes[idx]]]
-            # print (matched3DCluster)
-            # allMatches = trigger3DClusters.iloc[allmatches[idx]]
-            # print ('--')
-            # print (allMatches)
-            # print (matched3DCluster.clusters.item())
-            # print (type(matched3DCluster.clusters.item()))
-            # matchedClusters = triggerClusters[ [x in matched3DCluster.clusters.item() for x in triggerClusters.id]]
-
-            # fill the plots
-            histoTowersMatch.fill(matchedTower)
-            histoTowersReso.fill(reference=genParticle, target=matchedTower)
-
-            ttCluster = clAlgo.buildTriggerTowerCluster(triggerTowers, matchedTower, debug)
-            histoTowersResoCl.fill(reference=genParticle, target=ttCluster)
-
-            # clustersInCone = sumClustersInCone(trigger3DClusters, allmatches[idx])
-            # print ('----- in cone sum:')
-            # print (clustersInCone)
-            # histoResoCone.fill(reference=genParticle, target=clustersInCone.iloc[0])
-
-            if debug >= 4:
-                print ('--- Dump match for algo {} ---------------'.format(algoname))
-                print ('GEN particle: idx: {}'.format(idx))
-                print (genParticle)
-                print ('Matched Trigger Tower:')
-                print (matchedTower)
-        else:
-            if debug >= 0:
-                print ('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx))
-                if debug >= 2:
-                    print (genParticle)
 
 
 def unpack(mytuple):
     return mytuple[0].getDataFrame(mytuple[1])
-
-
-def computeClusterRodSharing(cl2ds, tcs):
-    cl2ds['rod_bin_max'] = pd.Series(index=cl2ds.index, dtype=object)
-    cl2ds['rod_bin_shares'] = pd.Series(index=cl2ds.index, dtype=object)
-    cl2ds['rod_bins'] = pd.Series(index=cl2ds.index, dtype=object)
-
-    for index, cl2d in cl2ds.iterrows():
-        matchedTriggerCells = tcs[tcs.id.isin(cl2d.cells)]
-        energy_sums_byRod = matchedTriggerCells.groupby(by='rod_bin', axis=0).sum()
-        bin_max = energy_sums_byRod[['energy']].idxmax()[0]
-        cl2ds.set_value(index, 'rod_bin_max', bin_max)
-        cl2ds.set_value(index, 'rod_bins', energy_sums_byRod.index.values)
-
-        shares = []
-        for iy in range(bin_max[1]-1, bin_max[1]+2):
-            for ix in range(bin_max[0]-1, bin_max[0]+2):
-                bin = (ix, iy)
-                energy = 0.
-                if bin in energy_sums_byRod.index:
-                    energy = energy_sums_byRod.loc[[bin]].energy[0]
-                shares.append(energy)
-        cl2ds.set_value(index, 'rod_bin_shares', shares)
 
 
 def get_calibrated_clusters(calib_factors, input_3Dclusters):
@@ -218,16 +135,6 @@ def build3DClusters(name, algorithm, triggerClusters, pool, debug):
                   toCount=trigger3DClusters,
                   toPrint=trigger3DClusters.iloc[:3])
     return trigger3DClusters
-
-# FIXME: soon obsolete
-class Particle:
-    def __init__(self,
-                 name,
-                 pdgid,
-                 selection=None):
-        self.name = name
-        self.pdgid = pdgid
-        self.sel = selection
 
 # @profile
 def analyze(params, batch_idx=0):
@@ -328,6 +235,7 @@ def analyze(params, batch_idx=0):
     tp_def = plotters.TPSet('DEF', 'NNDR')
     tp_def_calib = plotters.TPSet('DEFCalib', 'NNDR + calib. v1')
     gen_set = plotters.GenSet('GEN', '')
+    tt_set = plotters.TTSet('TT', 'Trigger Towers')
 
     # instantiate all the plotters
     plotter_collection = []
@@ -335,65 +243,21 @@ def analyze(params, batch_idx=0):
                                plotters.TPPlotter(tp_def_calib, selections.tp_id_selections)])
     plotter_collection.extend([plotters.RatePlotter(tp_def, selections.tp_rate_selections),
                                plotters.RatePlotter(tp_def_calib, selections.tp_rate_selections)])
-    plotter_collection.extend([plotters.GenMatchPlotter(tp_def, gen_set,
-                                                        selections.tp_match_selections,
-                                                        selections.gen_part_selections),
-                               plotters.GenMatchPlotter(tp_def_calib, gen_set,
-                                                        selections.tp_match_selections,
-                                                        selections.gen_part_selections)])
+    plotter_collection.extend([plotters.TPGenMatchPlotter(tp_def, gen_set,
+                                                          selections.tp_match_selections,
+                                                          selections.gen_part_selections),
+                               plotters.TPGenMatchPlotter(tp_def_calib, gen_set,
+                                                          selections.tp_match_selections,
+                                                          selections.gen_part_selections)])
     plotter_collection.extend([plotters.GenPlotter(gen_set, selections.gen_part_sel_genplotting)])
+    plotter_collection.extend([plotters.TTPlotter(tt_set)])
+    plotter_collection.extend([plotters.TTGenMatchPlotter(tt_set, gen_set, [plotters.Selection('all')], selections.gen_part_selections)])
 
-    # FIXME: this should be removed migrating everythng to the new plotters
-    particles = [Particle('nomatch', 0),
-                 Particle('ele', plotters.PID.electron, 'reachedEE == 2'),
-                 Particle('elePt20', plotters.PID.electron, '(reachedEE == 2) & (pt > 20)'),
-                 Particle('elePt30', plotters.PID.electron, '(reachedEE == 2) & (pt > 30)'),
-                 Particle('elePt40', plotters.PID.electron, '(reachedEE == 2) & (pt > 40)'),
-                 Particle('eleA', plotters.PID.electron, '(abseta <= 1.52) & (reachedEE == 2)'),
-                 Particle('eleB', plotters.PID.electron, '(1.52 < abseta <= 1.7) & (reachedEE == 2)'),
-                 Particle('eleC', plotters.PID.electron, '(1.7 < abseta <= 2.4) & (reachedEE == 2)'),
-                 Particle('eleD', plotters.PID.electron, '(2.4 < abseta <= 2.8) & (reachedEE == 2)'),
-                 Particle('eleE', plotters.PID.electron, '(abseta > 2.8) & (reachedEE == 2)'),
-                 Particle('eleAB', plotters.PID.electron, '(abseta <= 1.7) & (reachedEE == 2)'),
-                 Particle('eleABC', plotters.PID.electron, '(abseta <= 2.4) & (reachedEE == 2)'),
-                 Particle('eleBC', plotters.PID.electron, '(1.52 < abseta <= 2.4) & (reachedEE == 2)'),
-                 Particle('eleBCD', plotters.PID.electron, '(1.52 < abseta <= 2.8) & (reachedEE == 2)'),
-                 Particle('eleBCDE', plotters.PID.electron, '(abseta > 1.52) & (reachedEE == 2)'),
-                 Particle('photon', plotters.PID.photon, '(reachedEE == 2)'),
-                 Particle('photonA', plotters.PID.photon, '(1.4 < abseta < 1.7) & (reachedEE == 2)'),
-                 Particle('photonB', plotters.PID.photon, '(1.7 <= abseta <= 2.8) & (reachedEE == 2)'),
-                 Particle('photonC', plotters.PID.photon, '(abseta > 2.8) & (reachedEE == 2)'),
-                 Particle('photonD', plotters.PID.photon, '(abseta < 2.4) & (reachedEE == 2)'),
-                 Particle('pion', plotters.PID.pion)]
     # -------------------------------------------------------
     # book histos
     for plotter in plotter_collection:
         plotter.book_histos()
 
-
-
-    hTT_all = histos.TriggerTowerHistos('h_TT_all')
-    # TT_algos = ['TTMATCH']
-    # hsetTTMatched
-    #
-    hTT_matched = {}
-    h_reso_TT = {}
-    h_reso_TTCL = {}
-    for particle in particles:
-        hTT_matched[particle.name] = histos.TriggerTowerHistos('h_TT_{}'.format(particle.name))
-        h_reso_TT[particle.name] = histos.TriggerTowerResoHistos('h_reso_TT_{}'.format(particle.name))
-        h_reso_TTCL[particle.name] = histos.TriggerTowerResoHistos('h_reso_TTCl_{}'.format(particle.name))
-
-    # htcMatchGEO = histos.TCHistos('h_tcMatchGEO')
-    # h2dclMatchGEO = histos.ClusterHistos('h_clMatchGEO')
-    # h3dclMatchGEO = histos.Cluster3DHistos('h_cl3dMatchGEO')
-
-    hDensity_3p6 = histos.DensityHistos('h_dens3p6')
-    hDensityClus_3p6 = histos.DensityHistos('h_densClus3p6')
-    hDensity_2p5 = histos.DensityHistos('h_dens2p5')
-    hDensityClus_2p5 = histos.DensityHistos('h_densClus2p5')
-
-    hDR = ROOT.TH1F('hDR', 'DR 2D clusters', 100, 0, 1)
     dump = False
     # print (range_ev)
 
@@ -583,95 +447,10 @@ def analyze(params, batch_idx=0):
         tp_def.set_collections(triggerCells, triggerClusters, trigger3DClusters)
         tp_def_calib.set_collections(triggerCells, triggerClusters, trigger3DClustersCalib)
         gen_set.set_collections(genParticles)
+        tt_set.set_collections(triggerTowers)
 
         for plotter in plotter_collection:
             plotter.fill_histos(debug=debug)
-
-        hTT_all.fill(triggerTowers)
-
-        if True:
-            # now we try to match the Clusters to the GEN particles of various types
-            for particle in particles:
-                genReference = genParticles[(genParticles.gen > 0) & (np.abs(genParticles.pid) == particle.pdgid) & (np.abs(genParticles.eta) < 2.8) & (np.abs(genParticles.eta) > 1.7)]
-                # for the photons we add a further selection
-                if particle.pdgid == plotters.PID.photon:
-                    genReference = genParticles[(genParticles.gen > 0) & (genParticles.pid == plotters.PID.photon) & (genParticles.reachedEE == 2) & (np.abs(genParticles.eta) < 2.8) & (np.abs(genParticles.eta) > 1.7)]
-                # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
-                # elif  particle.pdgid == plotters.PID.pizero:
-                #     genReference = genParts[(genParts.pid == particle.pdgid)]
-                plotTriggerTowerMatch(genReference,
-                                      None,
-                                      triggerTowers,
-                                      hTT_matched[particle.name],
-                                      h_reso_TT[particle.name],
-                                      h_reso_TTCL[particle.name],
-                                      "TThighestPt",
-                                      debug)
-
-        # dump the data-frames to JSON if needed
-        if dump:
-            js_filename = 'tc_dump_ev_{}.json'.format(event.entry())
-            dumpFrame2JSON(js_filename, triggerCells)
-            js_2dc_filename = '2dc_dump_ev_{}.json'.format(event.entry())
-            dumpFrame2JSON(js_2dc_filename, triggerClusters)
-
-        if computeDensity:
-            # def computeDensity(tcs):
-            #     eps = 3.5
-            #     for idx, tc in tcsWithPos_ee_layer.iterrows():
-            #         energy_list = list()
-            #         tcsinradius = tcs[((tcs.x-tc.x)**2+(tcs.y-tc.y)**2) < eps**2]
-            #         totE = np.sum(tcsinradius.energy)
-            #
-            tcsWithPos_ee = triggerCells[triggerCells.subdet == 3]
-            # triggerClusters_ee = triggerClusters[triggerClusters.subdet == 3]
-
-            def getEnergyAndTCsInRadius(tc, tcs, radius):
-                tcs_in_radius = tcs[((tcs.x-tc.x)**2+(tcs.y-tc.y)**2) < radius**2]
-                e_in_radius = np.sum(tcs_in_radius.energy)
-                ntc_in_radius = tcs_in_radius.shape[0]
-                return e_in_radius, ntc_in_radius
-
-            for layer in range(1, 29):
-                # print ('------- Layer {}'.format(layer))
-                tcsWithPos_ee_layer = tcsWithPos_ee[tcsWithPos_ee.layer == layer]
-                # print ('   --- Cells: ')
-                # print (tcsWithPos_ee_layer)
-                triggerClusters_ee_layer = triggerClusters[triggerClusters.layer == layer]
-
-                for eps in [3.6, 2.5]:
-                    hDensity = hDensity_3p6
-                    hDensityClus = hDensityClus_3p6
-                    if eps == 2.5:
-                        hDensity = hDensity_2p5
-                        hDensityClus = hDensityClus_2p5
-
-                    energy_list_layer = list()
-                    ntcs_list_layer = list()
-                    for idx, tc in tcsWithPos_ee_layer.iterrows():
-                        en_in_radius, ntcs_in_radius = getEnergyAndTCsInRadius(tc, tcsWithPos_ee_layer, eps)
-                        energy_list_layer.append(en_in_radius)
-                        ntcs_list_layer.append(ntcs_in_radius)
-                    if(len(energy_list_layer) != 0):
-                        hDensity.fill(layer, max(energy_list_layer), max(ntcs_list_layer))
-
-                    for idx, tcl in triggerClusters_ee_layer.iterrows():
-                        tcsInCl = tcsWithPos_ee_layer.loc[tcl.cells]
-                        energy_list = list()
-                        ntcs_list = list()
-                        for idc, tc in tcsInCl.iterrows():
-                            en_in_radius, ntcs_in_radius = getEnergyAndTCsInRadius(tc, tcsInCl, eps)
-                            energy_list.append(en_in_radius)
-                            ntcs_list.append(ntcs_in_radius)
-                        if(len(energy_list) != 0):
-                            hDensityClus.fill(layer, max(energy_list), max(ntcs_list))
-
-                # if plot2DCLDR:
-                #     for idx, cl in triggerClustersDBS[triggerClustersDBS.zside == zside].iterrows():
-                #         for idx2 in range(idx+1, triggerClustersDBS[triggerClustersDBS.zside == zside].shape[0]):
-                #             hDR.Fill(math.sqrt((cl.eta-triggerClustersDBS[triggerClustersDBS.zside == zside].loc[idx2].eta)**2+(cl.phi-triggerClustersDBS[triggerClustersDBS.zside == zside].loc[idx2].phi)**2))
-            # for layer in range(0, 29):
-            #     triggerClustersDBS = triggerClustersDBS.append(clAlgo.buildDBSCANClusters(layer, zside, tcsWithPos), ignore_index=True)
 
     print ("Processed {} events/{} TOT events".format(nev, ntuple.nevents()))
     print ("Writing histos to file {}".format(params.output_filename))
@@ -685,7 +464,6 @@ def analyze(params, batch_idx=0):
     hm = histos.HistoManager()
     hm.writeHistos()
 
-    hDR.Write()
     output.Close()
 
     return

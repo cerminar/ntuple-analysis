@@ -2,6 +2,7 @@ import l1THistos as histos
 import utils as utils
 import pandas as pd
 import numpy as np
+import clusterTools as clAlgo
 
 
 class PID:
@@ -36,6 +37,16 @@ class GenSet:
         self.gen_df = gen_df
 
 
+class TTSet:
+    def __init__(self, name, label):
+        self.name = name
+        self.label = label
+        self.tt_df = None
+
+    def set_collections(self, tt_df):
+        self.tt_df = tt_df
+
+
 class Selection:
     def __init__(self, name, label='', selection=''):
         self.name = name
@@ -44,9 +55,9 @@ class Selection:
 
     def __add__(self, sel_obj):
         """ & operation """
-        if sel_obj.name == 'all':
+        if sel_obj.all:
             return self
-        if self.name == 'all':
+        if self.all:
             return sel_obj
         new_label = '{} & {}'.format(self.label, sel_obj.label)
         if self.label == '':
@@ -65,6 +76,12 @@ class Selection:
                                                  self.name,
                                                  self.selection,
                                                  self.label)
+
+    @property
+    def all(self):
+        if self.name == 'all':
+            return True
+        return False
 
 
 def add_selections(list1, list2):
@@ -88,7 +105,7 @@ class RatePlotter:
 
     def fill_histos(self, debug=False):
         for selection in self.tp_selections:
-            if selection.name != 'all':
+            if not selection.all:
                 sel_clusters = self.tp_set.cl3d_df.query(selection.selection)
             else:
                 sel_clusters = self.tp_set.cl3d_df
@@ -110,12 +127,12 @@ class TPPlotter:
             self.h_tpset[selection.name] = histos.HistoSetClusters(name='{}_{}_nomatch'.format(tp_name, selection.name))
 
     def fill_histos(self, debug=False):
-        tcs = self.tp_set.tc_df
-        cl2Ds = self.tp_set.cl2d_df
-        cl3Ds = self.tp_set.cl3d_df
         for tp_sel in self.tp_selections:
-            if tp_sel.name != 'all':
-                cl3Ds = cl3Ds.query(tp_sel.selection)
+            tcs = self.tp_set.tc_df
+            cl2Ds = self.tp_set.cl2d_df
+            cl3Ds = self.tp_set.cl3d_df
+            if not tp_sel.all:
+                cl3Ds = self.tp_set.cl3d_df.query(tp_sel.selection)
             # debugPrintOut(debug, '{}_{}'.format(self.name, 'TCs'), tcs, tcs[:3])
             # debugPrintOut(debug, '{}_{}'.format(self.name, 'CL2D'), cl2Ds, cl2Ds[:3])
             # debugPrintOut(debug, '{}_{}'.format(self.name, 'CL3D'), cl3Ds, cl3Ds[:3])
@@ -133,15 +150,15 @@ class GenPlotter:
             self.h_gen[selection.name] = histos.GenParticleHistos(name='h_genParts_{}'.format(selection.name))
 
     def fill_histos(self, debug=False):
-        gen_parts = self.gen_set.gen_df[self.gen_set.gen_df.gen > 0]
+        gen_parts_all = self.gen_set.gen_df[self.gen_set.gen_df.gen > 0]
         for gen_sel in self.gen_selections:
-            if gen_sel.name != 'all':
-                gen_parts = gen_parts.query(gen_sel.selection)
+            gen_parts = gen_parts_all
+            if not gen_sel.all:
+                gen_parts = gen_parts_all.query(gen_sel.selection)
             self.h_gen[gen_sel.name].fill(gen_parts)
 
 
-
-class GenMatchPlotter:
+class TPGenMatchPlotter:
     def __init__(self, tp_set, gen_set,
                  tp_selections=[Selection('all')], gen_selections=[Selection('all')]):
         self.tp_set = tp_set
@@ -269,7 +286,7 @@ class GenMatchPlotter:
                 # print ('----- in cone sum:')
                 # print (clustersInCone)
                 histoResoCone.fill(reference=genParticle, target=clustersInCone.iloc[0])
-                if histoGenMatched is not None:
+                if histoGenMatched is None:
                     histoGenMatched.fill(genParticles.loc[[idx]])
 
                 if debug >= 4:
@@ -311,19 +328,17 @@ class GenMatchPlotter:
                 self.h_effset[histo_name] = histos.HistoSetEff(histo_name)
 
     def fill_histos(self, debug=False):
-
-        tcs = self.tp_set.tc_df
-        cl2Ds = self.tp_set.cl2d_df
-        cl3Ds = self.tp_set.cl3d_df
         for tp_sel in self.tp_selections:
-            if tp_sel.name != 'all':
-                cl3Ds = cl3Ds.query(tp_sel.selection)
+            tcs = self.tp_set.tc_df
+            cl2Ds = self.tp_set.cl2d_df
+            cl3Ds = self.tp_set.cl3d_df
+            if not tp_sel.all:
+                cl3Ds = self.tp_set.cl3d_df.query(tp_sel.selection)
             for gen_sel in self.gen_selections:
                 histo_name = '{}_{}_{}'.format(self.tp_set.name, tp_sel.name, gen_sel.name)
-                # FIXME: how to pass this
                 genReference = self.gen_set.gen_df[(self.gen_set.gen_df.gen > 0)]
-                if gen_sel.name != 'all':
-                    genReference = genReference.query(gen_sel.selection)
+                if not gen_sel.all:
+                    genReference = self.gen_set.gen_df[(self.gen_set.gen_df.gen > 0)].query(gen_sel.selection)
                     # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
                     # elif  particle.pdgid == PID.pizero:
                     #     genReference = genParts[(genParts.pid == particle.pdgid)]
@@ -344,6 +359,129 @@ class GenMatchPlotter:
                                         h_resoset.hreso2D,
                                         self.tp_set.name,
                                         debug)
+
+
+class TTPlotter:
+    def __init__(self, tt_set, tt_selections=[Selection('all')]):
+        self.tt_set = tt_set
+        self.tt_selections = tt_selections
+        self.h_tt = {}
+
+    def book_histos(self):
+        for sel in self.tt_selections:
+            self.h_tt[sel.name] = histos.TriggerTowerHistos('h_{}_{}'.format(self.tt_set.name, sel.name))
+
+    def fill_histos(self, debug=False):
+        triggerTowers_all = self.tt_set.tt_df
+        for sel in self.tt_selections:
+            triggerTowers = triggerTowers_all
+            if not sel.all:
+                triggerTowers = triggerTowers_all.query(sel.selection)
+            self.h_tt[sel.name].fill(triggerTowers)
+
+
+class TTGenMatchPlotter:
+    def __init__(self, tt_set, gen_set,
+                 tt_selections=[Selection('all')], gen_selections=[Selection('all')]):
+        self.tt_set = tt_set
+        self.tt_selections = tt_selections
+        self.gen_set = gen_set
+        self.gen_selections = gen_selections
+        self.h_tt = {}
+        self.h_reso_tt = {}
+        self.h_reso_ttcl = {}
+
+    def book_histos(self):
+        for tp_sel in self.tt_selections:
+            for gen_sel in self.gen_selections:
+                histo_name = '{}_{}'.format(tp_sel.name, gen_sel.name)
+            self.h_tt[histo_name] = histos.TriggerTowerHistos('h_{}_{}'.format(self.tt_set.name, histo_name))
+            self.h_reso_tt[histo_name] = histos.TriggerTowerResoHistos('h_reso_{}_{}'.format(self.tt_set.name, histo_name))
+            self.h_reso_ttcl[histo_name] = histos.TriggerTowerResoHistos('h_reso_{}Cl_{}'.format(self.tt_set.name, histo_name))
+
+    def fill_histos(self, debug=False):
+        triggerTowers_all = self.tt_set.tt_df
+        genParts_all = self.gen_set.gen_df[(self.gen_set.gen_df.gen > 0)]
+        for tp_sel in self.tt_selections:
+            triggerTowers = triggerTowers_all
+            if not tp_sel.all:
+                triggerTowers = triggerTowers_all.query(tp_sel.selection)
+            for gen_sel in self.gen_selections:
+                histo_name = '{}_{}'.format(tp_sel.name, gen_sel.name)
+                genReference = genParts_all
+                if not gen_sel.all:
+                    genReference = genParts_all.query(gen_sel.selection)
+            self.plotTriggerTowerMatch(genReference,
+                                       None,
+                                       triggerTowers,
+                                       self.h_tt[histo_name],
+                                       self.h_reso_tt[histo_name],
+                                       self.h_reso_ttcl[histo_name],
+                                       "TThighestPt",
+                                       debug)
+
+    def plotTriggerTowerMatch(self,
+                              genParticles,
+                              histoGen,
+                              triggerTowers,
+                              histoTowersMatch,
+                              histoTowersReso,
+                              histoTowersResoCl,
+                              algoname,
+                              debug):
+
+        best_match_indexes = {}
+        if triggerTowers.shape[0] != 0:
+            best_match_indexes, allmatches = utils.match_etaphi(genParticles[['eta', 'phi']],
+                                                                triggerTowers[['eta', 'phi']],
+                                                                triggerTowers['pt'],
+                                                                deltaR=0.2)
+            # print ('-----------------------')
+            # print (best_match_indexes)
+        # print ('------ best match: ')
+        # print (best_match_indexes)
+        # print ('------ all matches:')
+        # print (allmatches)
+
+        if histoGen is not None:
+            histoGen.fill(genParticles)
+
+        for idx, genParticle in genParticles.iterrows():
+            if idx in best_match_indexes.keys():
+                # print ('-----------------------')
+                #  print(genParticle)
+                matchedTower = triggerTowers.loc[[best_match_indexes[idx]]]
+                # print (matched3DCluster)
+                # allMatches = trigger3DClusters.iloc[allmatches[idx]]
+                # print ('--')
+                # print (allMatches)
+                # print (matched3DCluster.clusters.item())
+                # print (type(matched3DCluster.clusters.item()))
+                # matchedClusters = triggerClusters[ [x in matched3DCluster.clusters.item() for x in triggerClusters.id]]
+
+                # fill the plots
+                histoTowersMatch.fill(matchedTower)
+                histoTowersReso.fill(reference=genParticle, target=matchedTower)
+
+                ttCluster = clAlgo.buildTriggerTowerCluster(triggerTowers, matchedTower, debug)
+                histoTowersResoCl.fill(reference=genParticle, target=ttCluster)
+
+                # clustersInCone = sumClustersInCone(trigger3DClusters, allmatches[idx])
+                # print ('----- in cone sum:')
+                # print (clustersInCone)
+                # histoResoCone.fill(reference=genParticle, target=clustersInCone.iloc[0])
+
+                if debug >= 4:
+                    print ('--- Dump match for algo {} ---------------'.format(algoname))
+                    print ('GEN particle: idx: {}'.format(idx))
+                    print (genParticle)
+                    print ('Matched Trigger Tower:')
+                    print (matchedTower)
+            else:
+                if debug >= 0:
+                    print ('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx))
+                    if debug >= 2:
+                        print (genParticle)
 
 
 if __name__ == "__main__":
