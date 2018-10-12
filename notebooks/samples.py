@@ -1,6 +1,6 @@
 import ROOT
 
-version = 'v42'
+version = 'v47'
 
 
 class Sample():
@@ -40,14 +40,30 @@ samples_nugunrates = [sample_nugunrate]
 
 tpset_labels = {'DEF': 'NNDR',
                 'DEF_em': 'NNDR + EGID',
+                'DEF_em_calib': 'NNDR + EGID + calib v1',
+                'DEF_emL': 'NNDR + EGIDv1',
+                'DEF_emL_calib': 'NNDR + EGIDv1 + calib v1',
                 'DEF_pt10': 'NNDR, p_{T}^{L1}>10GeV',
-                'DEF_pt10_em': 'NNDR + EGID, p_{T}^{L1}>10GeV',
                 'DEF_pt20': 'NNDR, p_{T}^{L1}>20GeV',
-                'DEF_pt20_em': 'NNDR + EGID, p_{T}^{L1}>20GeV',
                 'DEF_pt25': 'NNDR, p_{T}^{L1}>25GeV',
-                'DEF_pt25_em': 'NNDR + EGID, p_{T}^{L1}>25GeV',
                 'DEF_pt30': 'NNDR, p_{T}^{L1}>30GeV',
-                'DEF_pt30_em': 'NNDR + EGID, p_{T}^{L1}>30GeV'}
+                'DEF_pt10_em': 'NNDR + EGID, p_{T}^{L1}>10GeV',
+                'DEF_pt20_em': 'NNDR + EGID, p_{T}^{L1}>20GeV',
+                'DEF_pt25_em': 'NNDR + EGID, p_{T}^{L1}>25GeV',
+                'DEF_pt30_em': 'NNDR + EGID, p_{T}^{L1}>30GeV',
+                'DEF_pt10_emL': 'NNDR + EGIDv1, p_{T}^{L1}>10GeV',
+                'DEF_pt20_emL': 'NNDR + EGIDv1, p_{T}^{L1}>20GeV',
+                'DEF_pt25_emL': 'NNDR + EGIDv1, p_{T}^{L1}>25GeV',
+                'DEF_pt30_emL': 'NNDR + EGIDv1, p_{T}^{L1}>30GeV',
+                'DEF_pt10_em_calib': 'NNDR + EGID + calib, p_{T}^{L1}>10GeV',
+                'DEF_pt20_em_calib': 'NNDR + EGID + calib, p_{T}^{L1}>20GeV',
+                'DEF_pt25_em_calib': 'NNDR + EGID + calib, p_{T}^{L1}>25GeV',
+                'DEF_pt30_em_calib': 'NNDR + EGID + calib, p_{T}^{L1}>30GeV',
+                'DEF_pt10_emL_calib':  'NNDR + EGIDv1 + calib, p_{T}^{L1}>10GeV',
+                'DEF_pt20_emL_calib': 'NNDR + EGIDv1 + calib, p_{T}^{L1}>20GeV',
+                'DEF_pt25_emL_calib': 'NNDR + EGIDv1 + calib, p_{T}^{L1}>25GeV',
+                'DEF_pt30_emL_calib': 'NNDR + EGIDv1 + calib, p_{T}^{L1}>30GeV'
+                }
 
 
 particle_labels = {'ele': 'all #eta',
@@ -64,11 +80,6 @@ particle_labels = {'ele': 'all #eta',
                    'eleBC': '1.52 < |#eta^{GEN}| <= 2.4',
                    'eleBCD': '1.52 < |#eta^{GEN}| <= 2.8',
                    'eleBCDE': '|#eta^{GEN}| > 1.52',
-                   'eleAAA': '|#eta^{GEN}| <= 1.52',
-                   'eleAA': '|#eta^{GEN}| <= 1.6',
-                   'eleBB': '1.6 < |#eta^{GEN}| <= 2.4',
-                   'eleCC': '2.4 < |#eta^{GEN}| <= 2.8',
-                   'eleDD': '|#eta^{GEN}| > 2.8',
                    'all': 'all #eta^{L1}',
                    'etaA': '|#eta^{L1}| <= 1.52',
                    'etaB': '1.52 < |#eta^{L1}| <= 1.7)',
