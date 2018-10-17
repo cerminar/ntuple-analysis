@@ -2,17 +2,41 @@ import ROOT
 
 version = 'v47'
 
+files = {}
+file_keys = {}
+
+
+class RootFile:
+    def __init__(self, file_name):
+        global file
+        self.file_name = file_name
+        if self.file_name not in files.keys():
+            print 'get file: {}'.format(self.file_name)
+            files[self.file_name] = ROOT.TFile(self.file_name)
+        self._file = files[self.file_name]
+        self._file_keys = None
+
+    def cd(self):
+        self._file.cd()
+
+    def GetListOfKeys(self):
+        global file_keys
+        if self.file_name not in file_keys.keys():
+            print 'get list'
+            file_keys[self.file_name] = self._file.GetListOfKeys()
+        self._file_keys = file_keys[self.file_name]
+        return self._file_keys
 
 class Sample():
-    def __init__(cls, name, label, version=None):
-        cls.name = name
-        cls.label = label
+    def __init__(self, name, label, version=None):
+        self.name = name
+        self.label = label
         if version:
             version = '_'+version
         else:
             version = ''
-        cls.histo_filename = '../plots1/histos_{}{}.root'.format(cls.name, version)
-        cls.histo_file = ROOT.TFile(cls.histo_filename)
+        self.histo_filename = '../plots1/histos_{}{}.root'.format(self.name, version)
+        self.histo_file = ROOT.TFile(self.histo_filename)
 
 
 sample_names = ['ele_flat2to100_PU0',
@@ -36,6 +60,31 @@ samples_hadrons = [sample_hadronGun_PU0, sample_hadronGun_PU200]
 
 sample_nugunrate = Sample('nugun_alleta_pu200', 'PU200', version)
 samples_nugunrates = [sample_nugunrate]
+
+
+from python.selections import tp_rate_selections
+from python.selections import tp_match_selections
+from python.selections import gen_part_selections
+
+tpsets = {'DEF': 'NNDR',
+          'DEFCalib': 'NNDR Calib v1'}
+
+tpset_selections = {}
+
+gen_selections = {}
+
+def get_label_dict(selections):
+    dictionary = {}
+    for sel in selections:
+        dictionary[sel.name] = sel.label
+    return dictionary
+
+
+tpset_selections.update(get_label_dict(tp_rate_selections))
+tpset_selections.update(get_label_dict(tp_match_selections))
+
+gen_selections.update(get_label_dict(gen_part_selections))
+
 
 
 tpset_labels = {'DEF': 'NNDR',
