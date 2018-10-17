@@ -39,11 +39,18 @@ class HistoManager(object):
 class BaseHistos():
     def __init__(self, name, root_file=None):
         self.name_ = name
-        # print 'BOOK histo: {}'.format(self)
+        # print name
+        # print self.__class__.__name__
+        # # print 'BOOK histo: {}'.format(self)
         if root_file is not None:
             root_file.cd()
-            selhistos = [(histo.ReadObj(), histo.GetName()) for histo in root_file.GetListOfKeys() if name+'_' in histo.GetName()]
-            # print histo_names
+            print 'class: {}'.format(self.__class__.__name__)
+            ROOT.gDirectory.pwd()
+            file_dir = root_file.GetDirectory(self.__class__.__name__)
+            print '# keys in dir: {}'.format(len(file_dir.GetListOfKeys()))
+            # file_dir.cd()
+            selhistos = [(histo.ReadObj(), histo.GetName()) for histo in file_dir.GetListOfKeys() if name+'_' in histo.GetName()]
+            print selhistos
             for hinst, histo_name in selhistos:
                 attr_name = 'h_'+histo_name.split(name+'_')[1]
                 setattr(self, attr_name, hinst)
@@ -56,13 +63,15 @@ class BaseHistos():
             hm.addHistos(self)
 
     def write(self):
+        if self.__class__.__name__ not in ROOT.gDirectory.GetListOfKeys():
+            ROOT.gDirectory.mkdir(self.__class__.__name__)
+        newdir = ROOT.gDirectory.GetDirectory(self.__class__.__name__)
+        newdir.cd()
         for histo in [a for a in dir(self) if a.startswith('h_')]:
             getattr(self, histo).Write()
+        ROOT.gDirectory.cd('..')
 
-    def annotateTitles(self, annotation):
-        for histo_name in [a for a in dir(self) if a.startswith('h_')]:
-            histo = getattr(self, histo_name)
-            histo.SetTitle('{} ({})'.format(histo.GetTitle(), annotation))
+
     # def normalize(self, norm):
     #     className = self.__class__.__name__
     #     ret = className()
