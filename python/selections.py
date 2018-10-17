@@ -30,7 +30,7 @@ tp_rate_selections = add_selections(tp_id_selections, tp_eta_selections)
 
 tp_match_selections = add_selections(tp_id_selections, tp_pt_selections)
 
-gen_part_selections = [Selection('Ele', 'e', 'abs(pdgid) == {}'.format(PID.electron)),
+gen_part_selections = [Selection('Ele', 'e^{#pm}', 'abs(pdgid) == {}'.format(PID.electron)),
                        # Selection('Phot', '#gamma', 'abs(pdgid) == {}'.format(PID.photon)),
                        # Selection('Pion', '#pi', 'abs(pdgid) == {}'.format(PID.pion))
                        ]
