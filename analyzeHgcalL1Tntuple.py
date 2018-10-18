@@ -266,7 +266,7 @@ def analyze(params, batch_idx=0):
     mva_classifier.AddVariable('sigmaZZ_cl', array.array('f', [0.]))
     mva_classifier.AddVariable('sigmaRRTot_cl', array.array('f', [0.]))
 
-    mva_classifier.BookMVA("BDT", "data/MVAnalysis_Comb_BDT.weights.xml")
+    mva_classifier.BookMVA("BDT", "data/MVAnalysis_Bkg_BDT.weights.xml")
 
     # -------------------------------------------------------
     # event loop
@@ -349,7 +349,8 @@ def analyze(params, batch_idx=0):
         trigger3DClusters['hoe'] = 999.
         trigger3DClusters = trigger3DClusters.apply(compute_hoe, axis=1)
 
-        trigger3DClusters['bdt_out'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'emaxe', 'szz', 'srrtot']])
+
+        trigger3DClusters['bdt_out'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
         # trigger3DClusters['bdt_l'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'eMaxOverE', 'szz', 'srrtot']], 0.8)
         # trigger3DClusters['bdt_t'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'eMaxOverE', 'szz', 'srrtot']], 0.95)
 

@@ -3,7 +3,7 @@ from plotters import Selection, PID, add_selections
 # TP selections
 tp_id_selections = [Selection('all', '', ''),
                     Selection('Em', 'EGId', 'quality >0'),
-                    Selection('Emv1', 'EGId V1', 'bdt_out > 0')]
+                    Selection('Emv1', 'EGId V2', '(showerlenght > 1) & (bdt_out > -0.03)')]
 
 
 tp_pt_selections = [Selection('all', '', ''),
