@@ -256,15 +256,14 @@ def analyze(params, batch_idx=0):
     # setup the EGID classifies
     mva_classifier = ROOT.TMVA.Reader()
 
+
     mva_classifier.AddVariable('pt_cl', array.array('f', [0.]))
     mva_classifier.AddVariable('eta_cl', array.array('f', [0.]))
-    mva_classifier.AddVariable('coreShowerLength_cl', array.array('f', [0.]))
-    mva_classifier.AddVariable('firstLayer_cl', array.array('f', [0.]))
+    mva_classifier.AddVariable('maxLayer_cl', array.array('f', [0.]))
     mva_classifier.AddVariable('hOverE_cl', array.array('f', [0.]))
     # (this is a variable I created by dividing the eMax variable by the total energy of the cluster)
     mva_classifier.AddVariable('eMaxOverE_cl', array.array('f', [0.]))
     mva_classifier.AddVariable('sigmaZZ_cl', array.array('f', [0.]))
-    mva_classifier.AddVariable('sigmaRRTot_cl', array.array('f', [0.]))
 
     mva_classifier.BookMVA("BDT", "data/MVAnalysis_Bkg_BDT.weights.xml")
 
