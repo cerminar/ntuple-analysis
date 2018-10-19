@@ -13,40 +13,6 @@ class PID:
     kzero = 130
 
 
-class TPSet:
-    def __init__(self, name, label):
-        self.name = name
-        self.label = label
-        self.tc_df = None
-        self.cl2d_df = None
-        self.cl3d_df = None
-
-    def set_collections(self, tc_df, cl2d_df, cl3d_df):
-        self.tc_df = tc_df
-        self.cl2d_df = cl2d_df
-        self.cl3d_df = cl3d_df
-
-
-class GenSet:
-    def __init__(self, name, label):
-        self.name = name
-        self.label = label
-        self.gen_df = None
-
-    def set_collections(self, gen_df):
-        self.gen_df = gen_df
-
-
-class TTSet:
-    def __init__(self, name, label):
-        self.name = name
-        self.label = label
-        self.tt_df = None
-
-    def set_collections(self, tt_df):
-        self.tt_df = tt_df
-
-
 class Selection:
     def __init__(self, name, label='', selection=''):
         self.name = name
@@ -482,6 +448,11 @@ class TTGenMatchPlotter:
                     print ('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx))
                     if debug >= 2:
                         print (genParticle)
+
+
+
+
+
 
 
 if __name__ == "__main__":

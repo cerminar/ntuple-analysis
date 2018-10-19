@@ -20,7 +20,7 @@ import copy
 import socket
 import datetime
 import optparse
-import ConfigParser
+import yaml
 
 import python.l1THistos as histos
 import python.utils as utils
@@ -217,10 +217,10 @@ def analyze(params, batch_idx=0):
 
     # ---------------------------------------------------
     # TP sets
-    tp_def = plotters.TPSet('DEF', 'NNDR')
-    tp_def_calib = plotters.TPSet('DEFCalib', 'NNDR + calib. v1')
-    gen_set = plotters.GenSet('GEN', '')
-    tt_set = plotters.TTSet('TT', 'Trigger Towers')
+    tp_def = selections.tp_def
+    tp_def_calib = selections.tp_def_calib
+    gen_set = selections.gen_set
+    tt_set = selections.tt_set
 
     # instantiate all the plotters
     plotter_collection = []
@@ -488,39 +488,28 @@ def main(analyze):
     (opt, args) = parser.parse_args()
 
     # read the config file
-    cfgfile = ConfigParser.ConfigParser()
-    cfgfile.optionxform = str
-    cfgfile.read(opt.CONFIGFILE)
+    cfgfile = None
+    with open(opt.CONFIGFILE, 'r') as stream:
+        cfgfile  = yaml.load(stream)
 
-    collection_dict = {}
-    collections = [coll.strip() for coll in cfgfile.get('common', 'collections').split(',')]
-    basedir = cfgfile.get('common', 'input_dir_lx')
-    outdir = cfgfile.get('common', 'output_dir_lx')
+    basedir = cfgfile['common']['input_dir']
+    outdir = cfgfile['common']['output_dir']['default']
     hostname = socket.gethostname()
-    if 'matterhorn' in hostname or 'Matterhorn' in hostname:
-            basedir = cfgfile.get('common', 'input_dir_local')
-            outdir = cfgfile.get('common', 'output_dir_local')
-    plot_version = cfgfile.get('common', 'plot_version')
-    run_clustering = False
-    if cfgfile.get('common', 'run_clustering') == 'True':
-        run_clustering = True
-    run_density_computation = False
-    if cfgfile.get('common', 'run_density_computation') == 'True':
-        run_density_computation = True
+    for machine,odir in cfgfile['common']['output_dir'].items():
+        if machine in hostname:
+            outdir = odir
+    plot_version = cfgfile['common']['plot_version']
 
-    events_to_dump = []
-    if cfgfile.has_option('common', "events_to_dump"):
-        events_to_dump = [int(num) for num in cfgfile.get('common', 'events_to_dump').split(',')]
-
-    for collection in collections:
-        samples = cfgfile.get(collection, 'samples').split(',')
+    collection_params = {}
+    for collection,collection_data in cfgfile['collections'].items():
+        samples = collection_data['samples']
         print ('--- Collection: {} with samples: {}'.format(collection, samples))
-        sample_list = list()
+        sample_params = []
         for sample in samples:
             events_per_job = -1
             out_file_name = 'histos_{}_{}.root'.format(sample, plot_version)
             if opt.BATCH:
-                events_per_job = int(cfgfile.get(sample, 'events_per_job'))
+                events_per_job = cfgfile['samples'][sample]['events_per_job']
                 if opt.RUN:
                     out_file_name = 'histos_{}_{}_{}.root'.format(sample, plot_version, opt.RUN)
 
@@ -530,37 +519,37 @@ def main(analyze):
             out_file = os.path.join(outdir, out_file_name)
 
             params = Parameters(input_base_dir=basedir,
-                                input_sample_dir=cfgfile.get(sample, 'input_sample_dir'),
+                                input_sample_dir=cfgfile['samples'][sample]['input_sample_dir'],
                                 output_filename=out_file,
                                 output_dir=outdir,
-                                clusterize=run_clustering,
-                                eventsToDump=events_to_dump,
+                                clusterize=cfgfile['common']['run_clustering'],
+                                eventsToDump=[],
                                 version=plot_version,
                                 maxEvents=int(opt.NEVENTS),
                                 events_per_job=events_per_job,
                                 debug=opt.DEBUG,
-                                computeDensity=run_density_computation,
+                                computeDensity=cfgfile['common']['run_density_computation'],
                                 name=sample)
-            sample_list.append(params)
-        collection_dict[collection] = sample_list
+            sample_params.append(params)
+        collection_params[collection] = sample_params
 
     samples_to_process = list()
     if opt.COLLECTION:
-        if opt.COLLECTION in collection_dict.keys():
+        if opt.COLLECTION in collection_params.keys():
             if opt.SAMPLE:
                 if opt.SAMPLE == 'all':
-                    samples_to_process.extend(collection_dict[opt.COLLECTION])
+                    samples_to_process.extend(collection_params[opt.COLLECTION])
                 else:
-                    sel_sample = [sample for sample in collection_dict[opt.COLLECTION] if sample.name == opt.SAMPLE]
+                    sel_sample = [sample for sample in collection_params[opt.COLLECTION] if sample.name == opt.SAMPLE]
                     samples_to_process.append(sel_sample[0])
             else:
-                print ('Collection: {}, available samples: {}'.format(opt.COLLECTION, collection_dict[opt.COLLECTION]))
+                print ('Collection: {}, available samples: {}'.format(opt.COLLECTION, collection_params[opt.COLLECTION]))
                 sys.exit(0)
         else:
             print ('ERROR: collection {} not in the cfg file'.format(opt.COLLECTION))
             sys.exit(10)
     else:
-        print ('\nAvailable collections: {}'.format(collection_dict.keys()))
+        print ('\nAvailable collections: {}'.format(collection_params.keys()))
         sys.exit(0)
 
     print ('About to process samples: {}'.format(samples_to_process))
@@ -603,13 +592,8 @@ def main(analyze):
             params['TEMPL_COLL'] = opt.COLLECTION
             params['TEMPL_SAMPLE'] = sample.name
             params['TEMPL_OUTFILE'] = 'histos_{}_{}.root'.format(sample.name, sample.version)
-            unmerged_files = [os.path.join(sample.output_dir, 'histos_{}_{}_{}.root'.format(sample.name, sample.version, job)) for job in range(0, n_jobs)]
-            # protocol = ''
-            # if '/eos/user/' in sample.output_dir:
-            #     protocol = 'root://eosuser.cern.ch/'
-            # elif '/eos/cms/' in sample.output_dir:
-            #     protocol = 'root://eoscms.cern.ch/'
-            params['TEMPL_INFILES'] = ' '.join(unmerged_files)
+            params['TEMPL_EOSPROTOCOL']= fm.get_eos_protocol(dirname=sample.output_dir)
+            params['TEMPL_INFILE'] = 'histos_{}_{}_*.root'.format(sample.name, sample.version)
             params['TEMPL_OUTDIR'] = sample.output_dir
             params['TEMPL_VIRTUALENV'] = os.path.basename(os.environ['VIRTUAL_ENV'])
 

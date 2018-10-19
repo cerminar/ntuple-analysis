@@ -17,5 +17,9 @@ workon TEMPL_VIRTUALENV
 
 cd ${BATCH_DIR}
 date
-hadd -j 5 -k TEMPL_OUTFILE TEMPL_INFILES
+for filename in TEMPL_OUTDIR/TEMPL_INFILE; do
+    eos cp TEMPL_EOSPROTOCOL$filename .
+done
+hadd -j 5 -k TEMPL_OUTFILE `ls TEMPL_INFILE`
+
 #mv TEMPL_OUTFILE TEMPL_OUTDIR

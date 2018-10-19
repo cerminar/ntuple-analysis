@@ -68,6 +68,46 @@ gen_part_sel_genplotting = [Selection('all')]
 gen_part_sel_genplotting += gen_part_ee_sel
 
 
+class TPSet:
+    def __init__(self, name, label):
+        self.name = name
+        self.label = label
+        self.tc_df = None
+        self.cl2d_df = None
+        self.cl3d_df = None
+
+    def set_collections(self, tc_df, cl2d_df, cl3d_df):
+        self.tc_df = tc_df
+        self.cl2d_df = cl2d_df
+        self.cl3d_df = cl3d_df
+
+
+class GenSet:
+    def __init__(self, name, label):
+        self.name = name
+        self.label = label
+        self.gen_df = None
+
+    def set_collections(self, gen_df):
+        self.gen_df = gen_df
+
+
+class TTSet:
+    def __init__(self, name, label):
+        self.name = name
+        self.label = label
+        self.tt_df = None
+
+    def set_collections(self, tt_df):
+        self.tt_df = tt_df
+
+
+tp_def = TPSet('DEF', 'NNDR')
+tp_def_calib = TPSet('DEFCalib', 'NNDR + calib. v1')
+gen_set = GenSet('GEN', '')
+tt_set = TTSet('TT', 'Trigger Towers')
+
+
 
 if __name__ == "__main__":
     for sel in gen_part_selections:

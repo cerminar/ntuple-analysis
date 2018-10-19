@@ -4,24 +4,24 @@ from NtupleDataFormat import HGCalNtuple
 import json
 import uuid
 
+def get_eos_protocol(dirname):
+    protocol = ''
+    if '/eos/user/' in dirname:
+        protocol = 'root://eosuser.cern.ch/'
+    elif '/eos/cms/' in dirname:
+        protocol = 'root://eoscms.cern.ch/'
+    return protocol
+
 
 def copy_from_eos(input_dir, file_name, target_file_name):
-    protocol = ''
-    if '/eos/user/' in input_dir:
-        protocol = 'root://eosuser.cern.ch/'
-    elif '/eos/cms/' in input_dir:
-        protocol = 'root://eoscms.cern.ch/'
+    protocol = get_eos_protocol(dirname=input_dir)
     eos_proc = subprocess32.Popen(['eos', protocol, 'cp', os.path.join(input_dir, file_name), target_file_name], stdout=subprocess32.PIPE)
     print eos_proc.stdout.readlines()
     return eos_proc.returncode
 
 
 def copy_to_eos(file_name, target_dir, target_file_name):
-    protocol = ''
-    if '/eos/user/' in target_dir:
-        protocol = 'root://eosuser.cern.ch/'
-    elif '/eos/cms/' in target_dir:
-        protocol = 'root://eoscms.cern.ch/'
+    protocol = get_eos_protocol(dirname=target_dir)
     eos_proc = subprocess32.Popen(['eos', protocol, 'cp', file_name, os.path.join(target_dir, target_file_name)], stdout=subprocess32.PIPE)
     print eos_proc.stdout.readlines()
     # eos_proc.wait()
@@ -34,11 +34,7 @@ def listFiles(input_dir, match='.root'):
         onlyfiles = [os.path.join(input_dir, f) for f in os.listdir(input_dir) if os.path.isfile(os.path.join(input_dir, f)) and match in f]
     else:
         # we read the input files via EOS
-        protocol = ''
-        if '/eos/user/' in input_dir:
-            protocol = 'root://eosuser.cern.ch/'
-        elif '/eos/cms/' in input_dir:
-            protocol = 'root://eoscms.cern.ch/'
+        protocol = get_eos_protocol(dirname=input_dir)
         eos_proc = subprocess32.Popen(['eos', protocol, 'ls', input_dir], stdout=subprocess32.PIPE)
         onlyfiles = [os.path.join(input_dir, f.rstrip()) for f in eos_proc.stdout.readlines() if match in f]
 
