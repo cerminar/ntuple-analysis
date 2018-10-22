@@ -23,6 +23,9 @@ collections:
     samples:
       - ele_flat2to100_PU0
       - ele_flat2to100_PU200
+  nugun_rate:
+    samples:
+      - nugun_alleta_pu200
   # - photon_Pt35_samples:
   #     samples :
   #       - photonPt35_PU0
@@ -63,6 +66,29 @@ plotters:
     - !!python/object:python.plotters.RatePlotter
         tp_set: !!python/name:python.selections.tp_def_calib
         tp_selection: !!python/name:python.selections.tp_rate_selections
+  tp_egm_plotters:
+    - !!python/object:python.plotters.TPPlotter
+        tp_set: !!python/name:python.selections.tp_def
+        tp_selection: !!python/name:python.selections.tp_id_selections
+    - !!python/object:python.plotters.TPPlotter
+        tp_set: !!python/name:python.selections.tp_def_calib
+        tp_selection: !!python/name:python.selections.tp_id_selections
+  tp_elematched_plotters:
+    - !!python/object:python.plotters.TPGenMatchPlotter
+        tp_set: !!python/name:python.selections.tp_def
+        gen_set:
+        tp_selections: !!python/name:python.selections.tp_id_selections
+        gen_selections:
+    - !!python/object:python.plotters.TPPlotter
+        tp_set: !!python/name:python.selections.tp_def_calib
+        tp_selection: !!python/name:python.selections.tp_id_selections
+
+
+  tt_plotters:
+    - !!python/object:python.plotters.TTPlotter
+        tp_set: !!python/name:python.selections.tt_set
+
+
   ele_rate:
     - !!python/object:python.plotters.TPPlotter
         tp_set: !!python/name:python.selections.tp_def
@@ -97,6 +123,9 @@ samples:
   ele_flat2to100_PU200:
     input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU200_v11/180814_141012/0000/
     events_per_job : 200
+  nugun_alleta_pu200:
+    input_sample_dir: SingleNeutrino/NuGunAllEta_PU200_v11/180829_143627/0001/
+    events_per_job: 200
 
 
   # ------------------------------------------------------------------------------------
