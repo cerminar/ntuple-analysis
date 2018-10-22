@@ -44,13 +44,13 @@ class BaseHistos():
         # # print 'BOOK histo: {}'.format(self)
         if root_file is not None:
             root_file.cd()
-            print 'class: {}'.format(self.__class__.__name__)
-            ROOT.gDirectory.pwd()
+            #print 'class: {}'.format(self.__class__.__name__)
+            # ROOT.gDirectory.pwd()
             file_dir = root_file.GetDirectory(self.__class__.__name__)
-            print '# keys in dir: {}'.format(len(file_dir.GetListOfKeys()))
+            #print '# keys in dir: {}'.format(len(file_dir.GetListOfKeys()))
             # file_dir.cd()
             selhistos = [(histo.ReadObj(), histo.GetName()) for histo in file_dir.GetListOfKeys() if name+'_' in histo.GetName()]
-            print selhistos
+            #   print selhistos
             for hinst, histo_name in selhistos:
                 attr_name = 'h_'+histo_name.split(name+'_')[1]
                 setattr(self, attr_name, hinst)
@@ -518,6 +518,7 @@ class HistoSetEff():
         self.h_num = GenParticleHistos('h_effNum_'+name, root_file)
         self.h_den = GenParticleHistos('h_effDen_'+name, root_file)
         self.h_eff = None
+        self.h_ton = None
         if root_file:
             self.computeEff()
 
@@ -532,6 +533,8 @@ class HistoSetEff():
         if self.h_eff is None:
             self.h_eff = HistoEff(passed=self.h_num, total=self.h_den, debug=False)
 
+    def computeTurnOn(self, denominator):
+            self.h_ton = HistoEff(passed=self.h_num, total=denominator, debug=False)
 
 
 # if __name__ == "__main__":
