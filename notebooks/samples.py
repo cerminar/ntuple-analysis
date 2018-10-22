@@ -1,9 +1,10 @@
 import ROOT
 
-version = 'v47'
+version = 'v51'
 
 files = {}
 file_keys = {}
+
 
 
 class RootFile:
@@ -28,21 +29,124 @@ class RootFile:
         return self._file_keys
 
 class Sample():
-    def __init__(self, name, label, version=None):
-        self.name = name
-        self.label = label
+    def __init__(cls, name, label, version=None):
+        cls.name = name
+        cls.label = label
         if version:
             version = '_'+version
         else:
             version = ''
-        self.histo_filename = '../plots1/histos_{}{}.root'.format(self.name, version)
-        self.histo_file = ROOT.TFile(self.histo_filename)
+        cls.histo_filename = '../plots1/histos_{}{}.root'.format(cls.name, version)
+        cls.histo_file = ROOT.TFile(cls.histo_filename, 'r')#RootFile(cls.histo_filename)
 
 
-sample_names = ['ele_flat2to100_PU0',
-                'ele_flat2to100_PU200',
-                'photonPt35_PU0',
-                'photonPt35_PU200']
+# sample_names = ['ele_flat2to100_PU0',
+#                 'ele_flat2to100_PU200',
+#                 'photonPt35_PU0',
+#                 'photonPt35_PU200']
+
+
+def get_label_dict(selections):
+    dictionary = {}
+    for sel in selections:
+        dictionary[sel.name] = sel.label
+    return dictionary
+
+
+
+class HProxy:
+    def __init__(self, classtype, tp, tp_sel, gen_sel, root_file):
+        self.classtype = classtype
+        self.tp = tp
+        self.tp_sel = tp_sel
+        self.gen_sel = gen_sel
+        self.root_file = root_file
+        self.instance = None
+
+
+    def get(self):
+        if self.instance is None:
+            self.instance = self.classtype('{}_{}_{}'.format(self.tp, self.tp_sel, self.gen_sel), self.root_file)
+        return self.instance
+
+class HPlot:
+    def __init__(self, samples, tp_sets, tp_selections, gen_selections):
+        self.tp_sets = tp_sets
+        self.tp_selections = tp_selections
+        self.gen_selections = gen_selections
+        self.pus = []
+        for sample in samples:
+            self.pus.append(sample.label)
+        self.data = pd.DataFrame(columns=['sample', 'pu', 'tp', 'tp_sel', 'gen_sel', 'classtype', 'histo'])
+        self.labels_dict = {}
+
+        self.labels_dict.update(tp_sets)
+        self.labels_dict.update(tp_selections)
+        self.labels_dict.update(gen_selections)
+        self.labels_dict.update({'PU0': 'PU0', 'PU200': 'PU200'})
+
+    def cache_histo(self,
+                    classtype,
+                    samples,
+                    pus,
+                    tps,
+                    tp_sels,
+                    gen_sels):
+        for sample in samples:
+            print sample
+            for tp in tps:
+                for tp_sel in tp_sels:
+                    for gen_sel in gen_sels:
+                        print sample, tp, tp_sel, gen_sel
+                        self.data = self.data.append({'sample': 'ele',
+                                                        'pu': sample.label,
+                                                        'tp': tp,
+                                                        'tp_sel': tp_sel,
+                                                        'gen_sel': gen_sel,
+                                                        'classtype': classtype,
+                                                        'histo': HProxy(classtype, tp, tp_sel, gen_sel, sample.histo_file)}
+                                                          , ignore_index=True)
+
+
+
+    def get_histo(self,
+                  classtype,
+                  sample=None,
+                  pu=None,
+                  tp=None,
+                  tp_sel=None,
+                  gen_sel=None):
+        histo = None
+        labels = []
+        text = ''
+        histo_df = self.data.query('(pu == @pu) & (tp == @tp) & (tp_sel == @tp_sel) & (gen_sel == @gen_sel) & (classtype == @classtype)')
+
+        if histo_df.empty:
+            print 'No match found for: pu: {}, tp: {}, tp_sel: {}, gen_sel: {}, classtype: {}'.format(pu, tp, tp_sel, gen_sel, classtype)
+
+
+        field_counts = histo_df.apply(lambda x: len(x.unique()))
+        label_fields = []
+        text_fields = []
+        # print field_counts
+        for field in field_counts.iteritems():
+            if(field[1] > 1 and field[0] != 'histo' and field[0] != 'sample'):
+                label_fields.append(field[0])
+            if(field[1] == 1 and field[0] != 'histo' and field[0] != 'classtype' and field[0] != 'sample'):
+                text_fields.append(field[0])
+
+        # print 'label fields: {}'.format(label_fields)
+        # print 'text fields: {}'.format(text_fields)
+
+        for item in histo_df[label_fields].iterrows():
+            labels.append(', '.join([self.labels_dict[tx] for tx in item[1].values]))
+
+        #print labels
+        text = ', '.join([self.labels_dict[fl] for fl in histo_df[text_fields].iloc[0].values])
+        histo = [his.get() for his in  histo_df['histo'].values]
+        return histo, labels, text
+
+
 
 sample_ele_flat2to100_PU0 = Sample('ele_flat2to100_PU0', 'PU0', version)
 sample_ele_flat2to100_PU200 = Sample('ele_flat2to100_PU200', 'PU200', version)
@@ -64,7 +168,7 @@ samples_nugunrates = [sample_nugunrate]
 
 from python.selections import tp_rate_selections
 from python.selections import tp_match_selections
-from python.selections import gen_part_selections
+from python.selections import genpart_ele_ee_selections
 
 tpsets = {'DEF': 'NNDR',
           'DEFCalib': 'NNDR Calib v1'}
@@ -72,74 +176,10 @@ tpsets = {'DEF': 'NNDR',
 tpset_selections = {}
 
 gen_selections = {}
-
-def get_label_dict(selections):
-    dictionary = {}
-    for sel in selections:
-        dictionary[sel.name] = sel.label
-    return dictionary
+samples = []
 
 
-tpset_selections.update(get_label_dict(tp_rate_selections))
+#tpset_selections.update(get_label_dict(tp_rate_selections))
 tpset_selections.update(get_label_dict(tp_match_selections))
 
-gen_selections.update(get_label_dict(gen_part_selections))
-
-
-
-tpset_labels = {'DEF': 'NNDR',
-                'DEF_em': 'NNDR + EGID',
-                'DEF_em_calib': 'NNDR + EGID + calib v1',
-                'DEF_emL': 'NNDR + EGIDv1',
-                'DEF_emL_calib': 'NNDR + EGIDv1 + calib v1',
-                'DEF_pt10': 'NNDR, p_{T}^{L1}>10GeV',
-                'DEF_pt20': 'NNDR, p_{T}^{L1}>20GeV',
-                'DEF_pt25': 'NNDR, p_{T}^{L1}>25GeV',
-                'DEF_pt30': 'NNDR, p_{T}^{L1}>30GeV',
-                'DEF_pt10_em': 'NNDR + EGID, p_{T}^{L1}>10GeV',
-                'DEF_pt20_em': 'NNDR + EGID, p_{T}^{L1}>20GeV',
-                'DEF_pt25_em': 'NNDR + EGID, p_{T}^{L1}>25GeV',
-                'DEF_pt30_em': 'NNDR + EGID, p_{T}^{L1}>30GeV',
-                'DEF_pt10_emL': 'NNDR + EGIDv1, p_{T}^{L1}>10GeV',
-                'DEF_pt20_emL': 'NNDR + EGIDv1, p_{T}^{L1}>20GeV',
-                'DEF_pt25_emL': 'NNDR + EGIDv1, p_{T}^{L1}>25GeV',
-                'DEF_pt30_emL': 'NNDR + EGIDv1, p_{T}^{L1}>30GeV',
-                'DEF_pt10_em_calib': 'NNDR + EGID + calib, p_{T}^{L1}>10GeV',
-                'DEF_pt20_em_calib': 'NNDR + EGID + calib, p_{T}^{L1}>20GeV',
-                'DEF_pt25_em_calib': 'NNDR + EGID + calib, p_{T}^{L1}>25GeV',
-                'DEF_pt30_em_calib': 'NNDR + EGID + calib, p_{T}^{L1}>30GeV',
-                'DEF_pt10_emL_calib':  'NNDR + EGIDv1 + calib, p_{T}^{L1}>10GeV',
-                'DEF_pt20_emL_calib': 'NNDR + EGIDv1 + calib, p_{T}^{L1}>20GeV',
-                'DEF_pt25_emL_calib': 'NNDR + EGIDv1 + calib, p_{T}^{L1}>25GeV',
-                'DEF_pt30_emL_calib': 'NNDR + EGIDv1 + calib, p_{T}^{L1}>30GeV'
-                }
-
-
-particle_labels = {'ele': 'all #eta',
-                   'elePt20': 'p_{T}^{GEN}>20GeV',
-                   'elePt30': 'p_{T}^{GEN}>30GeV',
-                   'elePt40': 'p_{T}^{GEN}>40GeV',
-                   'eleA': '|#eta^{GEN}| <= 1.52',
-                   'eleB': '1.52 < |#eta^{GEN}| <= 1.7',
-                   'eleC': '1.7 < |#eta^{GEN}| <= 2.4',
-                   'eleD': '2.4 < |#eta^{GEN}| <= 2.8',
-                   'eleE': '|#eta^{GEN}| > 2.8',
-                   'eleAB': '|#eta^{GEN}| <= 1.7',
-                   'eleABC': '|#eta^{GEN}| <= 2.4',
-                   'eleBC': '1.52 < |#eta^{GEN}| <= 2.4',
-                   'eleBCD': '1.52 < |#eta^{GEN}| <= 2.8',
-                   'eleBCDE': '|#eta^{GEN}| > 1.52',
-                   'all': 'all #eta^{L1}',
-                   'etaA': '|#eta^{L1}| <= 1.52',
-                   'etaB': '1.52 < |#eta^{L1}| <= 1.7)',
-                   'etaC': '1.7 < |#eta^{L1}| <= 2.4)',
-                   'etaD': '2.4 < |#eta^{L1}| <= 2.8)',
-                   'etaE': '|#eta^{L1}| > 2.8',
-                   'etaAB': '|#eta^{L1}| <= 1.7',
-                   'etaABC': '|#eta^{L1}| <= 2.4',
-                   'etaBC': '1.52 < |#eta^{L1}| <= 2.4',
-                   'etaBCD': '1.52 < |#eta^{L1}| <= 2.8',
-                   'etaBCDE': '|#eta^{L1}| > 1.52'}
-
-samples = []
-# particles = ''
+gen_selections.update(get_label_dict(genpart_ele_ee_selections))
