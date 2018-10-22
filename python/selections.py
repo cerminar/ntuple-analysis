@@ -30,10 +30,10 @@ tp_rate_selections = add_selections(tp_id_selections, tp_eta_selections)
 
 tp_match_selections = add_selections(tp_id_selections, tp_pt_selections)
 
-gen_part_selections = [Selection('Ele', 'e^{#pm}', 'abs(pdgid) == {}'.format(PID.electron)),
-                       # Selection('Phot', '#gamma', 'abs(pdgid) == {}'.format(PID.photon)),
-                       # Selection('Pion', '#pi', 'abs(pdgid) == {}'.format(PID.pion))
-                       ]
+genpart_ele_selections = [Selection('Ele', 'e^{#pm}', 'abs(pdgid) == {}'.format(PID.electron))]
+genpart_photon_selections = [Selection('Phot', '#gamma', 'abs(pdgid) == {}'.format(PID.photon))]                      #
+genpart_pion_selections = [Selection('Pion', '#pi', 'abs(pdgid) == {}'.format(PID.pion))]
+
 
 gen_ee_selections = [Selection('', '', 'reachedEE == 2')]
 
@@ -54,6 +54,7 @@ gen_pt_selections = [Selection('Pt10', 'p_{T}^{GEN}>=10GeV', 'pt >= 10'),
                      Selection('Pt30', 'p_{T}^{GEN}>=30GeV', 'pt >= 30'),
                      Selection('Pt40', 'p_{T}^{GEN}>=40GeV', 'pt >= 40')]
 
+gen_part_selections = [Selection('Ele', 'e^{#pm}', 'abs(pdgid) == {}'.format(PID.electron))]
 
 gen_part_ee_sel = add_selections(gen_part_selections, gen_ee_selections)
 gen_part_ee_pt_sel = add_selections(gen_part_ee_sel, gen_pt_selections)
@@ -64,8 +65,32 @@ gen_part_selections += gen_part_ee_sel
 gen_part_selections += gen_part_ee_pt_sel
 gen_part_selections += gen_part_ee_eta_sel
 
-gen_part_sel_genplotting = [Selection('all')]
-gen_part_sel_genplotting += gen_part_ee_sel
+# print 'gen_part_selections: {}'.format(len(gen_part_selections))
+
+genpart_ele_ee_selections = []
+genpart_ele_ee_selections_tmp = add_selections(genpart_ele_selections, gen_ee_selections)
+genpart_ele_ee_selections += genpart_ele_ee_selections_tmp
+genpart_ele_ee_selections += add_selections(genpart_ele_ee_selections_tmp, gen_pt_selections)
+genpart_ele_ee_selections += add_selections(genpart_ele_ee_selections_tmp, gen_eta_selections)
+
+# print 'genpart_ele_ee_selections: {}'.format(len(genpart_ele_ee_selections))
+
+genpart_photon_ee_selections = []
+genpart_photon_ee_selections_tmp = add_selections(genpart_photon_selections, gen_ee_selections)
+genpart_photon_ee_selections += genpart_photon_ee_selections_tmp
+genpart_photon_ee_selections += add_selections(genpart_photon_ee_selections_tmp, gen_pt_selections)
+genpart_photon_ee_selections += add_selections(genpart_photon_ee_selections_tmp, gen_eta_selections)
+
+genpart_pion_ee_selections = []
+genpart_pion_ee_selections_tmp = add_selections(genpart_pion_selections, gen_ee_selections)
+genpart_pion_ee_selections += genpart_pion_ee_selections_tmp
+genpart_pion_ee_selections += add_selections(genpart_pion_ee_selections_tmp, gen_pt_selections)
+genpart_pion_ee_selections += add_selections(genpart_pion_ee_selections_tmp, gen_eta_selections)
+
+# genpart_ele_
+
+genpart_ele_genplotting = [Selection('all')]
+genpart_ele_genplotting +=  add_selections(genpart_ele_selections, gen_ee_selections)
 
 
 class TPSet:

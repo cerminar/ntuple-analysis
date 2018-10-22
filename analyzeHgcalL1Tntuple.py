@@ -230,13 +230,13 @@ def analyze(params, batch_idx=0):
                                plotters.RatePlotter(tp_def_calib, selections.tp_rate_selections)])
     plotter_collection.extend([plotters.TPGenMatchPlotter(tp_def, gen_set,
                                                           selections.tp_match_selections,
-                                                          selections.gen_part_selections),
+                                                          selections.genpart_ele_ee_selections),
                                plotters.TPGenMatchPlotter(tp_def_calib, gen_set,
                                                           selections.tp_match_selections,
-                                                          selections.gen_part_selections)])
-    plotter_collection.extend([plotters.GenPlotter(gen_set, selections.gen_part_sel_genplotting)])
+                                                          selections.genpart_ele_ee_selections)])
+    plotter_collection.extend([plotters.GenPlotter(gen_set, selections.genpart_ele_genplotting)])
     plotter_collection.extend([plotters.TTPlotter(tt_set)])
-    plotter_collection.extend([plotters.TTGenMatchPlotter(tt_set, gen_set, [plotters.Selection('all')], selections.gen_part_selections)])
+    plotter_collection.extend([plotters.TTGenMatchPlotter(tt_set, gen_set, [plotters.Selection('all')], selections.genpart_ele_ee_selections)])
 
     # -------------------------------------------------------
     # book histos
