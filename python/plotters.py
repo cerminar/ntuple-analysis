@@ -25,7 +25,7 @@ class Selection:
             return self
         if self.all:
             return sel_obj
-        new_label = '{} & {}'.format(self.label, sel_obj.label)
+        new_label = '{}, {}'.format(self.label, sel_obj.label)
         if self.label == '':
             new_label = sel_obj.label
         if sel_obj.label == '':
@@ -252,7 +252,7 @@ class TPGenMatchPlotter:
                 # print ('----- in cone sum:')
                 # print (clustersInCone)
                 histoResoCone.fill(reference=genParticle, target=clustersInCone.iloc[0])
-                if histoGenMatched is None:
+                if histoGenMatched is not None:
                     histoGenMatched.fill(genParticles.loc[[idx]])
 
                 if debug >= 4:
