@@ -18,7 +18,8 @@ workon TEMPL_VIRTUALENV
 cd ${BATCH_DIR}
 date
 for filename in TEMPL_OUTDIR/TEMPL_INFILE; do
-    eos cp TEMPL_EOSPROTOCOL$filename .
+    echo ${filename}
+    xrdcp TEMPL_EOSPROTOCOL${filename} .
 done
 hadd -j 5 -k TEMPL_OUTFILE `ls TEMPL_INFILE`
 
