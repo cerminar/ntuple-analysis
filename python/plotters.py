@@ -3,63 +3,12 @@ import utils as utils
 import pandas as pd
 import numpy as np
 import clusterTools as clAlgo
+import selections as selections
 
-
-class PID:
-    electron = 11
-    photon = 22
-    pizero = 111
-    pion = 211
-    kzero = 130
-
-
-class Selection:
-    def __init__(self, name, label='', selection=''):
-        self.name = name
-        self.label = label
-        self.selection = selection
-
-    def __add__(self, sel_obj):
-        """ & operation """
-        if sel_obj.all:
-            return self
-        if self.all:
-            return sel_obj
-        new_label = '{}, {}'.format(self.label, sel_obj.label)
-        if self.label == '':
-            new_label = sel_obj.label
-        if sel_obj.label == '':
-            new_label = self.label
-        return Selection(name='{}{}'.format(self.name, sel_obj.name),
-                         label=new_label,
-                         selection='({}) & ({})'.format(self.selection, sel_obj.selection))
-
-    def __str__(self):
-        return 'n: {}, s: {}, l:{}'.format(self.name, self.selection, self.label)
-
-    def __repr__(self):
-        return '<{} n: {}, s: {}, l:{}> '.format(self.__class__.__name__,
-                                                 self.name,
-                                                 self.selection,
-                                                 self.label)
-
-    @property
-    def all(self):
-        if self.name == 'all':
-            return True
-        return False
-
-
-def add_selections(list1, list2):
-    ret = []
-    for sel1 in list1:
-        for sel2 in list2:
-            ret.append(sel1+sel2)
-    return ret
 
 
 class RatePlotter:
-    def __init__(self, tp_set, tp_selections=[Selection('all')]):
+    def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
         self.tp_set = tp_set
         self.tp_selections = tp_selections
         self.h_rate = {}
@@ -82,7 +31,7 @@ class RatePlotter:
 
 
 class TPPlotter:
-    def __init__(self, tp_set, tp_selections=[Selection('all')]):
+    def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
         self.tp_set = tp_set
         self.tp_selections = tp_selections
         self.h_tpset = {}
@@ -106,7 +55,7 @@ class TPPlotter:
 
 
 class GenPlotter:
-    def __init__(self, gen_set, gen_selections=[Selection('all')]):
+    def __init__(self, gen_set, gen_selections=[selections.Selection('all')]):
         self.gen_set = gen_set
         self.gen_selections = gen_selections
         self.h_gen = {}
@@ -126,7 +75,7 @@ class GenPlotter:
 
 class TPGenMatchPlotter:
     def __init__(self, tp_set, gen_set,
-                 tp_selections=[Selection('all')], gen_selections=[Selection('all')]):
+                 tp_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
         self.tp_set = tp_set
         self.tp_selections = tp_selections
         self.gen_set = gen_set
@@ -328,7 +277,7 @@ class TPGenMatchPlotter:
 
 
 class TTPlotter:
-    def __init__(self, tt_set, tt_selections=[Selection('all')]):
+    def __init__(self, tt_set, tt_selections=[selections.Selection('all')]):
         self.tt_set = tt_set
         self.tt_selections = tt_selections
         self.h_tt = {}
@@ -348,7 +297,7 @@ class TTPlotter:
 
 class TTGenMatchPlotter:
     def __init__(self, tt_set, gen_set,
-                 tt_selections=[Selection('all')], gen_selections=[Selection('all')]):
+                 tt_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
         self.tt_set = tt_set
         self.tt_selections = tt_selections
         self.gen_set = gen_set
@@ -450,6 +399,20 @@ class TTGenMatchPlotter:
                         print (genParticle)
 
 
+tp_plotters = [TPPlotter(selections.tp_def, selections.tp_id_selections),
+               TPPlotter(selections.tp_def_calib, selections.tp_id_selections)]
+rate_plotters = [RatePlotter(selections.tp_def, selections.tp_rate_selections),
+                 RatePlotter(selections.tp_def_calib, selections.tp_rate_selections)]
+tp_elematched_plotters = [TPGenMatchPlotter(selections.tp_def, selections.gen_set,
+                                            selections.tp_match_selections,
+                                            selections.genpart_ele_ee_selections),
+                          TPGenMatchPlotter(selections.tp_def_calib, selections.gen_set,
+                                            selections.tp_match_selections,
+                                            selections.genpart_ele_ee_selections)]
+genpart_plotters = [GenPlotter(selections.gen_set, selections.genpart_ele_genplotting)]
+ttower_plotters = [TTPlotter(selections.tt_set)]
+ttower_elematched_plotters = [TTGenMatchPlotter(selections.tt_set, selections.gen_set,
+                              [selections.Selection('all')], selections.genpart_ele_ee_selections)]
 
 
 

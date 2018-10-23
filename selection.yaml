@@ -7,7 +7,7 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v52
+  plot_version: v53
   run_clustering: False
   run_density_computation: False
 
@@ -18,14 +18,30 @@ collections:
       - test_ele_flat2to100_PU0
       - test_ele_flat2to100_PU200
     plotters:
-      - ele_rate
+      - tp_egm_plotters
+      - tp_elematched_plotters
+      - genpart_plotters
+      - ttower_plotters
+      - ttower_elematched_plotters
+
   ele_flat2to100:
     samples:
       - ele_flat2to100_PU0
       - ele_flat2to100_PU200
+    plotters:
+      - tp_egm_plotters
+      - tp_elematched_plotters
+      - genpart_plotters
+      - ttower_plotters
+      - ttower_elematched_plotters
+
   nugun_rate:
     samples:
       - nugun_alleta_pu200
+    plotters:
+      - rate_plotters
+      - ttower_plotters
+      - tp_egm_plotters
   # - photon_Pt35_samples:
   #     samples :
   #       - photonPt35_PU0
@@ -59,44 +75,12 @@ collections:
 
 
 plotters:
-  rate_plotters:
-    - !!python/object:python.plotters.RatePlotter
-        tp_set: !!python/name:python.selections.tp_def
-        tp_selection: !!python/name:python.selections.tp_rate_selections
-    - !!python/object:python.plotters.RatePlotter
-        tp_set: !!python/name:python.selections.tp_def_calib
-        tp_selection: !!python/name:python.selections.tp_rate_selections
-  tp_egm_plotters:
-    - !!python/object:python.plotters.TPPlotter
-        tp_set: !!python/name:python.selections.tp_def
-        tp_selection: !!python/name:python.selections.tp_id_selections
-    - !!python/object:python.plotters.TPPlotter
-        tp_set: !!python/name:python.selections.tp_def_calib
-        tp_selection: !!python/name:python.selections.tp_id_selections
-  tp_elematched_plotters:
-    - !!python/object:python.plotters.TPGenMatchPlotter
-        tp_set: !!python/name:python.selections.tp_def
-        gen_set:
-        tp_selections: !!python/name:python.selections.tp_id_selections
-        gen_selections:
-    - !!python/object:python.plotters.TPPlotter
-        tp_set: !!python/name:python.selections.tp_def_calib
-        tp_selection: !!python/name:python.selections.tp_id_selections
-
-
-  tt_plotters:
-    - !!python/object:python.plotters.TTPlotter
-        tp_set: !!python/name:python.selections.tt_set
-
-
-  ele_rate:
-    - !!python/object:python.plotters.TPPlotter
-        tp_set: !!python/name:python.selections.tp_def
-        tp_selection: !!python/name:python.selections.tp_match_selections
-  photon_rate:
-    - !!python/object:python.plotters.TPPlotter
-        tp_set: !!python/none
-        tp_selection: !!python/name:python.selections.tp_match_selections
+  rate_plotters: !!python/name:python.plotters.rate_plotters
+  tp_egm_plotters: !!python/name:python.plotters.tp_plotters
+  tp_elematched_plotters: !!python/name:python.plotters.tp_elematched_plotters
+  genpart_plotters: !!python/name:python.plotters.genpart_plotters
+  ttower_plotters: !!python/name:python.plotters.ttower_plotters
+  ttower_elematched_plotters: !!python/name:python.plotters.ttower_elematched_plotters
 
     # tp_set: !null,
     # tp_selection: !!python/name:python.selections.tp_match_selections}

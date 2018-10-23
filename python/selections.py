@@ -1,5 +1,59 @@
-from plotters import Selection, PID, add_selections
 # ---------------------------------------------------
+
+class PID:
+    electron = 11
+    photon = 22
+    pizero = 111
+    pion = 211
+    kzero = 130
+
+
+class Selection:
+    def __init__(self, name, label='', selection=''):
+        self.name = name
+        self.label = label
+        self.selection = selection
+
+    def __add__(self, sel_obj):
+        """ & operation """
+        if sel_obj.all:
+            return self
+        if self.all:
+            return sel_obj
+        new_label = '{}, {}'.format(self.label, sel_obj.label)
+        if self.label == '':
+            new_label = sel_obj.label
+        if sel_obj.label == '':
+            new_label = self.label
+        return Selection(name='{}{}'.format(self.name, sel_obj.name),
+                         label=new_label,
+                         selection='({}) & ({})'.format(self.selection, sel_obj.selection))
+
+    def __str__(self):
+        return 'n: {}, s: {}, l:{}'.format(self.name, self.selection, self.label)
+
+    def __repr__(self):
+        return '<{} n: {}, s: {}, l:{}> '.format(self.__class__.__name__,
+                                                 self.name,
+                                                 self.selection,
+                                                 self.label)
+
+    @property
+    def all(self):
+        if self.name == 'all':
+            return True
+        return False
+
+
+def add_selections(list1, list2):
+    ret = []
+    for sel1 in list1:
+        for sel2 in list2:
+            ret.append(sel1+sel2)
+    return ret
+
+
+
 # TP selections
 tp_id_selections = [Selection('all', '', ''),
                     Selection('Em', 'EGId', 'quality >0'),

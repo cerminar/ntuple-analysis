@@ -31,8 +31,8 @@ from python.utils import debugPrintOut
 
 import python.file_manager as fm
 import python.selections as selections
-import python.plotters as plotters
 
+#import python.plotters as plotters
 
 class Parameters:
     def __init__(self,
@@ -44,6 +44,7 @@ class Parameters:
                  eventsToDump,
                  events_per_job,
                  version,
+                 plotters,
                  maxEvents=-1,
                  computeDensity=False,
                  debug=0,
@@ -60,6 +61,7 @@ class Parameters:
         self.computeDensity = computeDensity
         self.events_per_job = events_per_job
         self.version = version
+        self.plotters = plotters
 
     def __str__(self):
         return 'Name: {},\n \
@@ -224,19 +226,20 @@ def analyze(params, batch_idx=0):
 
     # instantiate all the plotters
     plotter_collection = []
-    plotter_collection.extend([plotters.TPPlotter(tp_def, selections.tp_id_selections),
-                               plotters.TPPlotter(tp_def_calib, selections.tp_id_selections)])
-    plotter_collection.extend([plotters.RatePlotter(tp_def, selections.tp_rate_selections),
-                               plotters.RatePlotter(tp_def_calib, selections.tp_rate_selections)])
-    plotter_collection.extend([plotters.TPGenMatchPlotter(tp_def, gen_set,
-                                                          selections.tp_match_selections,
-                                                          selections.genpart_ele_ee_selections),
-                               plotters.TPGenMatchPlotter(tp_def_calib, gen_set,
-                                                          selections.tp_match_selections,
-                                                          selections.genpart_ele_ee_selections)])
-    plotter_collection.extend([plotters.GenPlotter(gen_set, selections.genpart_ele_genplotting)])
-    plotter_collection.extend([plotters.TTPlotter(tt_set)])
-    plotter_collection.extend([plotters.TTGenMatchPlotter(tt_set, gen_set, [plotters.Selection('all')], selections.genpart_ele_ee_selections)])
+    plotter_collection.extend(params.plotters)
+    # plotter_collection.extend([plotters.TPPlotter(tp_def, selections.tp_id_selections),
+    #                            plotters.TPPlotter(tp_def_calib, selections.tp_id_selections)])
+    # plotter_collection.extend([plotters.RatePlotter(tp_def, selections.tp_rate_selections),
+    #                            plotters.RatePlotter(tp_def_calib, selections.tp_rate_selections)])
+    # plotter_collection.extend([plotters.TPGenMatchPlotter(tp_def, gen_set,
+    #                                                       selections.tp_match_selections,
+    #                                                       selections.genpart_ele_ee_selections),
+    #                            plotters.TPGenMatchPlotter(tp_def_calib, gen_set,
+    #                                                       selections.tp_match_selections,
+    #                                                       selections.genpart_ele_ee_selections)])
+    # plotter_collection.extend([plotters.GenPlotter(gen_set, selections.genpart_ele_genplotting)])
+    # plotter_collection.extend([plotters.TTPlotter(tt_set)])
+    # plotter_collection.extend([plotters.TTGenMatchPlotter(tt_set, gen_set, [plotters.Selection('all')], selections.genpart_ele_ee_selections)])
 
     # -------------------------------------------------------
     # book histos
@@ -387,16 +390,19 @@ def analyze(params, batch_idx=0):
                       toPrint=triggerClusters.iloc[:3])
         debugPrintOut(debug, '3D clusters',
                       toCount=trigger3DClusters,
-                      toPrint=trigger3DClusters.iloc[:3])
+                      toPrint=trigger3DClusters.sort_values(by='pt', ascending=False).iloc[:10])
         debugPrintOut(debug, 'Trigger Towers',
                       toCount=triggerTowers,
                       toPrint=triggerTowers.sort_values(by='pt', ascending=False).iloc[:10])
         # print '# towers eta >0 {}'.format(len(triggerTowers[triggerTowers.eta > 0]))
         # print '# towers eta <0 {}'.format(len(triggerTowers[triggerTowers.eta < 0]))
 
-        trigger3DClustersCalib = get_calibrated_clusters(calib_factors, trigger3DClusters[(trigger3DClusters.quality > 0)])
+        trigger3DClustersCalib = get_calibrated_clusters(calib_factors, trigger3DClusters)
         # print trigger3DClusters[:3]
         # print trigger3DClustersCalib[:3]
+        debugPrintOut(debug, 'Calibrated 3D clusters',
+                      toCount=trigger3DClustersCalib,
+                      toPrint=trigger3DClustersCalib.sort_values(by='pt', ascending=False).iloc[:10])
 
         if params.clusterize:
             # Now build DBSCAN 2D clusters
@@ -505,9 +511,14 @@ def main(analyze):
         samples = collection_data['samples']
         print ('--- Collection: {} with samples: {}'.format(collection, samples))
         sample_params = []
+
+        plotters = []
+        for plotter in collection_data['plotters']:
+            plotters.extend(cfgfile['plotters'][plotter])
+
         for sample in samples:
             events_per_job = -1
-            out_file_name = 'histos_{}_{}.root'.format(sample, plot_version)
+            out_file_name = 'histosi_{}_{}.root'.format(sample, plot_version)
             if opt.BATCH:
                 events_per_job = cfgfile['samples'][sample]['events_per_job']
                 if opt.RUN:
@@ -518,6 +529,7 @@ def main(analyze):
 
             out_file = os.path.join(outdir, out_file_name)
 
+
             params = Parameters(input_base_dir=basedir,
                                 input_sample_dir=cfgfile['samples'][sample]['input_sample_dir'],
                                 output_filename=out_file,
@@ -527,8 +539,9 @@ def main(analyze):
                                 version=plot_version,
                                 maxEvents=int(opt.NEVENTS),
                                 events_per_job=events_per_job,
-                                debug=opt.DEBUG,
                                 computeDensity=cfgfile['common']['run_density_computation'],
+                                plotters=plotters,
+                                debug=opt.DEBUG,
                                 name=sample)
             sample_params.append(params)
         collection_params[collection] = sample_params
