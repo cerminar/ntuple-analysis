@@ -48,6 +48,56 @@ def draw(plot, options='', text=None):
     return
 
 
+def drawAll(histograms,
+            labels=None,
+            options='',
+            text=None,
+            norm=False,
+            logy=False,
+            min_y=None,
+            max_y=None,
+            y_axis_label=None,
+            do_ratio=False,
+            do_profile=False):
+    if len(histograms) == 0:
+        print 'ERROR: no histogram in input'
+        return -1
+    if do_ratio and len(histograms) != 2:
+        print 'ERROR: do_ratio option only available when 2 histograms need to be drawn!'
+        return -2
+    if do_profile and not ('TH2' in histograms[0].ClassName() or 'TH3' in histograms[0].ClassName()):
+        print 'ERROR: do_profile option only available with TH2 and TH3 histograms'
+        return -3
+
+    # we build the canvas
+    return
+
+
+def drawAll(histograms,
+            labels=None,
+            options='',
+            text=None,
+            norm=False,
+            logy=False,
+            min_y=None,
+            max_y=None,
+            y_axis_label=None,
+            do_ratio=False,
+            do_profile=False):
+    if len(histograms) == 0:
+        print 'ERROR: no histogram in input'
+        return -1
+    if do_ratio and len(histograms) != 2:
+        print 'ERROR: do_ratio option only available when 2 histograms need to be drawn!'
+        return -2
+    if do_profile and not ('TH2' in histograms[0].ClassName() or 'TH3' in histograms[0].ClassName()):
+        print 'ERROR: do_profile option only available with TH2 and TH3 histograms'
+        return -3
+
+    # we build the canvas
+    return 0
+
+
 def getLegend(x1=0.7, y1=0.71, x2=0.95, y2=0.85):
     global stuff
     legend = ROOT.TLegend(x1, y1, x2, y2)

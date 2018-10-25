@@ -66,7 +66,10 @@ class HProxy:
 
     def get(self):
         if self.instance is None:
-            self.instance = self.classtype('{}_{}_{}'.format(self.tp, self.tp_sel, self.gen_sel), self.root_file)
+            name = '{}_{}_{}'.format(self.tp, self.tp_sel, self.gen_sel)
+            if self.gen_sel == None:
+                name = '{}_{}'.format(self.tp, self.tp_sel)
+            self.instance = self.classtype(name, self.root_file)
         return self.instance
 
 class HPlot:
@@ -96,16 +99,26 @@ class HPlot:
             print sample
             for tp in tps:
                 for tp_sel in tp_sels:
-                    for gen_sel in gen_sels:
-                        print sample, tp, tp_sel, gen_sel
+                    if gen_sels is None:
                         self.data = self.data.append({'sample': 'ele',
                                                         'pu': sample.label,
                                                         'tp': tp,
                                                         'tp_sel': tp_sel,
-                                                        'gen_sel': gen_sel,
+                                                        'gen_sel': None,
                                                         'classtype': classtype,
-                                                        'histo': HProxy(classtype, tp, tp_sel, gen_sel, sample.histo_file)}
+                                                        'histo': HProxy(classtype, tp, tp_sel, None, sample.histo_file)}
                                                           , ignore_index=True)
+                    else:
+                        for gen_sel in gen_sels:
+                            print sample, tp, tp_sel, gen_sel
+                            self.data = self.data.append({'sample': 'ele',
+                                                            'pu': sample.label,
+                                                            'tp': tp,
+                                                            'tp_sel': tp_sel,
+                                                            'gen_sel': gen_sel,
+                                                            'classtype': classtype,
+                                                            'histo': HProxy(classtype, tp, tp_sel, gen_sel, sample.histo_file)}
+                                                              , ignore_index=True)
 
 
 
@@ -119,7 +132,10 @@ class HPlot:
         histo = None
         labels = []
         text = ''
-        histo_df = self.data.query('(pu == @pu) & (tp == @tp) & (tp_sel == @tp_sel) & (gen_sel == @gen_sel) & (classtype == @classtype)')
+        query = '(pu == @pu) & (tp == @tp) & (tp_sel == @tp_sel) & (classtype == @classtype)'
+        if gen_sel is not None:
+            query += '& (gen_sel == @gen_sel)'
+        histo_df = self.data.query(query)
 
         if histo_df.empty:
             print 'No match found for: pu: {}, tp: {}, tp_sel: {}, gen_sel: {}, classtype: {}'.format(pu, tp, tp_sel, gen_sel, classtype)
@@ -133,10 +149,12 @@ class HPlot:
             if(field[1] > 1 and field[0] != 'histo' and field[0] != 'sample'):
                 label_fields.append(field[0])
             if(field[1] == 1 and field[0] != 'histo' and field[0] != 'classtype' and field[0] != 'sample'):
+                if(gen_sel is None and field[0] == 'gen_sel'):
+                    continue
                 text_fields.append(field[0])
 
-        # print 'label fields: {}'.format(label_fields)
-        # print 'text fields: {}'.format(text_fields)
+#         print 'label fields: {}'.format(label_fields)
+#         print 'text fields: {}'.format(text_fields)
 
         for item in histo_df[label_fields].iterrows():
             labels.append(', '.join([self.labels_dict[tx] for tx in item[1].values]))
