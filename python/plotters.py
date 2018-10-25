@@ -257,9 +257,11 @@ class TPGenMatchPlotter:
                     # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
                     # elif  particle.pdgid == PID.pizero:
                     #     genReference = genParts[(genParts.pid == particle.pdgid)]
+
                 h_tpset_match = self.h_tpset[histo_name]
                 h_resoset = self.h_resoset[histo_name]
                 h_genseleff = self.h_effset[histo_name]
+                # print 'TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name)
                 self.plot3DClusterMatch(genReference,
                                         cl3Ds,
                                         cl2Ds,
@@ -310,9 +312,9 @@ class TTGenMatchPlotter:
         for tp_sel in self.tt_selections:
             for gen_sel in self.gen_selections:
                 histo_name = '{}_{}'.format(tp_sel.name, gen_sel.name)
-            self.h_tt[histo_name] = histos.TriggerTowerHistos('h_{}_{}'.format(self.tt_set.name, histo_name))
-            self.h_reso_tt[histo_name] = histos.TriggerTowerResoHistos('h_reso_{}_{}'.format(self.tt_set.name, histo_name))
-            self.h_reso_ttcl[histo_name] = histos.TriggerTowerResoHistos('h_reso_{}Cl_{}'.format(self.tt_set.name, histo_name))
+                self.h_tt[histo_name] = histos.TriggerTowerHistos('h_{}_{}'.format(self.tt_set.name, histo_name))
+                self.h_reso_tt[histo_name] = histos.TriggerTowerResoHistos('h_reso_{}_{}'.format(self.tt_set.name, histo_name))
+                self.h_reso_ttcl[histo_name] = histos.TriggerTowerResoHistos('h_reso_{}Cl_{}'.format(self.tt_set.name, histo_name))
 
     def fill_histos(self, debug=False):
         triggerTowers_all = self.tt_set.tt_df
@@ -326,14 +328,14 @@ class TTGenMatchPlotter:
                 genReference = genParts_all
                 if not gen_sel.all:
                     genReference = genParts_all.query(gen_sel.selection)
-            self.plotTriggerTowerMatch(genReference,
-                                       None,
-                                       triggerTowers,
-                                       self.h_tt[histo_name],
-                                       self.h_reso_tt[histo_name],
-                                       self.h_reso_ttcl[histo_name],
-                                       "TThighestPt",
-                                       debug)
+                self.plotTriggerTowerMatch(genReference,
+                                           None,
+                                           triggerTowers,
+                                           self.h_tt[histo_name],
+                                           self.h_reso_tt[histo_name],
+                                           self.h_reso_ttcl[histo_name],
+                                           "TThighestPt",
+                                           debug)
 
     def plotTriggerTowerMatch(self,
                               genParticles,
@@ -403,16 +405,19 @@ tp_plotters = [TPPlotter(selections.tp_def, selections.tp_id_selections),
                TPPlotter(selections.tp_def_calib, selections.tp_id_selections)]
 rate_plotters = [RatePlotter(selections.tp_def, selections.tp_rate_selections),
                  RatePlotter(selections.tp_def_calib, selections.tp_rate_selections)]
-tp_elematched_plotters = [TPGenMatchPlotter(selections.tp_def, selections.gen_set,
+tp_genmatched_plotters = [TPGenMatchPlotter(selections.tp_def, selections.gen_set,
                                             selections.tp_match_selections,
-                                            selections.genpart_ele_ee_selections),
+                                            selections.gen_part_selections),
                           TPGenMatchPlotter(selections.tp_def_calib, selections.gen_set,
                                             selections.tp_match_selections,
-                                            selections.genpart_ele_ee_selections)]
+                                            selections.gen_part_selections)]
 genpart_plotters = [GenPlotter(selections.gen_set, selections.genpart_ele_genplotting)]
-ttower_plotters = [TTPlotter(selections.tt_set)]
-ttower_elematched_plotters = [TTGenMatchPlotter(selections.tt_set, selections.gen_set,
-                              [selections.Selection('all')], selections.genpart_ele_ee_selections)]
+ttower_plotters = [TTPlotter(selections.tt_set),
+                   TTPlotter(selections.simtt_set)]
+ttower_genmatched_plotters = [TTGenMatchPlotter(selections.tt_set, selections.gen_set,
+                              [selections.Selection('all')], selections.gen_part_selections),
+                              TTGenMatchPlotter(selections.simtt_set, selections.gen_set,
+                              [selections.Selection('all')], selections.gen_part_selections)]
 
 
 
