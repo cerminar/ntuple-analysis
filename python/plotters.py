@@ -405,6 +405,7 @@ tp_plotters = [TPPlotter(selections.tp_def, selections.tp_id_selections),
                TPPlotter(selections.tp_def_calib, selections.tp_id_selections)]
 rate_plotters = [RatePlotter(selections.tp_def, selections.tp_rate_selections),
                  RatePlotter(selections.tp_def_calib, selections.tp_rate_selections)]
+eg_rate_plotters = [RatePlotter(selections.eg_set, selections.eg_rate_selections)]
 tp_genmatched_plotters = [TPGenMatchPlotter(selections.tp_def, selections.gen_set,
                                             selections.tp_match_selections,
                                             selections.gen_part_selections),
@@ -419,6 +420,209 @@ ttower_genmatched_plotters = [TTGenMatchPlotter(selections.tt_set, selections.ge
                               TTGenMatchPlotter(selections.simtt_set, selections.gen_set,
                               [selections.Selection('all')], selections.gen_part_selections)]
 
+
+
+#
+# class EGGenMatchPlotter:
+#     def __init__(self, tp_set, gen_set,
+#                  tp_selections=[selections.Selection('all')],
+#                  gen_selections=[selections.Selection('all')]):
+#         self.tp_set = tp_set
+#         self.tp_selections = tp_selections
+#         self.gen_set = gen_set
+#         self.gen_selections = gen_selections
+#         self.h_tpset = {}
+#         self.h_resoset = {}
+#         self.h_effset = {}
+#
+#     def plot3DClusterMatch(self,
+#                            genParticles,
+#                            trigger3DClusters,
+#                            histoGen,
+#                            histoGenMatched,
+#                            histo3DClMatch,
+#                            histoReso,
+#                            histoResoCone,
+#                            algoname,
+#                            debug):
+#         def computeIsolation(all3DClusters, idx_best_match, idx_incone, dr):
+#             ret = pd.DataFrame()
+#             # print 'index best match: {}'.format(idx_best_match)
+#             # print 'indexes all in cone: {}'.format(idx_incone)
+#             components = all3DClusters[(all3DClusters.index.isin(idx_incone)) & ~(all3DClusters.index == idx_best_match)]
+#             # print 'components indexes: {}'.format(components.index)
+#             compindr = components[np.sqrt((components.eta-all3DClusters.loc[idx_best_match].eta)**2 + (components.phi-all3DClusters.loc[idx_best_match].phi)**2) < dr]
+#             if not compindr.empty:
+#                 # print 'components indexes in dr: {}'.format(compindr.index)
+#                 ret['energy'] = [compindr.energy.sum()]
+#                 ret['eta'] = [np.sum(compindr.eta*compindr.energy)/compindr.energy.sum()]
+#                 ret['pt'] = [(ret.energy/np.cosh(ret.eta)).values[0]]
+#             else:
+#                 ret['energy'] = [0.]
+#                 ret['eta'] = [0.]
+#                 ret['pt'] = [0.]
+#             return ret
+#
+#         def sumClustersInCone(all3DClusters, idx_incone):
+#             ret = pd.DataFrame()
+#             components = all3DClusters[all3DClusters.index.isin(idx_incone)]
+#             ret['energy'] = [components.energy.sum()]
+#             # FIXME: this needs to be better defined
+#             ret['energyCore'] = [components.energy.sum()]
+#             ret['energyCentral'] = [components.energy.sum()]
+#
+#             ret['eta'] = [np.sum(components.eta*components.energy)/components.energy.sum()]
+#             ret['phi'] = [np.sum(components.phi*components.energy)/components.energy.sum()]
+#             ret['pt'] = [(ret.energy/np.cosh(ret.eta)).values[0]]
+#             ret['ptCore'] = [(ret.energyCore/np.cosh(ret.eta)).values[0]]
+#             # ret['layers'] = [np.unique(np.concatenate(components.layers.values))]
+#             ret['clusters'] = [np.concatenate(components.clusters.values)]
+#             ret['nclu'] = [components.nclu.sum()]
+#             ret['firstlayer'] = [np.min(components.firstlayer.values)]
+#             # FIXME: placeholder
+#             ret['showerlength'] = [1]
+#             ret['seetot'] = [1]
+#             ret['seemax'] = [1]
+#             ret['spptot'] = [1]
+#             ret['sppmax'] = [1]
+#             ret['szz'] = [1]
+#             ret['emaxe'] = [1]
+#             ret['id'] = [1]
+#             ret['n010'] = len(components[components.pt > 0.1])
+#             ret['n025'] = len(components[components.pt > 0.25])
+#
+#             return ret
+#
+#         best_match_indexes = {}
+#         if not trigger3DClusters.empty:
+#             best_match_indexes, allmatches = utils.match_etaphi(genParticles[['eta', 'phi']],
+#                                                                 trigger3DClusters[['eta', 'phi']],
+#                                                                 trigger3DClusters['pt'],
+#                                                                 deltaR=0.1)
+#         # print ('------ best match: ')
+#         # print (best_match_indexes)
+#         # print ('------ all matches:')
+#         # print (allmatches)
+#
+#         # allmatched2Dclusters = list()
+#         # matchedClustersAll = pd.DataFrame()
+#         if histoGen is not None:
+#             histoGen.fill(genParticles)
+#
+#         for idx, genParticle in genParticles.iterrows():
+#             if idx in best_match_indexes.keys():
+#                 # print ('-----------------------')
+#                 #  print(genParticle)
+#                 matched3DCluster = trigger3DClusters.loc[[best_match_indexes[idx]]]
+#                 # print (matched3DCluster)
+#                 # allMatches = trigger3DClusters.iloc[allmatches[idx]]
+#                 # print ('--')
+#                 # print (allMatches)
+#                 # print (matched3DCluster.clusters.item())
+#                 # print (type(matched3DCluster.clusters.item()))
+#                 # matchedClusters = triggerClusters[ [x in matched3DCluster.clusters.item() for x in triggerClusters.id]]
+#                 matchedClusters = triggerClusters[triggerClusters.id.isin(matched3DCluster.clusters.item())]
+#                 # print (matchedClusters)
+#                 matchedTriggerCells = triggerCells[triggerCells.id.isin(np.concatenate(matchedClusters.cells.values))]
+#                 # allmatched2Dclusters. append(matchedClusters)
+#
+#                 if 'energyCentral' not in matched3DCluster.columns:
+#                     calib_factor = 1.084
+#                     matched3DCluster['energyCentral'] = [matchedClusters[(matchedClusters.layer > 9) & (matchedClusters.layer < 21)].energy.sum()*calib_factor]
+#
+#                 iso_df = computeIsolation(trigger3DClusters, idx_best_match=best_match_indexes[idx], idx_incone=allmatches[idx], dr=0.2)
+#                 matched3DCluster['iso0p2'] = iso_df.energy
+#                 matched3DCluster['isoRel0p2'] = iso_df.pt/matched3DCluster.pt
+#
+#                 # fill the plots
+#                 histoTCMatch.fill(matchedTriggerCells)
+#                 histoClMatch.fill(matchedClusters)
+#                 histo3DClMatch.fill(matched3DCluster)
+#                 histoReso2D.fill(reference=genParticle, target=matchedClusters)
+#                 histoReso.fill(reference=genParticle, target=matched3DCluster.iloc[0])
+#
+#                 # now we fill the reso plot for all the clusters in the cone
+#                 clustersInCone = sumClustersInCone(trigger3DClusters, allmatches[idx])
+#
+#                 # print ('----- in cone sum:')
+#                 # print (clustersInCone)
+#                 histoResoCone.fill(reference=genParticle, target=clustersInCone.iloc[0])
+#                 if histoGenMatched is not None:
+#                     histoGenMatched.fill(genParticles.loc[[idx]])
+#
+#                 if debug >= 4:
+#                     print ('--- Dump match for algo {} ---------------'.format(algoname))
+#                     print ('GEN particle: idx: {}'.format(idx))
+#                     print (genParticle)
+#                     print ('Matched to 3D cluster:')
+#                     print (matched3DCluster)
+#                     print ('Matched 2D clusters:')
+#                     print (matchedClusters)
+#                     print ('matched cells:')
+#                     print (matchedTriggerCells)
+#
+#                     print ('3D cluster energy: {}'.format(matched3DCluster.energy.sum()))
+#                     print ('3D cluster pt: {}'.format(matched3DCluster.pt.sum()))
+#                     calib_factor = 1.084
+#                     print ('sum 2D cluster energy: {}'.format(matchedClusters.energy.sum()*calib_factor))
+#                     # print ('sum 2D cluster pt: {}'.format(matchedClusters.pt.sum()*calib_factor))
+#                     print ('sum TC energy: {}'.format(matchedTriggerCells.energy.sum()))
+#                     print ('Sum of matched clusters in cone:')
+#                     print (clustersInCone)
+#             else:
+#                 if debug >= 5:
+#                     print ('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx))
+#                     if debug >= 2:
+#                         print (genParticle)
+#                         print (trigger3DClusters)
+#
+#         # if len(allmatched2Dclusters) != 0:
+#         #     matchedClustersAll = pd.concat(allmatched2Dclusters)
+#         # return matchedClustersAll
+#
+#     def book_histos(self):
+#         for tp_sel in self.tp_selections:
+#             for gen_sel in self.gen_selections:
+#                 histo_name = '{}_{}_{}'.format(self.tp_set.name, tp_sel.name, gen_sel.name)
+#                 self.h_tpset[histo_name] = histos.HistoSetClusters(histo_name)
+#                 self.h_resoset[histo_name] = histos.HistoSetReso(histo_name)
+#                 self.h_effset[histo_name] = histos.HistoSetEff(histo_name)
+#
+#     def fill_histos(self, debug=False):
+#         for tp_sel in self.tp_selections:
+#             tcs = self.tp_set.tc_df
+#             cl2Ds = self.tp_set.cl2d_df
+#             cl3Ds = self.tp_set.cl3d_df
+#             if not tp_sel.all:
+#                 cl3Ds = self.tp_set.cl3d_df.query(tp_sel.selection)
+#             for gen_sel in self.gen_selections:
+#                 histo_name = '{}_{}_{}'.format(self.tp_set.name, tp_sel.name, gen_sel.name)
+#                 genReference = self.gen_set.gen_df[(self.gen_set.gen_df.gen > 0)]
+#                 if not gen_sel.all:
+#                     genReference = self.gen_set.gen_df[(self.gen_set.gen_df.gen > 0)].query(gen_sel.selection)
+#                     # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
+#                     # elif  particle.pdgid == PID.pizero:
+#                     #     genReference = genParts[(genParts.pid == particle.pdgid)]
+#
+#                 h_tpset_match = self.h_tpset[histo_name]
+#                 h_resoset = self.h_resoset[histo_name]
+#                 h_genseleff = self.h_effset[histo_name]
+#                 # print 'TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name)
+#                 self.plot3DClusterMatch(genReference,
+#                                         cl3Ds,
+#                                         cl2Ds,
+#                                         tcs,
+#                                         h_genseleff.h_den,
+#                                         h_genseleff.h_num,
+#                                         h_tpset_match.htc,
+#                                         h_tpset_match.hcl2d,
+#                                         h_tpset_match.hcl3d,
+#                                         h_resoset.hreso,
+#                                         h_resoset.hresoCone,
+#                                         h_resoset.hreso2D,
+#                                         self.tp_set.name,
+#                                         debug)
+#
 
 
 
