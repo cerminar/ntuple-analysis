@@ -57,7 +57,7 @@ def add_selections(list1, list2):
 # TP selections
 tp_id_selections = [Selection('all', '', ''),
                     Selection('Em', 'EGId', 'quality >0'),
-                    Selection('Emv1', 'EGId V2', '(showerlength > 1) & (bdt_out > -0.03)')]
+                    Selection('Emv1', 'EGId V2', '(showerlength > 1) & (bdt_out > 0.02)')]
 
 
 tp_pt_selections = [Selection('all', '', ''),
