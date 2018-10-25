@@ -266,6 +266,9 @@ class Cluster3DHistos(BaseHistos):
             rnp.fill_hist(self.h_isoRel0p2, cl3ds.isoRel0p2)
 
 
+
+
+
 class TriggerTowerHistos(BaseHistos):
     def __init__(self, name, root_file=None):
         if not root_file:
@@ -277,6 +280,7 @@ class TriggerTowerHistos(BaseHistos):
             self.h_energy = ROOT.TH1F(name+'_energy', 'Tower energy (GeV)', 1000, 0, 1000)
             self.h_eta = ROOT.TH1F(name+'_eta', 'Tower eta; #eta;', 75, -3.169, 3.169)
             self.h_ptVeta = ROOT.TH2F(name+'_ptVeta', 'Tower P_P{T} (GeV) vs #eta; #eta; p_{T} [GeV];',  75, -3.169, 3.169, 100, 0, 100)
+            self.h_ptVieta = ROOT.TH2F(name+'_ptVieta', 'Tower P_P{T} (GeV) vs ieta; #eta; p_{T} [GeV];',  18, 0, 18, 100, 0, 100)
 
         BaseHistos.__init__(self, name, root_file)
 
@@ -289,7 +293,7 @@ class TriggerTowerHistos(BaseHistos):
         rnp.fill_hist(self.h_energy, towers.energy)
         rnp.fill_hist(self.h_eta, towers.eta)
         rnp.fill_hist(self.h_ptVeta, towers[['eta', 'pt']])
-
+        rnp.fill_hist(self.h_ptVieta, towers[['iEta', 'pt']])
 
 class TriggerTowerResoHistos(BaseHistos):
     def __init__(self, name, root_file=None):
@@ -333,6 +337,10 @@ class TriggerTowerResoHistos(BaseHistos):
             self.h_etalwRes.Fill(target.etalw - reference.eta)
         if 'philw' in target:
             self.h_philwRes.Fill(target.philw - reference.phi)
+
+
+
+
 
 
 class ResoHistos(BaseHistos):
@@ -535,6 +543,30 @@ class HistoSetEff():
 
     def computeTurnOn(self, denominator):
             self.h_ton = HistoEff(passed=self.h_num, total=denominator, debug=False)
+
+
+
+class EGResoHistos(BaseHistos):
+    def __init__(self, name, root_file=None):
+        if not root_file:
+            self.h_ptResp = ROOT.TH1F(name+'_ptResp', 'EG Pt resp.; p_{T}^{L1}/p_{T}^{GEN}', 100, 0, 3)
+            self.h_ptRespVpt = ROOT.TH2F(name+'_ptRespVpt', 'EG Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
+            self.h_ptRespVeta = ROOT.TH2F(name+'_ptRespVeta', 'EG Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};', 50, -4, 4, 100, 0, 3)
+            self.h_etaRes = ROOT.TH1F(name+'_etaRes', 'EG eta reso', 100, -0.4, 0.4)
+            self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'EG phi reso', 100, -0.4, 0.4)
+            self.h_drRes = ROOT.TH1F(name+'_drRes', 'EG DR reso', 100, 0, 0.4)
+
+        BaseHistos.__init__(self, name, root_file)
+
+    def fill(self, reference, target):
+        self.h_ptResp.Fill(target.pt/reference.pt)
+        self.h_ptRespVeta.Fill(reference.eta, target.pt/reference.pt)
+        self.h_ptRespVpt.Fill(reference.pt, target.pt/reference.pt)
+        self.h_ptRespVnclu.Fill(target.nclu, target.pt/reference.pt)
+        self.h_ptRespVetaVptL1.Fill(abs(target.eta), target.pt, target.pt/reference.pt)
+        self.h_etaRes.Fill(target.eta - reference.eta)
+        self.h_phiRes.Fill(target.phi - reference.phi)
+        self.h_drRes.Fill(np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
 
 
 # if __name__ == "__main__":
