@@ -108,7 +108,7 @@ gen_pt_selections = [Selection('Pt10', 'p_{T}^{GEN}>=10GeV', 'pt >= 10'),
                      Selection('Pt30', 'p_{T}^{GEN}>=30GeV', 'pt >= 30'),
                      Selection('Pt40', 'p_{T}^{GEN}>=40GeV', 'pt >= 40')]
 
-gen_part_selections = [Selection('Ele', 'e^{#pm}', 'abs(pdgid) == {}'.format(PID.electron))]
+gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {}) | (abs(pdgid) == {}) | (abs(pdgid) == {})'.format(PID.electron, PID.photon, PID.pion))]
 
 gen_part_ee_sel = add_selections(gen_part_selections, gen_ee_selections)
 gen_part_ee_pt_sel = add_selections(gen_part_ee_sel, gen_pt_selections)
@@ -119,7 +119,7 @@ gen_part_selections += gen_part_ee_sel
 gen_part_selections += gen_part_ee_pt_sel
 gen_part_selections += gen_part_ee_eta_sel
 
-# print 'gen_part_selections: {}'.format(len(gen_part_selections))
+print 'gen_part_selections: {}'.format(len(gen_part_selections))
 
 genpart_ele_ee_selections = []
 genpart_ele_ee_selections_tmp = add_selections(genpart_ele_selections, gen_ee_selections)
@@ -145,6 +145,25 @@ genpart_pion_ee_selections += add_selections(genpart_pion_ee_selections_tmp, gen
 
 genpart_ele_genplotting = [Selection('all')]
 genpart_ele_genplotting +=  add_selections(genpart_ele_selections, gen_ee_selections)
+
+eg_qual_selections = [Selection('EGq1', 'EGq1', 'hwQual > 0'),
+                      Selection('EGq1', 'EGq1', 'hwQual > 0')]
+
+eg_rate_selections = []
+eg_rate_selections += add_selections(eg_qual_selections, tp_eta_selections)
+eg_pt_selections = []
+eg_pt_selections += add_selections(eg_qual_selections, tp_pt_selections)
+
+
+
+class EgammaSet:
+    def __init__(self, name, label):
+        self.name = name
+        self.label = label
+        self.cl3d_df = None
+
+    def set_collections(self, cl3d):
+        self.cl3d_df = cl3d
 
 
 class TPSet:
@@ -185,8 +204,8 @@ tp_def = TPSet('DEF', 'NNDR')
 tp_def_calib = TPSet('DEFCalib', 'NNDR + calib. v1')
 gen_set = GenSet('GEN', '')
 tt_set = TTSet('TT', 'Trigger Towers')
-
-
+simtt_set = TTSet('SimTT', 'Sim Trigger Towers')
+eg_set = EgammaSet('EG', 'EGPhase2')
 
 if __name__ == "__main__":
     for sel in gen_part_selections:
