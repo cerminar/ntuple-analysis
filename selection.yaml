@@ -19,21 +19,39 @@ collections:
       - test_ele_flat2to100_PU200
     plotters:
       - tp_egm_plotters
-      - tp_elematched_plotters
+      - tp_genmatched_plotters
       - genpart_plotters
       - ttower_plotters
-      - ttower_elematched_plotters
+      - ttower_genmatched_plotters
 
-  ele_flat2to100:
+  single_empart_guns:
     samples:
       - ele_flat2to100_PU0
       - ele_flat2to100_PU200
+      - photon_flat8to150_PU0
+      - photon_flat8to150_PU200
     plotters:
       - tp_egm_plotters
-      - tp_elematched_plotters
+      - tp_genmatched_plotters
       - genpart_plotters
       - ttower_plotters
-      - ttower_elematched_plotters
+      - ttower_genmatched_plotters
+
+
+  single_part_guns:
+    samples:
+      - ele_flat2to100_PU0
+      - ele_flat2to100_PU200
+      - photon_flat8to150_PU0
+      - photon_flat8to150_PU200
+      - pion_flat2to100_PU0
+      - pion_flat2to100_PU200
+    plotters:
+      - tp_egm_plotters
+      - tp_genmatched_plotters
+      - genpart_plotters
+      - ttower_plotters
+      - ttower_genmatched_plotters
 
   nugun_rate:
     samples:
@@ -42,46 +60,28 @@ collections:
       - rate_plotters
       - ttower_plotters
       - tp_egm_plotters
-  # - photon_Pt35_samples:
-  #     samples :
-  #       - photonPt35_PU0
-  #       - photonPt35_PU200
-  # - test_hadGUNs:
-  #     samples:
-  #       - test_hadGUN
-  # - hadrons:
-  #     samples:
-  #       - hadronGun_PU0
-  #       - hadronGun_PU200
-  # - nugun_samples:
-  #     samples :
-  #       - nuGun_PU50,nuGun_PU100
-  #       - nuGun_PU140,nuGun_PU200
-  # - test_piGuns:
-  #     samples:
-  #       - test_piGun35_PU0
-  # - electron_E25_samples:
-  #     samples :
-  #       - singleEleE25_PU200
-  #       - singleEleE25_PU0
-  #       - singleEleE25_PU50
-  #       - singleEleE25_PU100
-  # - electron_E50_samples:
-  #     samples :
-  #       - singleEleE50_PU0
-  #       - singleEleE50_PU200
-  #       - singleEleE50_PU50
-  #       - singleEleE50_PU100
+      - eg_rate_plotters
 
+  noise_samples:
+    samples:
+      - nugun_alleta_pu0
+      - nugun_alleta_pu200
+      - nugun_endcap_PU50
+      - nugun_endcap_PU100
+      - nugun_endcap_PU140
+      - nugun_endcap_PU200
+    plotters:
+      - tp_egm_plotters
+      - ttower_plotters
 
 plotters:
   rate_plotters: !!python/name:python.plotters.rate_plotters
   tp_egm_plotters: !!python/name:python.plotters.tp_plotters
-  tp_elematched_plotters: !!python/name:python.plotters.tp_elematched_plotters
+  tp_genmatched_plotters: !!python/name:python.plotters.tp_genmatched_plotters
   genpart_plotters: !!python/name:python.plotters.genpart_plotters
   ttower_plotters: !!python/name:python.plotters.ttower_plotters
-  ttower_elematched_plotters: !!python/name:python.plotters.ttower_elematched_plotters
-
+  ttower_genmatched_plotters: !!python/name:python.plotters.ttower_genmatched_plotters
+  eg_rate_plotters: !!python/name:python.plotters.eg_rate_plotters
     # tp_set: !null,
     # tp_selection: !!python/name:python.selections.tp_match_selections}
 #  gen_selection: gen_part_selections
@@ -101,166 +101,49 @@ samples:
     events_per_job : 200
 
   ele_flat2to100_PU0:
-    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v11/180814_140939/0000/
+    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v12/181018_144943/0000/
     events_per_job : 500
 
   ele_flat2to100_PU200:
-    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU200_v11/180814_141012/0000/
+    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU200_v12/181018_145103/0000/
     events_per_job : 200
+
+  photon_flat8to150_PU0:
+    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU0_v12/181018_145447/0000/
+    events_per_job : 500
+
+  photon_flat8to150_PU200:
+    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU200_v12/181018_145549/0000/
+    events_per_job : 200
+
+  pion_flat2to100_PU0:
+    input_sample_dir: SinglePion_FlatPt-2to100/SinglePion_FlatPt-2to100_PU0_v12/181018_145226/0000/
+    events_per_job : 500
+
+  pion_flat2to100_PU200:
+    input_sample_dir: SinglePion_FlatPt-2to100/SinglePion_FlatPt-2to100_PU200_v12/181018_145337/0000/
+    events_per_job : 200
+
+  nugun_alleta_pu0:
+    input_sample_dir: SingleNeutrino/NuGunAllEta_PU0_v12/181018_145649/0000/
+    events_per_job: 500
+
   nugun_alleta_pu200:
-    input_sample_dir: SingleNeutrino/NuGunAllEta_PU200_v11/180829_143627/0001/
+    input_sample_dir: SingleNeutrino/NuGunAllEta_PU200_v12/181018_145755/0000/
     events_per_job: 200
 
+  nugun_endcap_PU50:
+    input_sample_dir: NuGun_PU50/NTP/v12/
+    events_per_job: 500
 
-  # ------------------------------------------------------------------------------------
+  nugun_endcap_PU100:
+    input_sample_dir: NuGun_PU100/NTP/v12/
+    events_per_job: 500
 
-  # [test_photon]
-  # samples : test_photonPt35_PU0,test_photonPt35_PU200
-  #
-  # [test_photonPt35_PU0]
-  # input_sample_dir : SingleGammaPt35Eta1p6_2p8/photonPt35_PU0_v11/180814_141428/0000/
-  # events_per_job : 1000
-  #
-  # [test_photonPt35_PU200]
-  # input_sample_dir : SingleGammaPt35Eta1p6_2p8/photonPt35_PU200_v11/180814_141502/0000/
-  # events_per_job : 200
+  nugun_endcap_PU140:
+    input_sample_dir: NuGun_PU140/NTP/v12/
+    events_per_job: 500
 
-  # ------------------------------------------------------------------------------------
-
-
-  #
-  # [photonPt35_PU0]
-  # input_sample_dir : SingleGammaPt35Eta1p6_2p8/photonPt35_PU0_v11/180814_141428/0000/
-  # events_per_job : 1000
-  #
-  # [photonPt35_PU200]
-  # input_sample_dir : SingleGammaPt35Eta1p6_2p8/photonPt35_PU200_v11/180814_141502/0000/
-  # events_per_job : 200
-  #
-  # # ------------------------------------------------------------------------------------
-  #
-  #
-  # [test_hadGUN]
-  # input_sample_dir:HadronGun_PU0/NTP/v11/
-  # events_per_job : 1000
-  #
-  # # ------------------------------------------------------------------------------------
-  #
-  #
-  # [hadronGun_PU0]
-  # input_sample_dir:HadronGun_PU0/NTP/v11/
-  # events_per_job : 1000
-  #
-  # [hadronGun_PU200]
-  # input_sample_dir:HadronGun_PU200/NTP/v11/
-  # events_per_job : 200
-  #
-  # # ------------------------------------------------------------------------------------
-  #
-  #
-  # [nuGun_PU50]
-  # input_sample_dir : NuGun_PU50/NTP/v11/
-  # events_per_job : 1000
-  #
-  # [nuGun_PU100]
-  # input_sample_dir : NuGun_PU100/NTP/v11/
-  # events_per_job : 500
-  #
-  # [nuGun_PU140]
-  # input_sample_dir : NuGun_PU140/NTP/v11/
-  # events_per_job : 200
-  #
-  # [nuGun_PU200]
-  # input_sample_dir : NuGun_PU200/NTP/v11/
-  # events_per_job : 200
-  #
-  #
-  # # ------------------------------------------------------------------------------------
-  #
-  #
-  # [singleEleE25_PU200]
-  # input_sample_dir : FlatRandomEGunProducer_EleGunE25_1p5_3_PU200_20171123/NTP/v3/
-  #
-  # [singleEleE25_PU0]
-  # input_sample_dir : FlatRandomEGunProducer_EleGunE25_1p5_3_PU0_20171123/NTP/v3/
-  #
-  # [singleEleE25_PU50]
-  # input_sample_dir : FlatRandomEGunProducer_EleGunE25_1p5_3_PU50_20171123/NTP/v3/
-  #
-  # [singleEleE25_PU100]
-  # input_sample_dir : FlatRandomEGunProducer_EleGunE25_1p5_3_PU100_20171123/NTP/v3/
-  #
-  # [singleEleE50_PU200]
-  # input_sample_dir : FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU200_20171005/NTP/v3/
-  #
-  # [singleEleE50_PU0]
-  # input_sample_dir : FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU0_20171005/NTP/v3/
-  #
-  # [singleEleE50_PU50]
-  # input_sample_dir : FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU50_20171005/NTP/v3/
-  #
-  # [singleEleE50_PU100]
-  # input_sample_dir : FlatRandomEGunProducer_EleGunE50_1p7_2p8_PU100_20171005/NTP/v3/
-  #
-  #
-  #
-  # [photonPt50_PU0]
-  # input_sample_dir : SingleGammaPt50Eta1p6_2p8_PU0/NTP/v5/
-  # events_per_job : 1000
-  #
-  # [photonPt50_PU200]
-  # input_sample_dir : SingleGammaPt50Eta1p6_2p8_PU200/NTP/v5/
-  # events_per_job : 200
-  #
-  #
-  # [photonPt35_PU0]
-  # input_sample_dir : SingleGammaPt35Eta1p6_2p8/v9/180726_124641/0000/
-  # events_per_job : 1000
-  #
-  # [photonPt35_PU200]
-  # input_sample_dir : SingleGammaPt35Eta1p6_2p8/v9/180726_124719/0000/
-  # events_per_job : 200
-  #
-  # [test_photonPt35_PU0]
-  # input_sample_dir : SingleGammaPt35Eta1p6_2p8/v9/180726_124641/0000/
-  # events_per_job : 1000
-  #
-  # [test_photonPt35_PU200]
-  # input_sample_dir : SingleGammaPt35Eta1p6_2p8/v9/180726_124719/0000/
-  # events_per_job : 200
-  #
-  #
-  # [PiPt5_PU0]
-  # input_sample_dir:SinglePiPt5Eta1p6_2p8_PU0/NTP/v7/
-  # events_per_job : 1000
-  #
-  # [PiPt5_PU200]
-  #
-  # [PiPt15_PU0]
-  # input_sample_dir:SinglePiPt15Eta1p6_2p8_PU0/NTP/v7/
-  # events_per_job : 1000
-  #
-  # [PiPt15_PU200]
-  # input_sample_dir:SinglePiPt15Eta1p6_2p8_PU200/NTP/v7/
-  # events_per_job : 200
-  #
-  # [PiPt35_PU0]
-  # input_sample_dir:SinglePiPt35Eta1p6_2p8_PU0/NTP/v7/
-  # events_per_job : 1000
-  #
-  # [PiPt35_PU200]
-  # input_sample_dir:SinglePiPt35Eta1p6_2p8_PU200/NTP/v7/
-  # events_per_job : 200
-  #
-  #
-  # [PiPt50_PU0]
-  # input_sample_dir:SinglePiPt50Eta1p6_2p8_PU0/NTP/v7/
-  # events_per_job : 1000
-  #
-  # [PiPt50_PU200]
-  # input_sample_dir:SinglePiPt50Eta1p6_2p8_PU200/NTP/v7/
-  # events_per_job : 200
-  #
-  # [test_piGun35_PU0]
-  # input_sample_dir:SinglePiPt35Eta1p6_2p8_PU0/NTP/v7/
-  # events_per_job : 1000
+  nugun_endcap_PU200:
+    input_sample_dir: NuGun_PU200/NTP/v12/
+    events_per_job: 200
