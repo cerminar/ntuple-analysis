@@ -1,0 +1,4 @@
+JOB TEMPL_SAMPLE_hadd TEMPL_TASKDIR/batch_hadd.sub
+JOB TEMPL_SAMPLE_cleanup TEMPL_TASKDIR/batch_cleanup.sub
+PARENT TEMPL_SAMPLE_hadd CHILD TEMPL_SAMPLE_cleanup
+Retry TEMPL_SAMPLE_hadd 3

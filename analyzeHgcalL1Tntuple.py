@@ -225,7 +225,7 @@ def analyze(params, batch_idx=0):
     tt_set = selections.tt_set
     simtt_set = selections.simtt_set
     eg_set = selections.eg_set
-    
+
     # instantiate all the plotters
     plotter_collection = []
     plotter_collection.extend(params.plotters)
@@ -399,6 +399,11 @@ def analyze(params, batch_idx=0):
         debugPrintOut(debug, '3D clusters',
                       toCount=trigger3DClusters,
                       toPrint=trigger3DClusters.sort_values(by='pt', ascending=False).iloc[:10])
+        debugPrintOut(debug, 'Egamma',
+                      toCount=egamma,
+                      toPrint=egamma.sort_values(by='pt', ascending=False).iloc[:10])
+
+
         debugPrintOut(debug, 'Trigger Towers',
                       toCount=triggerTowers,
                       toPrint=triggerTowers.sort_values(by='pt', ascending=False).iloc[:10])
@@ -412,7 +417,7 @@ def analyze(params, batch_idx=0):
         trigger3DClustersCalib = get_calibrated_clusters(calib_factors, trigger3DClusters)
         # print trigger3DClusters[:3]
         # print trigger3DClustersCalib[:3]
-        debugPrintOut(debug, 'Calibrated 3D clusters',
+        debugPrintOut(5, 'Calibrated 3D clusters',
                       toCount=trigger3DClustersCalib,
                       toPrint=trigger3DClustersCalib.sort_values(by='pt', ascending=False).iloc[:10])
 
@@ -653,6 +658,11 @@ def main(analyze):
             editTemplate(infile='templates/run_batch_cleanup.sh',
                          outfile=os.path.join(sample_batch_dir, 'run_batch_cleanup.sh'),
                          params=params)
+
+            editTemplate(infile='templates/hadd_dagman.dag',
+                         outfile=os.path.join(batch_dir, 'hadd_{}.dag'.format(sample.name)),
+                         params=params)
+
 
             for jid in range(0, n_jobs):
                 dagman_spl += 'JOB Job_{} batch.sub\n'.format(jid)
