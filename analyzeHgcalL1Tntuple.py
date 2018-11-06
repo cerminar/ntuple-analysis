@@ -424,7 +424,7 @@ def analyze(params, batch_idx=0):
         trigger3DClustersCalib = get_calibrated_clusters(calib_factors, trigger3DClusters)
         # print trigger3DClusters[:3]
         # print trigger3DClustersCalib[:3]
-        debugPrintOut(5, 'Calibrated 3D clusters',
+        debugPrintOut(debug, 'Calibrated 3D clusters',
                       toCount=trigger3DClustersCalib,
                       toPrint=trigger3DClustersCalib.sort_values(by='pt', ascending=False).iloc[:10])
 
