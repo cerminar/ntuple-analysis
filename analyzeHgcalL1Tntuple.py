@@ -299,15 +299,22 @@ def analyze(params, batch_idx=0):
         # for non interesting events, is this a good idea?
         # if len(genParts[(genParts.eta > 1.7) & (genParts.eta < 2.5)]) == 0:
         #     continue
+        #
+        # branches = [(event, 'genpart'),
+        #             # (event, 'hgcdigi'),
+        #             (event, 'tc'),
+        #             (event, 'cl'),
+        #             (event, 'cl3d'),
+        #             (event, 'tower'),
+        #             (event, 'simTower'),
+        #             (event, 'egammaEE')]
 
         branches = [(event, 'genpart'),
-                    # (event, 'hgcdigi'),
-                    (event, 'tc'),
-                    (event, 'cl'),
-                    (event, 'cl3d'),
-                    (event, 'tower'),
-                    (event, 'simTower'),
-                    (event, 'egammaEE')]
+                # (event, 'hgcdigi'),
+                (event, 'tc'),
+                (event, 'cl'),
+                (event, 'cl3d'),
+                (event, 'tower')]
 
         # dataframes = pool.map(unpack, branches)
 
@@ -321,8 +328,8 @@ def analyze(params, batch_idx=0):
         triggerClusters = dataframes[2]
         trigger3DClusters = dataframes[3]
         triggerTowers = dataframes[4]
-        simTriggerTowers = dataframes[5]
-        egamma = dataframes[6]
+        # simTriggerTowers = dataframes[5]
+        # egamma = dataframes[6]
 
         puInfo = event.getPUInfo()
         debugPrintOut(debug, 'PU', toCount=puInfo, toPrint=puInfo)
@@ -355,8 +362,8 @@ def analyze(params, batch_idx=0):
             if e_energy != 0.:
                 cluster.hoe = h_enery/e_energy
             return cluster
-        # trigger3DClusters['hoe'] = 999.
-        # trigger3DClusters = trigger3DClusters.apply(compute_hoe, axis=1)
+        trigger3DClusters['hoe'] = 999.
+        trigger3DClusters = trigger3DClusters.apply(compute_hoe, axis=1)
 
 
         trigger3DClusters['bdt_out'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
@@ -373,7 +380,7 @@ def analyze(params, batch_idx=0):
         trigger3DClustersCalib = pd.DataFrame()
 
         triggerTowers.eval('HoE = etHad/etEm', inplace=True)
-        simTriggerTowers.eval('HoE = etHad/etEm', inplace=True)
+        # simTriggerTowers.eval('HoE = etHad/etEm', inplace=True)
         # triggerTowers['HoE'] = triggerTowers.etHad/triggerTowers.etEm
         # if 'iX' not in triggerTowers.columns:
         #     triggerTowers['iX'] = triggerTowers.hwEta
@@ -399,17 +406,17 @@ def analyze(params, batch_idx=0):
         debugPrintOut(debug, '3D clusters',
                       toCount=trigger3DClusters,
                       toPrint=trigger3DClusters.sort_values(by='pt', ascending=False).iloc[:10])
-        debugPrintOut(debug, 'Egamma',
-                      toCount=egamma,
-                      toPrint=egamma.sort_values(by='pt', ascending=False).iloc[:10])
+        # debugPrintOut(debug, 'Egamma',
+        #               toCount=egamma,
+        #               toPrint=egamma.sort_values(by='pt', ascending=False).iloc[:10])
 
 
         debugPrintOut(debug, 'Trigger Towers',
                       toCount=triggerTowers,
                       toPrint=triggerTowers.sort_values(by='pt', ascending=False).iloc[:10])
-        debugPrintOut(debug, 'Sim Trigger Towers',
-                      toCount=simTriggerTowers,
-                      toPrint=simTriggerTowers.sort_values(by='pt', ascending=False).iloc[:10])
+        # debugPrintOut(debug, 'Sim Trigger Towers',
+        #               toCount=simTriggerTowers,
+        #               toPrint=simTriggerTowers.sort_values(by='pt', ascending=False).iloc[:10])
 
         # print '# towers eta >0 {}'.format(len(triggerTowers[triggerTowers.eta > 0]))
         # print '# towers eta <0 {}'.format(len(triggerTowers[triggerTowers.eta < 0]))
@@ -456,8 +463,8 @@ def analyze(params, batch_idx=0):
         tp_def_calib.set_collections(triggerCells, triggerClusters, trigger3DClustersCalib)
         gen_set.set_collections(genParticles)
         tt_set.set_collections(triggerTowers)
-        simtt_set.set_collections(simTriggerTowers)
-        eg_set.set_collections(egamma)
+        # simtt_set.set_collections(simTriggerTowers)
+        # eg_set.set_collections(egamma)
 
         for plotter in plotter_collection:
             # print plotter

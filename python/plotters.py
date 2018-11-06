@@ -414,11 +414,13 @@ tp_genmatched_plotters = [TPGenMatchPlotter(selections.tp_def, selections.gen_se
                                             selections.gen_part_selections)]
 genpart_plotters = [GenPlotter(selections.gen_set, selections.genpart_ele_genplotting)]
 ttower_plotters = [TTPlotter(selections.tt_set),
-                   TTPlotter(selections.simtt_set)]
+                   # TTPlotter(selections.simtt_set)
+                   ]
 ttower_genmatched_plotters = [TTGenMatchPlotter(selections.tt_set, selections.gen_set,
                               [selections.Selection('all')], selections.gen_part_selections),
-                              TTGenMatchPlotter(selections.simtt_set, selections.gen_set,
-                              [selections.Selection('all')], selections.gen_part_selections)]
+                              # TTGenMatchPlotter(selections.simtt_set, selections.gen_set,
+                              # [selections.Selection('all')], selections.gen_part_selections)
+                              ]
 
 
 
