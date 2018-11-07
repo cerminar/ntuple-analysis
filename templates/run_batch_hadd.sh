@@ -21,6 +21,6 @@ for filename in TEMPL_OUTDIR/TEMPL_INFILE; do
     echo ${filename}
     xrdcp TEMPL_EOSPROTOCOL${filename} .
 done
-hadd -j 5 -k TEMPL_OUTFILE `ls TEMPL_INFILE`
+hadd -j 10 -k TEMPL_OUTFILE `ls TEMPL_INFILE`
 
 #mv TEMPL_OUTFILE TEMPL_OUTDIR
