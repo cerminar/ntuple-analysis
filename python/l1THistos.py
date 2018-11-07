@@ -44,10 +44,10 @@ class BaseHistos():
         # # print 'BOOK histo: {}'.format(self)
         if root_file is not None:
             root_file.cd()
-            #print 'class: {}'.format(self.__class__.__name__)
+            # print 'class: {}'.format(self.__class__.__name__)
             # ROOT.gDirectory.pwd()
             file_dir = root_file.GetDirectory(self.__class__.__name__)
-            #print '# keys in dir: {}'.format(len(file_dir.GetListOfKeys()))
+            # print '# keys in dir: {}'.format(len(file_dir.GetListOfKeys()))
             # file_dir.cd()
             selhistos = [(histo.ReadObj(), histo.GetName()) for histo in file_dir.GetListOfKeys() if name+'_' in histo.GetName()]
             #   print selhistos
@@ -70,7 +70,6 @@ class BaseHistos():
         for histo in [a for a in dir(self) if a.startswith('h_')]:
             getattr(self, histo).Write()
         ROOT.gDirectory.cd('..')
-
 
     # def normalize(self, norm):
     #     className = self.__class__.__name__
@@ -266,7 +265,20 @@ class Cluster3DHistos(BaseHistos):
             rnp.fill_hist(self.h_isoRel0p2, cl3ds.isoRel0p2)
 
 
+class EGHistos(BaseHistos):
+    def __init__(self, name, root_file=None):
+        if not root_file:
+            self.h_pt = ROOT.TH1F(name+'_pt', 'EG Pt (GeV); p_{T} [GeV]', 100, 0, 100)
+            self.h_eta = ROOT.TH1F(name+'_eta', 'EG eta; #eta;', 100, -4, 4)
+            self.h_energy = ROOT.TH1F(name+'_energy', 'EG energy (GeV); E [GeV]', 1000, 0, 1000)
+            self.h_hwQual = ROOT.TH1F(name+'_hwQual', 'EG energy (GeV); hwQual', 5, 0, 5)
+        BaseHistos.__init__(self, name, root_file)
 
+    def fill(self, egs):
+        rnp.fill_hist(self.h_pt, egs.pt)
+        rnp.fill_hist(self.h_eta, egs.eta)
+        rnp.fill_hist(self.h_energy, egs.energy)
+        rnp.fill_hist(self.h_hwQual, egs.hwQual)
 
 
 class TriggerTowerHistos(BaseHistos):
@@ -294,6 +306,7 @@ class TriggerTowerHistos(BaseHistos):
         rnp.fill_hist(self.h_eta, towers.eta)
         rnp.fill_hist(self.h_ptVeta, towers[['eta', 'pt']])
         rnp.fill_hist(self.h_ptVieta, towers[['iEta', 'pt']])
+
 
 class TriggerTowerResoHistos(BaseHistos):
     def __init__(self, name, root_file=None):
@@ -337,10 +350,6 @@ class TriggerTowerResoHistos(BaseHistos):
             self.h_etalwRes.Fill(target.etalw - reference.eta)
         if 'philw' in target:
             self.h_philwRes.Fill(target.philw - reference.phi)
-
-
-
-
 
 
 class ResoHistos(BaseHistos):
@@ -407,6 +416,28 @@ class ResoHistos(BaseHistos):
             self.h_n010.Fill(target.n010)
         if 'n025' in target:
             self.h_n025.Fill(target.n025)
+
+
+class EGResoHistos(BaseHistos):
+    def __init__(self, name, root_file=None):
+        if not root_file:
+            self.h_ptResp        = ROOT.TH1F(name+'_ptResp', 'EG Pt resp.; p_{T}^{L1}/p_{T}^{GEN}', 100, 0, 3)
+            self.h_ptRespVpt     = ROOT.TH2F(name+'_ptRespVpt', 'EG Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
+            self.h_ptRespVeta    = ROOT.TH2F(name+'_ptRespVeta', 'EG Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};', 50, -4, 4, 100, 0, 3)
+            self.h_etaRes        = ROOT.TH1F(name+'_etaRes', 'EG eta reso', 100, -0.4, 0.4)
+            self.h_phiRes        = ROOT.TH1F(name+'_phiRes', 'EG phi reso', 100, -0.4, 0.4)
+            self.h_drRes         = ROOT.TH1F(name+'_drRes', 'EG DR reso', 100, 0, 0.4)
+
+        BaseHistos.__init__(self, name, root_file)
+
+    def fill(self, reference, target):
+        self.h_ptResp.Fill(target.pt/reference.pt)
+        self.h_ptRespVeta.Fill(reference.eta, target.pt/reference.pt)
+        self.h_ptRespVpt.Fill(reference.pt, target.pt/reference.pt)
+        self.h_etaRes.Fill(target.eta - reference.eta)
+        self.h_phiRes.Fill(target.phi - reference.phi)
+        self.h_drRes.Fill(np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
+
 
 
 class Reso2DHistos(BaseHistos):
@@ -545,7 +576,6 @@ class HistoSetEff():
             self.h_ton = HistoEff(passed=self.h_num, total=denominator, debug=False)
 
 
-
 class EGResoHistos(BaseHistos):
     def __init__(self, name, root_file=None):
         if not root_file:
@@ -562,8 +592,6 @@ class EGResoHistos(BaseHistos):
         self.h_ptResp.Fill(target.pt/reference.pt)
         self.h_ptRespVeta.Fill(reference.eta, target.pt/reference.pt)
         self.h_ptRespVpt.Fill(reference.pt, target.pt/reference.pt)
-        self.h_ptRespVnclu.Fill(target.nclu, target.pt/reference.pt)
-        self.h_ptRespVetaVptL1.Fill(abs(target.eta), target.pt, target.pt/reference.pt)
         self.h_etaRes.Fill(target.eta - reference.eta)
         self.h_phiRes.Fill(target.phi - reference.phi)
         self.h_drRes.Fill(np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))

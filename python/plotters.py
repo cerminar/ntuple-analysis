@@ -30,6 +30,25 @@ class RatePlotter:
             self.h_rate[selection.name].fill_norm()
 
 
+class EGPlotter:
+    def __init__(self, eg_set, eg_selections=[selections.Selection('all')]):
+        self.data_set = eg_set
+        self.data_selections = eg_selections
+        self.h_set = {}
+
+    def book_histos(self):
+        data_name = self.data_set.name
+        for selection in self.data_selections:
+            self.h_set[selection.name] = histos.EGHistos(name='{}_{}_nomatch'.format(data_name, selection.name))
+
+    def fill_histos(self, debug=False):
+        for data_sel in self.data_selections:
+            if not data_sel.all:
+                data = self.data_set.cl3d_df.query(data_sel.selection)
+            self.h_set[data_sel.name].fill(data)
+
+
+
 class TPPlotter:
     def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
         self.tp_set = tp_set
@@ -278,6 +297,96 @@ class TPGenMatchPlotter:
                                         debug)
 
 
+class EGGenMatchPlotter:
+    def __init__(self, data_set, gen_set,
+                 data_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
+        self.data_set = data_set
+        self.data_selections = data_selections
+        self.gen_set = gen_set
+        self.gen_selections = gen_selections
+        self.h_dataset = {}
+        self.h_resoset = {}
+        self.h_effset = {}
+
+    def plotEGMatch(self,
+                    genParticles,
+                    egs,
+                    h_gen,
+                    h_gen_matched,
+                    h_eg_matched,
+                    h_reso,
+                    algoname,
+                    debug):
+        # fill histo with all selected GEN particles before any match
+        if h_gen:
+            h_gen.fill(genParticles)
+
+        best_match_indexes = {}
+        if not egs.empty:
+            best_match_indexes, allmatches = utils.match_etaphi(genParticles[['eta', 'phi']],
+                                                                egs[['eta', 'phi']],
+                                                                egs['pt'],
+                                                                deltaR=0.1)
+
+        for idx, genParticle in genParticles.iterrows():
+            if idx in best_match_indexes.keys():
+                # print ('-----------------------')
+                #  print(genParticle)
+                eg_matched = egs.loc[[best_match_indexes[idx]]]
+                h_eg_matched.fill(eg_matched)
+                h_reso.fill(reference=genParticle, target=eg_matched)
+
+                if h_gen_matched is not None:
+                    h_gen_matched.fill(genParticles.loc[[idx]])
+
+                if debug >= 4:
+                    print ('--- Dump match for algo {} ---------------'.format(algoname))
+                    print ('GEN particle: idx: {}'.format(idx))
+                    print (genParticle)
+                    print ('Matched to EG object:')
+                    print (eg_matched)
+            else:
+                if debug >= 5:
+                    print ('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx))
+                    print (genParticle)
+                    print (egs)
+
+    def book_histos(self):
+        for tp_sel in self.data_selections:
+            for gen_sel in self.gen_selections:
+                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                self.h_dataset[histo_name] = histos.EGHistos(histo_name)
+                self.h_resoset[histo_name] = histos.EGResoHistos(histo_name)
+                self.h_effset[histo_name] = histos.HistoSetEff(histo_name)
+
+    def fill_histos(self, debug=False):
+        for tp_sel in self.data_selections:
+            cl3Ds = self.data_set.cl3d_df
+            if not tp_sel.all:
+                cl3Ds = self.data_set.cl3d_df.query(tp_sel.selection)
+            for gen_sel in self.gen_selections:
+                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                genReference = self.gen_set.gen_df[(self.gen_set.gen_df.gen > 0)]
+                if not gen_sel.all:
+                    genReference = self.gen_set.gen_df[(self.gen_set.gen_df.gen > 0)].query(gen_sel.selection)
+                    # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
+                    # elif  particle.pdgid == PID.pizero:
+                    #     genReference = genParts[(genParts.pid == particle.pdgid)]
+
+                h_tpset_match = self.h_dataset[histo_name]
+                h_resoset = self.h_resoset[histo_name]
+                h_genseleff = self.h_effset[histo_name]
+                # print 'TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name)
+                self.plotEGMatch(genReference,
+                                 cl3Ds,
+                                 h_genseleff.h_den,
+                                 h_genseleff.h_num,
+                                 h_tpset_match,
+                                 h_resoset,
+                                 self.data_set.name,
+                                 debug)
+
+
 class TTPlotter:
     def __init__(self, tt_set, tt_selections=[selections.Selection('all')]):
         self.tt_set = tt_set
@@ -403,6 +512,7 @@ class TTGenMatchPlotter:
 
 tp_plotters = [TPPlotter(selections.tp_def, selections.tp_id_selections),
                TPPlotter(selections.tp_def_calib, selections.tp_id_selections)]
+eg_plotters = [EGPlotter(selections.eg_set, selections.eg_qual_selections)]
 rate_plotters = [RatePlotter(selections.tp_def, selections.tp_rate_selections),
                  RatePlotter(selections.tp_def_calib, selections.tp_rate_selections)]
 eg_rate_plotters = [RatePlotter(selections.eg_set, selections.eg_rate_selections)]
@@ -411,6 +521,9 @@ tp_genmatched_plotters = [TPGenMatchPlotter(selections.tp_def, selections.gen_se
                                             selections.gen_part_selections),
                           TPGenMatchPlotter(selections.tp_def_calib, selections.gen_set,
                                             selections.tp_match_selections,
+                                            selections.gen_part_selections)]
+eg_genmatched_plotters = [EGGenMatchPlotter(selections.eg_set, selections.gen_set,
+                                            selections.eg_qual_selections,
                                             selections.gen_part_selections)]
 genpart_plotters = [GenPlotter(selections.gen_set, selections.genpart_ele_genplotting)]
 ttower_plotters = [TTPlotter(selections.tt_set),
