@@ -300,21 +300,21 @@ def analyze(params, batch_idx=0):
         # if len(genParts[(genParts.eta > 1.7) & (genParts.eta < 2.5)]) == 0:
         #     continue
         #
-        # branches = [(event, 'genpart'),
-        #             # (event, 'hgcdigi'),
-        #             (event, 'tc'),
-        #             (event, 'cl'),
-        #             (event, 'cl3d'),
-        #             (event, 'tower'),
-        #             (event, 'simTower'),
-        #             (event, 'egammaEE')]
-
         branches = [(event, 'genpart'),
-                # (event, 'hgcdigi'),
-                (event, 'tc'),
-                (event, 'cl'),
-                (event, 'cl3d'),
-                (event, 'tower')]
+                    # (event, 'hgcdigi'),
+                    (event, 'tc'),
+                    (event, 'cl'),
+                    (event, 'cl3d'),
+                    (event, 'tower'),
+                    (event, 'simTower'),
+                    (event, 'egammaEE')]
+
+        # branches = [(event, 'genpart'),
+        #         # (event, 'hgcdigi'),
+        #         (event, 'tc'),
+        #         (event, 'cl'),
+        #         (event, 'cl3d'),
+        #         (event, 'tower')]
 
         # dataframes = pool.map(unpack, branches)
 
@@ -328,8 +328,8 @@ def analyze(params, batch_idx=0):
         triggerClusters = dataframes[2]
         trigger3DClusters = dataframes[3]
         triggerTowers = dataframes[4]
-        # simTriggerTowers = dataframes[5]
-        # egamma = dataframes[6]
+        simTriggerTowers = dataframes[5]
+        egamma = dataframes[6]
 
         puInfo = event.getPUInfo()
         debugPrintOut(debug, 'PU', toCount=puInfo, toPrint=puInfo)
@@ -362,8 +362,8 @@ def analyze(params, batch_idx=0):
             if e_energy != 0.:
                 cluster.hoe = h_enery/e_energy
             return cluster
-        trigger3DClusters['hoe'] = 999.
-        trigger3DClusters = trigger3DClusters.apply(compute_hoe, axis=1)
+        # trigger3DClusters['hoe'] = 999.
+        # trigger3DClusters = trigger3DClusters.apply(compute_hoe, axis=1)
 
 
         trigger3DClusters['bdt_out'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
@@ -380,7 +380,7 @@ def analyze(params, batch_idx=0):
         trigger3DClustersCalib = pd.DataFrame()
 
         triggerTowers.eval('HoE = etHad/etEm', inplace=True)
-        # simTriggerTowers.eval('HoE = etHad/etEm', inplace=True)
+        simTriggerTowers.eval('HoE = etHad/etEm', inplace=True)
         # triggerTowers['HoE'] = triggerTowers.etHad/triggerTowers.etEm
         # if 'iX' not in triggerTowers.columns:
         #     triggerTowers['iX'] = triggerTowers.hwEta
@@ -406,17 +406,17 @@ def analyze(params, batch_idx=0):
         debugPrintOut(debug, '3D clusters',
                       toCount=trigger3DClusters,
                       toPrint=trigger3DClusters.sort_values(by='pt', ascending=False).iloc[:10])
-        # debugPrintOut(debug, 'Egamma',
-        #               toCount=egamma,
-        #               toPrint=egamma.sort_values(by='pt', ascending=False).iloc[:10])
+        debugPrintOut(debug, 'Egamma',
+                      toCount=egamma,
+                      toPrint=egamma.sort_values(by='pt', ascending=False).iloc[:10])
 
 
         debugPrintOut(debug, 'Trigger Towers',
                       toCount=triggerTowers,
                       toPrint=triggerTowers.sort_values(by='pt', ascending=False).iloc[:10])
-        # debugPrintOut(debug, 'Sim Trigger Towers',
-        #               toCount=simTriggerTowers,
-        #               toPrint=simTriggerTowers.sort_values(by='pt', ascending=False).iloc[:10])
+        debugPrintOut(debug, 'Sim Trigger Towers',
+                      toCount=simTriggerTowers,
+                      toPrint=simTriggerTowers.sort_values(by='pt', ascending=False).iloc[:10])
 
         # print '# towers eta >0 {}'.format(len(triggerTowers[triggerTowers.eta > 0]))
         # print '# towers eta <0 {}'.format(len(triggerTowers[triggerTowers.eta < 0]))
@@ -427,6 +427,23 @@ def analyze(params, batch_idx=0):
         debugPrintOut(debug, 'Calibrated 3D clusters',
                       toCount=trigger3DClustersCalib,
                       toPrint=trigger3DClustersCalib.sort_values(by='pt', ascending=False).iloc[:10])
+
+        # from python.selections import genpart_ele_ee_selections,gen_part_selections
+        # #print genpart_ele_ee_selections
+        # #print gen_part_selections
+        # test1_b = [fil for fil in genpart_ele_ee_selections if 'EleEtaB' in fil.name]
+        # test2_b = [fil for fil in gen_part_selections if 'GENEtaB' in fil.name]
+        # sel1_b = genParticles[genParticles.gen > 0].query(test1_b[0].selection)
+        # sel2_b = genParticles[genParticles.gen > 0].query(test2_b[0].selection)
+        # if ((not sel1_b.empty) or (not sel2_b.empty) ):
+        #     print '---- Ele sel:'
+        #     print test1_b
+        #     print sel1_b
+        #     print '---- GN sel:'
+        #     print test2_b
+        #     print sel2_b
+        #
+        # continue
 
         if params.clusterize:
             # Now build DBSCAN 2D clusters
@@ -463,8 +480,8 @@ def analyze(params, batch_idx=0):
         tp_def_calib.set_collections(triggerCells, triggerClusters, trigger3DClustersCalib)
         gen_set.set_collections(genParticles)
         tt_set.set_collections(triggerTowers)
-        # simtt_set.set_collections(simTriggerTowers)
-        # eg_set.set_collections(egamma)
+        simtt_set.set_collections(simTriggerTowers)
+        eg_set.set_collections(egamma)
 
         for plotter in plotter_collection:
             # print plotter
@@ -528,13 +545,13 @@ def main(analyze):
     basedir = cfgfile['common']['input_dir']
     outdir = cfgfile['common']['output_dir']['default']
     hostname = socket.gethostname()
-    for machine,odir in cfgfile['common']['output_dir'].items():
+    for machine, odir in cfgfile['common']['output_dir'].items():
         if machine in hostname:
             outdir = odir
     plot_version = cfgfile['common']['plot_version']
 
     collection_params = {}
-    for collection,collection_data in cfgfile['collections'].items():
+    for collection, collection_data in cfgfile['collections'].items():
         samples = collection_data['samples']
         print ('--- Collection: {} with samples: {}'.format(collection, samples))
         sample_params = []
@@ -545,7 +562,7 @@ def main(analyze):
 
         for sample in samples:
             events_per_job = -1
-            out_file_name = 'histosi_{}_{}.root'.format(sample, plot_version)
+            out_file_name = 'histos_{}_{}i.root'.format(sample, plot_version)
             if opt.BATCH:
                 events_per_job = cfgfile['samples'][sample]['events_per_job']
                 if opt.RUN:
@@ -555,7 +572,6 @@ def main(analyze):
                 outdir = opt.OUTDIR
 
             out_file = os.path.join(outdir, out_file_name)
-
 
             params = Parameters(input_base_dir=basedir,
                                 input_sample_dir=cfgfile['samples'][sample]['input_sample_dir'],
