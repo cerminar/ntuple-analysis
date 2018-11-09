@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # import ROOT
 # from __future__ import print_function
-from NtupleDataFormat import HGCalNtuple, Event
+from NtupleDataFormat import HGCalNtuple
 import sys
 import root_numpy as rnp
 import root_numpy.tmva as rnptmva
@@ -14,16 +14,13 @@ from shutil import copyfile
 # that are in the HGCalNtuple
 import ROOT
 import os
-import math
 import array
-import copy
 import socket
 import datetime
 import optparse
 import yaml
 
 import python.l1THistos as histos
-import python.utils as utils
 import python.clusterTools as clAlgo
 import traceback
 import subprocess32
@@ -32,7 +29,6 @@ from python.utils import debugPrintOut
 import python.file_manager as fm
 import python.selections as selections
 
-#import python.plotters as plotters
 
 class Parameters:
     def __init__(self,
@@ -96,18 +92,41 @@ def dumpFrame2JSON(filename, frame):
         f.write(frame.to_json())
 
 
-
-
-
-
 def unpack(mytuple):
     return mytuple[0].getDataFrame(mytuple[1])
 
 
 def get_calibrated_clusters(calib_factors, input_3Dclusters):
     calibrated_clusters = input_3Dclusters.copy(deep=True)
+
     def apply_calibration(cluster):
         calib_factor = 1
+        calib_factor_tmp = calib_factors[(calib_factors.eta_l < abs(cluster.eta)) &
+                                         (calib_factors.eta_h >= abs(cluster.eta)) &
+                                         (calib_factors.pt_l <= cluster.pt) &
+                                         (calib_factors.pt_h > cluster.pt)]
+        if not calib_factor_tmp.empty:
+            # print 'cluster pt: {}, eta: {}, calib_factor: {}'.format(cluster.pt, cluster.eta, calib_factor_tmp.calib.values[0])
+            # print calib_factor_tmp
+            calib_factor = 1./calib_factor_tmp.calib.values[0]
+        # print cluster
+        # else:
+            # if cluster.eta <= 2.8 and cluster.eta > 1.52 and cluster.pt > 4 and cluster.pt <= 100:
+            #     print cluster[['pt', 'eta']]
+        cluster.pt = cluster.pt*calib_factor
+        # cluster['pt1'] = cluster.pt*calib_factor
+        # cluster['cf'] = 1./calib_factor
+        return cluster
+        # input_3Dclusters[(input_3Dclusters.eta_l > abs(cluster.eta)) & ()]
+    calibrated_clusters = calibrated_clusters.apply(apply_calibration, axis=1)
+    return calibrated_clusters
+
+
+def get_calibrated_clusters2(calib_factors, input_3Dclusters):
+    calibrated_clusters = input_3Dclusters.copy(deep=True)
+
+    def apply_calibration(cluster):
+        calib_factor = 1.
         calib_factor_tmp = calib_factors[(calib_factors.eta_l < abs(cluster.eta)) &
                                          (calib_factors.eta_h >= abs(cluster.eta)) &
                                          (calib_factors.pt_l < cluster.pt) &
@@ -117,9 +136,13 @@ def get_calibrated_clusters(calib_factors, input_3Dclusters):
             # print calib_factor_tmp
             calib_factor = 1./calib_factor_tmp.calib.values[0]
         # print cluster
-        cluster.pt = cluster.pt*calib_factor
+        else:
+            if cluster.eta <= 2.8 and cluster.eta > 1.52 and cluster.pt > 4 and cluster.pt <= 100:
+                print cluster[['pt', 'eta']]
+
+        cluster['pt2'] = cluster.pt*calib_factor
         return cluster
-        #input_3Dclusters[(input_3Dclusters.eta_l > abs(cluster.eta)) & ()]
+        # input_3Dclusters[(input_3Dclusters.eta_l > abs(cluster.eta)) & ()]
     calibrated_clusters = calibrated_clusters.apply(apply_calibration, axis=1)
     return calibrated_clusters
 
@@ -137,6 +160,7 @@ def build3DClusters(name, algorithm, triggerClusters, pool, debug):
                   toCount=trigger3DClusters,
                   toPrint=trigger3DClusters.iloc[:3])
     return trigger3DClusters
+
 
 # @profile
 def analyze(params, batch_idx=0):
@@ -252,16 +276,17 @@ def analyze(params, batch_idx=0):
     dump = False
     # print (range_ev)
 
-
     # def apply_calibrations(original_clusters, calibration_file_name):
-    calibration_file_name = 'data/calib_v1.json'
-    calib_factors = pd.read_json(calibration_file_name)
-    print calib_factors
+    calibration_file_name = 'data/calib_v2.json'
+    calib_factors = pd.read_json(calibration_file_name, dtype={'calib': np.float64,
+                                                               'eta_h': np.float64,
+                                                               'eta_l': np.float64,
+                                                               'pt_h': np.float64,
+                                                               'pt_l': np.float64})
 
 
     # setup the EGID classifies
     mva_classifier = ROOT.TMVA.Reader()
-
 
     mva_classifier.AddVariable('pt_cl', array.array('f', [0.]))
     mva_classifier.AddVariable('eta_cl', array.array('f', [0.]))
@@ -287,10 +312,6 @@ def analyze(params, batch_idx=0):
             print ('    run: {}, lumi: {}, event: {}'.format(event.run(), event.lumi(), event.event()))
 
         nev += 1
-        if event.entry() in params.eventsToDump:
-            dump = True
-        else:
-            dump = False
 
         # get the interesting data-frames
         genParts = event.getDataFrame(prefix='gen')
@@ -365,11 +386,9 @@ def analyze(params, batch_idx=0):
         # trigger3DClusters['hoe'] = 999.
         # trigger3DClusters = trigger3DClusters.apply(compute_hoe, axis=1)
 
-
         trigger3DClusters['bdt_out'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
         # trigger3DClusters['bdt_l'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'eMaxOverE', 'szz', 'srrtot']], 0.8)
         # trigger3DClusters['bdt_t'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'eMaxOverE', 'szz', 'srrtot']], 0.95)
-
 
         trigger3DClustersP = pd.DataFrame()
         triggerClustersGEO = pd.DataFrame()
@@ -409,7 +428,6 @@ def analyze(params, batch_idx=0):
         debugPrintOut(debug, 'Egamma',
                       toCount=egamma,
                       toPrint=egamma.sort_values(by='pt', ascending=False).iloc[:10])
-
 
         debugPrintOut(debug, 'Trigger Towers',
                       toCount=triggerTowers,
@@ -540,7 +558,7 @@ def main(analyze):
     # read the config file
     cfgfile = None
     with open(opt.CONFIGFILE, 'r') as stream:
-        cfgfile  = yaml.load(stream)
+        cfgfile = yaml.load(stream)
 
     basedir = cfgfile['common']['input_dir']
     outdir = cfgfile['common']['output_dir']['default']
@@ -648,7 +666,7 @@ def main(analyze):
             params['TEMPL_COLL'] = opt.COLLECTION
             params['TEMPL_SAMPLE'] = sample.name
             params['TEMPL_OUTFILE'] = 'histos_{}_{}.root'.format(sample.name, sample.version)
-            params['TEMPL_EOSPROTOCOL']= fm.get_eos_protocol(dirname=sample.output_dir)
+            params['TEMPL_EOSPROTOCOL'] = fm.get_eos_protocol(dirname=sample.output_dir)
             params['TEMPL_INFILE'] = 'histos_{}_{}_*.root'.format(sample.name, sample.version)
             params['TEMPL_OUTDIR'] = sample.output_dir
             params['TEMPL_VIRTUALENV'] = os.path.basename(os.environ['VIRTUAL_ENV'])
@@ -686,7 +704,6 @@ def main(analyze):
                          outfile=os.path.join(batch_dir, 'hadd_{}.dag'.format(sample.name)),
                          params=params)
 
-
             for jid in range(0, n_jobs):
                 dagman_spl += 'JOB Job_{} batch.sub\n'.format(jid)
                 dagman_spl += 'VARS Job_{} JOB_ID="{}"\n'.format(jid, jid)
@@ -719,7 +736,7 @@ def main(analyze):
 
         # create targz file of the code from git
         git_proc = subprocess32.Popen(['git', 'archive', '--format=tar.gz', 'HEAD', '-o',  os.path.join(batch_dir, 'ntuple-tools.tar.gz')], stdout=subprocess32.PIPE)
-        #cp TEMPL_TASKDIR/TEMPL_CFG
+        # cp TEMPL_TASKDIR/TEMPL_CFG
         print('Ready for submission please run the following commands:')
         # print('condor_submit {}'.format(condor_file_path))
         print('condor_submit_dag {}'.format(dagman_file_name))
