@@ -146,8 +146,8 @@ genpart_pion_ee_selections += add_selections(genpart_pion_ee_selections_tmp, gen
 genpart_ele_genplotting = [Selection('all')]
 genpart_ele_genplotting +=  add_selections(genpart_ele_selections, gen_ee_selections)
 
-eg_qual_selections = [Selection('EGq1', 'EGq1', 'hwQual > 0'),
-                      Selection('EGq2', 'EGq2', 'hwQual > 1')]
+eg_qual_selections = [Selection('EGq1', 'q1', 'hwQual > 0'),
+                      Selection('EGq2', 'q2', 'hwQual > 1')]
 
 eg_rate_selections = []
 eg_rate_selections += add_selections(eg_qual_selections, tp_eta_selections)
