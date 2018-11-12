@@ -25,7 +25,7 @@ import traceback
 # import optparse
 # import ConfigParser
 import hgcal_det_id as hgcdetid
-import hgcal_display as display
+# import hgcal_display as display
 
 
 def analyze(params, batch_idx=0):
@@ -308,8 +308,9 @@ def analyze(params, batch_idx=0):
 
     # display_mgr.displayCells(event=1, cells=cell_sel_type_p1)
     # display_mgr.displayCells(event=1, cells=cell_sel_type_m1)
-    display_mgr.displayTriggerCells(event=1, tcs=tc_sel_p1)
-    display_mgr.show(event=1)
+
+    # display_mgr.displayTriggerCells(event=1, tcs=tc_sel_p1)
+    # display_mgr.show(event=1)
 
     sys.exit(0)
 
