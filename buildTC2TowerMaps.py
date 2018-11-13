@@ -37,8 +37,8 @@ def analyze(params, batch_idx=0):
     n_eta_bins = 18
 
     phi_bins = np.linspace(-1*math.pi, math.pi, n_phi_bins+1)
-    # eta_bins = np.linspace(1.479, 3.0, n_eta_bins+1)
-    eta_bins = np.linspace(1.41, 3.1, n_eta_bins+1)
+    eta_bins = np.linspace(1.479, 3.0, n_eta_bins+1)
+    # eta_bins = np.linspace(1.41, 3.1, n_eta_bins+1)
 
     eta_bin_size = eta_bins[1] - eta_bins[0]
     eta_bin_first = eta_bins[0] + eta_bin_size/2
