@@ -79,7 +79,8 @@ class Parameters:
 
 
 def convertGeomTreeToDF(tree):
-    branches = [br.GetName() for br in tree.GetListOfBranches() if not br.GetName().startswith('c_')]
+    branches = [br.GetName() for br in tree.GetListOfBranches()
+                if not br.GetName().startswith('c_')]
     cell_array = rnp.tree2array(tree, branches=branches)
     cell_df = pd.DataFrame()
     for idx in range(0, len(branches)):
@@ -151,7 +152,8 @@ def build3DClusters(name, algorithm, triggerClusters, pool, debug):
     trigger3DClusters = pd.DataFrame()
     if triggerClusters.empty:
         return trigger3DClusters
-    clusterSides = [x for x in [triggerClusters[triggerClusters.eta > 0], triggerClusters[triggerClusters.eta < 0]] if not x.empty]
+    clusterSides = [x for x in [triggerClusters[triggerClusters.eta > 0],
+                                triggerClusters[triggerClusters.eta < 0]] if not x.empty]
     results3Dcl = pool.map(algorithm, clusterSides)
     for res3D in results3Dcl:
         trigger3DClusters = trigger3DClusters.append(res3D, ignore_index=True)
@@ -190,7 +192,8 @@ def analyze(params, batch_idx=0):
                                       sep=' ',
                                       names=['id', 'rod_x', 'rod_y'],
                                       index_col=False)
-            tc_rod_bins['rod_bin'] = tc_rod_bins.apply(func=lambda cell: (int(cell.rod_x), int(cell.rod_y)), axis=1)
+            tc_rod_bins['rod_bin'] = tc_rod_bins.apply(
+                func=lambda cell: (int(cell.rod_x), int(cell.rod_y)), axis=1)
 
             tc_geom_df = pd.merge(tc_geom_df, tc_rod_bins, on='id')
 
@@ -284,7 +287,6 @@ def analyze(params, batch_idx=0):
                                                                'pt_h': np.float64,
                                                                'pt_l': np.float64})
 
-
     # setup the EGID classifies
     mva_classifier = ROOT.TMVA.Reader()
 
@@ -309,7 +311,8 @@ def analyze(params, batch_idx=0):
             break
         if debug >= 2 or event.entry() % 100 == 0:
             print ("--- Event {}, @ {}".format(event.entry(), datetime.datetime.now()))
-            print ('    run: {}, lumi: {}, event: {}'.format(event.run(), event.lumi(), event.event()))
+            print ('    run: {}, lumi: {}, event: {}'.format(
+                event.run(), event.lumi(), event.event()))
 
         nev += 1
 
@@ -386,7 +389,8 @@ def analyze(params, batch_idx=0):
         # trigger3DClusters['hoe'] = 999.
         # trigger3DClusters = trigger3DClusters.apply(compute_hoe, axis=1)
 
-        trigger3DClusters['bdt_out'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
+        trigger3DClusters['bdt_out'] = rnptmva.evaluate_reader(
+            mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
         # trigger3DClusters['bdt_l'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'eMaxOverE', 'szz', 'srrtot']], 0.8)
         # trigger3DClusters['bdt_t'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'eMaxOverE', 'szz', 'srrtot']], 0.95)
 
@@ -478,9 +482,12 @@ def analyze(params, batch_idx=0):
                           toCount=triggerClustersDBS,
                           toPrint=triggerClustersDBS.iloc[:3])
 
-            trigger3DClustersDBS = build3DClusters('DBS', clAlgo.build3DClustersEtaPhi, triggerClustersDBS, pool, debug)
-            trigger3DClustersDBSp = build3DClusters('DBSp', clAlgo.build3DClustersProjTowers, triggerClustersDBS, pool, debug)
-            trigger3DClustersP = build3DClusters('DEFp', clAlgo.build3DClustersProjTowers, triggerClusters, pool, debug)
+            trigger3DClustersDBS = build3DClusters(
+                'DBS', clAlgo.build3DClustersEtaPhi, triggerClustersDBS, pool, debug)
+            trigger3DClustersDBSp = build3DClusters(
+                'DBSp', clAlgo.build3DClustersProjTowers, triggerClustersDBS, pool, debug)
+            trigger3DClustersP = build3DClusters(
+                'DEFp', clAlgo.build3DClustersProjTowers, triggerClusters, pool, debug)
         # if doAlternative:
         #     triggerClustersGEO = event.getDataFrame(prefix='clGEO')
         #     trigger3DClustersGEO = event.getDataFrame(prefix='cl3dGEO')
@@ -509,7 +516,8 @@ def analyze(params, batch_idx=0):
     print ("Writing histos to file {}".format(params.output_filename))
 
     lastfile = ntuple.tree().GetFile()
-    print 'Read bytes: {}, # of transaction: {}'.format(lastfile.GetBytesRead(),  lastfile.GetReadCalls())
+    print 'Read bytes: {}, # of transaction: {}'.format(
+        lastfile.GetBytesRead(),  lastfile.GetReadCalls())
     if debug == -4:
         ntuple.PrintCacheStats()
 
@@ -543,13 +551,19 @@ def main(analyze):
              + '%prog -h for help')
     parser = optparse.OptionParser(usage)
     parser.add_option('-f', '--file', dest='CONFIGFILE', help='specify the ini configuration file')
-    parser.add_option('-c', '--collection', dest='COLLECTION', help='specify the collection to be processed')
-    parser.add_option('-s', '--sample', dest='SAMPLE', help='specify the sample (within the collection) to be processed ("all" to run the full collection)')
+    parser.add_option('-c', '--collection', dest='COLLECTION',
+                      help='specify the collection to be processed')
+    parser.add_option('-s', '--sample', dest='SAMPLE',
+                      help='specify the sample (within the collection) to be processed ("all" to run the full collection)')
     parser.add_option('-d', '--debug', dest='DEBUG', help='debug level (default is 0)', default=0)
-    parser.add_option('-n', '--nevents', dest='NEVENTS', help='# of events to process per sample (default is 10)', default=10)
-    parser.add_option("-b", "--batch", action="store_true", dest="BATCH", default=False, help="submit the jobs via CONDOR")
-    parser.add_option("-r", "--run", dest="RUN", default=None, help="the batch_id to run (need to be used with the option -b)")
-    parser.add_option("-o", "--outdir", dest="OUTDIR", default=None, help="override the output directory for the files")
+    parser.add_option('-n', '--nevents', dest='NEVENTS',
+                      help='# of events to process per sample (default is 10)', default=10)
+    parser.add_option("-b", "--batch", action="store_true", dest="BATCH",
+                      default=False, help="submit the jobs via CONDOR")
+    parser.add_option("-r", "--run", dest="RUN", default=None,
+                      help="the batch_id to run (need to be used with the option -b)")
+    parser.add_option("-o", "--outdir", dest="OUTDIR", default=None,
+                      help="override the output directory for the files")
     # parser.add_option("-i", "--inputJson", dest="INPUT", default='input.json', help="list of input files and properties in JSON format")
 
     global opt, args
@@ -614,10 +628,12 @@ def main(analyze):
                 if opt.SAMPLE == 'all':
                     samples_to_process.extend(collection_params[opt.COLLECTION])
                 else:
-                    sel_sample = [sample for sample in collection_params[opt.COLLECTION] if sample.name == opt.SAMPLE]
+                    sel_sample = [sample for sample in collection_params[opt.COLLECTION]
+                                  if sample.name == opt.SAMPLE]
                     samples_to_process.append(sel_sample[0])
             else:
-                print ('Collection: {}, available samples: {}'.format(opt.COLLECTION, collection_params[opt.COLLECTION]))
+                print ('Collection: {}, available samples: {}'.format(
+                    opt.COLLECTION, collection_params[opt.COLLECTION]))
                 sys.exit(0)
         else:
             print ('ERROR: collection {} not in the cfg file'.format(opt.COLLECTION))
@@ -709,9 +725,11 @@ def main(analyze):
                 dagman_spl += 'VARS Job_{} JOB_ID="{}"\n'.format(jid, jid)
                 dagman_spl_retry += 'Retry Job_{} 3\n'.format(jid)
 
-            dagman_sub += 'SPLICE {} {}.spl DIR {}\n'.format(sample.name, sample.name, sample_batch_dir)
+            dagman_sub += 'SPLICE {} {}.spl DIR {}\n'.format(
+                sample.name, sample.name, sample_batch_dir)
             dagman_sub += 'JOB {} {}/batch_hadd.sub\n'.format(sample.name+'_hadd', sample_batch_dir)
-            dagman_sub += 'JOB {} {}/batch_cleanup.sub\n'.format(sample.name+'_cleanup', sample_batch_dir)
+            dagman_sub += 'JOB {} {}/batch_cleanup.sub\n'.format(
+                sample.name+'_cleanup', sample_batch_dir)
 
             dagman_dep += 'PARENT {} CHILD {}\n'.format(sample.name, sample.name+'_hadd')
             dagman_dep += 'PARENT {} CHILD {}\n'.format(sample.name+'_hadd', sample.name+'_cleanup')
@@ -735,7 +753,8 @@ def main(analyze):
         dagman_file.close()
 
         # create targz file of the code from git
-        git_proc = subprocess32.Popen(['git', 'archive', '--format=tar.gz', 'HEAD', '-o',  os.path.join(batch_dir, 'ntuple-tools.tar.gz')], stdout=subprocess32.PIPE)
+        git_proc = subprocess32.Popen(['git', 'archive', '--format=tar.gz', 'HEAD', '-o',
+                                       os.path.join(batch_dir, 'ntuple-tools.tar.gz')], stdout=subprocess32.PIPE)
         # cp TEMPL_TASKDIR/TEMPL_CFG
         print('Ready for submission please run the following commands:')
         # print('condor_submit {}'.format(condor_file_path))
