@@ -1,23 +1,18 @@
 import pandas as pd
 import numpy as np
-import json
 from sklearn.cluster import DBSCAN
-from sklearn import metrics
-from sklearn.datasets.samples_generator import make_blobs
-from sklearn.preprocessing import StandardScaler
 import math
-
 
 
 def buildTriggerTowerCluster(allTowers, seedTower, debug):
     eta_seed = seedTower.eta.values[0]
     iEta_seed = seedTower.iEta.values[0]
     iPhi_seed = seedTower.iPhi.values[0]
-    clusterTowers = allTowers[(allTowers.eta*eta_seed > 0) &
-                              (allTowers.iEta <= (iEta_seed + 1)) &
-                              (allTowers.iEta >= (iEta_seed - 1)) &
-                              (allTowers.iPhi <= (iPhi_seed + 1)) &
-                              (allTowers.iPhi >= (iPhi_seed - 1))]
+    clusterTowers = allTowers[(allTowers.eta*eta_seed > 0)
+                              & (allTowers.iEta <= (iEta_seed + 1))
+                              & (allTowers.iEta >= (iEta_seed - 1))
+                              & (allTowers.iPhi <= (iPhi_seed + 1))
+                              & (allTowers.iPhi >= (iPhi_seed - 1))]
     clusterTowers.loc[clusterTowers.index, 'logEnergy'] = np.log(clusterTowers.energy)
     if debug >= 5:
         print '---- SEED:'
@@ -94,7 +89,7 @@ def buildHDBSCANClusters(sel_layer, sel_zside, tcs):
     # tuned on 25GeV e-
     densities = [0.05, 0.05, 0.1, 0.25, 0.3, 0.3, 0.5, 0.45, 0.4, 0.35, 0.4, 0.25, 0.25, 0.15, 0.1, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15]
 
-    #densities = [0.1, 0.2, 0.5, 0.5, 1.1, 1.3, 1.7, 1.8, 2.0, 2.2, 2.6, 2.0, 1.8, 1.4, 1.2, 0.8, 0.6, 0.4, 0.2, 0.2, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
+    # densities = [0.1, 0.2, 0.5, 0.5, 1.1, 1.3, 1.7, 1.8, 2.0, 2.2, 2.6, 2.0, 1.8, 1.4, 1.2, 0.8, 0.6, 0.4, 0.2, 0.2, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
     # photon Pt35 tunes (no selection on unconverted)
     # densities = [0.05, 0.05, 0.05, 0.1, 0.25, 0.45, 1.1, 1.6, 2.5, 3.55, 4.85, 4.6, 4.35, 3.55, 3.15, 2.25, 1.8, 1.05, 1.0, 0.65, 0.5, 0.2, 0.1, 0.05, 0.05, 0.05, 0.05, 0.2]
     db = DBSCAN(eps=2.5,
@@ -117,8 +112,6 @@ def buildHDBSCANClusters(sel_layer, sel_zside, tcs):
         cl = build2D(components)
         new2Dcls = new2Dcls.append(cl.copy(), ignore_index=True)
     return new2Dcls
-
-
 
 
 def build3DClustersEtaPhi(cl2D):
@@ -215,7 +208,9 @@ def getClusterSeeds(triggerClusters):
 
         rod_bin_seed = filtered_rod_sums.iloc[0].name
         rod_bin_seeds.append(rod_bin_seed)
-        cluster_rod_bins = [(x, y) for x in range(rod_bin_seed[0]-1, rod_bin_seed[0]+2) for y in range(rod_bin_seed[1]-1, rod_bin_seed[1]+2)]
+        cluster_rod_bins = [(x, y)
+                            for x in range(rod_bin_seed[0]-1, rod_bin_seed[0]+2)
+                            for y in range(rod_bin_seed[1]-1, rod_bin_seed[1]+2)]
         all_cluster_rod_bins.extend(cluster_rod_bins)
         filtered_rod_sums = rod_sums[~rod_sums.index.isin(all_cluster_rod_bins)]
 
@@ -223,7 +218,9 @@ def getClusterSeeds(triggerClusters):
 
 
 def getClusterComponents(rod_bin_seed, triggerClusters):
-    cluster_rod_bins = [(x, y) for x in range(rod_bin_seed[0]-1, rod_bin_seed[0]+2) for y in range(rod_bin_seed[1]-1, rod_bin_seed[1]+2)]
+    cluster_rod_bins = [(x, y)
+                        for x in range(rod_bin_seed[0]-1, rod_bin_seed[0]+2)
+                        for y in range(rod_bin_seed[1]-1, rod_bin_seed[1]+2)]
     # print rod_bin_seed
     # print cluster_rod_bins
 
