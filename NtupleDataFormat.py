@@ -2,7 +2,6 @@
 # import collections
 
 import ROOT
-import numpy as np
 import pandas as pd
 import root_numpy as rnp
 
@@ -129,20 +128,21 @@ class HGCalNtuple(object):
 
         self._entries = self._tree.GetEntries()
 
-
     def setCache(self, learn_events=-1, entry_range=None):
         print 'Resetting cache: {}'.format(self._tree.SetCacheSize(0))
         cachesize = 400000000
         print 'Setting new cache size: {}'.format(self._tree.SetCacheSize(cachesize))
         if learn_events != -1:
-            print 'Setting # of entries for cache learning: {} to {}'.format(self._tree.SetCacheLearnEntries(learn_events), learn_events)
+            print 'Setting # of entries for cache learning: {} to {}'.format(
+                self._tree.SetCacheLearnEntries(learn_events), learn_events)
         else:
             print self._tree.AddBranchToCache("*", True)
             # print self._tree.AddBranchToCache("cl_layer")
             self._tree.StopCacheLearningPhase()
 
         if entry_range:
-            print 'Setting cache entry range: {}'.format(self._tree.SetCacheEntryRange(entry_range[0], entry_range[-1]))
+            print 'Setting cache entry range: {}'.format(
+                self._tree.SetCacheEntryRange(entry_range[0], entry_range[-1]))
         print 'Cache size: {}'.format(self._tree.GetCacheSize())
 
     def PrintCacheStats(self):
@@ -206,7 +206,6 @@ class Event(object):
         super(Event, self).__init__()
         self._tree = tree
         self._entry = entry
-
 
     def entry(self):
         return self._entry
@@ -279,9 +278,11 @@ class Event(object):
     #     return Trigger3DClusters(self._tree, prefix)
 
     def getDataFrame(self, prefix):
-        branches = [br.GetName() for br in self._tree.GetListOfBranches() if (br.GetName().startswith(prefix+'_') and not br.GetName() == '{}_n'.format(prefix))]
+        branches = [br.GetName() for br in self._tree.GetListOfBranches() if (
+            br.GetName().startswith(prefix+'_') and not br.GetName() == '{}_n'.format(prefix))]
         names = [br.split('_')[1] for br in branches]
-        nd_array = rnp.tree2array(self._tree, branches=branches, start=self._entry, stop=self._entry+1, cache_size=400000000)
+        nd_array = rnp.tree2array(self._tree, branches=branches,
+                                  start=self._entry, stop=self._entry+1, cache_size=400000000)
         df = pd.DataFrame()
         for idx in range(0, len(branches)):
             df[names[idx]] = nd_array[branches[idx]][0]
@@ -306,14 +307,11 @@ class Event(object):
     #             print 'OK: DF size: {} while n of objects in tree: {}'.format(df.shape[0], nd_array['{}_n'.format(prefix)][0])
     #     return df
 
-
-
-
-
     def getPUInfo(self):
         branches = ['gen_PUNumInt', 'gen_TrueNumInt']
         names = ['PU', 'PUTrue']
-        nd_array = rnp.tree2array(self._tree, branches=branches, start=self._entry, stop=self._entry+1)
+        nd_array = rnp.tree2array(self._tree, branches=branches,
+                                  start=self._entry, stop=self._entry+1)
         df = pd.DataFrame(columns=names)
         for idx, name in enumerate(names):
             df[name] = [nd_array[0][idx]]
