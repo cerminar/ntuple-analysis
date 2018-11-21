@@ -41,5 +41,5 @@ def debugPrintOut(level, name, toCount, toPrint):
         return
     if level >= 3:
         print('# {}: {}'.format(name, len(toCount)))
-    if level >= 4:
+    if level >= 4 and not toPrint.empty:
         print(toPrint)
