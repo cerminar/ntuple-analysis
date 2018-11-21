@@ -139,33 +139,8 @@ class TPGenMatchPlotter:
             return ret
 
         def sumClustersInCone(all3DClusters, idx_incone, debug=0):
-            ret = pd.DataFrame()
             components = all3DClusters[all3DClusters.index.isin(idx_incone)]
-            ret['energy'] = [components.energy.sum()]
-            # FIXME: this needs to be better defined
-            ret['energyCore'] = [components.energy.sum()]
-            ret['energyCentral'] = [components.energy.sum()]
-
-            ret['eta'] = [np.sum(components.eta*components.energy)/components.energy.sum()]
-            ret['phi'] = [np.sum(components.phi*components.energy)/components.energy.sum()]
-            ret['pt'] = [(ret.energy/np.cosh(ret.eta)).values[0]]
-            ret['ptCore'] = [(ret.energyCore/np.cosh(ret.eta)).values[0]]
-            # ret['layers'] = [np.unique(np.concatenate(components.layers.values))]
-            ret['clusters'] = [np.concatenate(components.clusters.values)]
-            ret['nclu'] = [components.nclu.sum()]
-            ret['firstlayer'] = [np.min(components.firstlayer.values)]
-            # FIXME: placeholder
-            ret['showerlength'] = [1]
-            ret['seetot'] = [1]
-            ret['seemax'] = [1]
-            ret['spptot'] = [1]
-            ret['sppmax'] = [1]
-            ret['szz'] = [1]
-            ret['emaxe'] = [1]
-            ret['id'] = [1]
-            ret['n010'] = len(components[components.pt > 0.1])
-            ret['n025'] = len(components[components.pt > 0.25])
-
+            ret = clAlgo.sum3DClusters(components)
             if debug > 0:
                 print '-------- in cone:'
                 print components.sort_values(by='pt', ascending=False)
@@ -549,12 +524,16 @@ tp_plotters = [TPPlotter(selections.tp_def, selections.tp_id_selections),
                TPPlotter(selections.tp_def_calib, selections.tp_id_selections)]
 eg_plotters = [EGPlotter(selections.eg_set, selections.eg_qual_selections)]
 rate_plotters = [RatePlotter(selections.tp_def, selections.tp_rate_selections),
-                 RatePlotter(selections.tp_def_calib, selections.tp_rate_selections)]
+                 RatePlotter(selections.tp_def_calib, selections.tp_rate_selections),
+                 RatePlotter(selections.tp_def_merged, selections.tp_rate_selections)]
 eg_rate_plotters = [RatePlotter(selections.eg_set, selections.eg_rate_selections)]
 tp_genmatched_plotters = [TPGenMatchPlotter(selections.tp_def, selections.gen_set,
                                             selections.tp_match_selections,
                                             selections.gen_part_selections),
                           TPGenMatchPlotter(selections.tp_def_calib, selections.gen_set,
+                                            selections.tp_match_selections,
+                                            selections.gen_part_selections),
+                          TPGenMatchPlotter(selections.tp_def_merged, selections.gen_set,
                                             selections.tp_match_selections,
                                             selections.gen_part_selections)]
 eg_genmatched_plotters = [EGGenMatchPlotter(selections.eg_set, selections.gen_set,

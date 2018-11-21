@@ -53,31 +53,34 @@ def add_selections(list1, list2):
     return ret
 
 
-
 # TP selections
-tp_id_selections = [Selection('all', '', ''),
+tp_id_selections = [
+                    Selection('all', '', ''),
                     Selection('Em', 'EGId', 'quality >0'),
-                    Selection('Emv1', 'EGId V2', '(showerlength > 1) & (bdt_out > 0.02)')]
+                    Selection('Emv1', 'EGId V2', '(showerlength > 1) & (bdt_out > 0.05)')
+                    ]
 
 
 tp_pt_selections = [Selection('all', '', ''),
                     Selection('Pt10', 'p_{T}^{L1}>=10GeV', 'pt >= 10'),
                     Selection('Pt20', 'p_{T}^{L1}>=20GeV', 'pt >= 20'),
-                    Selection('Pt25', 'p_{T}^{L1}>=25GeV', 'pt >= 25'),
-                    Selection('Pt30', 'p_{T}^{L1}>=30GeV', 'pt >= 30')]
+                    # Selection('Pt25', 'p_{T}^{L1}>=25GeV', 'pt >= 25'),
+                    Selection('Pt30', 'p_{T}^{L1}>=30GeV', 'pt >= 30')
+                    ]
 
 
 tp_eta_selections = [Selection('all', '', ''),
-                     Selection('EtaA', '|#eta^{L1}| <= 1.52', 'abs(eta) <= 1.52'),
+                     # Selection('EtaA', '|#eta^{L1}| <= 1.52', 'abs(eta) <= 1.52'),
                      Selection('EtaB', '1.52 < |#eta^{L1}| <= 1.7', '1.52 < abs(eta) <= 1.7'),
                      Selection('EtaC', '1.7 < |#eta^{L1}| <= 2.4', '1.7 < abs(eta) <= 2.4'),
                      Selection('EtaD', '2.4 < |#eta^{L1}| <= 2.8', '2.4 < abs(eta) <= 2.8'),
-                     Selection('EtaE', '|#eta^{L1}| > 2.8', 'abs(eta) > 2.8'),
-                     Selection('EtaAB', '|#eta^{L1}| <= 1.7', 'abs(eta) <= 1.7'),
-                     Selection('EtaABC', '|#eta^{L1}| <= 2.4', 'abs(eta) <= 2.4'),
+                     # Selection('EtaE', '|#eta^{L1}| > 2.8', 'abs(eta) > 2.8'),
+                     # Selection('EtaAB', '|#eta^{L1}| <= 1.7', 'abs(eta) <= 1.7'),
+                     # Selection('EtaABC', '|#eta^{L1}| <= 2.4', 'abs(eta) <= 2.4'),
                      Selection('EtaBC', '1.52 < |#eta^{L1}| <= 2.4', '1.52 < abs(eta) <= 2.4'),
                      Selection('EtaBCD', '1.52 < |#eta^{L1}| <= 2.8', '1.52 < abs(eta) <= 2.8'),
-                     Selection('EtaBCDE', '1.52 < |#eta^{L1}|', '1.52 < abs(eta)')]
+                     # Selection('EtaBCDE', '1.52 < |#eta^{L1}|', '1.52 < abs(eta)')
+                     ]
 
 
 tp_rate_selections = add_selections(tp_id_selections, tp_eta_selections)
@@ -91,16 +94,18 @@ genpart_pion_selections = [Selection('Pion', '#pi', 'abs(pdgid) == {}'.format(PI
 
 gen_ee_selections = [Selection('', '', 'reachedEE == 2')]
 
-gen_eta_selections = [Selection('EtaA', '|#eta^{GEN}| <= 1.52', 'abs(eta) <= 1.52'),
+gen_eta_selections = [
+                      # Selection('EtaA', '|#eta^{GEN}| <= 1.52', 'abs(eta) <= 1.52'),
                       Selection('EtaB', '1.52 < |#eta^{GEN}| <= 1.7', '1.52 < abs(eta) <= 1.7'),
                       Selection('EtaC', '1.7 < |#eta^{GEN}| <= 2.4', '1.7 < abs(eta) <= 2.4'),
                       Selection('EtaD', '2.4 < |#eta^{GEN}| <= 2.8', '2.4 < abs(eta) <= 2.8'),
-                      Selection('EtaE', '|#eta^{GEN}| > 2.8', 'abs(eta) > 2.8'),
-                      Selection('EtaAB', '|#eta^{GEN}| <= 1.7', 'abs(eta) <= 1.7'),
-                      Selection('EtaABC', '|#eta^{GEN}| <= 2.4', 'abs(eta) <= 2.4'),
+                      # Selection('EtaE', '|#eta^{GEN}| > 2.8', 'abs(eta) > 2.8'),
+                      # Selection('EtaAB', '|#eta^{GEN}| <= 1.7', 'abs(eta) <= 1.7'),
+                      # Selection('EtaABC', '|#eta^{GEN}| <= 2.4', 'abs(eta) <= 2.4'),
                       Selection('EtaBC', '1.52 < |#eta^{GEN}| <= 2.4', '1.52 < abs(eta) <= 2.4'),
                       Selection('EtaBCD', '1.52 < |#eta^{GEN}| <= 2.8', '1.52 < abs(eta) <= 2.8'),
-                      Selection('EtaBCDE', '1.52 < |#eta^{GEN}|', '1.52 < abs(eta)')]
+                      # Selection('EtaBCDE', '1.52 < |#eta^{GEN}|', '1.52 < abs(eta)')
+                      ]
 
 
 gen_pt_selections = [Selection('Pt10', 'p_{T}^{GEN}>=10GeV', 'pt >= 10'),
@@ -144,16 +149,16 @@ genpart_pion_ee_selections += add_selections(genpart_pion_ee_selections_tmp, gen
 # genpart_ele_
 
 genpart_ele_genplotting = [Selection('all')]
-genpart_ele_genplotting +=  add_selections(genpart_ele_selections, gen_ee_selections)
+genpart_ele_genplotting += add_selections(genpart_ele_selections, gen_ee_selections)
 
-eg_qual_selections = [Selection('EGq1', 'q1', 'hwQual > 0'),
+eg_qual_selections = [
+                      # Selection('EGq1', 'q1', 'hwQual > 0'),
                       Selection('EGq2', 'q2', 'hwQual > 1')]
 
 eg_rate_selections = []
 eg_rate_selections += add_selections(eg_qual_selections, tp_eta_selections)
 eg_pt_selections = []
 eg_pt_selections += add_selections(eg_qual_selections, tp_pt_selections)
-
 
 
 class EgammaSet:
@@ -201,6 +206,7 @@ class TTSet:
 
 
 tp_def = TPSet('DEF', 'NNDR')
+tp_def_merged = TPSet('DEFMerged', 'NNDR(merged)')
 tp_def_calib = TPSet('DEFCalib', 'NNDR + calib. v1')
 gen_set = GenSet('GEN', '')
 tt_set = TTSet('TT', 'Trigger Towers')

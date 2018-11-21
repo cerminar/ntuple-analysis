@@ -164,6 +164,19 @@ def build3DClusters(name, algorithm, triggerClusters, pool, debug):
     return trigger3DClusters
 
 
+def get_merged_clusters(triggerClusters, pool, debug=0):
+    merged_clusters = pd.DataFrame(columns=triggerClusters.columns)
+    if triggerClusters.empty:
+        return merged_clusters
+    # FIXME: filter only interesting clusters
+    clusterSides = [x for x in [triggerClusters[triggerClusters.eta > 0],
+                                triggerClusters[triggerClusters.eta < 0]] if not x.empty]
+    results3Dcl = pool.map(clAlgo.merge3DClustersEtaPhi, clusterSides)
+    for res3D in results3Dcl:
+        merged_clusters = merged_clusters.append(res3D, ignore_index=True)
+    return merged_clusters
+
+
 # @profile
 def analyze(params, batch_idx=0):
     print (params)
@@ -207,13 +220,15 @@ def analyze(params, batch_idx=0):
 
     if params.events_per_job == -1:
         print 'This is interactive processing...'
-        input_files = fm.get_files_for_processing(input_dir=os.path.join(params.input_base_dir, params.input_sample_dir),
+        input_files = fm.get_files_for_processing(input_dir=os.path.join(params.input_base_dir,
+                                                                         params.input_sample_dir),
                                                   tree=tree_name,
                                                   nev_toprocess=params.maxEvents,
                                                   debug=debug)
     else:
         print 'This is batch processing...'
-        input_files, range_ev = fm.get_files_and_events_for_batchprocessing(input_dir=os.path.join(params.input_base_dir, params.input_sample_dir),
+        input_files, range_ev = fm.get_files_and_events_for_batchprocessing(input_dir=os.path.join(params.input_base_dir,
+                                                                                                   params.input_sample_dir),
                                                                             tree=tree_name,
                                                                             nev_toprocess=params.maxEvents,
                                                                             nev_perjob=params.events_per_job,
@@ -246,29 +261,18 @@ def analyze(params, batch_idx=0):
 
     # ---------------------------------------------------
     # TP sets
-    tp_def = selections.tp_def
-    tp_def_calib = selections.tp_def_calib
-    gen_set = selections.gen_set
-    tt_set = selections.tt_set
-    simtt_set = selections.simtt_set
-    eg_set = selections.eg_set
+    # tp_def = selections.tp_def
+    # #tp_def_merged =
+    # tp_def_calib = selections.tp_def_calib
+    # gen_set = selections.gen_set
+    # tt_set = selections.tt_set
+    # simtt_set = selections.simtt_set
+    # eg_set = selections.eg_set
+
 
     # instantiate all the plotters
     plotter_collection = []
     plotter_collection.extend(params.plotters)
-    # plotter_collection.extend([plotters.TPPlotter(tp_def, selections.tp_id_selections),
-    #                            plotters.TPPlotter(tp_def_calib, selections.tp_id_selections)])
-    # plotter_collection.extend([plotters.RatePlotter(tp_def, selections.tp_rate_selections),
-    #                            plotters.RatePlotter(tp_def_calib, selections.tp_rate_selections)])
-    # plotter_collection.extend([plotters.TPGenMatchPlotter(tp_def, gen_set,
-    #                                                       selections.tp_match_selections,
-    #                                                       selections.genpart_ele_ee_selections),
-    #                            plotters.TPGenMatchPlotter(tp_def_calib, gen_set,
-    #                                                       selections.tp_match_selections,
-    #                                                       selections.genpart_ele_ee_selections)])
-    # plotter_collection.extend([plotters.GenPlotter(gen_set, selections.genpart_ele_genplotting)])
-    # plotter_collection.extend([plotters.TTPlotter(tt_set)])
-    # plotter_collection.extend([plotters.TTGenMatchPlotter(tt_set, gen_set, [plotters.Selection('all')], selections.genpart_ele_ee_selections)])
     print plotter_collection
 
     # -------------------------------------------------------
@@ -294,7 +298,8 @@ def analyze(params, batch_idx=0):
     mva_classifier.AddVariable('eta_cl', array.array('f', [0.]))
     mva_classifier.AddVariable('maxLayer_cl', array.array('f', [0.]))
     mva_classifier.AddVariable('hOverE_cl', array.array('f', [0.]))
-    # (this is a variable I created by dividing the eMax variable by the total energy of the cluster)
+    # (this is a variable I created by dividing the eMax variable by the
+    # total energy of the cluster)
     mva_classifier.AddVariable('eMaxOverE_cl', array.array('f', [0.]))
     mva_classifier.AddVariable('sigmaZZ_cl', array.array('f', [0.]))
 
@@ -310,7 +315,8 @@ def analyze(params, batch_idx=0):
         if (params.maxEvents != -1 and nev >= params.maxEvents):
             break
         if debug >= 2 or event.entry() % 100 == 0:
-            print ("--- Event {}, @ {}".format(event.entry(), datetime.datetime.now()))
+            print ("--- Event {}, @ {}".format(event.entry(),
+                                               datetime.datetime.now()))
             print ('    run: {}, lumi: {}, event: {}'.format(
                 event.run(), event.lumi(), event.event()))
 
@@ -401,6 +407,7 @@ def analyze(params, batch_idx=0):
         trigger3DClustersDBS = pd.DataFrame()
         trigger3DClustersDBSp = pd.DataFrame()
         trigger3DClustersCalib = pd.DataFrame()
+        trigger3DClustersMerged = pd.DataFrame()
 
         triggerTowers.eval('HoE = etHad/etEm', inplace=True)
         simTriggerTowers.eval('HoE = etHad/etEm', inplace=True)
@@ -415,7 +422,7 @@ def analyze(params, batch_idx=0):
         debugPrintOut(debug, 'gen parts', toCount=genParts, toPrint=genParts)
         debugPrintOut(debug, 'gen particles',
                       toCount=genParticles,
-                      toPrint=genParticles[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'pid', 'gen', 'reachedEE', 'fromBeamPipe']])
+                      toPrint=genParticles[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'pid', 'gen', 'reachedEE', 'fromBeamPipe']].sort_values(by='pt', ascending=False).iloc[:10])
         # print genParticles.columns
         # debugPrintOut(debug, 'digis',
         #               toCount=hgcDigis,
@@ -426,9 +433,10 @@ def analyze(params, batch_idx=0):
         debugPrintOut(debug, '2D clusters',
                       toCount=triggerClusters,
                       toPrint=triggerClusters.sort_values(by='pt', ascending=False).iloc[:3])
-        debugPrintOut(debug, '3D clusters',
-                      toCount=trigger3DClusters,
-                      toPrint=trigger3DClusters.sort_values(by='pt', ascending=False).iloc[:10])
+        if not trigger3DClusters.empty:
+            debugPrintOut(debug, '3D clusters',
+                          toCount=trigger3DClusters,
+                          toPrint=trigger3DClusters[trigger3DClusters.quality > 0].sort_values(by='pt', ascending=False).iloc[:10])
         debugPrintOut(debug, 'Egamma',
                       toCount=egamma,
                       toPrint=egamma.sort_values(by='pt', ascending=False).iloc[:10])
@@ -444,11 +452,17 @@ def analyze(params, batch_idx=0):
         # print '# towers eta <0 {}'.format(len(triggerTowers[triggerTowers.eta < 0]))
 
         trigger3DClustersCalib = get_calibrated_clusters(calib_factors, trigger3DClusters)
+        trigger3DClustersMerged = get_merged_clusters(trigger3DClusters[trigger3DClusters.quality > 0], pool)
         # print trigger3DClusters[:3]
         # print trigger3DClustersCalib[:3]
         debugPrintOut(debug, 'Calibrated 3D clusters',
                       toCount=trigger3DClustersCalib,
                       toPrint=trigger3DClustersCalib.sort_values(by='pt', ascending=False).iloc[:10])
+
+        if not trigger3DClustersMerged.empty:
+            debugPrintOut(debug, 'Merged 3D clusters',
+                          toCount=trigger3DClustersMerged,
+                          toPrint=trigger3DClustersMerged.sort_values(by='pt', ascending=False).iloc[:10])
 
         # from python.selections import genpart_ele_ee_selections,gen_part_selections
         # #print genpart_ele_ee_selections
@@ -501,12 +515,13 @@ def analyze(params, batch_idx=0):
 
         # fill histograms
         # hdigis.fill(hgcDigis)
-        tp_def.set_collections(triggerCells, triggerClusters, trigger3DClusters)
-        tp_def_calib.set_collections(triggerCells, triggerClusters, trigger3DClustersCalib)
-        gen_set.set_collections(genParticles)
-        tt_set.set_collections(triggerTowers)
-        simtt_set.set_collections(simTriggerTowers)
-        eg_set.set_collections(egamma)
+        selections.tp_def.set_collections(triggerCells, triggerClusters, trigger3DClusters)
+        selections.tp_def_merged.set_collections(triggerCells, triggerClusters, trigger3DClustersMerged)
+        selections.tp_def_calib.set_collections(triggerCells, triggerClusters, trigger3DClustersCalib)
+        selections.gen_set.set_collections(genParticles)
+        selections.tt_set.set_collections(triggerTowers)
+        selections.simtt_set.set_collections(simTriggerTowers)
+        selections.eg_set.set_collections(egamma)
 
         for plotter in plotter_collection:
             # print plotter

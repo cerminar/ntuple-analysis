@@ -309,3 +309,71 @@ def computeClusterRodSharing(cl2ds, tcs):
                     energy = energy_sums_byRod.loc[[bin]].energy[0]
                 shares.append(energy)
         cl2ds.set_value(index, 'rod_bin_shares', shares)
+
+
+def merge3DClustersEtaPhi(cl3ds):
+    new3DCls = pd.DataFrame()
+    if cl3ds.empty:
+        return new3DCls
+    X = cl3ds[['eta', 'phi']]
+    db = DBSCAN(eps=0.015,  # 0.03
+                algorithm='kd_tree',
+                min_samples=1,
+                n_jobs=3).fit(X)
+    labels = db.labels_
+    unique_labels = set(labels)
+    # n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+    # print '# of 3D clusters: {}'.format(n_clusters_ )
+    cl3ds['dbs_labels'] = labels
+    # print cl3ds[['id', 'energy', 'dbs_labels']]
+    for label in unique_labels:
+        if label == -1:
+            continue
+        # print tcs_layer[tcs_layer.dbs_label == label].indexsi s
+        components = cl3ds[cl3ds.dbs_labels == label]
+        if components.shape[0] == 1:
+            new3DCls = new3DCls.append(components.iloc[0], ignore_index=True)
+        else:
+            refeta, refphi = components.sort_values(by='pt', ascending=False).iloc[0][['eta', 'phi']]
+
+            components_etaphi_ok = components[(np.fabs(components.eta - refeta) < 0.02) & (np.fabs(components.phi - refphi) < 0.1)]
+            cl3D = sum3DClusters(components_etaphi_ok)
+            new3DCls = new3DCls.append(cl3D, ignore_index=True)
+            components_etaphi_no = components[~((np.fabs(components.eta - refeta) < 0.02) & (np.fabs(components.phi - refphi) < 0.1))]
+            if not components_etaphi_no.empty:
+                new3DCls = new3DCls.append(components_etaphi_no, ignore_index=True)
+    return new3DCls
+
+
+def sum3DClusters(components):
+    ret = pd.DataFrame(columns=components.columns)
+    ret['energy'] = [components.energy.sum()]
+    # ret['energyCore'] = [components.energy.sum()]
+    # ret['energyCentral'] = [components.energy.sum()]
+
+    ret['eta'] = [np.sum(components.eta*components.energy)/components.energy.sum()]
+    ret['phi'] = [np.sum(components.phi*components.energy)/components.energy.sum()]
+    ret['pt'] = [(ret.energy/np.cosh(ret.eta)).values[0]]
+    # ret['ptCore'] = [(ret.energyCore/np.cosh(ret.eta)).values[0]]
+    # ret['layers'] = [np.unique(np.concatenate(components.layers.values))]
+    ret['clusters'] = [np.concatenate(components.clusters.values)]
+    ret['nclu'] = [components.nclu.sum()]
+    ret['firstlayer'] = [np.min(components.firstlayer.values)]
+    # FIXME: placeholder
+    ret['showerlength'] = [1]
+    ret['seetot'] = [1]
+    ret['seemax'] = [1]
+    ret['spptot'] = [1]
+    ret['sppmax'] = [1]
+    ret['szz'] = [1]
+    ret['emaxe'] = [1]
+    ret['id'] = [components.id.values[0]]
+    ret['n010'] = len(components[components.pt > 0.1])
+    ret['n025'] = len(components[components.pt > 0.25])
+    ret['quality'] = [1]
+    ret['bdt_out'] = [0]
+    # print '-------- merged:'
+    # print components.sort_values(by='pt', ascending=False)
+    # print '   - merged sum:'
+    # print ret
+    return ret
