@@ -2,7 +2,7 @@
 import ROOT
 import root_numpy as rnp
 import numpy as np
-import pandas as pd
+# import pandas as pd
 
 
 class HistoManager(object):
@@ -421,12 +421,12 @@ class ResoHistos(BaseHistos):
 class EGResoHistos(BaseHistos):
     def __init__(self, name, root_file=None):
         if not root_file:
-            self.h_ptResp        = ROOT.TH1F(name+'_ptResp', 'EG Pt resp.; p_{T}^{L1}/p_{T}^{GEN}', 100, 0, 3)
-            self.h_ptRespVpt     = ROOT.TH2F(name+'_ptRespVpt', 'EG Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
-            self.h_ptRespVeta    = ROOT.TH2F(name+'_ptRespVeta', 'EG Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};', 50, -4, 4, 100, 0, 3)
-            self.h_etaRes        = ROOT.TH1F(name+'_etaRes', 'EG eta reso', 100, -0.4, 0.4)
-            self.h_phiRes        = ROOT.TH1F(name+'_phiRes', 'EG phi reso', 100, -0.4, 0.4)
-            self.h_drRes         = ROOT.TH1F(name+'_drRes', 'EG DR reso', 100, 0, 0.4)
+            self.h_ptResp = ROOT.TH1F(name+'_ptResp', 'EG Pt resp.; p_{T}^{L1}/p_{T}^{GEN}', 100, 0, 3)
+            self.h_ptRespVpt = ROOT.TH2F(name+'_ptRespVpt', 'EG Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
+            self.h_ptRespVeta = ROOT.TH2F(name+'_ptRespVeta', 'EG Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};', 50, -4, 4, 100, 0, 3)
+            self.h_etaRes = ROOT.TH1F(name+'_etaRes', 'EG eta reso', 100, -0.4, 0.4)
+            self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'EG phi reso', 100, -0.4, 0.4)
+            self.h_drRes = ROOT.TH1F(name+'_drRes', 'EG DR reso', 100, 0, 0.4)
 
         BaseHistos.__init__(self, name, root_file)
 
@@ -437,7 +437,6 @@ class EGResoHistos(BaseHistos):
         self.h_etaRes.Fill(target.eta - reference.eta)
         self.h_phiRes.Fill(target.phi - reference.phi)
         self.h_drRes.Fill(np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
-
 
 
 class Reso2DHistos(BaseHistos):
@@ -596,6 +595,27 @@ class EGResoHistos(BaseHistos):
         self.h_phiRes.Fill(target.phi - reference.phi)
         self.h_drRes.Fill(np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
 
+
+class ClusterConeHistos(BaseHistos):
+    def __init__(self, name, root_file=None):
+        if not root_file:
+            self.h_ptRel = ROOT.TH1F(name+'_ptRel', 'Pt best/Pt other; p_{T}^{best}/p_{T}^{other}', 100, 0, 1)
+            self.h_ptRelVpt = ROOT.TH2F(name+'_ptRelVpt', 'Pt best/Pt other vs pt (GeV); p_{T}^{best} [GeV]; p_{T}^{best}/p_{T}^{other};', 50, 0, 100, 100, 0, 1)
+            self.h_deltaEta = ROOT.TH1F(name+'_deltaEta', '#Delta eta; #eta^{best}-#eta^{other}', 100, -0.4, 0.4)
+            self.h_deltaPhi = ROOT.TH1F(name+'_deltaPhi', '#Delta phi; #phi^{best}-#phi^{other}', 100, -0.4, 0.4)
+            self.h_deltaR = ROOT.TH1F(name+'_deltaR', '#Delta R (best-other); #Delta R (best, other)', 100, 0, 0.4)
+            self.h_n = ROOT.TH1I(name+'_n', '# other clusters in cone; # others', 20, 0, 20)
+        BaseHistos.__init__(self, name, root_file)
+
+    def fill(self, reference, target):
+        self.h_ptRel.Fill(target.pt/reference.pt)
+        self.h_ptRelVpt.Fill(reference.pt, target.pt/reference.pt)
+        self.h_deltaEta.Fill(target.eta - reference.eta)
+        self.h_deltaPhi.Fill(target.phi - reference.phi)
+        self.h_deltaR.Fill(np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
+
+    def fill_n(self, num):
+        self.h_n.Fill(num)
 
 # if __name__ == "__main__":
 #     import sys
