@@ -13,17 +13,6 @@ common:
 
 
 collections:
-  test_ele:
-    samples:
-      - test_ele_flat2to100_PU0
-      - test_ele_flat2to100_PU200
-    plotters:
-      - tp_egm_plotters
-      - tp_genmatched_plotters
-      - genpart_plotters
-      - ttower_plotters
-      - ttower_genmatched_plotters
-
   single_empart_guns_egvalid:
     samples:
       - ele_flat2to100_PU0
@@ -107,58 +96,52 @@ plotters:
 
 #test: !!python/name:python.selections.gen_part_selections
 samples:
-  test_ele_flat2to100_PU0:
-    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v11/180814_140939/0000/
-    events_per_job: 500
-
-  test_ele_flat2to100_PU200:
-    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU200_v11/180814_141012/0000/
-    events_per_job : 200
-
   ele_flat2to100_PU0:
-    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v12/181018_144943/0000/
+    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v13/181116_090500/0000
     events_per_job : 500
 
   ele_flat2to100_PU200:
-    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU200_v12/181018_145103/0000/
+    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU200_v13/181116_090533/0000
     events_per_job : 200
 
+# FIXME: still v12
   photon_flat8to150_PU0:
     input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU0_v12/181018_145447/0000/
     events_per_job : 500
 
   photon_flat8to150_PU200:
-    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU200_v12/181018_145549/0000/
+    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU200_v13/181116_090752/0000
     events_per_job : 200
 
   pion_flat2to100_PU0:
-    input_sample_dir: SinglePion_FlatPt-2to100/SinglePion_FlatPt-2to100_PU0_v12/181018_145226/0000/
+    input_sample_dir: SinglePion_FlatPt-2to100/SinglePion_FlatPt-2to100_PU0_v13/181116_090611/0000/
     events_per_job : 500
 
+# FIXME: still v12
   pion_flat2to100_PU200:
     input_sample_dir: SinglePion_FlatPt-2to100/SinglePion_FlatPt-2to100_PU200_v12/181018_145337/0000/
     events_per_job : 200
 
   nugun_alleta_pu0:
-    input_sample_dir: SingleNeutrino/NuGunAllEta_PU0_v12/181018_145649/0000/
+    input_sample_dir: SingleNeutrino/NuGunAllEta_PU0_v13/181116_090829/0000/
     events_per_job: 500
 
   nugun_alleta_pu200:
-    input_sample_dir: SingleNeutrino/NuGunAllEta_PU200_v12/181018_145755/0000/
+    input_sample_dir: SingleNeutrino/NuGunAllEta_PU200_v13/181116_090902/0000
     events_per_job: 200
 
   nugun_endcap_PU50:
-    input_sample_dir: NuGun_PU50/NTP/v12/
+    input_sample_dir: NuGun_PU50/NTP/v13/
     events_per_job: 500
 
   nugun_endcap_PU100:
-    input_sample_dir: NuGun_PU100/NTP/v12/
+    input_sample_dir: NuGun_PU100/NTP/v13/
     events_per_job: 500
 
   nugun_endcap_PU140:
-    input_sample_dir: NuGun_PU140/NTP/v12/
+    input_sample_dir: NuGun_PU140/NTP/v13/
     events_per_job: 500
 
   nugun_endcap_PU200:
-    input_sample_dir: NuGun_PU200/NTP/v12/
+    input_sample_dir: NuGun_PU200/NTP/v13/
     events_per_job: 200
