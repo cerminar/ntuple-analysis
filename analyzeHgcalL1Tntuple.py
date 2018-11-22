@@ -337,7 +337,10 @@ def analyze(params, batch_idx=0):
                     (event, 'cl3d'),
                     (event, 'tower'),
                     (event, 'simTower'),
-                    (event, 'egammaEE')]
+                    (event, 'egammaEE'),
+                    (event, 'hgcrocTower'),
+                    (event, 'waferTower')
+                    ]
 
         # branches = [(event, 'genpart'),
         #         # (event, 'hgcdigi'),
@@ -360,6 +363,9 @@ def analyze(params, batch_idx=0):
         triggerTowers = dataframes[4]
         simTriggerTowers = dataframes[5]
         egamma = dataframes[6]
+        hgcrocTowers = dataframes[7]
+        waferTowers = dataframes[8]
+
 
         puInfo = event.getPUInfo()
         debugPrintOut(debug, 'PU', toCount=puInfo, toPrint=puInfo)
@@ -411,6 +417,8 @@ def analyze(params, batch_idx=0):
 
         triggerTowers.eval('HoE = etHad/etEm', inplace=True)
         simTriggerTowers.eval('HoE = etHad/etEm', inplace=True)
+        hgcrocTowers.eval('HoE = etHad/etEm', inplace=True)
+        waferTowers.eval('HoE = etHad/etEm', inplace=True)
         # triggerTowers['HoE'] = triggerTowers.etHad/triggerTowers.etEm
         # if 'iX' not in triggerTowers.columns:
         #     triggerTowers['iX'] = triggerTowers.hwEta
@@ -422,7 +430,7 @@ def analyze(params, batch_idx=0):
         debugPrintOut(debug, 'gen parts', toCount=genParts, toPrint=genParts)
         debugPrintOut(debug, 'gen particles',
                       toCount=genParticles,
-                      toPrint=genParticles[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'pid', 'gen', 'reachedEE', 'fromBeamPipe']].sort_values(by='pt', ascending=False).iloc[:10])
+                      toPrint=genParticles[genParticles.gen != -1][['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'pid', 'gen', 'reachedEE', 'fromBeamPipe']].sort_values(by='pt', ascending=False).iloc[:10])
         # print genParticles.columns
         # debugPrintOut(debug, 'digis',
         #               toCount=hgcDigis,
@@ -447,6 +455,12 @@ def analyze(params, batch_idx=0):
         debugPrintOut(debug, 'Sim Trigger Towers',
                       toCount=simTriggerTowers,
                       toPrint=simTriggerTowers.sort_values(by='pt', ascending=False).iloc[:10])
+        debugPrintOut(debug, 'HGCROC Trigger Towers',
+                      toCount=hgcrocTowers,
+                      toPrint=hgcrocTowers.sort_values(by='pt', ascending=False).iloc[:10])
+        debugPrintOut(debug, 'Wafer Trigger Towers',
+                      toCount=waferTowers,
+                      toPrint=waferTowers.sort_values(by='pt', ascending=False).iloc[:10])
 
         # print '# towers eta >0 {}'.format(len(triggerTowers[triggerTowers.eta > 0]))
         # print '# towers eta <0 {}'.format(len(triggerTowers[triggerTowers.eta < 0]))
@@ -521,6 +535,8 @@ def analyze(params, batch_idx=0):
         selections.gen_set.set_collections(genParticles)
         selections.tt_set.set_collections(triggerTowers)
         selections.simtt_set.set_collections(simTriggerTowers)
+        selections.hgcroc_tt.set_collections(hgcrocTowers)
+        selections.wafer_tt.set_collections(waferTowers)
         selections.eg_set.set_collections(egamma)
 
         for plotter in plotter_collection:
