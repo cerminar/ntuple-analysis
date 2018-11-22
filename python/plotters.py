@@ -6,7 +6,6 @@ import clusterTools as clAlgo
 import selections as selections
 
 
-
 class RatePlotter:
     def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
         self.tp_set = tp_set
@@ -16,7 +15,8 @@ class RatePlotter:
     def book_histos(self):
         tp_name = self.tp_set.name
         for selection in self.tp_selections:
-            self.h_rate[selection.name] = histos.RateHistos(name='{}_{}'.format(tp_name, selection.name))
+            self.h_rate[selection.name] = histos.RateHistos(name='{}_{}'.format(tp_name,
+                                                                                selection.name))
 
     def fill_histos(self, debug=False):
         for selection in self.tp_selections:
@@ -24,9 +24,11 @@ class RatePlotter:
                 sel_clusters = self.tp_set.cl3d_df.query(selection.selection)
             else:
                 sel_clusters = self.tp_set.cl3d_df
-            trigger_clusters = sel_clusters[['pt', 'eta']].sort_values(by='pt', ascending=False)
+            trigger_clusters = sel_clusters[['pt', 'eta']].sort_values(by='pt',
+                                                                       ascending=False)
             if not trigger_clusters.empty:
-                self.h_rate[selection.name].fill(trigger_clusters.iloc[0].pt, trigger_clusters.iloc[0].eta)
+                self.h_rate[selection.name].fill(trigger_clusters.iloc[0].pt,
+                                                 trigger_clusters.iloc[0].eta)
             self.h_rate[selection.name].fill_norm()
 
 
@@ -39,14 +41,14 @@ class EGPlotter:
     def book_histos(self):
         data_name = self.data_set.name
         for selection in self.data_selections:
-            self.h_set[selection.name] = histos.EGHistos(name='{}_{}_nomatch'.format(data_name, selection.name))
+            self.h_set[selection.name] = histos.EGHistos(name='{}_{}_nomatch'.format(data_name,
+                                                                                     selection.name))
 
     def fill_histos(self, debug=False):
         for data_sel in self.data_selections:
             if not data_sel.all:
                 data = self.data_set.cl3d_df.query(data_sel.selection)
             self.h_set[data_sel.name].fill(data)
-
 
 
 class TPPlotter:
@@ -405,7 +407,7 @@ class TTPlotter:
 
     def book_histos(self):
         for sel in self.tt_selections:
-            self.h_tt[sel.name] = histos.TriggerTowerHistos('h_{}_{}'.format(self.tt_set.name, sel.name))
+            self.h_tt[sel.name] = histos.TriggerTowerHistos('{}_{}'.format(self.tt_set.name, sel.name))
 
     def fill_histos(self, debug=False):
         triggerTowers_all = self.tt_set.tt_df
@@ -431,9 +433,9 @@ class TTGenMatchPlotter:
         for tp_sel in self.tt_selections:
             for gen_sel in self.gen_selections:
                 histo_name = '{}_{}'.format(tp_sel.name, gen_sel.name)
-                self.h_tt[histo_name] = histos.TriggerTowerHistos('h_{}_{}'.format(self.tt_set.name, histo_name))
-                self.h_reso_tt[histo_name] = histos.TriggerTowerResoHistos('h_reso_{}_{}'.format(self.tt_set.name, histo_name))
-                self.h_reso_ttcl[histo_name] = histos.TriggerTowerResoHistos('h_reso_{}Cl_{}'.format(self.tt_set.name, histo_name))
+                self.h_tt[histo_name] = histos.TriggerTowerHistos('{}_{}'.format(self.tt_set.name, histo_name))
+                self.h_reso_tt[histo_name] = histos.TriggerTowerResoHistos('{}_{}'.format(self.tt_set.name, histo_name))
+                self.h_reso_ttcl[histo_name] = histos.TriggerTowerResoHistos('{}Cl_{}'.format(self.tt_set.name, histo_name))
 
     def fill_histos(self, debug=False):
         triggerTowers_all = self.tt_set.tt_df
@@ -541,12 +543,18 @@ eg_genmatched_plotters = [EGGenMatchPlotter(selections.eg_set, selections.gen_se
                                             selections.gen_part_selections)]
 genpart_plotters = [GenPlotter(selections.gen_set, selections.genpart_ele_genplotting)]
 ttower_plotters = [TTPlotter(selections.tt_set),
-                   # TTPlotter(selections.simtt_set)
+                   TTPlotter(selections.simtt_set),
+                   TTPlotter(selections.hgcroc_tt),
+                   TTPlotter(selections.wafer_tt)
                    ]
 ttower_genmatched_plotters = [TTGenMatchPlotter(selections.tt_set, selections.gen_set,
                               [selections.Selection('all')], selections.gen_part_selections),
-                              # TTGenMatchPlotter(selections.simtt_set, selections.gen_set,
-                              # [selections.Selection('all')], selections.gen_part_selections)
+                              TTGenMatchPlotter(selections.simtt_set, selections.gen_set,
+                              [selections.Selection('all')], selections.gen_part_selections),
+                              TTGenMatchPlotter(selections.hgcroc_tt, selections.gen_set,
+                              [selections.Selection('all')], selections.gen_part_selections),
+                              TTGenMatchPlotter(selections.wafer_tt, selections.gen_set,
+                              [selections.Selection('all')], selections.gen_part_selections)
                               ]
 
 

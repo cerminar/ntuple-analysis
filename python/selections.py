@@ -211,6 +211,8 @@ tp_def_calib = TPSet('DEFCalib', 'NNDR + calib. v1')
 gen_set = GenSet('GEN', '')
 tt_set = TTSet('TT', 'Trigger Towers')
 simtt_set = TTSet('SimTT', 'Sim Trigger Towers')
+hgcroc_tt = TTSet('HgcrocTT', 'HGCROC Trigger Towers')
+wafer_tt = TTSet('WaferTT', 'Wafer Trigger Towers')
 eg_set = EgammaSet('EG', 'EGPhase2')
 
 if __name__ == "__main__":

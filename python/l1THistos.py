@@ -291,8 +291,10 @@ class TriggerTowerHistos(BaseHistos):
             self.h_HoEVpt = ROOT.TH2F(name+'_HoEVpt', 'Tower H/E vs Pt (GeV); H/E;', 50, 0, 100, 20, 0, 2)
             self.h_energy = ROOT.TH1F(name+'_energy', 'Tower energy (GeV)', 1000, 0, 1000)
             self.h_eta = ROOT.TH1F(name+'_eta', 'Tower eta; #eta;', 75, -3.169, 3.169)
-            self.h_ptVeta = ROOT.TH2F(name+'_ptVeta', 'Tower P_P{T} (GeV) vs #eta; #eta; p_{T} [GeV];',  75, -3.169, 3.169, 100, 0, 100)
-            self.h_ptVieta = ROOT.TH2F(name+'_ptVieta', 'Tower P_P{T} (GeV) vs ieta; #eta; p_{T} [GeV];',  18, 0, 18, 100, 0, 100)
+            self.h_ptVeta = ROOT.TH2F(name+'_ptVeta', 'Tower P_P{T} (GeV) vs #eta; #eta; p_{T} [GeV];',  75, -3.169, 3.169, 100, 0, 10)
+            self.h_etVieta = ROOT.TH2F(name+'_etVieta', 'Tower E_{T} (GeV) vs ieta; i#eta; E_{T} [GeV];',  18, 0, 18, 100, 0, 10)
+            self.h_etEmVieta = ROOT.TH2F(name+'_etEmVieta', 'Tower E_{T} EM (GeV) vs ieta; i#eta; E_{T}^{EM} [GeV];',  18, 0, 18, 100, 0, 10)
+            self.h_etHadVieta = ROOT.TH2F(name+'_etHadVieta', 'Tower E_{T} Had (GeV) vs ieta; i#eta; E_{T}^{HAD} [GeV];',  18, 0, 18, 100, 0, 10)
 
         BaseHistos.__init__(self, name, root_file)
 
@@ -305,16 +307,18 @@ class TriggerTowerHistos(BaseHistos):
         rnp.fill_hist(self.h_energy, towers.energy)
         rnp.fill_hist(self.h_eta, towers.eta)
         rnp.fill_hist(self.h_ptVeta, towers[['eta', 'pt']])
-        rnp.fill_hist(self.h_ptVieta, towers[['iEta', 'pt']])
+        rnp.fill_hist(self.h_etVieta, towers[['iEta', 'pt']])
+        rnp.fill_hist(self.h_etEmVieta, towers[['iEta', 'etEm']])
+        rnp.fill_hist(self.h_etHadVieta, towers[['iEta', 'etHad']])
 
 
 class TriggerTowerResoHistos(BaseHistos):
     def __init__(self, name, root_file=None):
         if not root_file:
-            self.h_ptRes = ROOT.TH1F(name+'_ptRes', 'TT Pt reso (GeV); p_{T}^{L1}-p_{T}^{GEN} [GeV];', 200, -40, 40)
+            self.h_ptRes = ROOT.TH1F(name+'_ptRes', 'TT Pt reso (GeV); (p_{T}^{L1}-p_{T}^{GEN})/p_{T}^{GEN};', 100, -2, 2)
 
-            self.h_ptResVpt = ROOT.TH2F(name+'_ptResVpt', 'TT Pt reso (GeV) vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];', 50, 0, 100, 200, -40, 40)
-            self.h_ptResVeta = ROOT.TH2F(name+'_ptResVeta', 'TT Pt reso (GeV) vs eta; #eta^{GEN}; p_{T}^{L1}-p_{T}^{GEN} [GeV];', 100, -3.5, 3.5, 200, -40, 40)
+            self.h_ptResVpt = ROOT.TH2F(name+'_ptResVpt', 'TT Pt reso (GeV) vs pt (GeV); p_{T}^{GEN} [GeV]; (p_{T}^{L1}-p_{T}^{GEN})/p_{T}^{GEN};', 50, 0, 100, 100, -2, 2)
+            self.h_ptResVeta = ROOT.TH2F(name+'_ptResVeta', 'TT Pt reso (GeV) vs eta; #eta^{GEN}; (p_{T}^{L1}-p_{T}^{GEN})/p_{T}^{GEN};', 100, -3.5, 3.5, 100, -2, 2)
 
             self.h_ptResp = ROOT.TH1F(name+'_ptResp', 'TT Pt resp.; p_{T}^{L1}/p_{T}^{GEN};', 100, 0, 2)
             self.h_ptRespVpt = ROOT.TH2F(name+'_ptRespVpt', 'TT Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 2)
@@ -332,9 +336,9 @@ class TriggerTowerResoHistos(BaseHistos):
         BaseHistos.__init__(self, name, root_file)
 
     def fill(self, reference, target):
-        self.h_ptRes.Fill(target.pt - reference.pt)
-        self.h_ptResVpt.Fill(reference.pt, target.pt - reference.pt)
-        self.h_ptResVeta.Fill(reference.eta, target.pt - reference.pt)
+        self.h_ptRes.Fill((target.pt - reference.pt)/reference.pt)
+        self.h_ptResVpt.Fill(reference.pt, (target.pt - reference.pt)/reference.pt)
+        self.h_ptResVeta.Fill(reference.eta, (target.pt - reference.pt)/reference.pt)
 
         self.h_ptResp.Fill(target.pt/reference.pt)
         self.h_ptRespVpt.Fill(reference.pt, target.pt/reference.pt)
