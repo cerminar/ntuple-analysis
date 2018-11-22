@@ -4,7 +4,6 @@ import python.file_manager as fm
 import traceback
 import ROOT
 import os
-import time
 import subprocess32
 from shutil import copyfile
 import optparse
@@ -28,13 +27,26 @@ def data_creator(input_dir, sample_name, version, q):
             # print id
             if sample_name in item and version+'_' in item:
                 # or not os.path.isfile('{}.checked'.format(os.path.splitext(file)[0])):
-                if (not os.path.isfile(file_name)):
-                    fm.copy_from_eos(input_dir=input_dir,
-                                     file_name=file_name,
-                                     target_file_name=file_name,
-                                     dowait=True)
-                    q.put(file_name)
-                    ncopied += 1
+                if os.path.isfile(file_name):
+                    if not os.path.isfile('{}.checked'.format(os.path.splitext(file_name)[0])):
+                        print 'file {} exists but check failed...'.format(file_name)
+                        remote_checksum = fm.get_checksum(item)
+                        local_checksum = fm.get_checksum(file_name)
+                        if remote_checksum == local_checksum:
+                            print '   remote checksum did not change...skipping for now'
+                            continue
+                        else:
+                            print '   remote checksum  changed: will copy it again'
+                    else:
+                        continue
+                fm.copy_from_eos(input_dir=input_dir,
+                                 file_name=file_name,
+                                 target_file_name=file_name,
+                                 dowait=True)
+                q.put(file_name)
+                ncopied += 1
+
+
 
             if ncopied > 999:
                 q.put(sentinel)
@@ -46,8 +58,6 @@ def data_creator(input_dir, sample_name, version, q):
 def data_checker(queue_all, queue_ready):
     """
     Consumes some data and works on it
-
-    In this case, all it does is double the input
     """
     print('Checking files and putting it on the queue "queue_ready"')
 
@@ -80,7 +90,7 @@ def data_consumer(sample_name, version, queue_ready, queue_tomove):
             queue_tomove.put(sentinel)
             break
         new_data.append(data)
-        if(len(new_data) >= 10):
+        if(len(new_data) >= 20):
             print 'Launch hadd on {} files: '.format(len(new_data))
             hadd_proc = subprocess32.Popen(['hadd', '-a', '-j', '2', '-k', out_file_name]+new_data, stdout=subprocess32.PIPE)
             hadd_proc.wait()
@@ -162,6 +172,7 @@ def main():
     for proc in processes:
         proc.join()
     return 0
+
 
 if __name__ == '__main__':
     try:

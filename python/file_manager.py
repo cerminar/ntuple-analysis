@@ -4,6 +4,25 @@ from NtupleDataFormat import HGCalNtuple
 import json
 import uuid
 
+
+def get_checksum(filename):
+    protocol = get_eos_protocol(filename)
+    if protocol == '':
+        # this is a local file:
+        eos_proc = subprocess32.Popen(['xrdadler32', filename], stdout=subprocess32.PIPE)
+        eos_proc.wait()
+        if eos_proc.returncode == 0:
+            return eos_proc.stdout.readlines()[0].split()[0]
+    else:
+        eos_proc = subprocess32.Popen(['xrdfs', protocol, 'query', 'checksum', filename], stdout=subprocess32.PIPE)
+        eos_proc.wait()
+        if eos_proc.returncode == 0:
+            return eos_proc.stdout.readlines()[0].split()[1]
+
+    return 'dummy'
+#     xrdfs root://eosuser.cern.ch/  query checksum /eos/user/c/cerminar/hgcal/CMSSW1015/plots/histos_ele_flat2to100_PU200_v55_93.root
+#     xrdadler32 plots1/histos_ele_flat2to100_PU200_v55_93.root
+
 def get_eos_protocol(dirname):
     protocol = ''
     if '/eos/user/' in dirname:
@@ -184,28 +203,31 @@ def get_njobs(nev_toprocess, nev_perjob, metadata, debug=0):
 
 
 if __name__ == "__main__":
+    #
+    # file_metadata = get_metadata(input_dir='/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1015/SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v11/180814_140939/0000/',
+    #                              tree='hgcalTriggerNtuplizer/HGCalTriggerNtuple')
+    #
+    # get_files_to_process(nev_toprocess=20, metadata=file_metadata)
+    #
+    # get_files_to_process(nev_toprocess=1000, metadata=file_metadata)
+    #
+    # get_files_to_process(nev_toprocess=3000, metadata=file_metadata)
+    #
+    # get_files_to_process(nev_toprocess=-1, metadata=file_metadata)
+    #
+    # get_njobs(nev_toprocess=3000, nev_perjob=500, metadata=file_metadata)
+    #
+    # jobs = get_njobs(nev_toprocess=8000, nev_perjob=2000, metadata=file_metadata)
+    #
+    # # copy_from_eos(input_dir='/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1015/SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v11/180814_140939/0000/',
+    # #               file_name='ntuple_23.root', target_file_name='pippo.json')
+    #
+    # # copy_to_eos(file_name='data.json',
+    # #             target_dir='/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1015/SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v11/180814_140939/0000/',
+    # #             target_file_name='metadata.json')
+    #
+    # print jobs
 
-    file_metadata = get_metadata(input_dir='/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1015/SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v11/180814_140939/0000/',
-                                 tree='hgcalTriggerNtuplizer/HGCalTriggerNtuple')
+    get_checksum(filename=plots1/histos_nugun_alleta_pu200_v55.root)
 
-    get_files_to_process(nev_toprocess=20, metadata=file_metadata)
-
-    get_files_to_process(nev_toprocess=1000, metadata=file_metadata)
-
-    get_files_to_process(nev_toprocess=3000, metadata=file_metadata)
-
-    get_files_to_process(nev_toprocess=-1, metadata=file_metadata)
-
-    get_njobs(nev_toprocess=3000, nev_perjob=500, metadata=file_metadata)
-
-    jobs = get_njobs(nev_toprocess=8000, nev_perjob=2000, metadata=file_metadata)
-
-    # copy_from_eos(input_dir='/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1015/SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v11/180814_140939/0000/',
-    #               file_name='ntuple_23.root', target_file_name='pippo.json')
-
-    # copy_to_eos(file_name='data.json',
-    #             target_dir='/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1015/SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v11/180814_140939/0000/',
-    #             target_file_name='metadata.json')
-
-    print jobs
 # get_njobs(nev_toprocess=-1, nev_perjob=500, metadata=file_metadata)
