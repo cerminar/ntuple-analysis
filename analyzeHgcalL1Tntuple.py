@@ -177,6 +177,22 @@ def get_merged_clusters(triggerClusters, pool, debug=0):
     return merged_clusters
 
 
+def compute_tower_data(towers):
+    towers.eval('HoE = etHad/etEm', inplace=True)
+
+    def fill_momentum(tower):
+        vector = ROOT.TLorentzVector()
+        vector.SetPtEtaPhiE(tower.pt, tower.eta, tower.phi, tower.energy)
+        tower.momentum = vector
+        # print tower.pt, tower.momentum.Pt()
+        return tower
+
+    towers['momentum'] = ROOT.TLorentzVector()
+    towers = towers.apply(fill_momentum, axis=1)
+
+    return towers
+
+
 # @profile
 def analyze(params, batch_idx=0):
     print (params)
@@ -415,14 +431,10 @@ def analyze(params, batch_idx=0):
         trigger3DClustersCalib = pd.DataFrame()
         trigger3DClustersMerged = pd.DataFrame()
 
-        triggerTowers.eval('HoE = etHad/etEm', inplace=True)
-        simTriggerTowers.eval('HoE = etHad/etEm', inplace=True)
-        hgcrocTowers.eval('HoE = etHad/etEm', inplace=True)
-        waferTowers.eval('HoE = etHad/etEm', inplace=True)
-        # triggerTowers['HoE'] = triggerTowers.etHad/triggerTowers.etEm
-        # if 'iX' not in triggerTowers.columns:
-        #     triggerTowers['iX'] = triggerTowers.hwEta
-        #     triggerTowers['iY'] = triggerTowers.hwPhi
+        triggerTowers = compute_tower_data(triggerTowers)
+        simTriggerTowers = compute_tower_data(simTriggerTowers)
+        hgcrocTowers = compute_tower_data(hgcrocTowers)
+        waferTowers = compute_tower_data(waferTowers)
 
         if not tc_rod_bins.empty:
             clAlgo.computeClusterRodSharing(triggerClusters, triggerCells)

@@ -49,7 +49,10 @@ class BaseHistos():
             file_dir = root_file.GetDirectory(self.__class__.__name__)
             # print '# keys in dir: {}'.format(len(file_dir.GetListOfKeys()))
             # file_dir.cd()
-            selhistos = [(histo.ReadObj(), histo.GetName()) for histo in file_dir.GetListOfKeys() if name+'_' in histo.GetName()]
+            selhistos = [(histo.ReadObj(), histo.GetName())
+                         for histo in file_dir.GetListOfKeys()
+                         if histo.GetName().startswith(name+'_')]
+                         # if name+'_' in histo.GetName()]
             #   print selhistos
             for hinst, histo_name in selhistos:
                 attr_name = 'h_'+histo_name.split(name+'_')[1]
@@ -295,6 +298,8 @@ class TriggerTowerHistos(BaseHistos):
             self.h_etVieta = ROOT.TH2F(name+'_etVieta', 'Tower E_{T} (GeV) vs ieta; i#eta; E_{T} [GeV];',  18, 0, 18, 100, 0, 10)
             self.h_etEmVieta = ROOT.TH2F(name+'_etEmVieta', 'Tower E_{T} EM (GeV) vs ieta; i#eta; E_{T}^{EM} [GeV];',  18, 0, 18, 100, 0, 10)
             self.h_etHadVieta = ROOT.TH2F(name+'_etHadVieta', 'Tower E_{T} Had (GeV) vs ieta; i#eta; E_{T}^{HAD} [GeV];',  18, 0, 18, 100, 0, 10)
+            self.h_sumEt = ROOT.TH1F(name+'_sumEt', 'Tower SumEt (GeV); #sum E_{T} [GeV];', 100, 0, 100)
+            self.h_sumEtCentral = ROOT.TH1F(name+'_sumEtCentral', 'Tower SumEt (GeV) (central); #sum E_{T} [GeV];', 100, 0, 100)
 
         BaseHistos.__init__(self, name, root_file)
 
@@ -310,6 +315,11 @@ class TriggerTowerHistos(BaseHistos):
         rnp.fill_hist(self.h_etVieta, towers[['iEta', 'pt']])
         rnp.fill_hist(self.h_etEmVieta, towers[['iEta', 'etEm']])
         rnp.fill_hist(self.h_etHadVieta, towers[['iEta', 'etHad']])
+        if not towers.empty:
+            self.h_sumEt.Fill(towers.momentum.sum().Pt())
+            central_towers = towers[(towers.iEta != 0) & (towers.iEta != 17)]
+            if not central_towers.empty:
+                self.h_sumEtCentral.Fill(central_towers.momentum.sum().Pt())
 
 
 class TriggerTowerResoHistos(BaseHistos):

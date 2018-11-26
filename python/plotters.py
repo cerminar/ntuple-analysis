@@ -407,7 +407,7 @@ class TTPlotter:
 
     def book_histos(self):
         for sel in self.tt_selections:
-            self.h_tt[sel.name] = histos.TriggerTowerHistos('{}_{}'.format(self.tt_set.name, sel.name))
+            self.h_tt[sel.name] = histos.TriggerTowerHistos('{}_{}_nomatch'.format(self.tt_set.name, sel.name))
 
     def fill_histos(self, debug=False):
         triggerTowers_all = self.tt_set.tt_df
