@@ -196,12 +196,7 @@ def compute_tower_data(towers):
 # @profile
 def analyze(params, batch_idx=0):
     print (params)
-    doAlternative = False
-
     debug = int(params.debug)
-    computeDensity = params.computeDensity
-    plot2DCLDR = False
-
     pool = Pool(5)
 
     tc_geom_df = pd.DataFrame()
@@ -272,20 +267,6 @@ def analyze(params, batch_idx=0):
         hTCGeom = histos.GeomHistos('hTCGeom')
         hTCGeom.fill(tc_geom_df[(np.abs(tc_geom_df.eta) > 1.65) & (np.abs(tc_geom_df.eta) < 2.85)])
 
-# for index, tc_geom in tc_geom_df.iterrows():
-#     tc_geom.max_dist_neigh = np.max(tc_geom.neighbor_distance)
-
-    # ---------------------------------------------------
-    # TP sets
-    # tp_def = selections.tp_def
-    # #tp_def_merged =
-    # tp_def_calib = selections.tp_def_calib
-    # gen_set = selections.gen_set
-    # tt_set = selections.tt_set
-    # simtt_set = selections.simtt_set
-    # eg_set = selections.eg_set
-
-
     # instantiate all the plotters
     plotter_collection = []
     plotter_collection.extend(params.plotters)
@@ -295,9 +276,6 @@ def analyze(params, batch_idx=0):
     # book histos
     for plotter in plotter_collection:
         plotter.book_histos()
-
-    dump = False
-    # print (range_ev)
 
     # def apply_calibrations(original_clusters, calibration_file_name):
     calibration_file_name = 'data/calib_v2.json'
