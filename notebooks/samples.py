@@ -1,5 +1,6 @@
 import ROOT
 import pandas as pd
+import python.selections as selections
 
 version = 'v53'
 
@@ -130,7 +131,9 @@ class HPlot:
 
         query = '(pu == @pu) & (tp == @tp) & (tp_sel == @tp_sel) & (classtype == @classtype)'
         if gen_sel is not None:
-            query += '& (gen_sel == @gen_sel)'
+            query += ' & (gen_sel == @gen_sel)'
+        else:
+            query += ' & (gen_sel.isnull())'
         if sample is not None:
             query += '& (sample == @sample)'
 
@@ -165,38 +168,30 @@ class HPlot:
 
 
 # -------------------------------------------------------------------------
-sample_ele_flat2to100_PU0 = Sample('ele_flat2to100_PU0', 'PU0', version)
-sample_ele_flat2to100_PU200 = Sample('ele_flat2to100_PU200', 'PU200', version)
 
-samples_ele = [sample_ele_flat2to100_PU0, sample_ele_flat2to100_PU200]
+samples_ele = [
+    Sample('ele_flat2to100_PU0', 'PU0', version),
+    Sample('ele_flat2to100_PU200', 'PU200', version)
+    ]
 
-# -------------------------------------------------------------------------
+samples_photons = [
+    Sample('photon_flat8to150_PU0', 'PU0', version),
+    Sample('photon_flat8to150_PU200', 'PU200', version)
+    ]
 
-sample_photon_flat8to150_PU0 = Sample('photon_flat8to150_PU0', 'PU0', version)
-sample_photon_flat8to150_PU200 = Sample('photon_flat8to150_PU200', 'PU0', version)
+samples_pions = [
+    Sample('pion_flat2to100_PU0', 'PU0', version),
+    ]
 
-samples_photons = [sample_photon_flat8to150_PU0, sample_photon_flat8to150_PU200]
+samples_nugus = [
+    Sample('nugun_alleta_pu0', 'PU0', version),
+    Sample('nugun_alleta_pu200', 'PU200', version)
+    ]
 
+samples_nugunrates = [
+    Sample('nugun_alleta_pu200', 'PU200', version)
+    ]
 
-sample_gPt35_PU0 = Sample('photonPt35_PU0', 'Pt35 PU0', version)
-sample_gPt35_PU200 = Sample('photonPt35_PU200', 'Pt35 PU200', version)
-
-sample_hadronGun_PU0 = Sample('hadronGun_PU0', 'PU0', version)
-sample_hadronGun_PU200 = Sample('hadronGun_PU200', 'PU200', version)
-
-
-samples_photon = [sample_gPt35_PU0, sample_gPt35_PU200]
-samples_hadrons = [sample_hadronGun_PU0, sample_hadronGun_PU200]
-
-sample_nugunrate = Sample('nugun_alleta_pu200', 'PU200', version)
-samples_nugunrates = [sample_nugunrate]
-
-
-from python.selections import tp_rate_selections
-from python.selections import tp_match_selections
-from python.selections import gen_part_selections
-from python.selections import eg_rate_selections
-from python.selections import eg_qual_selections
 
 tpsets = {'DEF': 'NNDR',
           'DEFCalib': 'NNDR Calib v1'}
@@ -206,8 +201,6 @@ tpset_selections = {}
 gen_selections = {}
 samples = []
 
-
-#tpset_selections.update(get_label_dict(tp_rate_selections))
-tpset_selections.update(get_label_dict(tp_match_selections))
-
-gen_selections.update(get_label_dict(gen_part_selections))
+# tpset_selections.update(get_label_dict(tp_rate_selections))
+tpset_selections.update(get_label_dict(selections.tp_match_selections))
+gen_selections.update(get_label_dict(selections.gen_part_selections))
