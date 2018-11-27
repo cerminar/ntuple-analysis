@@ -346,44 +346,18 @@ def analyze(params, batch_idx=0):
         # if len(genParts[(genParts.eta > 1.7) & (genParts.eta < 2.5)]) == 0:
         #     continue
         #
-        branches = [(event, 'genpart'),
-                    # (event, 'hgcdigi'),
-                    (event, 'tc'),
-                    (event, 'cl'),
-                    (event, 'cl3d'),
-                    (event, 'tower'),
-                    (event, 'simTower'),
-                    (event, 'egammaEE'),
-                    (event, 'hgcrocTower'),
-                    (event, 'waferTower')
-                    ]
-
-        # branches = [(event, 'genpart'),
-        #         # (event, 'hgcdigi'),
-        #         (event, 'tc'),
-        #         (event, 'cl'),
-        #         (event, 'cl3d'),
-        #         (event, 'tower')]
-
         # dataframes = pool.map(unpack, branches)
-
-        dataframes = []
-        for idx, branch in enumerate(branches):
-            dataframes.append(unpack(branch))
-
-        genParticles = dataframes[0]
-        # hgcDigis = dataframes[1]
-        triggerCells = dataframes[1]
-        triggerClusters = dataframes[2]
-        trigger3DClusters = dataframes[3]
-        triggerTowers = dataframes[4]
-        simTriggerTowers = dataframes[5]
-        egamma = dataframes[6]
-        hgcrocTowers = dataframes[7]
-        waferTowers = dataframes[8]
-
-
+        genParticles = event.getDataFrame(prefix='genpart')
+        triggerCells = event.getDataFrame(prefix='tc')
+        triggerClusters = event.getDataFrame(prefix='cl')
+        trigger3DClusters = event.getDataFrame(prefix='cl3d')
+        triggerTowers = event.getDataFrame(prefix='tower')
+        simTriggerTowers = event.getDataFrame(prefix='simTower')
+        egamma = event.getDataFrame(prefix='egammaEE')
+        hgcrocTowers = event.getDataFrame(prefix='hgcrocTower')
+        waferTowers = event.getDataFrame(prefix='waferTower')
         puInfo = event.getPUInfo()
+
         debugPrintOut(debug, 'PU', toCount=puInfo, toPrint=puInfo)
 
         # ----------------------------------
