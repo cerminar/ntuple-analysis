@@ -18,7 +18,7 @@ collections:
       - ele_flat2to100_PU0
       - ele_flat2to100_PU200
       - pion_flat2to100_PU0
-      # - pion_flat2to100_PU200
+      - pion_flat2to100_PU200
     plotters:
       # - tp_egm_plotters
       # - tp_genmatched_plotters
@@ -132,9 +132,8 @@ samples:
     input_sample_dir: SinglePion_FlatPt-2to100/SinglePion_FlatPt-2to100_PU0_v13/181116_090611/0000/
     events_per_job : 500
 
-# FIXME: still v12
   pion_flat2to100_PU200:
-    input_sample_dir: SinglePion_FlatPt-2to100/SinglePion_FlatPt-2to100_PU200_v12/181018_145337/0000/
+    input_sample_dir: SinglePion_FlatPt-2to100/SinglePion_FlatPt-2to100_PU200_v13/181126_123358/0000/
     events_per_job : 200
 
   nugun_alleta_pu0:
