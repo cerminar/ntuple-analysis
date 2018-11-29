@@ -78,6 +78,55 @@ class Parameters:
         return self.name
 
 
+def get_collection_parameters(opt, cfgfile):
+    outdir = cfgfile['common']['output_dir']['default']
+    hostname = socket.gethostname()
+    for machine, odir in cfgfile['common']['output_dir'].items():
+        if machine in hostname:
+            outdir = odir
+    plot_version = cfgfile['common']['plot_version']
+
+    collection_params = {}
+    for collection, collection_data in cfgfile['collections'].items():
+        samples = collection_data['samples']
+        print ('--- Collection: {} with samples: {}'.format(collection, samples))
+        sample_params = []
+
+        plotters = []
+        for plotter in collection_data['plotters']:
+            plotters.extend(cfgfile['plotters'][plotter])
+
+        for sample in samples:
+            events_per_job = -1
+            out_file_name = 'histos_{}_{}i.root'.format(sample, plot_version)
+            if opt.BATCH:
+                events_per_job = cfgfile['samples'][sample]['events_per_job']
+                if opt.RUN:
+                    out_file_name = 'histos_{}_{}_{}.root'.format(sample, plot_version, opt.RUN)
+
+            if opt.OUTDIR:
+                outdir = opt.OUTDIR
+
+            out_file = os.path.join(outdir, out_file_name)
+
+            params = Parameters(input_base_dir=cfgfile['common']['input_dir'],
+                                input_sample_dir=cfgfile['samples'][sample]['input_sample_dir'],
+                                output_filename=out_file,
+                                output_dir=outdir,
+                                clusterize=cfgfile['common']['run_clustering'],
+                                eventsToDump=[],
+                                version=plot_version,
+                                maxEvents=int(opt.NEVENTS),
+                                events_per_job=events_per_job,
+                                computeDensity=cfgfile['common']['run_density_computation'],
+                                plotters=plotters,
+                                debug=opt.DEBUG,
+                                name=sample)
+            sample_params.append(params)
+        collection_params[collection] = sample_params
+    return collection_params
+
+
 def convertGeomTreeToDF(tree):
     branches = [br.GetName() for br in tree.GetListOfBranches()
                 if not br.GetName().startswith('c_')]
@@ -91,10 +140,6 @@ def convertGeomTreeToDF(tree):
 def dumpFrame2JSON(filename, frame):
     with open(filename, 'w') as f:
         f.write(frame.to_json())
-
-
-def unpack(mytuple):
-    return mytuple[0].getDataFrame(mytuple[1])
 
 
 def get_calibrated_clusters(calib_factors, input_3Dclusters):
@@ -193,6 +238,15 @@ def compute_tower_data(towers):
     return towers
 
 
+def book_MVA_classifier(model, weight_file, variables):
+    mva_classifier = ROOT.TMVA.Reader()
+
+    for variable in variables:
+        mva_classifier.AddVariable(variable, array.array('f', [0.]))
+    mva_classifier.BookMVA(model, weight_file)
+    return mva_classifier
+
+
 # @profile
 def analyze(params, batch_idx=0):
     print (params)
@@ -286,18 +340,24 @@ def analyze(params, batch_idx=0):
                                                                'pt_l': np.float64})
 
     # setup the EGID classifies
-    mva_classifier = ROOT.TMVA.Reader()
+    mva_pu_classifier = book_MVA_classifier(model='BDT',
+                                            weight_file='data/MVAnalysis_Bkg_BDTvsPU.weights.xml',
+                                            variables=['pt_cl',
+                                                       'eta_cl',
+                                                       'maxLayer_cl',
+                                                       'hOverE_cl',
+                                                       'eMaxOverE_cl',
+                                                       'sigmaZZ_cl'])
 
-    mva_classifier.AddVariable('pt_cl', array.array('f', [0.]))
-    mva_classifier.AddVariable('eta_cl', array.array('f', [0.]))
-    mva_classifier.AddVariable('maxLayer_cl', array.array('f', [0.]))
-    mva_classifier.AddVariable('hOverE_cl', array.array('f', [0.]))
-    # (this is a variable I created by dividing the eMax variable by the
-    # total energy of the cluster)
-    mva_classifier.AddVariable('eMaxOverE_cl', array.array('f', [0.]))
-    mva_classifier.AddVariable('sigmaZZ_cl', array.array('f', [0.]))
+    mva_pi_classifier = book_MVA_classifier(model='BDT',
+                                            weight_file='data/MVAnalysis_Bkg_BDTvsPions.weights.xml',
+                                            variables=['pt_cl',
+                                                       'eta_cl',
+                                                       'maxLayer_cl',
+                                                       'hOverE_cl',
+                                                       'eMaxOverE_cl',
+                                                       'sigmaZZ_cl'])
 
-    mva_classifier.BookMVA("BDT", "data/MVAnalysis_Bkg_BDT.weights.xml")
 
     # -------------------------------------------------------
     # event loop
@@ -369,8 +429,13 @@ def analyze(params, batch_idx=0):
         # trigger3DClusters['hoe'] = 999.
         # trigger3DClusters = trigger3DClusters.apply(compute_hoe, axis=1)
 
-        trigger3DClusters['bdt_out'] = rnptmva.evaluate_reader(
-            mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
+        trigger3DClusters['bdt_pu'] = rnptmva.evaluate_reader(
+            mva_pu_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
+
+        trigger3DClusters['bdt_pi'] = rnptmva.evaluate_reader(
+            mva_pi_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
+
+
         # trigger3DClusters['bdt_l'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'eMaxOverE', 'szz', 'srrtot']], 0.8)
         # trigger3DClusters['bdt_t'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'eMaxOverE', 'szz', 'srrtot']], 0.95)
 
@@ -569,52 +634,7 @@ def main(analyze):
     with open(opt.CONFIGFILE, 'r') as stream:
         cfgfile = yaml.load(stream)
 
-    basedir = cfgfile['common']['input_dir']
-    outdir = cfgfile['common']['output_dir']['default']
-    hostname = socket.gethostname()
-    for machine, odir in cfgfile['common']['output_dir'].items():
-        if machine in hostname:
-            outdir = odir
-    plot_version = cfgfile['common']['plot_version']
-
-    collection_params = {}
-    for collection, collection_data in cfgfile['collections'].items():
-        samples = collection_data['samples']
-        print ('--- Collection: {} with samples: {}'.format(collection, samples))
-        sample_params = []
-
-        plotters = []
-        for plotter in collection_data['plotters']:
-            plotters.extend(cfgfile['plotters'][plotter])
-
-        for sample in samples:
-            events_per_job = -1
-            out_file_name = 'histos_{}_{}i.root'.format(sample, plot_version)
-            if opt.BATCH:
-                events_per_job = cfgfile['samples'][sample]['events_per_job']
-                if opt.RUN:
-                    out_file_name = 'histos_{}_{}_{}.root'.format(sample, plot_version, opt.RUN)
-
-            if opt.OUTDIR:
-                outdir = opt.OUTDIR
-
-            out_file = os.path.join(outdir, out_file_name)
-
-            params = Parameters(input_base_dir=basedir,
-                                input_sample_dir=cfgfile['samples'][sample]['input_sample_dir'],
-                                output_filename=out_file,
-                                output_dir=outdir,
-                                clusterize=cfgfile['common']['run_clustering'],
-                                eventsToDump=[],
-                                version=plot_version,
-                                maxEvents=int(opt.NEVENTS),
-                                events_per_job=events_per_job,
-                                computeDensity=cfgfile['common']['run_density_computation'],
-                                plotters=plotters,
-                                debug=opt.DEBUG,
-                                name=sample)
-            sample_params.append(params)
-        collection_params[collection] = sample_params
+    collection_params = get_collection_parameters(opt, cfgfile)
 
     samples_to_process = list()
     if opt.COLLECTION:
@@ -640,7 +660,7 @@ def main(analyze):
     print ('About to process samples: {}'.format(samples_to_process))
 
     if opt.BATCH and not opt.RUN:
-        batch_dir = 'batch_{}_{}'.format(opt.COLLECTION, plot_version)
+        batch_dir = 'batch_{}_{}'.format(opt.COLLECTION, cfgfile['common']['plot_version'])
         if not os.path.exists(batch_dir):
             os.mkdir(batch_dir)
             os.mkdir(batch_dir+'/conf/')
@@ -681,6 +701,7 @@ def main(analyze):
             params['TEMPL_INFILE'] = 'histos_{}_{}_*.root'.format(sample.name, sample.version)
             params['TEMPL_OUTDIR'] = sample.output_dir
             params['TEMPL_VIRTUALENV'] = os.path.basename(os.environ['VIRTUAL_ENV'])
+            params['TEMPL_VERSION'] = sample.version
 
             editTemplate(infile='templates/batch.sub',
                          outfile=os.path.join(sample_batch_dir, 'batch.sub'),
@@ -713,6 +734,14 @@ def main(analyze):
 
             editTemplate(infile='templates/hadd_dagman.dag',
                          outfile=os.path.join(batch_dir, 'hadd_{}.dag'.format(sample.name)),
+                         params=params)
+
+            editTemplate(infile='templates/run_harvest.sh',
+                         outfile=os.path.join(sample_batch_dir, 'run_harvest.sh'),
+                         params=params)
+
+            editTemplate(infile='templates/batch_harvest.sub',
+                         outfile=os.path.join(sample_batch_dir, 'batch_harvest.sub'),
                          params=params)
 
             for jid in range(0, n_jobs):
