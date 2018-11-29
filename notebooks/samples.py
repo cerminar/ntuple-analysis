@@ -2,7 +2,7 @@ import ROOT
 import pandas as pd
 import python.selections as selections
 
-version = 'v53'
+version = 'v57'
 
 files = {}
 file_keys = {}
@@ -170,37 +170,36 @@ class HPlot:
 # -------------------------------------------------------------------------
 
 samples_ele = [
-    Sample('ele_flat2to100_PU0', 'PU0', version),
-    Sample('ele_flat2to100_PU200', 'PU200', version)
+    Sample('ele_flat2to100_PU0', 'PU0', version, 'ele'),
+    Sample('ele_flat2to100_PU200', 'PU200', version, 'ele')
     ]
 
 samples_photons = [
-    Sample('photon_flat8to150_PU0', 'PU0', version),
-    Sample('photon_flat8to150_PU200', 'PU200', version)
+    Sample('photon_flat8to150_PU0', 'PU0', version, 'photon'),
+    Sample('photon_flat8to150_PU200', 'PU200', version, 'photon')
     ]
 
 samples_pions = [
-    Sample('pion_flat2to100_PU0', 'PU0', version),
+    Sample('pion_flat2to100_PU0', 'PU0', version, 'pions'),
     ]
 
 samples_nugus = [
-    Sample('nugun_alleta_pu0', 'PU0', version),
-    Sample('nugun_alleta_pu200', 'PU200', version)
+    Sample('nugun_alleta_pu0', 'PU0', version, 'mb'),
+    Sample('nugun_alleta_pu200', 'PU200', version, 'mb')
     ]
 
 samples_nugunrates = [
-    Sample('nugun_alleta_pu200', 'PU200', version)
+    Sample('nugun_alleta_pu200', 'PU200', version, 'mb')
     ]
-
 
 tpsets = {'DEF': 'NNDR',
           'DEFCalib': 'NNDR Calib v1'}
 
 tpset_selections = {}
-
 gen_selections = {}
 samples = []
 
 # tpset_selections.update(get_label_dict(tp_rate_selections))
 tpset_selections.update(get_label_dict(selections.tp_match_selections))
 gen_selections.update(get_label_dict(selections.gen_part_selections))
+gen_selections.update({'nomatch': ''})
