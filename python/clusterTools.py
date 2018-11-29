@@ -316,7 +316,7 @@ def merge3DClustersEtaPhi(cl3ds):
     if cl3ds.empty:
         return new3DCls
     X = cl3ds[['eta', 'phi']]
-    db = DBSCAN(eps=0.015,  # 0.03
+    db = DBSCAN(eps=0.15,  # 0.03
                 algorithm='kd_tree',
                 min_samples=1,
                 n_jobs=3).fit(X)
@@ -325,6 +325,7 @@ def merge3DClustersEtaPhi(cl3ds):
     # n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
     # print '# of 3D clusters: {}'.format(n_clusters_ )
     cl3ds['dbs_labels'] = labels
+    # print '======== CULSTER'
     # print cl3ds[['id', 'energy', 'dbs_labels']]
     for label in unique_labels:
         if label == -1:
@@ -335,9 +336,14 @@ def merge3DClustersEtaPhi(cl3ds):
             new3DCls = new3DCls.append(components.iloc[0], ignore_index=True)
         else:
             refeta, refphi = components.sort_values(by='pt', ascending=False).iloc[0][['eta', 'phi']]
-
+            # print '--- cluster components:'
+            # print components.sort_values(by='pt', ascending=False)
             components_etaphi_ok = components[(np.fabs(components.eta - refeta) < 0.02) & (np.fabs(components.phi - refphi) < 0.1)]
+            # print '--- selected components:'
+            # print components_etaphi_ok
             cl3D = sum3DClusters(components_etaphi_ok)
+            # print '--- summed:'
+            # print cl3D
             new3DCls = new3DCls.append(cl3D, ignore_index=True)
             components_etaphi_no = components[~((np.fabs(components.eta - refeta) < 0.02) & (np.fabs(components.phi - refphi) < 0.1))]
             if not components_etaphi_no.empty:
