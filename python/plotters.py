@@ -308,6 +308,13 @@ class TPGenMatchPlotter:
                                         self.tp_set.name,
                                         debug)
 
+    def __repr__(self):
+        return '<{} tps: {}, tps_s: {}, gen:{}, gen_s:{}> '.format(self.__class__.__name__,
+                                                                   self.tp_set.name,
+                                                                   [sel.name for sel in self.tp_selections],
+                                                                   self.gen_set.name,
+                                                                   [sel.name for sel in self.gen_selections])
+
 
 class EGGenMatchPlotter:
     def __init__(self, data_set, gen_set,
@@ -537,7 +544,8 @@ tp_genmatched_plotters = [TPGenMatchPlotter(selections.tp_def, selections.gen_se
                                             selections.gen_part_selections),
                           TPGenMatchPlotter(selections.tp_def_merged, selections.gen_set,
                                             selections.tp_match_selections,
-                                            selections.gen_part_selections)]
+                                            selections.gen_part_selections)
+                                            ]
 eg_genmatched_plotters = [EGGenMatchPlotter(selections.eg_set, selections.gen_set,
                                             selections.eg_qual_selections,
                                             selections.gen_part_selections)]
