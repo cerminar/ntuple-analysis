@@ -7,7 +7,7 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v58
+  plot_version: v59
   run_clustering: False
   run_density_computation: False
 
@@ -57,8 +57,8 @@ collections:
     samples:
       - ele_flat2to100_PU0
       - ele_flat2to100_PU200
-      # - photon_flat8to150_PU0
-      # - photon_flat8to150_PU200
+      - photon_flat8to150_PU0
+      - photon_flat8to150_PU200
       - pion_flat2to100_PU0
       - pion_flat2to100_PU200
     plotters:
@@ -73,7 +73,7 @@ collections:
       - nugun_alleta_pu200
     plotters:
       - rate_plotters
-      - ttower_plotters
+      # - ttower_plotters
       - tp_egm_plotters
       - eg_rate_plotters
 
