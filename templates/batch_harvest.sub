@@ -1,0 +1,13 @@
+executable            = run_harvest.sh
+arguments             = $(ClusterID) $(JOB_ID)
+output                = logs/harvest_$(JOB_ID).$(ClusterId).$(ProcId).out
+error                 = logs/harvest_$(JOB_ID).$(ClusterId).$(ProcId).err
+log                   = logs/condor.harvest.$(ClusterId).log
++JobFlavour           = "tomorrow"
+
+RequestCpus = 3
+
+transfer_input_files  = ../ntuple-tools.tar.gz
+
+transfer_output_files   = ""
+queue
