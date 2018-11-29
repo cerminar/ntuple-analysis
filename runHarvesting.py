@@ -23,7 +23,7 @@ def data_creator(input_dir, sample_name, version, q):
 
         for id, item in enumerate(data):
             file_name = os.path.split(item)[1]
-            print file_name
+            # print file_name
             # print id
             if sample_name in item and version+'_' in item:
                 # or not os.path.isfile('{}.checked'.format(os.path.splitext(file)[0])):
@@ -36,7 +36,7 @@ def data_creator(input_dir, sample_name, version, q):
                             print '   remote checksum did not change...skipping for now'
                             continue
                         else:
-                            print '   remote checksum  changed: will copy it again'
+                            print '   remote checksum changed: will copy it again'
                     else:
                         continue
                 fm.copy_from_eos(input_dir=input_dir,
@@ -45,8 +45,6 @@ def data_creator(input_dir, sample_name, version, q):
                                  dowait=True)
                 q.put(file_name)
                 ncopied += 1
-
-
 
             if ncopied > 999:
                 q.put(sentinel)
@@ -76,6 +74,8 @@ def data_checker(queue_all, queue_ready):
             open(fname, 'a').close()
             if not os.path.isfile('{}.hadded'.format(os.path.splitext(data)[0])):
                 queue_ready.put(data)
+            else:
+                print 'file: {} has already been hadded...skipping it'.format(data)
         file.Close()
 
 
