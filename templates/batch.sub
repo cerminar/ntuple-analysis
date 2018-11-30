@@ -9,7 +9,7 @@ RequestCpus = 1
 
 transfer_input_files  = copy_files.sh,TEMPL_CFG,../ntuple-tools.tar.gz
 +PostCmd              = "copy_files.sh"
-
++PostArguments        = "$(ClusterID) $(JOB_ID) true"
 
 transfer_output_files   = ""
 queue

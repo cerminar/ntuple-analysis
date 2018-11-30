@@ -9,7 +9,7 @@ RequestCpus = 5
 
 transfer_input_files  = TEMPL_TASKDIR/copy_files.sh
 +PostCmd              = "copy_files.sh"
-
++PostArguments        = "$(ClusterID) $(JOB_ID) false"
 
 transfer_output_files   = ""
 queue

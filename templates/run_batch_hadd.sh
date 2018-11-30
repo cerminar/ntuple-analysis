@@ -17,7 +17,7 @@ workon TEMPL_VIRTUALENV
 
 cd ${BATCH_DIR}
 date
-for filename in TEMPL_OUTDIR/TEMPL_INFILE; do
+for filename in TEMPL_OUTDIR/tmp/TEMPL_INFILE; do
     echo ${filename}
     xrdcp TEMPL_EOSPROTOCOL${filename} .
 done

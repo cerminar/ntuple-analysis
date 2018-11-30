@@ -18,4 +18,4 @@ source ./setVirtualEnvWrapper.sh
 workon TEMPL_VIRTUALENV
 # cd ${BATCH_DIR}
 date
-python runHarvesting.py -i TEMPL_OUTDIR -s TEMPL_SAMPLE -v TEMPL_VERSION -o TEMPL_OUTDIR
+python runHarvesting.py -i TEMPL_OUTDIR/tmp/ -s TEMPL_SAMPLE -v TEMPL_VERSION -o TEMPL_OUTDIR
