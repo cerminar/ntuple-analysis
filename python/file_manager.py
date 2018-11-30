@@ -35,7 +35,7 @@ def get_eos_protocol(dirname):
 
 def copy_from_eos(input_dir, file_name, target_file_name, dowait=False, silent=False):
     protocol = get_eos_protocol(dirname=input_dir)
-    eos_proc = subprocess32.Popen(['eos', protocol, 'cp', os.path.join(input_dir, file_name), target_file_name], stdout=subprocess32.PIPE)
+    eos_proc = subprocess32.Popen(['eos', protocol, 'cp', os.path.join(input_dir, file_name), target_file_name], stdout=subprocess32.PIPE, stderr=subprocess32.STDOUT)
     if dowait:
         eos_proc.wait()
     if not silent:
@@ -45,7 +45,7 @@ def copy_from_eos(input_dir, file_name, target_file_name, dowait=False, silent=F
 
 def copy_to_eos(file_name, target_dir, target_file_name):
     protocol = get_eos_protocol(dirname=target_dir)
-    eos_proc = subprocess32.Popen(['eos', protocol, 'cp', file_name, os.path.join(target_dir, target_file_name)], stdout=subprocess32.PIPE)
+    eos_proc = subprocess32.Popen(['eos', protocol, 'cp', file_name, os.path.join(target_dir, target_file_name)], stdout=subprocess32.PIPE, stderr=subprocess32.STDOUT)
     eos_proc.wait()
     print eos_proc.stdout.readlines()
     return eos_proc.returncode
