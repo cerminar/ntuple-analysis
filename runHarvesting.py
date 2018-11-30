@@ -7,6 +7,9 @@ import os
 import subprocess32
 from shutil import copyfile
 import optparse
+import logging
+logger = multiprocessing.log_to_stderr()
+logger.setLevel(logging.DEBUG)
 
 sentinel = -1
 
@@ -16,7 +19,8 @@ def data_creator(input_dir, sample_name, version, q):
     Creates data to be consumed and waits for the consumer
     to finish processing
     """
-    print('Creating data and putting it on the queue')
+    logger.info('Creating data and putting it on the queue')
+
     ncopied = 0
     while True:
         data = fm.listFiles(input_dir)
@@ -39,10 +43,12 @@ def data_creator(input_dir, sample_name, version, q):
                             print '   remote checksum changed: will copy it again'
                     else:
                         continue
-                fm.copy_from_eos(input_dir=input_dir,
-                                 file_name=file_name,
-                                 target_file_name=file_name,
-                                 dowait=True)
+                copy_ret = fm.copy_from_eos(input_dir=input_dir,
+                                            file_name=file_name,
+                                            target_file_name=file_name,
+                                            dowait=True,
+                                            silent=True)
+                logger.debug('copy returned: {}'.format(copy_ret))
                 q.put(file_name)
                 ncopied += 1
 
@@ -57,7 +63,7 @@ def data_checker(queue_all, queue_ready):
     """
     Consumes some data and works on it
     """
-    print('Checking files and putting it on the queue "queue_ready"')
+    logger.info('Checking files and putting it on the queue "queue_ready"')
 
     while True:
         data = queue_all.get()
@@ -80,6 +86,7 @@ def data_checker(queue_all, queue_ready):
 
 
 def data_consumer(sample_name, version, queue_ready, queue_tomove):
+    logger.info('Starting data consumer')
     out_file_name = 'histos_{}_{}_temp.root'.format(sample_name, version)
     new_data = []
     index = 0
@@ -96,8 +103,7 @@ def data_consumer(sample_name, version, queue_ready, queue_tomove):
             hadd_proc.wait()
             if hadd_proc.returncode == 0:
                 print '   hadd succeeded with exit code: {}'.format(hadd_proc.returncode)
-                print '   hadd output follows:'
-                print hadd_proc.stdout.readlines()
+                print '   hadd output follows: {}'.format(hadd_proc.stdout.readlines())
                 index += 1
                 for file in new_data:
                     fname = '{}.hadded'.format(os.path.splitext(file)[0])
@@ -109,8 +115,7 @@ def data_consumer(sample_name, version, queue_ready, queue_tomove):
                 print '  resetting file list for hadd operation to {}'.format(len(new_data))
             else:
                 print '   hadd failed with exit code: {}'.format(hadd_proc.returncode)
-                print '   hadd output follows:'
-                print hadd_proc.stdout.readlines()
+                print '   hadd output follows: {}'.format(hadd_proc.stdout.readlines())
                 file = ROOT.TFile(out_file_name)
                 if len(file.GetListOfKeys()) == 0:
                     print 'file: {} is not OK'.format(out_file_name)
@@ -121,6 +126,7 @@ def data_consumer(sample_name, version, queue_ready, queue_tomove):
 
 
 def data_mover(sample_name, version, out_dir, queue_tomove):
+    logger.info('Starting data mover')
     while True:
         data = queue_tomove.get()
         if data is sentinel:
@@ -155,7 +161,7 @@ def main():
     sample_name = opt.SAMPLENAME
     out_dir = opt.OUTPUTDIR
 
-    print 'Starting...'
+    logger.info('Starting...')
 
     q = multiprocessing.Queue()
     queue_ready = multiprocessing.Queue()

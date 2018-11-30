@@ -23,6 +23,7 @@ def get_checksum(filename):
 #     xrdfs root://eosuser.cern.ch/  query checksum /eos/user/c/cerminar/hgcal/CMSSW1015/plots/histos_ele_flat2to100_PU200_v55_93.root
 #     xrdadler32 plots1/histos_ele_flat2to100_PU200_v55_93.root
 
+
 def get_eos_protocol(dirname):
     protocol = ''
     if '/eos/user/' in dirname:
@@ -32,12 +33,13 @@ def get_eos_protocol(dirname):
     return protocol
 
 
-def copy_from_eos(input_dir, file_name, target_file_name, dowait=False):
+def copy_from_eos(input_dir, file_name, target_file_name, dowait=False, silent=False):
     protocol = get_eos_protocol(dirname=input_dir)
     eos_proc = subprocess32.Popen(['eos', protocol, 'cp', os.path.join(input_dir, file_name), target_file_name], stdout=subprocess32.PIPE)
     if dowait:
         eos_proc.wait()
-    print eos_proc.stdout.readlines()
+    if not silent:
+        print eos_proc.stdout.readlines()
     return eos_proc.returncode
 
 
