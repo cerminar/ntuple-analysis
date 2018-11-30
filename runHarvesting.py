@@ -94,9 +94,10 @@ def data_consumer(sample_name, version, queue_ready, queue_tomove):
             print 'Launch hadd on {} files: '.format(len(new_data))
             hadd_proc = subprocess32.Popen(['hadd', '-a', '-j', '2', '-k', out_file_name]+new_data, stdout=subprocess32.PIPE)
             hadd_proc.wait()
-            print hadd_proc.stdout.readlines()
-            print hadd_proc.returncode
             if hadd_proc.returncode == 0:
+                print '   hadd succeeded with exit code: {}'.format(hadd_proc.returncode)
+                print '   hadd output follows:'
+                print hadd_proc.stdout.readlines()
                 index += 1
                 for file in new_data:
                     fname = '{}.hadded'.format(os.path.splitext(file)[0])
@@ -105,6 +106,18 @@ def data_consumer(sample_name, version, queue_ready, queue_tomove):
                 copyfile(out_file_name, out_file_name_copy)
                 queue_tomove.put(out_file_name_copy)
                 del new_data[:]
+                print '  resetting file list for hadd operation to {}'.format(len(new_data))
+            else:
+                print '   hadd failed with exit code: {}'.format(hadd_proc.returncode)
+                print '   hadd output follows:'
+                print hadd_proc.stdout.readlines()
+                file = ROOT.TFile(out_file_name)
+                if len(file.GetListOfKeys()) == 0:
+                    print 'file: {} is not OK'.format(out_file_name)
+                else:
+                    print 'file: {} is OK, will retry hadding!'.format(out_file_name)
+                file.Close()
+
 
 
 def data_mover(sample_name, version, out_dir, queue_tomove):
