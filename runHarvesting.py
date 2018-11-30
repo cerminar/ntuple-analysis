@@ -33,14 +33,14 @@ def data_creator(input_dir, sample_name, version, q):
                 # or not os.path.isfile('{}.checked'.format(os.path.splitext(file)[0])):
                 if os.path.isfile(file_name):
                     if not os.path.isfile('{}.checked'.format(os.path.splitext(file_name)[0])):
-                        print 'file {} exists but check failed...'.format(file_name)
+                        # logger.debug ('file {} exists but check failed...'.format(file_name))
                         remote_checksum = fm.get_checksum(item)
                         local_checksum = fm.get_checksum(file_name)
                         if remote_checksum == local_checksum:
-                            print '   remote checksum did not change...skipping for now'
+                            logger.debug('   remote checksum for file: {} did not change...skipping for now'.format(file_name))
                             continue
                         else:
-                            print '   remote checksum changed: will copy it again'
+                            logger.info('   remote checksum for file: {} changed: will copy it again'.format(file_name))
                     else:
                         continue
                 copy_ret = fm.copy_from_eos(input_dir=input_dir,
@@ -49,8 +49,9 @@ def data_creator(input_dir, sample_name, version, q):
                                             dowait=True,
                                             silent=True)
                 logger.debug('copy returned: {}'.format(copy_ret))
-                q.put(file_name)
-                ncopied += 1
+                if copy_ret == 0:
+                    q.put(file_name)
+                    ncopied += 1
 
             if ncopied > 999:
                 q.put(sentinel)
@@ -74,14 +75,14 @@ def data_checker(queue_all, queue_ready):
         # print('data found to be processed: {}'.format(data))
         file = ROOT.TFile(os.path.join(fm.get_eos_protocol(data), data))
         if len(file.GetListOfKeys()) == 0:
-            print 'file: {} is not OK'.format(data)
+            logger.info( 'file: {} is not OK'.format(data))
         else:
             fname = '{}.checked'.format(os.path.splitext(data)[0])
             open(fname, 'a').close()
             if not os.path.isfile('{}.hadded'.format(os.path.splitext(data)[0])):
                 queue_ready.put(data)
             else:
-                print 'file: {} has already been hadded...skipping it'.format(data)
+                logger.debug( 'file: {} has already been hadded...skipping it'.format(data))
         file.Close()
 
 
@@ -98,12 +99,12 @@ def data_consumer(sample_name, version, queue_ready, queue_tomove):
             break
         new_data.append(data)
         if(len(new_data) >= 20):
-            print 'Launch hadd on {} files: '.format(len(new_data))
-            hadd_proc = subprocess32.Popen(['hadd', '-a', '-j', '2', '-k', out_file_name]+new_data, stdout=subprocess32.PIPE)
+            logger.info('Launch hadd on {} files: '.format(len(new_data)))
+            hadd_proc = subprocess32.Popen(['hadd', '-a', '-j', '2', '-k', out_file_name]+new_data, stdout=subprocess32.PIPE, stderr=subprocess32.STDOUT)
             hadd_proc.wait()
             if hadd_proc.returncode == 0:
-                print '   hadd succeeded with exit code: {}'.format(hadd_proc.returncode)
-                print '   hadd output follows: {}'.format(hadd_proc.stdout.readlines())
+                logger.info('   hadd succeeded with exit code: {}'.format(hadd_proc.returncode))
+                logger.debug('   hadd output follows: {}'.format(hadd_proc.stdout.readlines()))
                 index += 1
                 for file in new_data:
                     fname = '{}.hadded'.format(os.path.splitext(file)[0])
@@ -112,15 +113,15 @@ def data_consumer(sample_name, version, queue_ready, queue_tomove):
                 copyfile(out_file_name, out_file_name_copy)
                 queue_tomove.put(out_file_name_copy)
                 del new_data[:]
-                print '  resetting file list for hadd operation to {}'.format(len(new_data))
+                logger.debug('  resetting file list for hadd operation to {}'.format(len(new_data)))
             else:
-                print '   hadd failed with exit code: {}'.format(hadd_proc.returncode)
-                print '   hadd output follows: {}'.format(hadd_proc.stdout.readlines())
+                logger.info('   hadd failed with exit code: {}'.format(hadd_proc.returncode))
+                logger.debug('   hadd output follows: {}'.format(hadd_proc.stdout.readlines()))
                 file = ROOT.TFile(out_file_name)
                 if len(file.GetListOfKeys()) == 0:
-                    print 'file: {} is not OK'.format(out_file_name)
+                    logger.info('file: {} is not OK'.format(out_file_name))
                 else:
-                    print 'file: {} is OK, will retry hadding!'.format(out_file_name)
+                    logger.info('file: {} is OK, will retry hadding!'.format(out_file_name))
                 file.Close()
 
 
