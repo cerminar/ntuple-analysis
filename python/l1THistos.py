@@ -626,15 +626,19 @@ class ClusterConeHistos(BaseHistos):
             self.h_ptRelVpt = ROOT.TH2F(name+'_ptRelVpt', 'Pt best/Pt other vs pt (GeV); p_{T}^{best} [GeV]; p_{T}^{best}/p_{T}^{other};', 50, 0, 100, 100, 0, 1)
             self.h_deltaEta = ROOT.TH1F(name+'_deltaEta', '#Delta eta; #eta^{best}-#eta^{other}', 100, -0.4, 0.4)
             self.h_deltaPhi = ROOT.TH1F(name+'_deltaPhi', '#Delta phi; #phi^{best}-#phi^{other}', 100, -0.4, 0.4)
+            self.h_deltaPhiVq = ROOT.TH2F(name+'_deltaPhiVq', '#Delta phi; #phi^{best}-#phi^{other}; GEN charge;', 100, -0.4, 0.4, 3, -1, 2)
+
             self.h_deltaR = ROOT.TH1F(name+'_deltaR', '#Delta R (best-other); #Delta R (best, other)', 100, 0, 0.4)
             self.h_n = ROOT.TH1I(name+'_n', '# other clusters in cone; # others', 20, 0, 20)
         BaseHistos.__init__(self, name, root_file)
 
-    def fill(self, reference, target):
+    def fill(self, reference, target, charge):
         self.h_ptRel.Fill(target.pt/reference.pt)
         self.h_ptRelVpt.Fill(reference.pt, target.pt/reference.pt)
         self.h_deltaEta.Fill(target.eta - reference.eta)
         self.h_deltaPhi.Fill(target.phi - reference.phi)
+        # self.h_deltaPhi.Fill(target.phi - reference.phi)
+        self.h_deltaPhiVq.Fill(target.phi - reference.phi, charge)
         self.h_deltaR.Fill(np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
 
     def fill_n(self, num):

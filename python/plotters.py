@@ -204,6 +204,7 @@ class TPGenMatchPlotter:
                 def fill_cluster_incone_histos(cl3ds,
                                                idx_allmatches,
                                                idx_bestmatch,
+                                               charge,
                                                h_clustersInCone,
                                                debug=0):
                     if debug > 4:
@@ -216,11 +217,14 @@ class TPGenMatchPlotter:
                             continue
                         clincone = cl3ds.loc[idx]
                         h_clustersInCone.fill(reference=bestcl,
-                                              target=clincone)
-
+                                              target=clincone,
+                                              charge=charge)
+                # print genParticle
+                # print genParticle.pid/abs(genParticle.pid)
                 fill_cluster_incone_histos(trigger3DClusters,
                                            allmatches[idx],
                                            best_match_indexes[idx],
+                                           genParticle.pid/abs(genParticle.pid),
                                            histoConeClusters)
 
                 # print ('----- in cone sum:')
@@ -530,18 +534,19 @@ class TTGenMatchPlotter:
 
 
 tp_plotters = [TPPlotter(selections.tp_def, selections.tp_id_selections),
-               TPPlotter(selections.tp_def_calib, selections.tp_id_selections)]
+               # TPPlotter(selections.tp_def_calib, selections.tp_id_selections)
+               ]
 eg_plotters = [EGPlotter(selections.eg_set, selections.eg_qual_selections)]
 rate_plotters = [RatePlotter(selections.tp_def, selections.tp_rate_selections),
-                 RatePlotter(selections.tp_def_calib, selections.tp_rate_selections),
+                 # RatePlotter(selections.tp_def_calib, selections.tp_rate_selections),
                  RatePlotter(selections.tp_def_merged, selections.tp_rate_selections)]
 eg_rate_plotters = [RatePlotter(selections.eg_set, selections.eg_rate_selections)]
 tp_genmatched_plotters = [TPGenMatchPlotter(selections.tp_def, selections.gen_set,
                                             selections.tp_match_selections,
                                             selections.gen_part_selections),
-                          TPGenMatchPlotter(selections.tp_def_calib, selections.gen_set,
-                                            selections.tp_match_selections,
-                                            selections.gen_part_selections),
+                          # TPGenMatchPlotter(selections.tp_def_calib, selections.gen_set,
+                          #                   selections.tp_match_selections,
+                          #                   selections.gen_part_selections),
                           TPGenMatchPlotter(selections.tp_def_merged, selections.gen_set,
                                             selections.tp_match_selections,
                                             selections.gen_part_selections)
