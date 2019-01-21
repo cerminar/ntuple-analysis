@@ -278,12 +278,15 @@ class Event(object):
     #     return Trigger3DClusters(self._tree, prefix)
 
     def getDataFrame(self, prefix):
+        df = pd.DataFrame()
         branches = [br.GetName() for br in self._tree.GetListOfBranches() if (
             br.GetName().startswith(prefix+'_') and not br.GetName() == '{}_n'.format(prefix))]
+        if len(branches) == 0:
+            return df
+
         names = [br.split('_')[1] for br in branches]
         nd_array = rnp.tree2array(self._tree, branches=branches,
                                   start=self._entry, stop=self._entry+1, cache_size=400000000)
-        df = pd.DataFrame()
         for idx in range(0, len(branches)):
             df[names[idx]] = nd_array[branches[idx]][0]
         return df
