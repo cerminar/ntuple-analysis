@@ -216,6 +216,7 @@ def get_merged_clusters(triggerClusters, pool, debug=0):
     # FIXME: filter only interesting clusters
     clusterSides = [x for x in [triggerClusters[triggerClusters.eta > 0],
                                 triggerClusters[triggerClusters.eta < 0]] if not x.empty]
+
     results3Dcl = pool.map(clAlgo.merge3DClustersEtaPhi, clusterSides)
     for res3D in results3Dcl:
         merged_clusters = merged_clusters.append(res3D, ignore_index=True)
@@ -223,6 +224,10 @@ def get_merged_clusters(triggerClusters, pool, debug=0):
 
 
 def compute_tower_data(towers):
+    if towers.empty:
+        # print '***[compute_tower_data]:WARNING input data-frame is empty'
+        return towers
+
     towers.eval('HoE = etHad/etEm', inplace=True)
 
     def fill_momentum(tower):
@@ -484,12 +489,14 @@ def analyze(params, batch_idx=0):
         debugPrintOut(debug, 'Sim Trigger Towers',
                       toCount=simTriggerTowers,
                       toPrint=simTriggerTowers.sort_values(by='pt', ascending=False).iloc[:10])
-        debugPrintOut(debug, 'HGCROC Trigger Towers',
-                      toCount=hgcrocTowers,
-                      toPrint=hgcrocTowers.sort_values(by='pt', ascending=False).iloc[:10])
-        debugPrintOut(debug, 'Wafer Trigger Towers',
-                      toCount=waferTowers,
-                      toPrint=waferTowers.sort_values(by='pt', ascending=False).iloc[:10])
+        if not hgcrocTowers.empty:
+            debugPrintOut(debug, 'HGCROC Trigger Towers',
+                          toCount=hgcrocTowers,
+                          toPrint=hgcrocTowers.sort_values(by='pt', ascending=False).iloc[:10])
+        if not waferTowers.empty:
+            debugPrintOut(debug, 'Wafer Trigger Towers',
+                          toCount=waferTowers,
+                          toPrint=waferTowers.sort_values(by='pt', ascending=False).iloc[:10])
 
         # print '# towers eta >0 {}'.format(len(triggerTowers[triggerTowers.eta > 0]))
         # print '# towers eta <0 {}'.format(len(triggerTowers[triggerTowers.eta < 0]))
