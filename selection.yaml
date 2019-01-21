@@ -32,7 +32,7 @@ collections:
     samples:
       - ele_flat2to100_PU0
       - ele_flat2to100_PU200
-      # - photon_flat8to150_PU0
+      - photon_flat8to150_PU0
       - photon_flat8to150_PU200
     plotters:
       - eg_plotters
@@ -43,7 +43,7 @@ collections:
     samples:
       - ele_flat2to100_PU0
       - ele_flat2to100_PU200
-      # - photon_flat8to150_PU0
+      - photon_flat8to150_PU0
       - photon_flat8to150_PU200
     plotters:
       - tp_egm_plotters
