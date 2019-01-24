@@ -153,7 +153,8 @@ genpart_ele_genplotting += add_selections(genpart_ele_selections, gen_ee_selecti
 
 eg_qual_selections = [
                       # Selection('EGq1', 'q1', 'hwQual > 0'),
-                      Selection('EGq2', 'q2', 'hwQual > 1')]
+                      Selection('EGq2', 'q2', 'hwQual == 2'),
+                      Selection('EGq3', 'q3', 'hwQual == 3')]
 
 eg_rate_selections = []
 eg_rate_selections += add_selections(eg_qual_selections, tp_eta_selections)
