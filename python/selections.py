@@ -161,6 +161,18 @@ eg_rate_selections += add_selections(eg_qual_selections, tp_eta_selections)
 eg_pt_selections = []
 eg_pt_selections += add_selections(eg_qual_selections, tp_pt_selections)
 
+tkeg_selection = [Selection('all'),
+                  Selection('M2', 'M2', '(abs(dphi) < 0.08) & (dr < 0.07)'),
+                  Selection('M3', 'M3', '(abs(dphi) < 0.08) & (abs(deta) < 0.025)'),
+                  Selection('M4', 'M4', '(abs(dphi) < 0.08) & (dr < 0.07) & (tkpt > 10.)')]
+
+tkeg_rate_selections = []
+tkeg_rate_selections += add_selections(eg_rate_selections, tkeg_selection)
+tkeg_qual_selections = []
+tkeg_qual_selections += add_selections(eg_qual_selections, tkeg_selection)
+
+tracks_selections = [Selection('all')]
+
 
 class EgammaSet:
     def __init__(self, name, label):
@@ -206,6 +218,30 @@ class TTSet:
         self.tt_df = tt_df
 
 
+class TrackSet:
+    def __init__(self, name, label):
+        self.name = name
+        self.label = label
+        self.trk_df = None
+
+    def set_collections(self, trk_df):
+        self.trk_df = trk_df
+
+class TkEGSet:
+    def __init__(self, name, label):
+        self.name = name
+        self.label = label
+        self.tkeg_df = None
+
+    def set_collections(self, tkeg_df):
+        self.tkeg_df = tkeg_df
+
+    # FIXME: need to get rid of all these classes and have uniform access to the data
+    @property
+    def cl3d_df(self):
+        return self.tkeg_df
+
+
 tp_def = TPSet('DEF', 'NNDR')
 tp_def_merged = TPSet('DEFMerged', 'NNDR(merged)')
 tp_def_calib = TPSet('DEFCalib', 'NNDR + calib. v1')
@@ -215,6 +251,8 @@ simtt_set = TTSet('SimTT', 'Sim Trigger Towers')
 hgcroc_tt = TTSet('HgcrocTT', 'HGCROC Trigger Towers')
 wafer_tt = TTSet('WaferTT', 'Wafer Trigger Towers')
 eg_set = EgammaSet('EG', 'EGPhase2')
+track_set = TrackSet('L1Trk', 'L1Track')
+tkeg_set = TkEGSet('TkEG', 'TkEG')
 
 if __name__ == "__main__":
     for sel in gen_part_selections:

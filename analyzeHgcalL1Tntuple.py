@@ -19,12 +19,14 @@ import socket
 import datetime
 import optparse
 import yaml
+import math
 
 import python.l1THistos as histos
 import python.clusterTools as clAlgo
 import traceback
 import subprocess32
 from python.utils import debugPrintOut
+from python.utils import match_etaphi
 
 import python.file_manager as fm
 import python.selections as selections
@@ -223,6 +225,36 @@ def get_merged_clusters(triggerClusters, pool, debug=0):
     return merged_clusters
 
 
+def get_trackmatched_egs(egs, tracks, debug=0):
+    newcolumns = ['pt', 'energy', 'eta', 'phi', 'hwQual']
+    newcolumns.extend(['tkpt', 'tketa', 'tkphi', 'tkz0', 'tkchi2', 'tknstubs', 'deta', 'dphi', 'dr'])
+    matched_egs = pd.DataFrame(columns=newcolumns)
+    if egs.empty or tracks.empty:
+        return matched_egs
+    best_match_indexes, allmatches = match_etaphi(egs[['eta', 'phi']],
+                                                  tracks[['caloeta', 'calophi']],
+                                                  tracks['pt'],
+                                                  deltaR=0.1)
+    for bestmatch_idxes in best_match_indexes.iteritems():
+        bestmatch_eg = egs.loc[bestmatch_idxes[0]]
+        bestmatch_tk = tracks.loc[bestmatch_idxes[1]]
+        matched_egs = matched_egs.append({'pt': bestmatch_eg.pt,
+                                          'energy': bestmatch_eg.energy,
+                                          'eta': bestmatch_eg.eta,
+                                          'phi': bestmatch_eg.phi,
+                                          'hwQual': bestmatch_eg.hwQual,
+                                          'tkpt': bestmatch_tk.pt,
+                                          'tketa': bestmatch_tk.eta,
+                                          'tkphi': bestmatch_tk.phi,
+                                          'tkz0': bestmatch_tk.z0,
+                                          'tkchi2': bestmatch_tk.chi2,
+                                          'tknstubs': bestmatch_tk.nStubs,
+                                          'deta': bestmatch_tk.eta - bestmatch_eg.eta,
+                                          'dphi': bestmatch_tk.phi - bestmatch_eg.phi,
+                                          'dr': math.sqrt((bestmatch_tk.phi-bestmatch_eg.phi)**2+(bestmatch_tk.eta-bestmatch_eg.eta)**2)}, ignore_index=True)
+    return matched_egs
+
+
 def compute_tower_data(towers):
     if towers.empty:
         # print '***[compute_tower_data]:WARNING input data-frame is empty'
@@ -399,9 +431,12 @@ def analyze(params, batch_idx=0):
         egamma = event.getDataFrame(prefix='egammaEE')
         hgcrocTowers = event.getDataFrame(prefix='hgcrocTower')
         waferTowers = event.getDataFrame(prefix='waferTower')
+        tracks = event.getDataFrame(prefix='l1track')
+
         puInfo = event.getPUInfo()
 
         debugPrintOut(debug, 'PU', toCount=puInfo, toPrint=puInfo)
+        debugPrintOut(debug, 'tracks', toCount=tracks, toPrint=tracks[:3])
 
         # ----------------------------------
         if not tc_rod_bins.empty:
@@ -503,6 +538,12 @@ def analyze(params, batch_idx=0):
 
         trigger3DClustersCalib = get_calibrated_clusters(calib_factors, trigger3DClusters)
         trigger3DClustersMerged = get_merged_clusters(trigger3DClusters[trigger3DClusters.quality > 0], pool)
+
+        tkegs = get_trackmatched_egs(egs=egamma, tracks=tracks)
+        debugPrintOut(debug, 'Tk matched EGs',
+                      toCount=tkegs,
+                      toPrint=tkegs)
+
         # print trigger3DClusters[:3]
         # print trigger3DClustersCalib[:3]
         debugPrintOut(debug, 'Calibrated 3D clusters',
@@ -574,6 +615,8 @@ def analyze(params, batch_idx=0):
         selections.hgcroc_tt.set_collections(hgcrocTowers)
         selections.wafer_tt.set_collections(waferTowers)
         selections.eg_set.set_collections(egamma)
+        selections.track_set.set_collections(tracks)
+        selections.tkeg_set.set_collections(tkegs)
 
         for plotter in plotter_collection:
             # print plotter
