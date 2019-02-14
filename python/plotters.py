@@ -517,6 +517,7 @@ class EGGenMatchPlotter:
         for tp_sel in self.data_selections:
             cl3Ds = self.data_set.cl3d_df
             if not tp_sel.all:
+                print tp_sel.selection
                 cl3Ds = self.data_set.cl3d_df.query(tp_sel.selection)
             for gen_sel in self.gen_selections:
                 histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
