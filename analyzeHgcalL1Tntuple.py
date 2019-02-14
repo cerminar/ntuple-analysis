@@ -203,7 +203,7 @@ def build3DClusters(name, algorithm, triggerClusters, pool, debug):
                                 triggerClusters[triggerClusters.eta < 0]] if not x.empty]
     results3Dcl = pool.map(algorithm, clusterSides)
     for res3D in results3Dcl:
-        trigger3DClusters = trigger3DClusters.append(res3D, ignore_index=True)
+        trigger3DClusters = trigger3DClusters.append(res3D, ignore_index=True, sort=False)
 
     debugPrintOut(debug, name='{} 3D clusters'.format(name),
                   toCount=trigger3DClusters,
@@ -221,7 +221,7 @@ def get_merged_clusters(triggerClusters, pool, debug=0):
 
     results3Dcl = pool.map(clAlgo.merge3DClustersEtaPhi, clusterSides)
     for res3D in results3Dcl:
-        merged_clusters = merged_clusters.append(res3D, ignore_index=True)
+        merged_clusters = merged_clusters.append(res3D, ignore_index=True, sort=False)
     return merged_clusters
 
 
@@ -251,7 +251,8 @@ def get_trackmatched_egs(egs, tracks, debug=0):
                                           'tknstubs': bestmatch_tk.nStubs,
                                           'deta': bestmatch_tk.eta - bestmatch_eg.eta,
                                           'dphi': bestmatch_tk.phi - bestmatch_eg.phi,
-                                          'dr': math.sqrt((bestmatch_tk.phi-bestmatch_eg.phi)**2+(bestmatch_tk.eta-bestmatch_eg.eta)**2)}, ignore_index=True)
+                                          'dr': math.sqrt((bestmatch_tk.phi-bestmatch_eg.phi)**2+(bestmatch_tk.eta-bestmatch_eg.eta)**2)},
+                                          ignore_index=True, sort=False)
     return matched_egs
 
 
@@ -578,7 +579,7 @@ def analyze(params, batch_idx=0):
                 arg = [(layer, zside, triggerCells) for layer in range(0, 53)]
                 results = pool.map(clAlgo.buildDBSCANClustersUnpack, arg)
                 for clres in results:
-                    triggerClustersDBS = triggerClustersDBS.append(clres, ignore_index=True)
+                    triggerClustersDBS = triggerClustersDBS.append(clres, ignore_index=True, sort=False)
 
             if not tc_rod_bins.empty:
                 clAlgo.computeClusterRodSharing(triggerClustersDBS, triggerCells)
