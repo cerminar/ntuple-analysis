@@ -20,7 +20,7 @@ class RatePlotter:
 
     def fill_histos(self, debug=False):
         for selection in self.tp_selections:
-            if not selection.all:
+            if not selection.all and not self.tp_set.cl3d_df.empty:
                 sel_clusters = self.tp_set.cl3d_df.query(selection.selection)
             else:
                 sel_clusters = self.tp_set.cl3d_df
