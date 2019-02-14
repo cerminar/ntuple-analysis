@@ -110,7 +110,7 @@ def buildHDBSCANClusters(sel_layer, sel_zside, tcs):
             continue
         components = tcs_layer[tcs_layer.dbs_label == label]
         cl = build2D(components)
-        new2Dcls = new2Dcls.append(cl.copy(), ignore_index=True)
+        new2Dcls = new2Dcls.append(cl.copy(), ignore_index=True, sort=False
     return new2Dcls
 
 
@@ -132,7 +132,7 @@ def build3DClustersEtaPhi(cl2D):
         # print tcs_layer[tcs_layer.dbs_label == label].indexsi s
         components = cl2D[cl2D.dbs_labels == label]
         cl3D = build3D(components)
-        new3DCls = new3DCls.append(cl3D, ignore_index=True)
+        new3DCls = new3DCls.append(cl3D, ignore_index=True, sort=False)
     return new3DCls
 
 
@@ -158,7 +158,7 @@ def build3DClustersEtaPhi2(cl2D):
         components = cl2D[cl2D.dbs_labels == label]
 
         cl3D = build3D(components)
-        new3DCls = new3DCls.append(cl3D, ignore_index=True)
+        new3DCls = new3DCls.append(cl3D, ignore_index=True, sort=False)
     return new3DCls
 
 
@@ -184,7 +184,7 @@ def build3DClustersProj(cl2D):
         components = cl2D[cl2D.dbs_labels == label]
 
         cl3D = build3D(components)
-        new3DCls = new3DCls.append(cl3D, ignore_index=True)
+        new3DCls = new3DCls.append(cl3D, ignore_index=True, sort=False)
     return new3DCls
 
 
@@ -195,7 +195,7 @@ def build3DClustersProjTowers(cl2D):
         for seed in seeds:
             # print seed
             components = getClusterComponents(seed, cl2D[(cl2D.eta*zside > 0)])
-            new3Dclusters = new3Dclusters.append(build3D(components), ignore_index=True)
+            new3Dclusters = new3Dclusters.append(build3D(components), ignore_index=True, sort=False)
     return new3Dclusters
 
 
@@ -333,7 +333,7 @@ def merge3DClustersEtaPhi(cl3ds):
         # print tcs_layer[tcs_layer.dbs_label == label].indexsi s
         components = cl3ds[cl3ds.dbs_labels == label]
         if components.shape[0] == 1:
-            new3DCls = new3DCls.append(components.iloc[0], ignore_index=True)
+            new3DCls = new3DCls.append(components.iloc[0], ignore_index=True, sort=False)
         else:
             refeta, refphi = components.sort_values(by='pt', ascending=False).iloc[0][['eta', 'phi']]
             # print '--- cluster components:'
@@ -344,10 +344,10 @@ def merge3DClustersEtaPhi(cl3ds):
             cl3D = sum3DClusters(components_etaphi_ok)
             # print '--- summed:'
             # print cl3D
-            new3DCls = new3DCls.append(cl3D, ignore_index=True)
+            new3DCls = new3DCls.append(cl3D, ignore_index=True, sort=False)
             components_etaphi_no = components[~((np.fabs(components.eta - refeta) < 0.02) & (np.fabs(components.phi - refphi) < 0.1))]
             if not components_etaphi_no.empty:
-                new3DCls = new3DCls.append(components_etaphi_no, ignore_index=True)
+                new3DCls = new3DCls.append(components_etaphi_no, ignore_index=True, sort=False)
     return new3DCls
 
 
