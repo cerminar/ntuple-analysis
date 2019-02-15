@@ -410,7 +410,7 @@ class GenericGenMatchPlotter(object):
     def fill_histos(self, debug=False):
         for tp_sel in self.data_selections:
             objects = self.data_set.df
-            if not tp_sel.all:
+            if not tp_sel.all and not self.data_set.df.empty:
                 objects = self.data_set.df.query(tp_sel.selection)
             for gen_sel in self.gen_selections:
                 histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
