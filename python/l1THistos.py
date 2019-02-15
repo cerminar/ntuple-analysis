@@ -534,6 +534,9 @@ class TkEGHistos(BaseHistos):
             self.h_dphi  = ROOT.TH1F(name+'_dphi', 'TkEG #Delta #phi; #Delta #phi [rad]', 100, -0.2, 0.2)
             self.h_deta = ROOT.TH1F(name+'_deta', 'TkEG #Delta #eta; #Delta #eta', 100, -0.2, 0.2)
             self.h_dr = ROOT.TH1F(name+'_dr', 'TkEG #Delta R; #Delta R', 100, 0, 0.2)
+            self.h_ptVtkpt = ROOT.TH2F(name+'_ptVtkpt', 'TkEG Pt (GeV) vs TkPt; p_{T}^{Tk} [GeV]; p_{T}^{EG} [GeV]', 100, 0, 100, 100, 0, 100)
+
+
 
         BaseHistos.__init__(self, name, root_file)
 
@@ -553,6 +556,7 @@ class TkEGHistos(BaseHistos):
         rnp.fill_hist(self.h_dphi, tkegs.dphi)
         rnp.fill_hist(self.h_deta, tkegs.deta)
         rnp.fill_hist(self.h_dr, tkegs.dr)
+        rnp.fill_hist(self.h_ptVtkpt, tkegs[['tkpt', 'pt']])
 
 
 class TrackHistos(BaseHistos):
@@ -566,6 +570,9 @@ class TrackHistos(BaseHistos):
             self.h_chi2Veta = ROOT.TH2F(name+'_chi2Veta', 'Track chi2 v eta; #eta; #Chi^{2}', 100, -4, 4, 1000, 0, 1000)
             self.h_nstubsVeta = ROOT.TH2F(name+'_nstubsVeta', 'Track # stubs vs eta; #eta; # stubs', 100, -4, 4, 10, 0, 10)
             self.h_z0Veta = ROOT.TH2F(name+'_z0Veta', 'Track z0 vs eta; #eta; z_{0} [cm]', 100, -4, 4, 100, -10, 10)
+            self.h_chi2Vpt = ROOT.TH2F(name+'_chi2Vpt', 'Track chi2 v pT; p_{T} [GeV]; #Chi^{2}', 100, 0, 100, 1000, 0, 1000)
+            self.h_nstubsVpt = ROOT.TH2F(name+'_nstubsVpt', 'Track # stubs vs pT; p_{T} [GeV]; # stubs', 100, 0, 100, 10, 0, 10)
+            self.h_z0Vpt = ROOT.TH2F(name+'_z0Vpt', 'Track z0 vs pT; p_{T} [GeV]; z_{0} [cm]', 100, 0, 100, 100, -10, 10)
 
         BaseHistos.__init__(self, name, root_file)
 
@@ -578,6 +585,9 @@ class TrackHistos(BaseHistos):
         rnp.fill_hist(self.h_chi2Veta, tracks[['eta', 'chi2']])
         rnp.fill_hist(self.h_nstubsVeta, tracks[['eta', 'nStubs']])
         rnp.fill_hist(self.h_z0Veta, tracks[['eta', 'z0']])
+        rnp.fill_hist(self.h_chi2Vpt, tracks[['pt', 'chi2']])
+        rnp.fill_hist(self.h_nstubsVpt, tracks[['pt', 'nStubs']])
+        rnp.fill_hist(self.h_z0Vpt, tracks[['pt', 'z0']])
 
 
 class TriggerTowerHistos(BaseHistos):
