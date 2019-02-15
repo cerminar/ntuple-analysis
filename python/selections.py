@@ -162,26 +162,21 @@ eg_pt_selections = []
 eg_pt_selections += add_selections(eg_qual_selections, tp_pt_selections)
 
 tkeg_selection = [Selection('all'),
-                  Selection('M2', 'M2', '(abs(dphi) < 0.08) & (dr < 0.07)'),
-                  Selection('M3', 'M3', '(abs(dphi) < 0.08) & (abs(deta) < 0.025)'),
-                  Selection('M4', 'M4', '(abs(dphi) < 0.08) & (dr < 0.07) & (tkpt > 10.)')]
+                  Selection('M2', '|#Delta#phi| <0.08 & #DeltaR < 0.07', '(abs(dphi) < 0.08) & (dr < 0.07)'),
+                  Selection('M2s', '|#Delta#phi| <0.08 & #DeltaR < 0.07 & #stubs > 3', '(abs(dphi) < 0.08) & (dr < 0.07) & (tknstubs > 3)'),
+                  Selection('M3', '|#Delta#phi| <0.08 & |#Delta#eta| < 0.05', '(abs(dphi) < 0.08) & (abs(deta) < 0.05)'),
+                  Selection('M3s', '|#Delta#phi| <0.08 & |#Delta#eta| < 0.05 & #stubs > 3', '(abs(dphi) < 0.08) & (abs(deta) < 0.05) & (tknstubs > 3)'),
+                  Selection('M4', '|#Delta#phi| <0.08 & #DeltaR < 0.07 & p_{T}^{trk} > 10GeV', '(abs(dphi) < 0.08) & (dr < 0.07) & (tkpt > 10.)')]
 
 tkeg_rate_selections = []
 tkeg_rate_selections += add_selections(eg_rate_selections, tkeg_selection)
 tkeg_qual_selections = []
 tkeg_qual_selections += add_selections(eg_qual_selections, tkeg_selection)
+tkeg_pt_selections = []
+tkeg_pt_selections += add_selections(tkeg_qual_selections, tp_pt_selections)
 
-tracks_selections = [Selection('all')]
-
-
-class EgammaSet:
-    def __init__(self, name, label):
-        self.name = name
-        self.label = label
-        self.cl3d_df = None
-
-    def set_collections(self, cl3d):
-        self.cl3d_df = cl3d
+tracks_selections = [Selection('all'),
+                     Selection('St', '#stubs > 3', 'nStubs > 3')]
 
 
 class TPSet:
@@ -197,62 +192,32 @@ class TPSet:
         self.cl2d_df = cl2d_df
         self.cl3d_df = cl3d_df
 
-
-class GenSet:
-    def __init__(self, name, label):
-        self.name = name
-        self.label = label
-        self.gen_df = None
-
-    def set_collections(self, gen_df):
-        self.gen_df = gen_df
-
-
-class TTSet:
-    def __init__(self, name, label):
-        self.name = name
-        self.label = label
-        self.tt_df = None
-
-    def set_collections(self, tt_df):
-        self.tt_df = tt_df
-
-
-class TrackSet:
-    def __init__(self, name, label):
-        self.name = name
-        self.label = label
-        self.trk_df = None
-
-    def set_collections(self, trk_df):
-        self.trk_df = trk_df
-
-class TkEGSet:
-    def __init__(self, name, label):
-        self.name = name
-        self.label = label
-        self.tkeg_df = None
-
-    def set_collections(self, tkeg_df):
-        self.tkeg_df = tkeg_df
-
-    # FIXME: need to get rid of all these classes and have uniform access to the data
     @property
-    def cl3d_df(self):
-        return self.tkeg_df
+    def df(self):
+        return self.cl3d_df
+
+
+class DataFrameSet:
+    def __init__(self, name, label):
+        self.name = name
+        self.label = label
+        self.df = None
+
+    def set_collections(self, dataframe):
+        self.df = dataframe
 
 
 tp_def = TPSet('DEF', 'NNDR')
 tp_def_merged = TPSet('DEFMerged', 'NNDR(merged)')
 tp_def_calib = TPSet('DEFCalib', 'NNDR + calib. v1')
-gen_set = GenSet('GEN', '')
-tt_set = TTSet('TT', 'Trigger Towers')
-simtt_set = TTSet('SimTT', 'Sim Trigger Towers')
-hgcroc_tt = TTSet('HgcrocTT', 'HGCROC Trigger Towers')
-wafer_tt = TTSet('WaferTT', 'Wafer Trigger Towers')
-eg_set = EgammaSet('EG', 'EGPhase2')
-track_set = TrackSet('L1Trk', 'L1Track')
-tkeg_set = TkEGSet('TkEG', 'TkEG')
+gen_set = DataFrameSet('GEN', '')
+tt_set = DataFrameSet('TT', 'Trigger Towers')
+simtt_set = DataFrameSet('SimTT', 'Sim Trigger Towers')
+hgcroc_tt = DataFrameSet('HgcrocTT', 'HGCROC Trigger Towers')
+wafer_tt = DataFrameSet('WaferTT', 'Wafer Trigger Towers')
+eg_set = DataFrameSet('EG', 'EGPhase2')
+track_set = DataFrameSet('L1Trk', 'L1Track')
+tkeg_set = DataFrameSet('TkEG', 'TkEG')
 
 if __name__ == "__main__":
     for sel in gen_part_selections:
