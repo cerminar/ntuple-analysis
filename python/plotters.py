@@ -20,10 +20,10 @@ class RatePlotter:
 
     def fill_histos(self, debug=False):
         for selection in self.tp_selections:
-            if not selection.all and not self.tp_set.cl3d_df.empty:
-                sel_clusters = self.tp_set.cl3d_df.query(selection.selection)
+            if not selection.all and not self.tp_set.df.empty:
+                sel_clusters = self.tp_set.df.query(selection.selection)
             else:
-                sel_clusters = self.tp_set.cl3d_df
+                sel_clusters = self.tp_set.df
             trigger_clusters = sel_clusters[['pt', 'eta']].sort_values(by='pt',
                                                                        ascending=False)
             if not trigger_clusters.empty:
@@ -32,64 +32,45 @@ class RatePlotter:
             self.h_rate[selection.name].fill_norm()
 
 
-class TkEGPlotter:
-    def __init__(self, tkeg_set, tkeg_selections=[selections.Selection('all')]):
-        self.data_set = tkeg_set
-        self.data_selections = tkeg_selections
+class GenericDataFramePlotter(object):
+    def __init__(self, HistoClass, data_set, selections=[selections.Selection('all')]):
+        self.HistoClass = HistoClass
+        self.data_set = data_set
+        self.data_selections = selections
         self.h_set = {}
 
     def book_histos(self):
         data_name = self.data_set.name
         for selection in self.data_selections:
-            self.h_set[selection.name] = histos.TkEGHistos(name='{}_{}_nomatch'.format(data_name,
-                                                                                        selection.name))
-
-    def fill_histos(self, debug=False):
-        for data_sel in self.data_selections:
-            data = self.data_set.tkeg_df
-            if not data_sel.all:
-                data = self.data_set.tkeg_df.query(data_sel.selection)
-            self.h_set[data_sel.name].fill(data)
-
-
-class TrackPlotter:
-    def __init__(self, trk_set, track_selections=[selections.Selection('all')]):
-        self.data_set = trk_set
-        self.data_selections = track_selections
-        self.h_set = {}
-
-    def book_histos(self):
-        data_name = self.data_set.name
-        for selection in self.data_selections:
-            self.h_set[selection.name] = histos.TrackHistos(name='{}_{}_nomatch'.format(data_name,
-                                                                                        selection.name))
-
-    def fill_histos(self, debug=False):
-        for data_sel in self.data_selections:
-            data = self.data_set.trk_df
-            if not data_sel.all:
-                data = self.data_set.trk_df.query(data_sel.selection)
-            self.h_set[data_sel.name].fill(data)
-
-
-class EGPlotter:
-    def __init__(self, eg_set, eg_selections=[selections.Selection('all')]):
-        self.data_set = eg_set
-        self.data_selections = eg_selections
-        self.h_set = {}
-
-    def book_histos(self):
-        data_name = self.data_set.name
-        for selection in self.data_selections:
-            self.h_set[selection.name] = histos.EGHistos(name='{}_{}_nomatch'.format(data_name,
+            self.h_set[selection.name] = self.HistoClass(name='{}_{}_nomatch'.format(data_name,
                                                                                      selection.name))
 
     def fill_histos(self, debug=False):
         for data_sel in self.data_selections:
-            data = self.data_set.cl3d_df
-            if not data_sel.all:
-                data = self.data_set.cl3d_df.query(data_sel.selection)
+            data = self.data_set.df
+            if not data_sel.all and not self.data_set.df.empty:
+                data = self.data_set.df.query(data_sel.selection)
             self.h_set[data_sel.name].fill(data)
+
+
+class TkEGPlotter(GenericDataFramePlotter):
+    def __init__(self, tkeg_set, tkeg_selections=[selections.Selection('all')]):
+        super(TkEGPlotter, self).__init__(histos.TkEGHistos, tkeg_set, tkeg_selections)
+
+
+class TrackPlotter(GenericDataFramePlotter):
+    def __init__(self, trk_set, track_selections=[selections.Selection('all')]):
+        super(TrackPlotter, self).__init__(histos.TrackHistos, trk_set, track_selections)
+
+
+class EGPlotter(GenericDataFramePlotter):
+    def __init__(self, eg_set, eg_selections=[selections.Selection('all')]):
+        super(EGPlotter, self).__init__(histos.EGHistos, eg_set, eg_selections)
+
+
+class TTPlotter(GenericDataFramePlotter):
+    def __init__(self, tt_set, tt_selections=[selections.Selection('all')]):
+        super(TTPlotter, self).__init__(histos.TriggerTowerHistos, tt_set, tt_selections)
 
 
 class TPPlotter:
@@ -127,7 +108,7 @@ class GenPlotter:
             self.h_gen[selection.name] = histos.GenParticleHistos(name='h_genParts_{}'.format(selection.name))
 
     def fill_histos(self, debug=False):
-        gen_parts_all = self.gen_set.gen_df[self.gen_set.gen_df.gen > 0]
+        gen_parts_all = self.gen_set.df[self.gen_set.df.gen > 0]
         for gen_sel in self.gen_selections:
             gen_parts = gen_parts_all
             if not gen_sel.all:
@@ -325,9 +306,9 @@ class TPGenMatchPlotter:
                 cl3Ds = self.tp_set.cl3d_df.query(tp_sel.selection)
             for gen_sel in self.gen_selections:
                 histo_name = '{}_{}_{}'.format(self.tp_set.name, tp_sel.name, gen_sel.name)
-                genReference = self.gen_set.gen_df[(self.gen_set.gen_df.gen > 0)]
+                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
                 if not gen_sel.all:
-                    genReference = self.gen_set.gen_df[(self.gen_set.gen_df.gen > 0)].query(gen_sel.selection)
+                    genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
                     # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
                     # elif  particle.pdgid == PID.pizero:
                     #     genReference = genParts[(genParts.pid == particle.pdgid)]
@@ -361,9 +342,12 @@ class TPGenMatchPlotter:
                                                                    [sel.name for sel in self.gen_selections])
 
 
-class TrackGenMatchPlotter:
-    def __init__(self, data_set, gen_set,
+class GenericGenMatchPlotter(object):
+    def __init__(self, ObjectHistoClass, ResoHistoClass,
+                 data_set, gen_set,
                  data_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
+        self.ObjectHistoClass = ObjectHistoClass
+        self.ResoHistoClass = ResoHistoClass
         self.data_set = data_set
         self.data_selections = data_selections
         self.gen_set = gen_set
@@ -372,33 +356,33 @@ class TrackGenMatchPlotter:
         self.h_resoset = {}
         self.h_effset = {}
 
-    def plotTrackMatch(self,
-                       genParticles,
-                       tracks,
-                       h_gen,
-                       h_gen_matched,
-                       h_track_matched,
-                       h_reso,
-                       algoname,
-                       debug):
+    def plotObjectMatch(self,
+                        genParticles,
+                        objects,
+                        h_gen,
+                        h_gen_matched,
+                        h_object_matched,
+                        h_reso,
+                        algoname,
+                        debug):
         # fill histo with all selected GEN particles before any match
         if h_gen:
             h_gen.fill(genParticles)
 
         best_match_indexes = {}
-        if not tracks.empty:
+        if not objects.empty:
             best_match_indexes, allmatches = utils.match_etaphi(genParticles[['eta', 'phi']],
-                                                                tracks[['eta', 'phi']],
-                                                                tracks['pt'],
+                                                                objects[['eta', 'phi']],
+                                                                objects['pt'],
                                                                 deltaR=0.1)
 
         for idx, genParticle in genParticles.iterrows():
             if idx in best_match_indexes.keys():
                 # print ('-----------------------')
                 #  print(genParticle)
-                track_matched = tracks.loc[[best_match_indexes[idx]]]
-                h_track_matched.fill(track_matched)
-                h_reso.fill(reference=genParticle, target=track_matched)
+                obj_matched = objects.loc[[best_match_indexes[idx]]]
+                h_object_matched.fill(obj_matched)
+                h_reso.fill(reference=genParticle, target=obj_matched)
 
                 if h_gen_matched is not None:
                     h_gen_matched.fill(genParticles.loc[[idx]])
@@ -408,156 +392,72 @@ class TrackGenMatchPlotter:
                     print ('GEN particle: idx: {}'.format(idx))
                     print (genParticle)
                     print ('Matched to track object:')
-                    print (track_matched)
+                    print (obj_matched)
             else:
                 if debug >= 5:
                     print ('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx))
                     print (genParticle)
-                    print (tracks)
+                    print (objects)
 
     def book_histos(self):
         for tp_sel in self.data_selections:
             for gen_sel in self.gen_selections:
                 histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
-                self.h_dataset[histo_name] = histos.TrackHistos(histo_name)
-                self.h_resoset[histo_name] = histos.TrackResoHistos(histo_name)
+                self.h_dataset[histo_name] = self.ObjectHistoClass(histo_name)
+                self.h_resoset[histo_name] = self.ResoHistoClass(histo_name)
                 self.h_effset[histo_name] = histos.HistoSetEff(histo_name)
 
     def fill_histos(self, debug=False):
         for tp_sel in self.data_selections:
-            tracks = self.data_set.trk_df
+            objects = self.data_set.df
             if not tp_sel.all:
-                tracks = self.data_set.trk_df.query(tp_sel.selection)
+                objects = self.data_set.df.query(tp_sel.selection)
             for gen_sel in self.gen_selections:
                 histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
-                genReference = self.gen_set.gen_df[(self.gen_set.gen_df.gen > 0)]
+                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
                 if not gen_sel.all:
-                    genReference = self.gen_set.gen_df[(self.gen_set.gen_df.gen > 0)].query(gen_sel.selection)
+                    genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
                     # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
                     # elif  particle.pdgid == PID.pizero:
                     #     genReference = genParts[(genParts.pid == particle.pdgid)]
 
-                h_tpset_match = self.h_dataset[histo_name]
+                h_obj_match = self.h_dataset[histo_name]
                 h_resoset = self.h_resoset[histo_name]
                 h_genseleff = self.h_effset[histo_name]
                 # print 'TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name)
-                self.plotTrackMatch(genReference,
-                                    tracks,
-                                    h_genseleff.h_den,
-                                    h_genseleff.h_num,
-                                    h_tpset_match,
-                                    h_resoset,
-                                    self.data_set.name,
-                                    debug)
+                self.plotObjectMatch(genReference,
+                                     objects,
+                                     h_genseleff.h_den,
+                                     h_genseleff.h_num,
+                                     h_obj_match,
+                                     h_resoset,
+                                     self.data_set.name,
+                                     debug)
 
 
-class EGGenMatchPlotter:
+class TrackGenMatchPlotter(GenericGenMatchPlotter):
     def __init__(self, data_set, gen_set,
                  data_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
-        self.data_set = data_set
-        self.data_selections = data_selections
-        self.gen_set = gen_set
-        self.gen_selections = gen_selections
-        self.h_dataset = {}
-        self.h_resoset = {}
-        self.h_effset = {}
-
-    def plotEGMatch(self,
-                    genParticles,
-                    egs,
-                    h_gen,
-                    h_gen_matched,
-                    h_eg_matched,
-                    h_reso,
-                    algoname,
-                    debug):
-        # fill histo with all selected GEN particles before any match
-        if h_gen:
-            h_gen.fill(genParticles)
-
-        best_match_indexes = {}
-        if not egs.empty:
-            best_match_indexes, allmatches = utils.match_etaphi(genParticles[['eta', 'phi']],
-                                                                egs[['eta', 'phi']],
-                                                                egs['pt'],
-                                                                deltaR=0.1)
-
-        for idx, genParticle in genParticles.iterrows():
-            if idx in best_match_indexes.keys():
-                # print ('-----------------------')
-                #  print(genParticle)
-                eg_matched = egs.loc[[best_match_indexes[idx]]]
-                h_eg_matched.fill(eg_matched)
-                h_reso.fill(reference=genParticle, target=eg_matched)
-
-                if h_gen_matched is not None:
-                    h_gen_matched.fill(genParticles.loc[[idx]])
-
-                if debug >= 4:
-                    print ('--- Dump match for algo {} ---------------'.format(algoname))
-                    print ('GEN particle: idx: {}'.format(idx))
-                    print (genParticle)
-                    print ('Matched to EG object:')
-                    print (eg_matched)
-            else:
-                if debug >= 5:
-                    print ('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx))
-                    print (genParticle)
-                    print (egs)
-
-    def book_histos(self):
-        for tp_sel in self.data_selections:
-            for gen_sel in self.gen_selections:
-                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
-                self.h_dataset[histo_name] = histos.EGHistos(histo_name)
-                self.h_resoset[histo_name] = histos.EGResoHistos(histo_name)
-                self.h_effset[histo_name] = histos.HistoSetEff(histo_name)
-
-    def fill_histos(self, debug=False):
-        for tp_sel in self.data_selections:
-            cl3Ds = self.data_set.cl3d_df
-            if not tp_sel.all and not self.data_set.cl3d_df.empty:
-                cl3Ds = self.data_set.cl3d_df.query(tp_sel.selection)
-            for gen_sel in self.gen_selections:
-                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
-                genReference = self.gen_set.gen_df[(self.gen_set.gen_df.gen > 0)]
-                if not gen_sel.all:
-                    genReference = self.gen_set.gen_df[(self.gen_set.gen_df.gen > 0)].query(gen_sel.selection)
-                    # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
-                    # elif  particle.pdgid == PID.pizero:
-                    #     genReference = genParts[(genParts.pid == particle.pdgid)]
-
-                h_tpset_match = self.h_dataset[histo_name]
-                h_resoset = self.h_resoset[histo_name]
-                h_genseleff = self.h_effset[histo_name]
-                # print 'TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name)
-                self.plotEGMatch(genReference,
-                                 cl3Ds,
-                                 h_genseleff.h_den,
-                                 h_genseleff.h_num,
-                                 h_tpset_match,
-                                 h_resoset,
-                                 self.data_set.name,
-                                 debug)
+        super(TrackGenMatchPlotter, self).__init__(histos.TrackHistos, histos.TrackResoHistos,
+                                                   data_set, gen_set,
+                                                   data_selections, gen_selections)
 
 
-class TTPlotter:
-    def __init__(self, tt_set, tt_selections=[selections.Selection('all')]):
-        self.tt_set = tt_set
-        self.tt_selections = tt_selections
-        self.h_tt = {}
+class EGGenMatchPlotter(GenericGenMatchPlotter):
+    def __init__(self, data_set, gen_set,
+                 data_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
+        super(EGGenMatchPlotter, self).__init__(histos.EGHistos, histos.EGResoHistos,
+                                                data_set, gen_set,
+                                                data_selections, gen_selections)
 
-    def book_histos(self):
-        for sel in self.tt_selections:
-            self.h_tt[sel.name] = histos.TriggerTowerHistos('{}_{}_nomatch'.format(self.tt_set.name, sel.name))
 
-    def fill_histos(self, debug=False):
-        triggerTowers_all = self.tt_set.tt_df
-        for sel in self.tt_selections:
-            triggerTowers = triggerTowers_all
-            if not sel.all:
-                triggerTowers = triggerTowers_all.query(sel.selection)
-            self.h_tt[sel.name].fill(triggerTowers)
+class TkEGGenMatchPlotter(GenericGenMatchPlotter):
+    def __init__(self, data_set, gen_set,
+                 data_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
+        super(TkEGGenMatchPlotter, self).__init__(histos.TkEGHistos, histos.EGResoHistos,
+                                                data_set, gen_set,
+                                                data_selections, gen_selections)
+
 
 
 class TTGenMatchPlotter:
@@ -580,8 +480,8 @@ class TTGenMatchPlotter:
                 self.h_reso_ttcl[histo_name] = histos.TriggerTowerResoHistos('{}Cl_{}'.format(self.tt_set.name, histo_name))
 
     def fill_histos(self, debug=False):
-        triggerTowers_all = self.tt_set.tt_df
-        genParts_all = self.gen_set.gen_df[(self.gen_set.gen_df.gen > 0)]
+        triggerTowers_all = self.tt_set.df
+        genParts_all = self.gen_set.df[(self.gen_set.df.gen > 0)]
         for tp_sel in self.tt_selections:
             triggerTowers = triggerTowers_all
             if not tp_sel.all:
@@ -669,7 +569,7 @@ tp_plotters = [TPPlotter(selections.tp_def, selections.tp_id_selections),
                ]
 eg_plotters = [EGPlotter(selections.eg_set, selections.eg_qual_selections)]
 track_plotters = [TrackPlotter(selections.track_set, selections.tracks_selections)]
-tkeg_plotters = [TkEGPlotter(selections.tkeg_set, selections.eg_qual_selections)]
+tkeg_plotters = [TkEGPlotter(selections.tkeg_set, selections.tkeg_qual_selections)]
 rate_plotters = [RatePlotter(selections.tp_def, selections.tp_rate_selections),
                  # RatePlotter(selections.tp_def_calib, selections.tp_rate_selections),
                  RatePlotter(selections.tp_def_merged, selections.tp_rate_selections)]
@@ -686,11 +586,11 @@ tp_genmatched_plotters = [TPGenMatchPlotter(selections.tp_def, selections.gen_se
                                             selections.gen_part_selections)
                                             ]
 eg_genmatched_plotters = [EGGenMatchPlotter(selections.eg_set, selections.gen_set,
-                                            selections.eg_qual_selections,
+                                            selections.eg_pt_selections,
                                             selections.gen_part_selections),
-                          EGGenMatchPlotter(selections.tkeg_set, selections.gen_set,
-                                            selections.tkeg_qual_selections,
-                                            selections.gen_part_selections)]
+                          TkEGGenMatchPlotter(selections.tkeg_set, selections.gen_set,
+                                              selections.tkeg_pt_selections,
+                                              selections.gen_part_selections)]
 track_genmatched_plotters = [TrackGenMatchPlotter(selections.track_set, selections.gen_set,
                                                   selections.tracks_selections,
                                                   selections.gen_part_selections)]
