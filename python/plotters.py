@@ -217,41 +217,44 @@ class TPGenMatchPlotter:
                 histoTCMatch.fill(matchedTriggerCells)
                 histoClMatch.fill(matchedClusters)
                 histo3DClMatch.fill(matched3DCluster)
-                histoReso2D.fill(reference=genParticle, target=matchedClusters)
+                if False:
+                    histoReso2D.fill(reference=genParticle, target=matchedClusters)
                 histoReso.fill(reference=genParticle, target=matched3DCluster.iloc[0])
 
-                # now we fill the reso plot for all the clusters in the cone
-                clustersInCone = sumClustersInCone(trigger3DClusters, allmatches[idx])
+                if False:
+                    # now we fill the reso plot for all the clusters in the cone
+                    clustersInCone = sumClustersInCone(trigger3DClusters, allmatches[idx])
 
-                def fill_cluster_incone_histos(cl3ds,
-                                               idx_allmatches,
-                                               idx_bestmatch,
-                                               charge,
-                                               h_clustersInCone,
-                                               debug=0):
-                    if debug > 4:
-                        print '- best match: {}, all matches: {}'.format(idx_bestmatch,
-                                                                         idx_allmatches)
-                    bestcl = cl3ds.loc[idx_bestmatch]
-                    h_clustersInCone.fill_n(len(idx_allmatches)-1)
-                    for idx in idx_allmatches:
-                        if idx == idx_bestmatch:
-                            continue
-                        clincone = cl3ds.loc[idx]
-                        h_clustersInCone.fill(reference=bestcl,
-                                              target=clincone,
-                                              charge=charge)
-                # print genParticle
-                # print genParticle.pid/abs(genParticle.pid)
-                fill_cluster_incone_histos(trigger3DClusters,
-                                           allmatches[idx],
-                                           best_match_indexes[idx],
-                                           genParticle.pid/abs(genParticle.pid),
-                                           histoConeClusters)
+                    def fill_cluster_incone_histos(cl3ds,
+                                                   idx_allmatches,
+                                                   idx_bestmatch,
+                                                   charge,
+                                                   h_clustersInCone,
+                                                   debug=0):
+                        if debug > 4:
+                            print '- best match: {}, all matches: {}'.format(idx_bestmatch,
+                                                                             idx_allmatches)
+                        bestcl = cl3ds.loc[idx_bestmatch]
+                        h_clustersInCone.fill_n(len(idx_allmatches)-1)
+                        for idx in idx_allmatches:
+                            if idx == idx_bestmatch:
+                                continue
+                            clincone = cl3ds.loc[idx]
+                            h_clustersInCone.fill(reference=bestcl,
+                                                  target=clincone,
+                                                  charge=charge)
+                    # print genParticle
+                    # print genParticle.pid/abs(genParticle.pid)
+                    fill_cluster_incone_histos(trigger3DClusters,
+                                               allmatches[idx],
+                                               best_match_indexes[idx],
+                                               genParticle.pid/abs(genParticle.pid),
+                                               histoConeClusters)
 
-                # print ('----- in cone sum:')
-                # print (clustersInCone)
-                histoResoCone.fill(reference=genParticle, target=clustersInCone.iloc[0])
+                    # print ('----- in cone sum:')
+                    # print (clustersInCone)
+                    histoResoCone.fill(reference=genParticle, target=clustersInCone.iloc[0])
+
                 if histoGenMatched is not None:
                     histoGenMatched.fill(genParticles.loc[[idx]])
 
@@ -566,6 +569,8 @@ class TTGenMatchPlotter:
 
 tp_plotters = [TPPlotter(selections.tp_def, selections.tp_id_selections),
                # TPPlotter(selections.tp_def_calib, selections.tp_id_selections)
+               TPPlotter(selections.tp_hm, selections.tp_id_selections),
+               TPPlotter(selections.tp_hm_vdr, selections.tp_id_selections),
                ]
 eg_plotters = [EGPlotter(selections.eg_set, selections.eg_qual_selections)]
 track_plotters = [TrackPlotter(selections.track_set, selections.tracks_selections)]
@@ -581,9 +586,15 @@ tp_genmatched_plotters = [TPGenMatchPlotter(selections.tp_def, selections.gen_se
                           # TPGenMatchPlotter(selections.tp_def_calib, selections.gen_set,
                           #                   selections.tp_match_selections,
                           #                   selections.gen_part_selections),
-                          TPGenMatchPlotter(selections.tp_def_merged, selections.gen_set,
+                          # TPGenMatchPlotter(selections.tp_def_merged, selections.gen_set,
+                          #                   selections.tp_match_selections,
+                          #                   selections.gen_part_selections),
+                          TPGenMatchPlotter(selections.tp_hm, selections.gen_set,
                                             selections.tp_match_selections,
-                                            selections.gen_part_selections)
+                                            selections.gen_part_selections),
+                          TPGenMatchPlotter(selections.tp_hm_vdr, selections.gen_set,
+                                            selections.tp_match_selections,
+                                            selections.gen_part_selections),
                                             ]
 eg_genmatched_plotters = [EGGenMatchPlotter(selections.eg_set, selections.gen_set,
                                             selections.eg_pt_selections,

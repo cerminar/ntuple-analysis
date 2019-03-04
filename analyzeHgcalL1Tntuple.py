@@ -10,6 +10,7 @@ import numpy as np
 from multiprocessing import Pool
 from shutil import copyfile
 
+
 # The purpose of this file is to demonstrate mainly the objects
 # that are in the HGCalNtuple
 import ROOT
@@ -427,6 +428,9 @@ def analyze(params, batch_idx=0):
         triggerCells = event.getDataFrame(prefix='tc')
         triggerClusters = event.getDataFrame(prefix='cl')
         trigger3DClusters = event.getDataFrame(prefix='cl3d')
+        hm_cl3ds = event.getDataFrame(prefix='hmcl3d')
+        hmvdr_cl3ds = event.getDataFrame(prefix='hmVRcl3d')
+
         triggerTowers = event.getDataFrame(prefix='tower')
         simTriggerTowers = event.getDataFrame(prefix='simTower')
         egamma = event.getDataFrame(prefix='egammaEE')
@@ -458,6 +462,8 @@ def analyze(params, batch_idx=0):
         #     triggerClusters['y'] = triggerClusters.R*np.sin(triggerClusters.phi)
 
         trigger3DClusters['nclu'] = [len(x) for x in trigger3DClusters.clusters]
+        hm_cl3ds['nclu'] = [len(x) for x in hm_cl3ds.clusters]
+        hmvdr_cl3ds['nclu'] = [len(x) for x in hmvdr_cl3ds.clusters]
 
         def compute_hoe(cluster):
             # print cluster
@@ -476,6 +482,10 @@ def analyze(params, batch_idx=0):
         trigger3DClusters['bdt_pi'] = rnptmva.evaluate_reader(
             mva_pi_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
 
+        triggerCells['ncells'] = 1
+
+        if not triggerCells.empty:
+            triggerCells['cells'] = triggerCells.apply(func=lambda x : [int(x.id)], axis=1)
 
         # trigger3DClusters['bdt_l'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'eMaxOverE', 'szz', 'srrtot']], 0.8)
         # trigger3DClusters['bdt_t'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'eMaxOverE', 'szz', 'srrtot']], 0.95)
@@ -515,16 +525,29 @@ def analyze(params, batch_idx=0):
             debugPrintOut(debug, '3D clusters',
                           toCount=trigger3DClusters,
                           toPrint=trigger3DClusters[trigger3DClusters.quality > 0].sort_values(by='pt', ascending=False).iloc[:10])
+
+        if not hm_cl3ds.empty:
+            debugPrintOut(debug, '3D clusters (HistoMaxC3d)',
+                          toCount=hm_cl3ds,
+                          toPrint=hm_cl3ds[hm_cl3ds.quality > 0].sort_values(by='pt', ascending=False).iloc[:10])
+
+        if not hmvdr_cl3ds.empty:
+            debugPrintOut(debug, '3D clusters',
+                          toCount=hmvdr_cl3ds,
+                          toPrint=hmvdr_cl3ds[hmvdr_cl3ds.quality > 0].sort_values(by='pt', ascending=False).iloc[:10])
+
         debugPrintOut(debug, 'Egamma',
                       toCount=egamma,
                       toPrint=egamma.sort_values(by='pt', ascending=False).iloc[:10])
 
-        debugPrintOut(debug, 'Trigger Towers',
-                      toCount=triggerTowers,
-                      toPrint=triggerTowers.sort_values(by='pt', ascending=False).iloc[:10])
-        debugPrintOut(debug, 'Sim Trigger Towers',
-                      toCount=simTriggerTowers,
-                      toPrint=simTriggerTowers.sort_values(by='pt', ascending=False).iloc[:10])
+        if not triggerTowers.empty:
+            debugPrintOut(debug, 'Trigger Towers',
+                          toCount=triggerTowers,
+                          toPrint=triggerTowers.sort_values(by='pt', ascending=False).iloc[:10])
+        if not simTriggerTowers.empty:
+            debugPrintOut(debug, 'Sim Trigger Towers',
+                          toCount=simTriggerTowers,
+                          toPrint=simTriggerTowers.sort_values(by='pt', ascending=False).iloc[:10])
         if not hgcrocTowers.empty:
             debugPrintOut(debug, 'HGCROC Trigger Towers',
                           toCount=hgcrocTowers,
@@ -540,7 +563,8 @@ def analyze(params, batch_idx=0):
         trigger3DClustersCalib = get_calibrated_clusters(calib_factors, trigger3DClusters)
         trigger3DClustersMerged = get_merged_clusters(trigger3DClusters[trigger3DClusters.quality > 0], pool)
 
-        tkegs = get_trackmatched_egs(egs=egamma, tracks=tracks)
+        tkegs = get_trackmatched_egs(egs=egamma, tracks=tracks[tracks.nStubs > 3])
+        tkegs = get_trackmatched_egs(egs=egamma, tracks=tracks[tracks.nStubs > 3])
         debugPrintOut(debug, 'Tk matched EGs',
                       toCount=tkegs,
                       toPrint=tkegs)
@@ -608,6 +632,8 @@ def analyze(params, batch_idx=0):
         # fill histograms
         # hdigis.fill(hgcDigis)
         selections.tp_def.set_collections(triggerCells, triggerClusters, trigger3DClusters)
+        selections.tp_hm.set_collections(triggerCells, triggerCells, hm_cl3ds)
+        selections.tp_hm_vdr.set_collections(triggerCells, triggerCells, hmvdr_cl3ds)
         selections.tp_def_merged.set_collections(triggerCells, triggerClusters, trigger3DClustersMerged)
         selections.tp_def_calib.set_collections(triggerCells, triggerClusters, trigger3DClustersCalib)
         selections.gen_set.set_collections(genParticles)

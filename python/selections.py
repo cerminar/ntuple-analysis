@@ -207,9 +207,11 @@ class DataFrameSet:
         self.df = dataframe
 
 
-tp_def = TPSet('DEF', 'NNDR')
-tp_def_merged = TPSet('DEFMerged', 'NNDR(merged)')
-tp_def_calib = TPSet('DEFCalib', 'NNDR + calib. v1')
+tp_def = TPSet('DEF', 'dRC3d')
+tp_def_merged = TPSet('DEFMerged', 'dRC3d(merged)')
+tp_def_calib = TPSet('DEFCalib', 'dRC3d + calib. v1')
+tp_hm = TPSet('HM', 'HistoMaxC3d')
+tp_hm_vdr = TPSet('HMvDR', 'HistoMaxC3d + dR(layer)')
 gen_set = DataFrameSet('GEN', '')
 tt_set = DataFrameSet('TT', 'Trigger Towers')
 simtt_set = DataFrameSet('SimTT', 'Sim Trigger Towers')

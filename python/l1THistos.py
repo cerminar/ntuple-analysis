@@ -426,10 +426,10 @@ class ClusterHistos(BaseHistos):
         if not root_file:
             self.h_energy = ROOT.TH1F(name+'_energy', 'Cluster energy (GeV); E [GeV];', 100, 0, 30)
             self.h_layer = ROOT.TH1F(name+'_layer', 'Cluster layer #; layer #;', 60, 0, 60)
-            self.h_ncells = ROOT.TH1F(name+'_ncells', 'Cluster # cells; # TC components;', 30, 0, 30)
             # self.h_nCoreCells = ROOT.TH1F(name+'_nCoreCells', 'Cluster # cells (core)', 30, 0, 30)
 
             self.h_layerVenergy = ROOT.TH2F(name+'_layerVenergy', "Cluster Energy (GeV) vs Layer #; layer; E [GeV];", 50, 0, 50, 100, 0, 20)
+            self.h_ncells = ROOT.TH1F(name+'_ncells', 'Cluster # cells; # TC components;', 30, 0, 30)
             self.h_layerVncells = ROOT.TH2F(name+'_layerVncells', "Cluster #cells vs Layer #; layer; # TC components;",  50, 0, 50, 30, 0, 30)
             # self.h_layerVnCoreCells = ROOT.TH2F(name+'_layerVnCoreCells', "Cluster #cells vs Layer #",  50, 0, 50, 30, 0, 30)
 
@@ -438,8 +438,9 @@ class ClusterHistos(BaseHistos):
     def fill(self, clsts):
         rnp.fill_hist(self.h_energy, clsts.energy)
         rnp.fill_hist(self.h_layer, clsts.layer)
-        rnp.fill_hist(self.h_ncells, clsts.ncells)
         rnp.fill_hist(self.h_layerVenergy, clsts[['layer', 'energy']])
+        # if 'ncells' in clsts.columns:
+        rnp.fill_hist(self.h_ncells, clsts.ncells)
         rnp.fill_hist(self.h_layerVncells, clsts[['layer', 'ncells']])
         # if 'nCoreCells' in clsts.columns:
         #     rnp.fill_hist(self.h_nCoreCells, clsts.nCoreCells)
@@ -832,8 +833,10 @@ class HistoSetClusters():
 class HistoSetReso():
     def __init__(self, name, root_file=None):
         self.hreso = ResoHistos('h_reso_'+name, root_file)
-        self.hresoCone = ResoHistos('h_resoCone_'+name, root_file)
-        self.hreso2D = Reso2DHistos('h_reso2D_'+name, root_file)
+        self.hresoCone = None
+        self.hreso2D = None
+        # self.hresoCone = ResoHistos('h_resoCone_'+name, root_file)
+        # self.hreso2D = Reso2DHistos('h_reso2D_'+name, root_file)
         # if not root_file:
         #     self.hreso.annotateTitles(name)
         #     self.hresoCone.annotateTitles(name)
