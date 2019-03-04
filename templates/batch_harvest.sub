@@ -1,8 +1,8 @@
-executable            = run_harvest.sh
+executable            = TEMPL_TASKDIR/run_harvest.sh
 arguments             = $(ClusterID) $(JOB_ID)
-output                = logs/harvest_$(JOB_ID).$(ClusterId).$(ProcId).out
-error                 = logs/harvest_$(JOB_ID).$(ClusterId).$(ProcId).err
-log                   = logs/condor.harvest.$(ClusterId).log
+output                = TEMPL_TASKDIR/logs/harvest_$(JOB_ID).$(ClusterId).$(ProcId).out
+error                 = TEMPL_TASKDIR/logs/harvest_$(JOB_ID).$(ClusterId).$(ProcId).err
+log                   = TEMPL_TASKDIR/logs/condor.harvest.$(ClusterId).log
 +JobFlavour           = "tomorrow"
 
 RequestCpus = 3
