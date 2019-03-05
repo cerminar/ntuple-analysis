@@ -693,6 +693,9 @@ class ResoHistos(BaseResoHistos):
             self.h_ptRespVnclu = ROOT.TH2F(name+'_ptRespVnclu', '3D Cluster Pt resp. vs # clus.; # 2D clust. ; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
             self.h_ptRespVetaVptL1 = ROOT.TH3F(name+'_ptRespVetaVptL1', '3D Cluster Pt resp. vs #eta and vs pT; #eta^{L1}; p_{T}^{L1} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 30, 1, 4, 50, 0, 100, 100, 0, 3)
 
+            self.h_ptemResp = ROOT.TH1F(name+'_ptemResp', '3D Cluster Pt resp.; p_{T}^{L1}/p_{T}^{GEN}', 100, 0, 3)
+            self.h_ptemRespVpt = ROOT.TH2F(name+'_ptemRespVpt', '3D Cluster Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
+
             # self.h_coreEnergyResVnclu = ROOT.TH2F(name+'_coreEnergyResVnclu', '3D Cluster E reso (GeV) vs # clusters', 50, 0, 50, 200, -100, 100)
             # self.h_corePtResVnclu = ROOT.TH2F(name+'_corePtResVnclu', '3D Cluster Pt reso (GeV) vs # clusters', 50, 0, 50, 200, -40, 40)
             #
@@ -722,6 +725,9 @@ class ResoHistos(BaseResoHistos):
         self.h_ptRespVpt.Fill(reference.pt, target.pt/reference.pt)
         self.h_ptRespVnclu.Fill(target.nclu, target.pt/reference.pt)
         self.h_ptRespVetaVptL1.Fill(abs(target.eta), target.pt, target.pt/reference.pt)
+
+        self.h_ptemResp.Fill(target.ptem/reference.pt)
+        self.h_ptemRespVpt.Fill(reference.pt, target.ptem/reference.pt)
 
         # if 'energyCore' in target:
         #     self.h_coreEnergyRes.Fill(target.energyCore - reference.energy)
@@ -883,9 +889,15 @@ class HistoSetEff():
 class TrackResoHistos(BaseResoHistos):
     def __init__(self, name, root_file=None):
         if not root_file:
-            self.h_ptResVpt = ROOT.TH2F(name+'_ptResVpt', 'Track Pt reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];', 50, 0, 100, 100, -20, 20)
-            self.h_ptResp = ROOT.TH1F(name+'_ptResp', 'Track Pt resp.; p_{T}^{L1}/p_{T}^{GEN}', 100, 0, 3)
-            self.h_ptRespVpt = ROOT.TH2F(name+'_ptRespVpt', 'Track Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
+            self.h_ptResVpt = ROOT.TH2F(name+'_ptResVpt',
+                                        'Track Pt reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];',
+                                        50, 0, 100, 100, -20, 20)
+            self.h_ptResp = ROOT.TH1F(name+'_ptResp',
+                                      'Track Pt resp.; p_{T}^{L1}/p_{T}^{GEN}',
+                                      100, 0, 3)
+            self.h_ptRespVpt = ROOT.TH2F(name+'_ptRespVpt',
+                                         'Track Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
+                                         50, 0, 100, 100, 0, 3)
             self.h_ptRespVeta = ROOT.TH2F(name+'_ptRespVeta', 'Track Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};', 50, -4, 4, 100, 0, 3)
             self.h_etaRes = ROOT.TH1F(name+'_etaRes', 'Track eta reso', 100, -0.4, 0.4)
             self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'Track phi reso', 100, -0.4, 0.4)
