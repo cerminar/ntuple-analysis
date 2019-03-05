@@ -212,6 +212,8 @@ tp_def_merged = TPSet('DEFMerged', 'dRC3d(merged)')
 tp_def_calib = TPSet('DEFCalib', 'dRC3d + calib. v1')
 tp_hm = TPSet('HM', 'HistoMaxC3d')
 tp_hm_vdr = TPSet('HMvDR', 'HistoMaxC3d + dR(layer)')
+tp_hm_vdr_merged = TPSet('HMvDRMerged', 'HistoMaxC3d + dR(layer) + M')
+
 gen_set = DataFrameSet('GEN', '')
 tt_set = DataFrameSet('TT', 'Trigger Towers')
 simtt_set = DataFrameSet('SimTT', 'Sim Trigger Towers')
