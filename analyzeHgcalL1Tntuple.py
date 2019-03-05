@@ -454,16 +454,28 @@ def analyze(params, batch_idx=0):
 
         # this is not needed anymore in recent versions of the ntuples
         # tcsWithPos = pd.merge(triggerCells, tc_geom_df[['id', 'x', 'y']], on='id')
+
+
         triggerClusters['ncells'] = [len(x) for x in triggerClusters.cells]
         # if 'x' not in triggerClusters.columns:
         #     triggerClusters = pd.merge(triggerClusters, tc_geom_df[['z', 'id']], on='id')
         #     triggerClusters['R'] = triggerClusters.z/np.sinh(triggerClusters.eta)
         #     triggerClusters['x'] = triggerClusters.R*np.cos(triggerClusters.phi)
+
+        def cl3d_dfixtures(clusters):
+            clusters['nclu'] = [len(x) for x in clusters.clusters]
+            clusters['ptem'] = clusters.pt/(1+clusters.hoe)
+            clusters['eem'] = clusters.energy/(1+clusters.hoe)
         #     triggerClusters['y'] = triggerClusters.R*np.sin(triggerClusters.phi)
 
-        trigger3DClusters['nclu'] = [len(x) for x in trigger3DClusters.clusters]
-        hm_cl3ds['nclu'] = [len(x) for x in hm_cl3ds.clusters]
-        hmvdr_cl3ds['nclu'] = [len(x) for x in hmvdr_cl3ds.clusters]
+
+        cl3d_dfixtures(clusters=trigger3DClusters)
+        cl3d_dfixtures(clusters=hm_cl3ds)
+        cl3d_dfixtures(clusters=hmvdr_cl3ds)
+
+        # trigger3DClusters['nclu'] = [len(x) for x in trigger3DClusters.clusters]
+        # hm_cl3ds['nclu'] = [len(x) for x in hm_cl3ds.clusters]
+        # hmvdr_cl3ds['nclu'] = [len(x) for x in hmvdr_cl3ds.clusters]
 
         def compute_hoe(cluster):
             # print cluster
@@ -498,6 +510,7 @@ def analyze(params, batch_idx=0):
         trigger3DClustersDBSp = pd.DataFrame()
         trigger3DClustersCalib = pd.DataFrame()
         trigger3DClustersMerged = pd.DataFrame()
+        hmvdr_merged_cl3ds = pd.DataFrame()
 
         triggerTowers = compute_tower_data(triggerTowers)
         simTriggerTowers = compute_tower_data(simTriggerTowers)
@@ -532,9 +545,9 @@ def analyze(params, batch_idx=0):
                           toPrint=hm_cl3ds[hm_cl3ds.quality > 0].sort_values(by='pt', ascending=False).iloc[:10])
 
         if not hmvdr_cl3ds.empty:
-            debugPrintOut(debug, '3D clusters',
+            debugPrintOut(debug, '3D clusters  (HistoMaxC3d + dR(layer))',
                           toCount=hmvdr_cl3ds,
-                          toPrint=hmvdr_cl3ds[hmvdr_cl3ds.quality > 0].sort_values(by='pt', ascending=False).iloc[:10])
+                          toPrint=hmvdr_cl3ds[hmvdr_cl3ds.quality >= 0].sort_values(by='pt', ascending=False).iloc[:10])
 
         debugPrintOut(debug, 'Egamma',
                       toCount=egamma,
@@ -562,6 +575,7 @@ def analyze(params, batch_idx=0):
 
         trigger3DClustersCalib = get_calibrated_clusters(calib_factors, trigger3DClusters)
         trigger3DClustersMerged = get_merged_clusters(trigger3DClusters[trigger3DClusters.quality > 0], pool)
+        hmvdr_merged_cl3ds = get_merged_clusters(hmvdr_cl3ds, pool)
 
         tkegs = get_trackmatched_egs(egs=egamma, tracks=tracks[tracks.nStubs > 3])
         tkegs = get_trackmatched_egs(egs=egamma, tracks=tracks[tracks.nStubs > 3])
@@ -579,6 +593,12 @@ def analyze(params, batch_idx=0):
             debugPrintOut(debug, 'Merged 3D clusters',
                           toCount=trigger3DClustersMerged,
                           toPrint=trigger3DClustersMerged.sort_values(by='pt', ascending=False).iloc[:10])
+
+        if not hmvdr_merged_cl3ds.empty:
+            debugPrintOut(debug, 'Merged HM 3D clusters',
+                          toCount=hmvdr_merged_cl3ds,
+                          toPrint=hmvdr_merged_cl3ds.sort_values(by='pt', ascending=False)[['pt', 'ptem', 'eta', 'phi', 'quality']].iloc[:10])
+
 
         # from python.selections import genpart_ele_ee_selections,gen_part_selections
         # #print genpart_ele_ee_selections
@@ -634,6 +654,7 @@ def analyze(params, batch_idx=0):
         selections.tp_def.set_collections(triggerCells, triggerClusters, trigger3DClusters)
         selections.tp_hm.set_collections(triggerCells, triggerCells, hm_cl3ds)
         selections.tp_hm_vdr.set_collections(triggerCells, triggerCells, hmvdr_cl3ds)
+        selections.tp_hm_vdr_merged.set_collections(triggerCells, triggerCells, hmvdr_merged_cl3ds)
         selections.tp_def_merged.set_collections(triggerCells, triggerClusters, trigger3DClustersMerged)
         selections.tp_def_calib.set_collections(triggerCells, triggerClusters, trigger3DClustersCalib)
         selections.gen_set.set_collections(genParticles)
