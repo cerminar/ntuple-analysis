@@ -221,7 +221,7 @@ class TPGenMatchPlotter:
                     histoReso2D.fill(reference=genParticle, target=matchedClusters)
                 histoReso.fill(reference=genParticle, target=matched3DCluster.iloc[0])
 
-                if False:
+                if True:
                     # now we fill the reso plot for all the clusters in the cone
                     clustersInCone = sumClustersInCone(trigger3DClusters, allmatches[idx])
 
@@ -253,7 +253,7 @@ class TPGenMatchPlotter:
 
                     # print ('----- in cone sum:')
                     # print (clustersInCone)
-                    histoResoCone.fill(reference=genParticle, target=clustersInCone.iloc[0])
+                    # histoResoCone.fill(reference=genParticle, target=clustersInCone.iloc[0])
 
                 if histoGenMatched is not None:
                     histoGenMatched.fill(genParticles.loc[[idx]])
@@ -569,8 +569,10 @@ class TTGenMatchPlotter:
 
 tp_plotters = [TPPlotter(selections.tp_def, selections.tp_id_selections),
                # TPPlotter(selections.tp_def_calib, selections.tp_id_selections)
-               TPPlotter(selections.tp_hm, selections.tp_id_selections),
+               # TPPlotter(selections.tp_hm, selections.tp_id_selections),
                TPPlotter(selections.tp_hm_vdr, selections.tp_id_selections),
+               TPPlotter(selections.tp_hm_vdr_merged, selections.tp_id_selections),
+
                ]
 eg_plotters = [EGPlotter(selections.eg_set, selections.eg_qual_selections)]
 track_plotters = [TrackPlotter(selections.track_set, selections.tracks_selections)]
@@ -578,6 +580,7 @@ tkeg_plotters = [TkEGPlotter(selections.tkeg_set, selections.tkeg_qual_selection
 rate_plotters = [RatePlotter(selections.tp_def, selections.tp_rate_selections),
                  RatePlotter(selections.tp_hm, selections.tp_rate_selections),
                  RatePlotter(selections.tp_hm_vdr, selections.tp_rate_selections),
+                 RatePlotter(selections.tp_hm_vdr_merged, selections.tp_rate_selections),
                  # RatePlotter(selections.tp_def_calib, selections.tp_rate_selections),
                  RatePlotter(selections.tp_def_merged, selections.tp_rate_selections)]
 
@@ -592,10 +595,13 @@ tp_genmatched_plotters = [TPGenMatchPlotter(selections.tp_def, selections.gen_se
                           # TPGenMatchPlotter(selections.tp_def_merged, selections.gen_set,
                           #                   selections.tp_match_selections,
                           #                   selections.gen_part_selections),
-                          TPGenMatchPlotter(selections.tp_hm, selections.gen_set,
+                          # TPGenMatchPlotter(selections.tp_hm, selections.gen_set,
+                          #                   selections.tp_match_selections,
+                          #                   selections.gen_part_selections),
+                          TPGenMatchPlotter(selections.tp_hm_vdr, selections.gen_set,
                                             selections.tp_match_selections,
                                             selections.gen_part_selections),
-                          TPGenMatchPlotter(selections.tp_hm_vdr, selections.gen_set,
+                          TPGenMatchPlotter(selections.tp_hm_vdr_merged, selections.gen_set,
                                             selections.tp_match_selections,
                                             selections.gen_part_selections),
                                             ]
