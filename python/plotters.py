@@ -577,8 +577,7 @@ track_plotters = [TrackPlotter(selections.track_set, selections.tracks_selection
 tkeg_plotters = [TkEGPlotter(selections.tkeg_set, selections.tkeg_qual_selections)]
 rate_plotters = [RatePlotter(selections.tp_def, selections.tp_rate_selections),
                  RatePlotter(selections.tp_hm, selections.tp_rate_selections),
-                 RatePlotter(selections.tp_hm_vdr, selections.tp_rate_selections)
-
+                 RatePlotter(selections.tp_hm_vdr, selections.tp_rate_selections),
                  # RatePlotter(selections.tp_def_calib, selections.tp_rate_selections),
                  RatePlotter(selections.tp_def_merged, selections.tp_rate_selections)]
 
