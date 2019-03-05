@@ -5,7 +5,7 @@ import uuid
 # some useful globals, mainly to deal with ROOT idiosyncrasies
 c_idx = 0
 p_idx = 0
-colors = range(1, 6)
+colors = range(1, 12)
 stuff = []
 f_idx = 0
 
@@ -44,7 +44,7 @@ def newCanvas(name=None, title=None, height=600, width=800, xdiv=0, ydiv=0, form
         c_idx += 1
     if title is None:
         title = name
-    print name, title, width, height
+    # print name, title, width, height
     canvas = ROOT.TCanvas(name, title, width, height)
     if(xdiv*ydiv != 0):
         canvas.Divide(xdiv, ydiv)
@@ -150,19 +150,23 @@ def draw(histograms,
     drawn_histos = []
     # drawn_histos = histograms
     for hidx, hist in enumerate(histograms):
+        opt = options
         if 'TGraph' not in histo_class:
             hist.SetStats(do_stats)
-        opt = options
+        else:
+            opt = 'P'+options
         if overlay:
             hist.SetLineColor(colors[hidx])
+            if 'TGraph' in histo_class:
+                hist.SetMarkerColor(colors[hidx])
             if hidx:
-                opt = 'same,'+options
+                opt = 'same,'+opt
             else:
                 if 'TGraph' in histo_class:
-                    opt = options+'PA'
+                    opt = opt+'A'
         else:
             canvas.cd(hidx+1)
-        print hidx, opt
+        # print hidx, opt
         d_hist = hist
         if norm:
             d_hist = hist.DrawNormalized(opt, 1.)
@@ -180,7 +184,10 @@ def draw(histograms,
             prof.Draw('same')
 
         if overlay:
-            leg.AddEntry(hist, labels[hidx], 'l')
+            if 'TGraph' not in histo_class:
+                leg.AddEntry(hist, labels[hidx], 'l')
+            else:
+                leg.AddEntry(hist, labels[hidx], 'P')
         else:
             if text:
                 newtext = '{}: {}'.format(labels[hidx], text)
@@ -215,7 +222,7 @@ def draw(histograms,
         min_value = min([hist.GetBinContent(hist.GetMinimumBin()) for hist in drawn_histos])
     if max_y is None:
         max_value = max([hist.GetBinContent(hist.GetMaximumBin()) for hist in drawn_histos])*1.2
-    print min_value, max_value
+    # print min_value, max_value
 
     for hist in drawn_histos:
         hist.GetYaxis().SetRangeUser(min_value, max_value)
