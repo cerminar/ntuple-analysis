@@ -11,5 +11,9 @@ transfer_input_files  = copy_files.sh,TEMPL_CFG,../ntuple-tools.tar.gz
 +PostCmd              = "copy_files.sh"
 +PostArguments        = "$(ClusterID) $(JOB_ID) true"
 
+
++AccountingGroup = "group_u_CMS.u_zh"
+
+
 transfer_output_files   = ""
 queue
