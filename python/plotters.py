@@ -576,8 +576,12 @@ eg_plotters = [EGPlotter(selections.eg_set, selections.eg_qual_selections)]
 track_plotters = [TrackPlotter(selections.track_set, selections.tracks_selections)]
 tkeg_plotters = [TkEGPlotter(selections.tkeg_set, selections.tkeg_qual_selections)]
 rate_plotters = [RatePlotter(selections.tp_def, selections.tp_rate_selections),
+                 RatePlotter(selections.tp_hm, selections.tp_rate_selections),
+                 RatePlotter(selections.tp_hm_vdr, selections.tp_rate_selections)
+
                  # RatePlotter(selections.tp_def_calib, selections.tp_rate_selections),
                  RatePlotter(selections.tp_def_merged, selections.tp_rate_selections)]
+
 eg_rate_plotters = [RatePlotter(selections.eg_set, selections.eg_rate_selections),
                     RatePlotter(selections.tkeg_set, selections.tkeg_rate_selections)]
 tp_genmatched_plotters = [TPGenMatchPlotter(selections.tp_def, selections.gen_set,
