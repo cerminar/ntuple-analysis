@@ -354,12 +354,16 @@ def merge3DClustersEtaPhi(cl3ds):
 def sum3DClusters(components):
     ret = pd.DataFrame(columns=components.columns)
     ret['energy'] = [components.energy.sum()]
+    ret['eem'] = [components.eem.sum()]
+
     # ret['energyCore'] = [components.energy.sum()]
     # ret['energyCentral'] = [components.energy.sum()]
 
     ret['eta'] = [np.sum(components.eta*components.energy)/components.energy.sum()]
     ret['phi'] = [np.sum(components.phi*components.energy)/components.energy.sum()]
     ret['pt'] = [(ret.energy/np.cosh(ret.eta)).values[0]]
+    ret['ptem'] = [(ret.eem/np.cosh(ret.eta)).values[0]]
+
     # ret['ptCore'] = [(ret.energyCore/np.cosh(ret.eta)).values[0]]
     # ret['layers'] = [np.unique(np.concatenate(components.layers.values))]
     ret['clusters'] = [np.concatenate(components.clusters.values)]
@@ -376,7 +380,7 @@ def sum3DClusters(components):
     ret['id'] = [components.id.values[0]]
     ret['n010'] = len(components[components.pt > 0.1])
     ret['n025'] = len(components[components.pt > 0.25])
-    ret['quality'] = [1]
+    ret['quality'] = [np.max(components.quality)]
     ret['bdt_out'] = [0]
     # print '-------- merged:'
     # print components.sort_values(by='pt', ascending=False)
