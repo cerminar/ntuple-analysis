@@ -671,8 +671,8 @@ def analyze(params, batch_idx=0):
         selections.eg_set.set_collections(egamma)
         selections.track_set.set_collections(tracks)
         selections.tkeg_set.set_collections(tkegs)
-        selections.tkele_set.set_collections(tkEle)
-        
+        selections.tkele_set.set_collections(tkele)
+
         for plotter in plotter_collection:
             # print plotter
             plotter.fill_histos(debug=debug)
