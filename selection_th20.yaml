@@ -1,0 +1,181 @@
+
+common:
+  input_dir:  /eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1015/
+  output_dir:
+    default: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
+    matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
+    Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
+  output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
+  output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
+  plot_version: v68
+  run_clustering: False
+  run_density_computation: False
+
+
+collections:
+  nugun_tracks:
+    samples:
+      - nugun_alleta_pu200
+    plotters:
+      - track_plotters
+      - tkeg_plotters
+      - eg_rate_plotters
+
+  single_empart_guns_tracks:
+    samples:
+      - ele_flat2to100_PU0
+      - ele_flat2to100_PU200
+    plotters:
+      - track_plotters
+      - track_genmatched_plotters
+      - tkeg_plotters
+      - eg_genmatched_plotters
+
+  single_part_tt:
+    samples:
+      - ele_flat2to100_PU0
+      - ele_flat2to100_PU200
+      - pion_flat2to100_PU0
+      - pion_flat2to100_PU200
+    plotters:
+      # - tp_egm_plotters
+      # - tp_genmatched_plotters
+      # - genpart_plotters
+      - ttower_plotters
+      - ttower_genmatched_plotters
+
+
+
+  single_empart_guns_egvalid:
+    samples:
+      - ele_flat2to100_PU0
+      - ele_flat2to100_PU200
+      - photon_flat8to150_PU0
+      - photon_flat8to150_PU200
+    plotters:
+      - eg_plotters
+      - eg_genmatched_plotters
+
+
+  single_empart_guns:
+    samples:
+      - ele_flat2to100_PU0
+      - ele_flat2to100_PU200
+      # - photon_flat8to150_PU0
+      # - photon_flat8to150_PU200
+    plotters:
+      - tp_egm_plotters
+      - tp_genmatched_plotters
+      - genpart_plotters
+      # - ttower_plotters
+      # - ttower_genmatched_plotters
+
+
+  single_part_guns:
+    samples:
+      - ele_flat2to100_PU0
+      - ele_flat2to100_PU200
+      # - photon_flat8to150_PU0
+      # - photon_flat8to150_PU200
+      - pion_flat2to100_PU0
+      - pion_flat2to100_PU200
+    plotters:
+      - tp_egm_plotters
+      - tp_genmatched_plotters
+      - genpart_plotters
+      # - ttower_plotters
+      # - ttower_genmatched_plotters
+
+  nugun_rate:
+    samples:
+      - nugun_alleta_pu200
+    plotters:
+      - rate_plotters
+      # - ttower_plotters
+      - tp_egm_plotters
+      - eg_rate_plotters
+
+  noise_samples:
+    samples:
+      - nugun_alleta_pu0
+      - nugun_alleta_pu200
+      # - nugun_endcap_PU50
+      # - nugun_endcap_PU100
+      # - nugun_endcap_PU140
+      # - nugun_endcap_PU200
+    plotters:
+      # - rate_plotters
+      - ttower_plotters
+      # - tp_egm_plotters
+      # - eg_rate_plotters
+
+plotters:
+  rate_plotters: !!python/name:python.plotters.rate_plotters
+  tp_egm_plotters: !!python/name:python.plotters.tp_plotters
+  tp_genmatched_plotters: !!python/name:python.plotters.tp_genmatched_plotters
+  genpart_plotters: !!python/name:python.plotters.genpart_plotters
+  ttower_plotters: !!python/name:python.plotters.ttower_plotters
+  ttower_genmatched_plotters: !!python/name:python.plotters.ttower_genmatched_plotters
+  eg_plotters: !!python/name:python.plotters.eg_plotters
+  eg_genmatched_plotters: !!python/name:python.plotters.eg_genmatched_plotters
+  eg_rate_plotters: !!python/name:python.plotters.eg_rate_plotters
+  track_plotters: !!python/name:python.plotters.track_plotters
+  track_genmatched_plotters: !!python/name:python.plotters.track_genmatched_plotters
+  tkeg_plotters: !!python/name:python.plotters.tkeg_plotters
+    # tp_set: !null,
+    # tp_selection: !!python/name:python.selections.tp_match_selections}
+#  gen_selection: gen_part_selections
+# - plotter: TPPlotter
+#   tp_selection: tp_eta_selections
+#   gen_selection: gen_part_selections
+
+
+#test: !!python/name:python.selections.gen_part_selections
+samples:
+  ele_flat2to100_PU0:
+    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v15/190222_164623/0000/
+    events_per_job : 500
+
+  ele_flat2to100_PU200:
+    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU200_v15/190222_164647/0000/
+    events_per_job : 200
+
+  photon_flat8to150_PU0:
+    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU0_v17/190225_205316/0000/
+    events_per_job : 500
+
+  photon_flat8to150_PU200:
+    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU200_v17/190225_205341/0000/
+    events_per_job : 200
+
+  pion_flat2to100_PU0:
+    input_sample_dir: SinglePion_FlatPt-2to100/SinglePion_FlatPt-2to100_PU0_v13/181116_090611/0000/
+    events_per_job : 500
+
+  pion_flat2to100_PU200:
+    input_sample_dir: SinglePion_FlatPt-2to100/SinglePion_FlatPt-2to100_PU200_v13/181126_123358/0000/
+    events_per_job : 200
+
+  nugun_alleta_pu0:
+    input_sample_dir: SingleNeutrino/NuGunAllEta_PU0_v14/190123_172948/0000/
+    events_per_job: 500
+
+  nugun_alleta_pu200:
+    input_sample_dir: SingleNeutrino/NuGunAllEta_PU200_v17/190225_205406/0000/
+    events_per_job: 200
+
+  nugun_endcap_PU50:
+    input_sample_dir: NuGun_PU50/NTP/v13/
+    events_per_job: 500
+
+  nugun_endcap_PU100:
+    input_sample_dir: NuGun_PU100/NTP/v13/
+    events_per_job: 500
+
+  nugun_endcap_PU140:
+    input_sample_dir: NuGun_PU140/NTP/v13/
+    events_per_job: 500
+
+  nugun_endcap_PU200:
+    input_sample_dir: NuGun_PU200/NTP/v13/
+    events_per_job: 200
