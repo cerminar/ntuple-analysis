@@ -113,7 +113,8 @@ gen_pt_selections = [Selection('Pt10', 'p_{T}^{GEN}>=10GeV', 'pt >= 10'),
                      Selection('Pt30', 'p_{T}^{GEN}>=30GeV', 'pt >= 30'),
                      Selection('Pt40', 'p_{T}^{GEN}>=40GeV', 'pt >= 40')]
 
-gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {}) | (abs(pdgid) == {}) | (abs(pdgid) == {})'.format(PID.electron, PID.photon, PID.pion))]
+# gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {}) | (abs(pdgid) == {}) | (abs(pdgid) == {})'.format(PID.electron, PID.photon, PID.pion))]
+gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {})'.format(PID.electron))]
 
 gen_part_ee_sel = add_selections(gen_part_selections, gen_ee_selections)
 gen_part_ee_pt_sel = add_selections(gen_part_ee_sel, gen_pt_selections)
@@ -213,7 +214,6 @@ tp_def_calib = TPSet('DEFCalib', 'dRC3d + calib. v1')
 tp_hm = TPSet('HM', 'HistoMaxC3d')
 tp_hm_vdr = TPSet('HMvDR', 'HistoMaxC3d + dR(layer)')
 tp_hm_vdr_merged = TPSet('HMvDRMerged', 'HistoMaxC3d + dR(layer) + M')
-
 gen_set = DataFrameSet('GEN', '')
 tt_set = DataFrameSet('TT', 'Trigger Towers')
 simtt_set = DataFrameSet('SimTT', 'Sim Trigger Towers')
