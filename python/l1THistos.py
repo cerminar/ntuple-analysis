@@ -470,6 +470,7 @@ class Cluster3DHistos(BaseHistos):
             self.h_isoRel0p2 = ROOT.TH1F(name+'_isoRel0p2', '3D Cluster relative iso DR 0.2; Rel. Iso;', 100, 0, 1)
             self.h_bdtPU = ROOT.TH1F(name+'_bdtPU', '3D Cluster bdt PU out; BDT-PU out;', 100, -1, 1)
             self.h_bdtPi = ROOT.TH1F(name+'_bdtPi', '3D Cluster bdt Pi out; BDT-Pi out;', 100, -1, 1)
+            self.h_bdtEg = ROOT.TH1F(name+'_bdtEg', '3D Cluster bdt Pi out; BDT-EG out;', 100, -1, 1)
 
         BaseHistos.__init__(self, name, root_file)
 
@@ -498,6 +499,7 @@ class Cluster3DHistos(BaseHistos):
             rnp.fill_hist(self.h_bdtPU, cl3ds.bdt_pu)
         if 'bdt_pi' in cl3ds.columns:
             rnp.fill_hist(self.h_bdtPi, cl3ds.bdt_pi)
+        rnp.fill_hist(self.h_bdtEg, cl3ds.bdteg)
 
 
 class EGHistos(BaseHistos):
