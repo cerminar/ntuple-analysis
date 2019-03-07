@@ -437,6 +437,7 @@ def analyze(params, batch_idx=0):
         hgcrocTowers = event.getDataFrame(prefix='hgcrocTower')
         waferTowers = event.getDataFrame(prefix='waferTower')
         tracks = event.getDataFrame(prefix='l1track')
+        tkele = event.getDataFrame(prefix='tkEle')
 
         puInfo = event.getPUInfo()
 
@@ -570,6 +571,11 @@ def analyze(params, batch_idx=0):
                           toCount=waferTowers,
                           toPrint=waferTowers.sort_values(by='pt', ascending=False).iloc[:10])
 
+        if not tkele.empty:
+            debugPrintOut(debug, 'Tk Electrons:',
+                          toCount=tkele,
+                          toPrint=tkele.sort_values(by='pt', ascending=False).iloc[:10])
+
         # print '# towers eta >0 {}'.format(len(triggerTowers[triggerTowers.eta > 0]))
         # print '# towers eta <0 {}'.format(len(triggerTowers[triggerTowers.eta < 0]))
 
@@ -578,7 +584,7 @@ def analyze(params, batch_idx=0):
         hmvdr_merged_cl3ds = get_merged_clusters(hmvdr_cl3ds, pool)
 
         tkegs = get_trackmatched_egs(egs=egamma, tracks=tracks[tracks.nStubs > 3])
-        tkegs = get_trackmatched_egs(egs=egamma, tracks=tracks[tracks.nStubs > 3])
+        # tkegs = get_trackmatched_egs(egs=egamma, tracks=tracks[tracks.nStubs > 3])
         debugPrintOut(debug, 'Tk matched EGs',
                       toCount=tkegs,
                       toPrint=tkegs)
@@ -665,7 +671,8 @@ def analyze(params, batch_idx=0):
         selections.eg_set.set_collections(egamma)
         selections.track_set.set_collections(tracks)
         selections.tkeg_set.set_collections(tkegs)
-
+        selections.tkele_set.set_collections(tkEle)
+        
         for plotter in plotter_collection:
             # print plotter
             plotter.fill_histos(debug=debug)
