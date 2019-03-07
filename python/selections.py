@@ -113,8 +113,8 @@ gen_pt_selections = [Selection('Pt10', 'p_{T}^{GEN}>=10GeV', 'pt >= 10'),
                      Selection('Pt30', 'p_{T}^{GEN}>=30GeV', 'pt >= 30'),
                      Selection('Pt40', 'p_{T}^{GEN}>=40GeV', 'pt >= 40')]
 
-# gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {}) | (abs(pdgid) == {}) | (abs(pdgid) == {})'.format(PID.electron, PID.photon, PID.pion))]
-gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {})'.format(PID.electron))]
+gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {}) | (abs(pdgid) == {}) | (abs(pdgid) == {})'.format(PID.electron, PID.photon, PID.pion))]
+# gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {})'.format(PID.electron))]
 
 gen_part_ee_sel = add_selections(gen_part_selections, gen_ee_selections)
 gen_part_ee_pt_sel = add_selections(gen_part_ee_sel, gen_pt_selections)
@@ -222,6 +222,7 @@ wafer_tt = DataFrameSet('WaferTT', 'Wafer Trigger Towers')
 eg_set = DataFrameSet('EG', 'EGPhase2')
 track_set = DataFrameSet('L1Trk', 'L1Track')
 tkeg_set = DataFrameSet('TkEG', 'TkEG')
+tkele_set = DataFrameSet('TkEle', 'TkEle')
 
 if __name__ == "__main__":
     for sel in gen_part_selections:
