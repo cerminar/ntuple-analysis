@@ -7,7 +7,7 @@ log                   = TEMPL_TASKDIR/logs/condor.harvest.$(ClusterId).log
 
 RequestCpus = 3
 
-transfer_input_files  = ../ntuple-tools.tar.gz
+transfer_input_files  = TEMPL_TASKDIR/../ntuple-tools.tar.gz
 
 transfer_output_files   = ""
 queue
