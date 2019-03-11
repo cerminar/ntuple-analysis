@@ -31,7 +31,7 @@ from python.utils import match_etaphi
 
 import python.file_manager as fm
 import python.selections as selections
-
+import python.calibrations as calib
 
 class Parameters:
     def __init__(self,
@@ -431,6 +431,7 @@ def analyze(params, batch_idx=0):
         hm_cl3ds = event.getDataFrame(prefix='hmcl3d')
         hmvdr_cl3ds = event.getDataFrame(prefix='hmVRcl3d')
 
+
         triggerTowers = event.getDataFrame(prefix='tower')
         simTriggerTowers = event.getDataFrame(prefix='simTower')
         egamma = event.getDataFrame(prefix='egammaEE')
@@ -471,8 +472,16 @@ def analyze(params, batch_idx=0):
 
 
         cl3d_dfixtures(clusters=trigger3DClusters)
-        cl3d_dfixtures(clusters=hm_cl3ds)
+        # cl3d_dfixtures(clusters=hm_cl3ds)
         cl3d_dfixtures(clusters=hmvdr_cl3ds)
+
+        # if not trigger3DClusters.empty:
+        #     trigger3DClusters['ptcalib'] = trigger3DClusters.apply(lambda x: calib.get_component_pt(x, triggerClusters), axis=1)
+        #     trigger3DClusters['ptcalib_lc'] = trigger3DClusters.apply(lambda x: calib.get_component_pt_lcl(x, triggerClusters), axis=1)
+        #     trigger3DClusters['ptcalib_dedx'] = trigger3DClusters.apply(lambda x: calib.get_component_pt_dedx(x, triggerClusters), axis=1)
+        #     trigger3DClusters['ptcalib_kfact'] = trigger3DClusters.apply(lambda x: calib.get_component_pt_kfact(x, triggerClusters), axis=1)
+        #
+        #     print trigger3DClusters[['eta', 'phi', 'pt', 'ptcalib', 'ptcalib_lc', 'ptcalib_dedx', 'ptcalib_kfact']]
 
         # trigger3DClusters['nclu'] = [len(x) for x in trigger3DClusters.clusters]
         # hm_cl3ds['nclu'] = [len(x) for x in hm_cl3ds.clusters]
@@ -512,6 +521,18 @@ def analyze(params, batch_idx=0):
         trigger3DClustersCalib = pd.DataFrame()
         trigger3DClustersMerged = pd.DataFrame()
         hmvdr_merged_cl3ds = pd.DataFrame()
+        trigger3DClustersUncalib = trigger3DClusters.copy()
+        hmvdr_cl3ds_uncalib = hmvdr_cl3ds.copy()
+
+        is_v8_geometry = True
+        if is_v8_geometry:
+            if not trigger3DClustersUncalib.empty:
+                trigger3DClustersUncalib['pt'] = trigger3DClustersUncalib.apply(lambda x: calib.get_component_pt_dedx(x, triggerClusters), axis=1)
+                # trigger3DClustersUncalib['ptcalib'] = trigger3DClusters.apply(lambda x: calib.get_component_pt_lcl(x, triggerClusters), axis=1)
+
+            if not hmvdr_cl3ds_uncalib.empty:
+                hmvdr_cl3ds_uncalib['pt'] = hmvdr_cl3ds_uncalib.apply(lambda x: calib.get_component_pt_dedx(x, triggerCells), axis=1)
+                # hmvdr_cl3ds_uncalib['ptcalib'] = hmvdr_cl3ds_uncalib.apply(lambda x: calib.get_component_pt_lcl(x, triggerCells), axis=1)
 
         triggerTowers = compute_tower_data(triggerTowers)
         simTriggerTowers = compute_tower_data(simTriggerTowers)
@@ -540,15 +561,25 @@ def analyze(params, batch_idx=0):
                           toCount=trigger3DClusters,
                           toPrint=trigger3DClusters[trigger3DClusters.quality > 0].sort_values(by='pt', ascending=False).iloc[:10])
 
-        if not hm_cl3ds.empty:
-            debugPrintOut(debug, '3D clusters (HistoMaxC3d)',
-                          toCount=hm_cl3ds,
-                          toPrint=hm_cl3ds[hm_cl3ds.quality > 0].sort_values(by='pt', ascending=False).iloc[:10])
+        # if not hm_cl3ds.empty:
+        #     debugPrintOut(debug, '3D clusters (HistoMaxC3d)',
+        #                   toCount=hm_cl3ds,
+        #                   toPrint=hm_cl3ds[hm_cl3ds.quality > 0].sort_values(by='pt', ascending=False).iloc[:10])
 
         if not hmvdr_cl3ds.empty:
             debugPrintOut(debug, '3D clusters  (HistoMaxC3d + dR(layer))',
                           toCount=hmvdr_cl3ds,
                           toPrint=hmvdr_cl3ds[hmvdr_cl3ds.quality >= 0].sort_values(by='pt', ascending=False).iloc[:10])
+
+        if not trigger3DClustersUncalib.empty:
+            debugPrintOut(debug, '3D clusters Uncalib',
+                          toCount=trigger3DClustersUncalib,
+                          toPrint=trigger3DClustersUncalib[trigger3DClustersUncalib.quality >= 0].sort_values(by='pt', ascending=False).iloc[:10])
+
+        if not hmvdr_cl3ds_uncalib.empty:
+            debugPrintOut(debug, '3D clusters (HistoMaxC3d + dR(layer)) uncalib',
+                          toCount=hmvdr_cl3ds_uncalib,
+                          toPrint=hmvdr_cl3ds_uncalib[hmvdr_cl3ds_uncalib.quality >= 0].sort_values(by='pt', ascending=False).iloc[:10])
 
         debugPrintOut(debug, 'Egamma',
                       toCount=egamma,
@@ -658,8 +689,10 @@ def analyze(params, batch_idx=0):
         # fill histograms
         # hdigis.fill(hgcDigis)
         selections.tp_def.set_collections(triggerCells, triggerClusters, trigger3DClusters)
+        selections.tp_def_uncalib.set_collections(triggerCells, triggerClusters, trigger3DClustersUncalib)
         selections.tp_hm.set_collections(triggerCells, triggerCells, hm_cl3ds)
         selections.tp_hm_vdr.set_collections(triggerCells, triggerCells, hmvdr_cl3ds)
+        selections.tp_hm_vdr_uncalib.set_collections(triggerCells, triggerCells, hmvdr_cl3ds_uncalib)
         selections.tp_hm_vdr_merged.set_collections(triggerCells, triggerCells, hmvdr_merged_cl3ds)
         selections.tp_def_merged.set_collections(triggerCells, triggerClusters, trigger3DClustersMerged)
         selections.tp_def_calib.set_collections(triggerCells, triggerClusters, trigger3DClustersCalib)
