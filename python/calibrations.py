@@ -201,6 +201,9 @@ def get_layer_pt_lcl(cl2d, clweights=tpg_layer_calib_v8):
 def get_layer_pt_dedx(cl2d, clweights=tpg_dEdx_weights_v8):
     return cl2d.mipPt*clweights[cl2d.layer]*0.001/1.092
 
+def get_layer_pt_calibv9(cl2d, clweights=tpg_dEdx_weights_v9):
+    return cl2d.mipPt*clweights[cl2d.layer]*0.001*kfact_v8[cl2d.layer]/thickness_s200_v9
+
 
 def get_component_pt(cl3d, cl2ds, clweights=[1.]*53):
     # print cl3d
@@ -242,3 +245,16 @@ def get_component_pt_kfact(cl3d, cl2ds):
     components['ptcalib_kfact'] = components.apply(lambda x: get_layer_pt(x, clweights=kfact_v8), axis=1)
 
     return components.ptcalib_kfact.sum()
+
+def get_component_pt_v9calib(cl3d, cl2ds):
+    # print cl3d
+    # print cl3d.clusters
+    # print cl2ds.id.isin(cl3d.clusters)
+    # print cl2ds
+    components = cl2ds[cl2ds.id.isin(cl3d.clusters)]
+    components['ptcalib_v9calib'] = components.apply(lambda x: get_layer_pt_calibv9(x), axis=1)
+
+    return components.ptcalib_v9calib.sum()
+
+
+# get_layer_pt_calibv9

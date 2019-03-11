@@ -524,7 +524,7 @@ def analyze(params, batch_idx=0):
         trigger3DClustersUncalib = trigger3DClusters.copy()
         hmvdr_cl3ds_uncalib = hmvdr_cl3ds.copy()
 
-        is_v8_geometry = True
+        is_v8_geometry = False
         if is_v8_geometry:
             if not trigger3DClustersUncalib.empty:
                 trigger3DClustersUncalib['pt'] = trigger3DClustersUncalib.apply(lambda x: calib.get_component_pt_dedx(x, triggerClusters), axis=1)
@@ -533,6 +533,13 @@ def analyze(params, batch_idx=0):
             if not hmvdr_cl3ds_uncalib.empty:
                 hmvdr_cl3ds_uncalib['pt'] = hmvdr_cl3ds_uncalib.apply(lambda x: calib.get_component_pt_dedx(x, triggerCells), axis=1)
                 # hmvdr_cl3ds_uncalib['ptcalib'] = hmvdr_cl3ds_uncalib.apply(lambda x: calib.get_component_pt_lcl(x, triggerCells), axis=1)
+        else:
+            if not trigger3DClusters.empty:
+                trigger3DClusters['pt'] = trigger3DClusters.apply(lambda x: calib.get_component_pt_v9calib(x, triggerClusters), axis=1)
+            if not hmvdr_cl3ds.empty:
+                hmvdr_cl3ds['pt'] = hmvdr_cl3ds.apply(lambda x: calib.get_component_pt_v9calib(x, triggerCells), axis=1)
+                # hmvdr_cl3ds_uncalib['ptcalib'] = hmvdr_cl3ds_uncalib.apply(lambda x: calib.get_component_pt_lcl(x, triggerCells), axis=1)
+
 
         triggerTowers = compute_tower_data(triggerTowers)
         simTriggerTowers = compute_tower_data(simTriggerTowers)
