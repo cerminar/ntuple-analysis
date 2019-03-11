@@ -56,6 +56,19 @@ collections:
       - eg_plotters
       - eg_genmatched_plotters
 
+  single_ele_guns:
+    samples:
+      - ele_flat2to100_PU0
+      - ele_flat2to100_PU200
+      # - photon_flat8to150_PU0
+      # - photon_flat8to150_PU200
+    plotters:
+      - tp_egm_plotters
+      - tp_genmatched_plotters
+      - genpart_plotters
+      # - ttower_plotters
+      # - ttower_genmatched_plotters
+
 
   single_empart_guns:
     samples:
