@@ -113,8 +113,8 @@ gen_pt_selections = [Selection('Pt10', 'p_{T}^{GEN}>=10GeV', 'pt >= 10'),
                      Selection('Pt30', 'p_{T}^{GEN}>=30GeV', 'pt >= 30'),
                      Selection('Pt40', 'p_{T}^{GEN}>=40GeV', 'pt >= 40')]
 
-gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {}) | (abs(pdgid) == {}) | (abs(pdgid) == {})'.format(PID.electron, PID.photon, PID.pion))]
-# gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {})'.format(PID.electron))]
+# gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {}) | (abs(pdgid) == {}) | (abs(pdgid) == {})'.format(PID.electron, PID.photon, PID.pion))]
+gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {})'.format(PID.electron))]
 
 gen_part_ee_sel = add_selections(gen_part_selections, gen_ee_selections)
 gen_part_ee_pt_sel = add_selections(gen_part_ee_sel, gen_pt_selections)
@@ -163,7 +163,9 @@ eg_pt_selections = []
 eg_pt_selections += add_selections(eg_qual_selections, tp_pt_selections)
 
 tkeg_selection = [Selection('all'),
-                  Selection('M2', '|#Delta#phi| <0.08 & #DeltaR < 0.07', '(abs(dphi) < 0.08) & (dr < 0.07)'),
+                  Selection('M1', '|#Delta#phi| <0.08 & #DeltaR < 0.07', '(abs(dphi) < 0.08) & (dr < 0.07)'),
+                  Selection('M1Pt10', '|#Delta#phi| <0.08 & #DeltaR < 0.07 & p_{T}^{trk} > 10GeV', '(abs(dphi) < 0.08) & (dr < 0.07) & (tkpt > 10.)'),
+
                   Selection('M2s', '|#Delta#phi| <0.08 & #DeltaR < 0.07 & #stubs > 3', '(abs(dphi) < 0.08) & (dr < 0.07) & (tknstubs > 3)'),
                   Selection('M3', '|#Delta#phi| <0.08 & |#Delta#eta| < 0.05', '(abs(dphi) < 0.08) & (abs(deta) < 0.05)'),
                   Selection('M3s', '|#Delta#phi| <0.08 & |#Delta#eta| < 0.05 & #stubs > 3', '(abs(dphi) < 0.08) & (abs(deta) < 0.05) & (tknstubs > 3)'),

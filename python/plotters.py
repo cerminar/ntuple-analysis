@@ -358,6 +358,8 @@ class GenericGenMatchPlotter(object):
         self.h_dataset = {}
         self.h_resoset = {}
         self.h_effset = {}
+        # print self
+        # print gen_selections
 
     def plotObjectMatch(self,
                         genParticles,
