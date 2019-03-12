@@ -94,7 +94,7 @@ def get_collection_parameters(opt, cfgfile):
         samples = collection_data['samples']
         print ('--- Collection: {} with samples: {}'.format(collection, samples))
         sample_params = []
-
+            
         plotters = []
         for plotter in collection_data['plotters']:
             plotters.extend(cfgfile['plotters'][plotter])
@@ -228,7 +228,7 @@ def get_merged_clusters(triggerClusters, pool, debug=0):
 
 def get_trackmatched_egs(egs, tracks, debug=0):
     newcolumns = ['pt', 'energy', 'eta', 'phi', 'hwQual']
-    newcolumns.extend(['tkpt', 'tketa', 'tkphi', 'tkz0', 'tkchi2', 'tknstubs', 'deta', 'dphi', 'dr'])
+    newcolumns.extend(['tkpt', 'tketa', 'tkphi', 'tkz0', 'tkchi2', 'tkchi2Red', 'tknstubs', 'deta', 'dphi', 'dr'])
     matched_egs = pd.DataFrame(columns=newcolumns)
     if egs.empty or tracks.empty:
         return matched_egs
@@ -249,6 +249,7 @@ def get_trackmatched_egs(egs, tracks, debug=0):
                                           'tkphi': bestmatch_tk.phi,
                                           'tkz0': bestmatch_tk.z0,
                                           'tkchi2': bestmatch_tk.chi2,
+                                          'tkchi2Red': bestmatch_tk.chi2Red,
                                           'tknstubs': bestmatch_tk.nStubs,
                                           'deta': bestmatch_tk.eta - bestmatch_eg.eta,
                                           'dphi': bestmatch_tk.phi - bestmatch_eg.phi,
