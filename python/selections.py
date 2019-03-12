@@ -164,12 +164,14 @@ eg_pt_selections += add_selections(eg_qual_selections, tp_pt_selections)
 
 tkeg_selection = [Selection('all'),
                   Selection('M1', '|#Delta#phi| <0.08 & #DeltaR < 0.07', '(abs(dphi) < 0.08) & (dr < 0.07)'),
-                  Selection('M1Pt10', '|#Delta#phi| <0.08 & #DeltaR < 0.07 & p_{T}^{trk} > 10GeV', '(abs(dphi) < 0.08) & (dr < 0.07) & (tkpt > 10.)'),
-
-                  Selection('M2s', '|#Delta#phi| <0.08 & #DeltaR < 0.07 & #stubs > 3', '(abs(dphi) < 0.08) & (dr < 0.07) & (tknstubs > 3)'),
+                  Selection('M1P', '|#Delta#phi| <0.08 & #DeltaR < 0.07 & p_{T}^{trk} > 10GeV', '(abs(dphi) < 0.08) & (dr < 0.07) & (tkpt > 10.)'),
+                  Selection('M1S', '|#Delta#phi| <0.08 & #DeltaR < 0.07 & #stubs > 3', '(abs(dphi) < 0.08) & (dr < 0.07) & (tknstubs > 3)'),
+                  Selection('M2', '|#Delta#phi| <0.08 & #DeltaR < 0.05', '(abs(dphi) < 0.08) & (dr < 0.07)'),
+                  Selection('M2P', '|#Delta#phi| <0.08 & #DeltaR < 0.05 & p_{T}^{trk} > 10GeV', '(abs(dphi) < 0.08) & (dr < 0.07) & (tkpt > 10.)'),
+                  Selection('M2S', '|#Delta#phi| <0.08 & #DeltaR < 0.05 & #stubs > 3', '(abs(dphi) < 0.08) & (dr < 0.07) & (tknstubs > 3)'),
                   Selection('M3', '|#Delta#phi| <0.08 & |#Delta#eta| < 0.05', '(abs(dphi) < 0.08) & (abs(deta) < 0.05)'),
-                  Selection('M3s', '|#Delta#phi| <0.08 & |#Delta#eta| < 0.05 & #stubs > 3', '(abs(dphi) < 0.08) & (abs(deta) < 0.05) & (tknstubs > 3)'),
-                  Selection('M4', '|#Delta#phi| <0.08 & #DeltaR < 0.07 & p_{T}^{trk} > 10GeV', '(abs(dphi) < 0.08) & (dr < 0.07) & (tkpt > 10.)')]
+                  Selection('M3S', '|#Delta#phi| <0.08 & |#Delta#eta| < 0.05 & #stubs > 3', '(abs(dphi) < 0.08) & (abs(deta) < 0.05) & (tknstubs > 3)'),
+                  ]
 
 tkeg_rate_selections = []
 tkeg_rate_selections += add_selections(eg_rate_selections, tkeg_selection)

@@ -593,7 +593,7 @@ rate_plotters = [RatePlotter(selections.tp_def, selections.tp_rate_selections),
 
 eg_rate_plotters = [RatePlotter(selections.eg_set, selections.eg_rate_selections),
                     RatePlotter(selections.tkeg_set, selections.tkeg_rate_selections),
-                    RatePlotter(selections.tkele_set, selections.tkeg_rate_selections)]
+                    RatePlotter(selections.tkele_set, selections.eg_rate_selections)]
 tp_genmatched_plotters = [TPGenMatchPlotter(selections.tp_def, selections.gen_set,
                                             selections.tp_match_selections,
                                             selections.gen_part_selections),
