@@ -7,7 +7,7 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v71
+  plot_version: v73
   run_clustering: False
   run_density_computation: False
 
@@ -146,19 +146,19 @@ plotters:
 #test: !!python/name:python.selections.gen_part_selections
 samples:
   ele_flat2to100_PU0:
-    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v17/190225_205225/0000/
+    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v19/190315_173901/0000/
     events_per_job : 500
 
   ele_flat2to100_PU200:
-    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU200_v17/190225_205249/0000/
+    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU200_v19/190315_173926/0000/
     events_per_job : 200
 
   photon_flat8to150_PU0:
-    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU0_v17/190225_205316/0000/
+    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU0_v19/190315_173958/0000/
     events_per_job : 500
 
   photon_flat8to150_PU200:
-    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU200_v17/190225_205341/0000/
+    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU200_v19/190315_174025/0000/
     events_per_job : 200
 
   pion_flat2to100_PU0:
@@ -174,7 +174,7 @@ samples:
     events_per_job: 500
 
   nugun_alleta_pu200:
-    input_sample_dir: SingleNeutrino/NuGunAllEta_PU200_v17/190225_205406/0000/
+    input_sample_dir: SingleNeutrino/NuGunAllEta_PU200_v19/190315_174050/0000/
     events_per_job: 200
 
   nugun_endcap_PU50:
