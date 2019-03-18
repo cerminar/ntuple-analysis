@@ -470,10 +470,9 @@ def analyze(params, batch_idx=0):
         #     triggerClusters['x'] = triggerClusters.R*np.cos(triggerClusters.phi)
 
         def cl3d_dfixtures(clusters):
-            if not clusters.empty:
-                clusters['nclu'] = [len(x) for x in clusters.clusters]
-                clusters['ptem'] = clusters.pt/(1+clusters.hoe)
-                clusters['eem'] = clusters.energy/(1+clusters.hoe)
+            clusters['nclu'] = [len(x) for x in clusters.clusters]
+            clusters['ptem'] = clusters.pt/(1+clusters.hoe)
+            clusters['eem'] = clusters.energy/(1+clusters.hoe)
         #     triggerClusters['y'] = triggerClusters.R*np.sin(triggerClusters.phi)
 
 
