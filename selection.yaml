@@ -80,9 +80,10 @@ collections:
       - tp_egm_plotters
       - tp_genmatched_plotters
       - genpart_plotters
+      - eg_plotters
+      - eg_genmatched_plotters
       # - ttower_plotters
       # - ttower_genmatched_plotters
-
 
   single_part_guns:
     samples:
