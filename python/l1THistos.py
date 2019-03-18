@@ -509,6 +509,8 @@ class EGHistos(BaseHistos):
             self.h_eta = ROOT.TH1F(name+'_eta', 'EG eta; #eta;', 100, -4, 4)
             self.h_energy = ROOT.TH1F(name+'_energy', 'EG energy (GeV); E [GeV]', 1000, 0, 1000)
             self.h_hwQual = ROOT.TH1F(name+'_hwQual', 'EG energy (GeV); hwQual', 5, 0, 5)
+            self.h_tkIso = ROOT.TH1F(name+'_tkIso', 'EG energy (GeV); hwQual', 100, 0, 2)
+
         BaseHistos.__init__(self, name, root_file)
 
     def fill(self, egs):
@@ -516,17 +518,19 @@ class EGHistos(BaseHistos):
         rnp.fill_hist(self.h_eta, egs.eta)
         rnp.fill_hist(self.h_energy, egs.energy)
         rnp.fill_hist(self.h_hwQual, egs.hwQual)
+        if 'tkIso' in egs.columns:
+            rnp.fill_hist(self.h_tkIso, egs.tkIso)
 
 
 class TkEGHistos(BaseHistos):
     def __init__(self, name, root_file=None):
         if not root_file:
-            self.h_pt = ROOT.TH1F(name+'_pt', 'TkEG Pt (GeV); p_{T} [GeV]', 100, 0, 100)
-            self.h_eta = ROOT.TH1F(name+'_eta', 'TkEG eta; #eta;', 100, -4, 4)
+            self.h_pt     = ROOT.TH1F(name+'_pt', 'TkEG Pt (GeV); p_{T} [GeV]', 100, 0, 100)
+            self.h_eta    = ROOT.TH1F(name+'_eta', 'TkEG eta; #eta;', 100, -4, 4)
             self.h_energy = ROOT.TH1F(name+'_energy', 'TkEG energy (GeV); E [GeV]', 1000, 0, 1000)
             self.h_hwQual = ROOT.TH1F(name+'_hwQual', 'TkEG energy (GeV); hwQual', 5, 0, 5)
 
-            self.h_tkpt = ROOT.TH1F(name+'_tkpt', 'TkEG Pt (GeV); p_{T} [GeV]', 100, 0, 100)
+            self.h_tkpt   = ROOT.TH1F(name+'_tkpt', 'TkEG Pt (GeV); p_{T} [GeV]', 100, 0, 100)
             self.h_tketa = ROOT.TH1F(name+'_tketa', 'TkEG eta; #eta;', 100, -4, 4)
             self.h_tkchi2 = ROOT.TH1F(name+'_tkchi2', 'TkEG chi2; #Chi^{2}', 1000, 0, 1000)
             self.h_tkchi2Red = ROOT.TH1F(name+'_tkchi2Red', 'TkEG chi2 red; reduced #Chi^{2}', 100, 0, 100)
