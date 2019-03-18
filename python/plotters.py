@@ -570,11 +570,14 @@ class TTGenMatchPlotter:
 
 
 tp_plotters = [TPPlotter(selections.tp_def, selections.tp_id_selections),
-               TPPlotter(selections.tp_def_uncalib, selections.tp_id_selections),
+               # TPPlotter(selections.tp_def_uncalib, selections.tp_id_selections),
                # TPPlotter(selections.tp_def_calib, selections.tp_id_selections)
                # TPPlotter(selections.tp_hm, selections.tp_id_selections),
                TPPlotter(selections.tp_hm_vdr, selections.tp_id_selections),
-               TPPlotter(selections.tp_hm_vdr_uncalib, selections.tp_id_selections),
+               # TPPlotter(selections.tp_def_nc, selections.tp_id_selections),
+               # TPPlotter(selections.tp_hm_vdr_nc0, selections.tp_id_selections),
+               # TPPlotter(selections.tp_hm_vdr_nc1, selections.tp_id_selections),
+               # TPPlotter(selections.tp_hm_vdr_uncalib, selections.tp_id_selections),
 
                # TPPlotter(selections.tp_hm_vdr_merged, selections.tp_id_selections),
 
@@ -583,23 +586,29 @@ eg_plotters = [EGPlotter(selections.eg_set, selections.eg_qual_selections)]
 track_plotters = [TrackPlotter(selections.track_set, selections.tracks_selections)]
 tkeg_plotters = [TkEGPlotter(selections.tkeg_set, selections.tkeg_qual_selections)]
 rate_plotters = [RatePlotter(selections.tp_def, selections.tp_rate_selections),
-                 RatePlotter(selections.tp_def_uncalib, selections.tp_rate_selections),
+                 # RatePlotter(selections.tp_def_uncalib, selections.tp_rate_selections),
                  # RatePlotter(selections.tp_hm, selections.tp_rate_selections),
                  RatePlotter(selections.tp_hm_vdr, selections.tp_rate_selections),
-                 RatePlotter(selections.tp_hm_vdr_uncalib, selections.tp_rate_selections),
-                 RatePlotter(selections.tp_hm_vdr_merged, selections.tp_rate_selections),
+                 # RatePlotter(selections.tp_def_nc, selections.tp_rate_selections),
+                 # RatePlotter(selections.tp_hm_vdr_nc0, selections.tp_rate_selections),
+                 # RatePlotter(selections.tp_hm_vdr_nc1, selections.tp_rate_selections),
+                 # RatePlotter(selections.tp_hm_vdr_uncalib, selections.tp_rate_selections),
+                 # RatePlotter(selections.tp_hm_vdr_merged, selections.tp_rate_selections),
                  # RatePlotter(selections.tp_def_calib, selections.tp_rate_selections),
-                 RatePlotter(selections.tp_def_merged, selections.tp_rate_selections)]
+                 # RatePlotter(selections.tp_def_merged, selections.tp_rate_selections)
+                 ]
 
 eg_rate_plotters = [RatePlotter(selections.eg_set, selections.eg_rate_selections),
                     RatePlotter(selections.tkeg_set, selections.tkeg_rate_selections),
-                    RatePlotter(selections.tkele_set, selections.eg_rate_selections)]
+                    RatePlotter(selections.tkele_set, selections.tkisoeg_rate_selections),
+                    RatePlotter(selections.tkisoele_set, selections.tkisoeg_rate_selections),
+                    ]
 tp_genmatched_plotters = [TPGenMatchPlotter(selections.tp_def, selections.gen_set,
                                             selections.tp_match_selections,
                                             selections.gen_part_selections),
-                          TPGenMatchPlotter(selections.tp_def_uncalib, selections.gen_set,
-                                            selections.tp_match_selections,
-                                            selections.gen_part_selections),
+                          # TPGenMatchPlotter(selections.tp_def_uncalib, selections.gen_set,
+                          #                   selections.tp_match_selections,
+                          #                   selections.gen_part_selections),
                           # TPGenMatchPlotter(selections.tp_def_calib, selections.gen_set,
                           #                   selections.tp_match_selections,
                           #                   selections.gen_part_selections),
@@ -612,9 +621,18 @@ tp_genmatched_plotters = [TPGenMatchPlotter(selections.tp_def, selections.gen_se
                           TPGenMatchPlotter(selections.tp_hm_vdr, selections.gen_set,
                                             selections.tp_match_selections,
                                             selections.gen_part_selections),
-                          TPGenMatchPlotter(selections.tp_hm_vdr_uncalib, selections.gen_set,
+                          TPGenMatchPlotter(selections.tp_def_nc, selections.gen_set,
                                             selections.tp_match_selections,
                                             selections.gen_part_selections),
+                          TPGenMatchPlotter(selections.tp_hm_vdr_nc0, selections.gen_set,
+                                            selections.tp_match_selections,
+                                            selections.gen_part_selections),
+                          TPGenMatchPlotter(selections.tp_hm_vdr_nc1, selections.gen_set,
+                                            selections.tp_match_selections,
+                                            selections.gen_part_selections),
+                          # TPGenMatchPlotter(selections.tp_hm_vdr_uncalib, selections.gen_set,
+                          #                   selections.tp_match_selections,
+                          #                   selections.gen_part_selections),
                           # TPGenMatchPlotter(selections.tp_hm_vdr_merged, selections.gen_set,
                           #                   selections.tp_match_selections,
                           #                   selections.gen_part_selections),
@@ -624,7 +642,14 @@ eg_genmatched_plotters = [EGGenMatchPlotter(selections.eg_set, selections.gen_se
                                             selections.gen_part_selections),
                           TkEGGenMatchPlotter(selections.tkeg_set, selections.gen_set,
                                               selections.tkeg_pt_selections,
-                                              selections.gen_part_selections)]
+                                              selections.gen_part_selections),
+                          EGGenMatchPlotter(selections.tkele_set, selections.gen_set,
+                                            selections.tkisoeg_pt_selections,
+                                            selections.gen_part_selections),
+                          EGGenMatchPlotter(selections.tkisoele_set, selections.gen_set,
+                                            selections.tkisoeg_pt_selections,
+                                            selections.gen_part_selections),]
+
 track_genmatched_plotters = [TrackGenMatchPlotter(selections.track_set, selections.gen_set,
                                                   selections.tracks_selections,
                                                   selections.gen_part_selections)]
