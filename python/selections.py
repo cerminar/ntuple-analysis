@@ -157,18 +157,35 @@ eg_qual_selections = [
                       Selection('EGq2', 'q2', 'hwQual == 2'),
                       Selection('EGq3', 'q3', 'hwQual == 3')]
 
+iso_selections = [Selection('all'),
+                  Selection('Iso0p2', 'Iso0p2', 'tkIso <= 0.2'),
+                  Selection('Iso0p3', 'Iso0p3', 'tkIso <= 0.3'),]
+
+
+tkisoeg_selections = []
+tkisoeg_selections += add_selections(eg_qual_selections, iso_selections)
+
+
 eg_rate_selections = []
 eg_rate_selections += add_selections(eg_qual_selections, tp_eta_selections)
 eg_pt_selections = []
 eg_pt_selections += add_selections(eg_qual_selections, tp_pt_selections)
 
+tkisoeg_rate_selections = []
+tkisoeg_rate_selections += add_selections(tkisoeg_selections, tp_eta_selections)
+tkisoeg_pt_selections = []
+tkisoeg_pt_selections += add_selections(tkisoeg_selections, tp_pt_selections)
+# print 'tkisoeg_rate_selections:'
+# print tkisoeg_rate_selections
+
+
 tkeg_selection = [Selection('all'),
                   Selection('M1', '|#Delta#phi| <0.08 & #DeltaR < 0.07', '(abs(dphi) < 0.08) & (dr < 0.07)'),
                   Selection('M1P', '|#Delta#phi| <0.08 & #DeltaR < 0.07 & p_{T}^{trk} > 10GeV', '(abs(dphi) < 0.08) & (dr < 0.07) & (tkpt > 10.)'),
                   Selection('M1S', '|#Delta#phi| <0.08 & #DeltaR < 0.07 & #stubs > 3', '(abs(dphi) < 0.08) & (dr < 0.07) & (tknstubs > 3)'),
-                  Selection('M2', '|#Delta#phi| <0.08 & #DeltaR < 0.05', '(abs(dphi) < 0.08) & (dr < 0.07)'),
-                  Selection('M2P', '|#Delta#phi| <0.08 & #DeltaR < 0.05 & p_{T}^{trk} > 10GeV', '(abs(dphi) < 0.08) & (dr < 0.07) & (tkpt > 10.)'),
-                  Selection('M2S', '|#Delta#phi| <0.08 & #DeltaR < 0.05 & #stubs > 3', '(abs(dphi) < 0.08) & (dr < 0.07) & (tknstubs > 3)'),
+                  Selection('M2', '|#Delta#phi| <0.08 & #DeltaR < 0.05', '(abs(dphi) < 0.08) & (dr < 0.05)'),
+                  Selection('M2P', '|#Delta#phi| <0.08 & #DeltaR < 0.05 & p_{T}^{trk} > 10GeV', '(abs(dphi) < 0.08) & (dr < 0.05) & (tkpt > 10.)'),
+                  Selection('M2S', '|#Delta#phi| <0.08 & #DeltaR < 0.05 & #stubs > 3', '(abs(dphi) < 0.08) & (dr < 0.05) & (tknstubs > 3)'),
                   Selection('M3', '|#Delta#phi| <0.08 & |#Delta#eta| < 0.05', '(abs(dphi) < 0.08) & (abs(deta) < 0.05)'),
                   Selection('M3S', '|#Delta#phi| <0.08 & |#Delta#eta| < 0.05 & #stubs > 3', '(abs(dphi) < 0.08) & (abs(deta) < 0.05) & (tknstubs > 3)'),
                   ]
@@ -213,11 +230,15 @@ class DataFrameSet:
 
 
 tp_def = TPSet('DEF', 'dRC3d')
+tp_def_nc = TPSet('DEFNC', 'dRC3d + NC')
 tp_def_uncalib = TPSet('DEFUncalib', 'dRC3d UnCalib')
 tp_def_merged = TPSet('DEFMerged', 'dRC3d(merged)')
 tp_def_calib = TPSet('DEFCalib', 'dRC3d + calib. v1')
 tp_hm = TPSet('HM', 'HistoMaxC3d')
 tp_hm_vdr = TPSet('HMvDR', 'HistoMaxC3d + dR(layer)')
+tp_hm_vdr_nc0 = TPSet('HMvDRNC0', 'HistoMaxC3d + dR(layer) + NC0')
+tp_hm_vdr_nc1 = TPSet('HMvDRNC1', 'HistoMaxC3d + dR(layer) + NC1')
+
 tp_hm_vdr_uncalib = TPSet('HMvDRUncalib', 'HistoMaxC3d + dR(layer) UnCalib')
 
 tp_hm_vdr_merged = TPSet('HMvDRMerged', 'HistoMaxC3d + dR(layer) + M')
@@ -230,6 +251,7 @@ eg_set = DataFrameSet('EG', 'EGPhase2')
 track_set = DataFrameSet('L1Trk', 'L1Track')
 tkeg_set = DataFrameSet('TkEG', 'TkEG')
 tkele_set = DataFrameSet('TkEle', 'TkEle')
+tkisoele_set = DataFrameSet('TkIsoEle', 'TkIsoEle')
 
 if __name__ == "__main__":
     for sel in gen_part_selections:
