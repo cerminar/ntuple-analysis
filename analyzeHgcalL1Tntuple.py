@@ -94,7 +94,7 @@ def get_collection_parameters(opt, cfgfile):
         samples = collection_data['samples']
         print ('--- Collection: {} with samples: {}'.format(collection, samples))
         sample_params = []
-            
+
         plotters = []
         for plotter in collection_data['plotters']:
             plotters.extend(cfgfile['plotters'][plotter])
@@ -429,10 +429,11 @@ def analyze(params, batch_idx=0):
         triggerCells = event.getDataFrame(prefix='tc')
         triggerClusters = event.getDataFrame(prefix='cl')
         trigger3DClusters = event.getDataFrame(prefix='cl3d')
-        hm_cl3ds = event.getDataFrame(prefix='hmcl3d')
+
         hmvdr_cl3ds = event.getDataFrame(prefix='hmVRcl3d')
-
-
+        trigger3DClusters_nc = event.getDataFrame(prefix='cl3dNC')
+        hmvdr_cl3ds_nc0 = event.getDataFrame(prefix='hmVRcl3dNC0')
+        hmvdr_cl3ds_nc1 = event.getDataFrame(prefix='hmVRcl3dNC1')
         triggerTowers = event.getDataFrame(prefix='tower')
         simTriggerTowers = event.getDataFrame(prefix='simTower')
         egamma = event.getDataFrame(prefix='egammaEE')
@@ -440,7 +441,10 @@ def analyze(params, batch_idx=0):
         waferTowers = event.getDataFrame(prefix='waferTower')
         tracks = event.getDataFrame(prefix='l1track')
         tkele = event.getDataFrame(prefix='tkEle')
+        tkIsoEle = event.getDataFrame(prefix='tkIsoEle')
 
+        # print tkele
+        # print tkIsoEle
         puInfo = event.getPUInfo()
 
         debugPrintOut(debug, 'PU', toCount=puInfo, toPrint=puInfo)
@@ -466,15 +470,20 @@ def analyze(params, batch_idx=0):
         #     triggerClusters['x'] = triggerClusters.R*np.cos(triggerClusters.phi)
 
         def cl3d_dfixtures(clusters):
-            clusters['nclu'] = [len(x) for x in clusters.clusters]
-            clusters['ptem'] = clusters.pt/(1+clusters.hoe)
-            clusters['eem'] = clusters.energy/(1+clusters.hoe)
+            if not clusters.empty:
+                clusters['nclu'] = [len(x) for x in clusters.clusters]
+                clusters['ptem'] = clusters.pt/(1+clusters.hoe)
+                clusters['eem'] = clusters.energy/(1+clusters.hoe)
         #     triggerClusters['y'] = triggerClusters.R*np.sin(triggerClusters.phi)
 
 
         cl3d_dfixtures(clusters=trigger3DClusters)
+        cl3d_dfixtures(clusters=trigger3DClusters_nc)
+
         # cl3d_dfixtures(clusters=hm_cl3ds)
         cl3d_dfixtures(clusters=hmvdr_cl3ds)
+        cl3d_dfixtures(clusters=hmvdr_cl3ds_nc0)
+        cl3d_dfixtures(clusters=hmvdr_cl3ds_nc1)
 
         # if not trigger3DClusters.empty:
         #     trigger3DClusters['ptcalib'] = trigger3DClusters.apply(lambda x: calib.get_component_pt(x, triggerClusters), axis=1)
@@ -522,24 +531,24 @@ def analyze(params, batch_idx=0):
         trigger3DClustersCalib = pd.DataFrame()
         trigger3DClustersMerged = pd.DataFrame()
         hmvdr_merged_cl3ds = pd.DataFrame()
-        trigger3DClustersUncalib = trigger3DClusters.copy()
-        hmvdr_cl3ds_uncalib = hmvdr_cl3ds.copy()
+        # trigger3DClustersUncalib = trigger3DClusters.copy()
+        # hmvdr_cl3ds_uncalib = hmvdr_cl3ds.copy()
 
-        is_v8_geometry = False
-        if is_v8_geometry:
-            if not trigger3DClustersUncalib.empty:
-                trigger3DClustersUncalib['pt'] = trigger3DClustersUncalib.apply(lambda x: calib.get_component_pt_dedx(x, triggerClusters), axis=1)
-                # trigger3DClustersUncalib['ptcalib'] = trigger3DClusters.apply(lambda x: calib.get_component_pt_lcl(x, triggerClusters), axis=1)
-
-            if not hmvdr_cl3ds_uncalib.empty:
-                hmvdr_cl3ds_uncalib['pt'] = hmvdr_cl3ds_uncalib.apply(lambda x: calib.get_component_pt_dedx(x, triggerCells), axis=1)
-                # hmvdr_cl3ds_uncalib['ptcalib'] = hmvdr_cl3ds_uncalib.apply(lambda x: calib.get_component_pt_lcl(x, triggerCells), axis=1)
-        else:
-            if not trigger3DClusters.empty:
-                trigger3DClusters['pt'] = trigger3DClusters.apply(lambda x: calib.get_component_pt_v9calib(x, triggerClusters), axis=1)
-            if not hmvdr_cl3ds.empty:
-                hmvdr_cl3ds['pt'] = hmvdr_cl3ds.apply(lambda x: calib.get_component_pt_v9calib(x, triggerCells), axis=1)
-                # hmvdr_cl3ds_uncalib['ptcalib'] = hmvdr_cl3ds_uncalib.apply(lambda x: calib.get_component_pt_lcl(x, triggerCells), axis=1)
+        # is_v8_geometry = False
+        # if is_v8_geometry:
+        #     if not trigger3DClustersUncalib.empty:
+        #         trigger3DClustersUncalib['pt'] = trigger3DClustersUncalib.apply(lambda x: calib.get_component_pt_dedx(x, triggerClusters), axis=1)
+        #         # trigger3DClustersUncalib['ptcalib'] = trigger3DClusters.apply(lambda x: calib.get_component_pt_lcl(x, triggerClusters), axis=1)
+        #
+        #     if not hmvdr_cl3ds_uncalib.empty:
+        #         hmvdr_cl3ds_uncalib['pt'] = hmvdr_cl3ds_uncalib.apply(lambda x: calib.get_component_pt_dedx(x, triggerCells), axis=1)
+        #         # hmvdr_cl3ds_uncalib['ptcalib'] = hmvdr_cl3ds_uncalib.apply(lambda x: calib.get_component_pt_lcl(x, triggerCells), axis=1)
+        # else:
+        #     if not trigger3DClusters.empty:
+        #         trigger3DClusters['pt'] = trigger3DClusters.apply(lambda x: calib.get_component_pt_v9calib(x, triggerClusters), axis=1)
+        #     if not hmvdr_cl3ds.empty:
+        #         hmvdr_cl3ds['pt'] = hmvdr_cl3ds.apply(lambda x: calib.get_component_pt_v9calib(x, triggerCells), axis=1)
+        #         # hmvdr_cl3ds_uncalib['ptcalib'] = hmvdr_cl3ds_uncalib.apply(lambda x: calib.get_component_pt_lcl(x, triggerCells), axis=1)
 
 
         triggerTowers = compute_tower_data(triggerTowers)
@@ -569,6 +578,11 @@ def analyze(params, batch_idx=0):
                           toCount=trigger3DClusters,
                           toPrint=trigger3DClusters[trigger3DClusters.quality > 0].sort_values(by='pt', ascending=False).iloc[:10])
 
+        if not trigger3DClusters_nc.empty:
+            debugPrintOut(debug, '3D clusters NC',
+                          toCount=trigger3DClusters_nc,
+                          toPrint=trigger3DClusters_nc[trigger3DClusters_nc.quality > 0].sort_values(by='pt', ascending=False).iloc[:10])
+
         # if not hm_cl3ds.empty:
         #     debugPrintOut(debug, '3D clusters (HistoMaxC3d)',
         #                   toCount=hm_cl3ds,
@@ -579,15 +593,26 @@ def analyze(params, batch_idx=0):
                           toCount=hmvdr_cl3ds,
                           toPrint=hmvdr_cl3ds[hmvdr_cl3ds.quality >= 0].sort_values(by='pt', ascending=False).iloc[:10])
 
-        if not trigger3DClustersUncalib.empty:
-            debugPrintOut(debug, '3D clusters Uncalib',
-                          toCount=trigger3DClustersUncalib,
-                          toPrint=trigger3DClustersUncalib[trigger3DClustersUncalib.quality >= 0].sort_values(by='pt', ascending=False).iloc[:10])
+        if not hmvdr_cl3ds_nc0.empty:
+            debugPrintOut(debug, '3D clusters  (HistoMaxC3d + dR(layer) + NC0)',
+                          toCount=hmvdr_cl3ds_nc0,
+                          toPrint=hmvdr_cl3ds_nc0[hmvdr_cl3ds_nc0.quality >= 0].sort_values(by='pt', ascending=False).iloc[:10])
 
-        if not hmvdr_cl3ds_uncalib.empty:
-            debugPrintOut(debug, '3D clusters (HistoMaxC3d + dR(layer)) uncalib',
-                          toCount=hmvdr_cl3ds_uncalib,
-                          toPrint=hmvdr_cl3ds_uncalib[hmvdr_cl3ds_uncalib.quality >= 0].sort_values(by='pt', ascending=False).iloc[:10])
+        if not hmvdr_cl3ds_nc1.empty:
+            debugPrintOut(debug, '3D clusters  (HistoMaxC3d + dR(layer) + NC1)',
+                          toCount=hmvdr_cl3ds_nc1,
+                          toPrint=hmvdr_cl3ds_nc1[hmvdr_cl3ds_nc1.quality >= 0].sort_values(by='pt', ascending=False).iloc[:10])
+
+
+        # if not trigger3DClustersUncalib.empty:
+        #     debugPrintOut(debug, '3D clusters Uncalib',
+        #                   toCount=trigger3DClustersUncalib,
+        #                   toPrint=trigger3DClustersUncalib[trigger3DClustersUncalib.quality >= 0].sort_values(by='pt', ascending=False).iloc[:10])
+        #
+        # if not hmvdr_cl3ds_uncalib.empty:
+        #     debugPrintOut(debug, '3D clusters (HistoMaxC3d + dR(layer)) uncalib',
+        #                   toCount=hmvdr_cl3ds_uncalib,
+        #                   toPrint=hmvdr_cl3ds_uncalib[hmvdr_cl3ds_uncalib.quality >= 0].sort_values(by='pt', ascending=False).iloc[:10])
 
         debugPrintOut(debug, 'Egamma',
                       toCount=egamma,
@@ -614,6 +639,12 @@ def analyze(params, batch_idx=0):
             debugPrintOut(debug, 'Tk Electrons:',
                           toCount=tkele,
                           toPrint=tkele.sort_values(by='pt', ascending=False).iloc[:10])
+
+        if not tkIsoEle.empty:
+            debugPrintOut(debug, 'Tk IsoElectrons:',
+                          toCount=tkIsoEle,
+                          toPrint=tkIsoEle.sort_values(by='pt', ascending=False).iloc[:10])
+
 
         # print '# towers eta >0 {}'.format(len(triggerTowers[triggerTowers.eta > 0]))
         # print '# towers eta <0 {}'.format(len(triggerTowers[triggerTowers.eta < 0]))
@@ -697,10 +728,13 @@ def analyze(params, batch_idx=0):
         # fill histograms
         # hdigis.fill(hgcDigis)
         selections.tp_def.set_collections(triggerCells, triggerClusters, trigger3DClusters)
-        selections.tp_def_uncalib.set_collections(triggerCells, triggerClusters, trigger3DClustersUncalib)
-        selections.tp_hm.set_collections(triggerCells, triggerCells, hm_cl3ds)
+        selections.tp_def_nc.set_collections(triggerCells, triggerClusters, trigger3DClusters_nc)
+
+        # selections.tp_def_uncalib.set_collections(triggerCells, triggerClusters, trigger3DClustersUncalib)
         selections.tp_hm_vdr.set_collections(triggerCells, triggerCells, hmvdr_cl3ds)
-        selections.tp_hm_vdr_uncalib.set_collections(triggerCells, triggerCells, hmvdr_cl3ds_uncalib)
+        selections.tp_hm_vdr_nc0.set_collections(triggerCells, triggerCells, hmvdr_cl3ds_nc0)
+        selections.tp_hm_vdr_nc1.set_collections(triggerCells, triggerCells, hmvdr_cl3ds_nc1)
+        # selections.tp_hm_vdr_uncalib.set_collections(triggerCells, triggerCells, hmvdr_cl3ds_uncalib)
         selections.tp_hm_vdr_merged.set_collections(triggerCells, triggerCells, hmvdr_merged_cl3ds)
         selections.tp_def_merged.set_collections(triggerCells, triggerClusters, trigger3DClustersMerged)
         selections.tp_def_calib.set_collections(triggerCells, triggerClusters, trigger3DClustersCalib)
@@ -713,6 +747,7 @@ def analyze(params, batch_idx=0):
         selections.track_set.set_collections(tracks)
         selections.tkeg_set.set_collections(tkegs)
         selections.tkele_set.set_collections(tkele)
+        selections.tkisoele_set.set_collections(tkIsoEle)
 
         for plotter in plotter_collection:
             # print plotter
