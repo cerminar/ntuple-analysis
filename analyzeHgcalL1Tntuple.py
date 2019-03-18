@@ -477,12 +477,13 @@ def analyze(params, batch_idx=0):
 
 
         cl3d_dfixtures(clusters=trigger3DClusters)
-        cl3d_dfixtures(clusters=trigger3DClusters_nc)
 
         # cl3d_dfixtures(clusters=hm_cl3ds)
         cl3d_dfixtures(clusters=hmvdr_cl3ds)
-        cl3d_dfixtures(clusters=hmvdr_cl3ds_nc0)
-        cl3d_dfixtures(clusters=hmvdr_cl3ds_nc1)
+        # cl3d_dfixtures(clusters=trigger3DClusters_nc)
+        #
+        # cl3d_dfixtures(clusters=hmvdr_cl3ds_nc0)
+        # cl3d_dfixtures(clusters=hmvdr_cl3ds_nc1)
 
         # if not trigger3DClusters.empty:
         #     trigger3DClusters['ptcalib'] = trigger3DClusters.apply(lambda x: calib.get_component_pt(x, triggerClusters), axis=1)
