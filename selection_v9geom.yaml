@@ -7,7 +7,7 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v72
+  plot_version: v74
   run_clustering: False
   run_density_computation: False
 
@@ -83,6 +83,9 @@ collections:
       - tp_egm_plotters
       - tp_genmatched_plotters
       - genpart_plotters
+      - eg_plotters
+      - eg_genmatched_plotters
+
       # - ttower_plotters
       # - ttower_genmatched_plotters
 
@@ -133,11 +136,11 @@ plotters:
 #test: !!python/name:python.selections.gen_part_selections
 samples:
   all_flat5to80_PU0:
-    input_sample_dir: CMSSW1050p1/PartGun_FlatPt-5to80_PU0/NTP/v18/
+    input_sample_dir: CMSSW1050p1/PartGun_FlatPt-5to80_PU0/NTP/v20/
     events_per_job : 500
 
   all_flat5to80_PU200:
-    input_sample_dir: CMSSW1050p1/PartGun_FlatPt-5to80_PU200/NTP/v18/
+    input_sample_dir: CMSSW1050p1/PartGun_FlatPt-5to80_PU200/NTP/v20/
     events_per_job : 200
 
   ele_flat2to100_PU0:
@@ -169,7 +172,7 @@ samples:
     events_per_job: 500
 
   nugun_alleta_pu200:
-    input_sample_dir: CMSSW1015/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v18/190225_205524/0000/
+    input_sample_dir: CMSSW1015/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v20/190315_174351/0000/
     events_per_job: 200
 
   nugun_endcap_PU50:
