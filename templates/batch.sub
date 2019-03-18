@@ -13,7 +13,7 @@ transfer_input_files  = copy_files.sh,TEMPL_CFG,../ntuple-tools.tar.gz
 
 
 +AccountingGroup = "group_u_CMS.u_zh"
-Requirements = (Machine != "b65aeec7d6.cern.ch")
+Requirements = ((Machine != "b65aeec7d6.cern.ch") && (Machine != "b64d8b1acd.cern.ch"))
 
 transfer_output_files   = ""
 queue
