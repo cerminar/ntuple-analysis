@@ -124,7 +124,8 @@ class HPlot:
                   pu=None,
                   tp=None,
                   tp_sel=None,
-                  gen_sel=None):
+                  gen_sel=None,
+                  debug=False):
         histo = None
         labels = []
         text = ''
@@ -142,7 +143,8 @@ class HPlot:
         if histo_df.empty:
             print 'No match found for: pu: {}, tp: {}, tp_sel: {}, gen_sel: {}, classtype: {}'.format(pu, tp, tp_sel, gen_sel, classtype)
             return None, None, None
-#         print histo_df
+        if debug:
+            print histo_df
 
         field_counts = histo_df.apply(lambda x: len(x.unique()))
         label_fields = []
