@@ -2,7 +2,7 @@
 
 CLUSTERID=$1
 PROCID=$2
-
+echo $PATH
 echo "Runnin Cluster ${CLUSTERID} Job ${PROCID}"
 BATCH_DIR=${PWD}
 echo "Current dir: ${BATCH_DIR}"

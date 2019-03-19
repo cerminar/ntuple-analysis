@@ -8,6 +8,7 @@
 # source ${CVMFS_TOOLS}/external/tbb/2017_U6/etc/profile.d/init.sh
 # source ${CVMFS_TOOLS}/external/xrootd/4.5.0/etc/profile.d/init.sh
 cd /cvmfs/cms.cern.ch/slc6_amd64_gcc700/cms/cmssw/CMSSW_10_2_0/src/
+echo $?
 eval `scram runtime -sh`
 cd -
 export VIRTUALENVWRAPPER_PYTHON=`which python`
