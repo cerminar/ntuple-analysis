@@ -186,8 +186,6 @@ tkeg_selection = [Selection('all'),
                   Selection('M2', '|#Delta#phi| <0.08 & #DeltaR < 0.05', '(abs(dphi) < 0.08) & (dr < 0.05)'),
                   Selection('M2P', '|#Delta#phi| <0.08 & #DeltaR < 0.05 & p_{T}^{trk} > 10GeV', '(abs(dphi) < 0.08) & (dr < 0.05) & (tkpt > 10.)'),
                   Selection('M2S', '|#Delta#phi| <0.08 & #DeltaR < 0.05 & #stubs > 3', '(abs(dphi) < 0.08) & (dr < 0.05) & (tknstubs > 3)'),
-                  Selection('M3', '|#Delta#phi| <0.08 & |#Delta#eta| < 0.05', '(abs(dphi) < 0.08) & (abs(deta) < 0.05)'),
-                  Selection('M3S', '|#Delta#phi| <0.08 & |#Delta#eta| < 0.05 & #stubs > 3', '(abs(dphi) < 0.08) & (abs(deta) < 0.05) & (tknstubs > 3)'),
                   ]
 
 tkeg_rate_selections = []
@@ -198,7 +196,8 @@ tkeg_pt_selections = []
 tkeg_pt_selections += add_selections(tkeg_qual_selections, tp_pt_selections)
 
 tracks_selections = [Selection('all'),
-                     Selection('St', '#stubs > 3', 'nStubs > 3')]
+                     Selection('Pt2', 'p_{T}^{tk} > 2 GeV', 'pt > 2'),
+                     Selection('Pt10', 'p_{T}^{tk} > 10 GeV', 'pt > 10')]
 
 
 class TPSet:
