@@ -209,7 +209,7 @@ class HistoManager(object):
 
 
 class BaseHistos():
-    def __init__(self, name, root_file=None):
+    def __init__(self, name, root_file=None, debug=False):
         self.name_ = name
         # print name
         # print self.__class__.__name__
@@ -225,7 +225,8 @@ class BaseHistos():
                          for histo in file_dir.GetListOfKeys()
                          if histo.GetName().startswith(name+'_')]
                          # if name+'_' in histo.GetName()]
-            # print selhistos
+            if debug:
+                print selhistos
             for hinst, histo_name in selhistos:
                 attr_name = 'h_'+histo_name.split(name+'_')[1]
                 setattr(self, attr_name, hinst)
@@ -256,8 +257,8 @@ class BaseHistos():
 
 
 class BaseResoHistos(BaseHistos):
-    def __init__(self, name, root_file=None):
-        BaseHistos.__init__(self, name, root_file)
+    def __init__(self, name, root_file=None, debug=False):
+        BaseHistos.__init__(self, name, root_file, debug)
         if root_file is not None:
             # print dir(self)
             for attr_2d in [attr for attr in dir(self) if (attr.startswith('h_') and 'TH2' in getattr(self, attr).ClassName())]:
@@ -309,10 +310,10 @@ class BaseResoHistos(BaseHistos):
 
 
 class GenPartHistos(BaseHistos):
-    def __init__(self, name, root_file=None):
+    def __init__(self, name, root_file=None, debug=False):
         self.h_pt = ROOT.TH1F(name+'_pt', 'Gen Part Pt (GeV)', 100, 0, 100)
         self.h_energy = ROOT.TH1F(name+'_energy', 'Gen Part Energy (GeV)', 100, 0, 1000)
-        BaseHistos.__init__(self, name, root_file)
+        BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, gps):
         rnp.fill_hist(self.h_pt, gps.pt)
@@ -324,14 +325,14 @@ class GenPartHistos(BaseHistos):
 
 
 class GenParticleHistos(BaseHistos):
-    def __init__(self, name, root_file=None):
+    def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_eta = ROOT.TH1F(name+'_eta', 'Gen Part eta; #eta^{GEN};', 50, -3, 3)
             self.h_pt = ROOT.TH1F(name+'_pt', 'Gen Part P_{T} (GeV); p_{T}^{GEN} [GeV];', 50, 0, 100)
             self.h_energy = ROOT.TH1F(name+'_energy', 'Gen Part Energy (GeV); E [GeV];', 100, 0, 1000)
             self.h_reachedEE = ROOT.TH1F(name+'_reachedEE', 'Gen Part reachedEE', 4, 0, 4)
             self.h_fBrem = ROOT.TH1F(name+'_fBrem', 'Brem. p_{T} fraction', 30, 0, 1)
-        BaseHistos.__init__(self, name, root_file)
+        BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, particles):
         rnp.fill_hist(self.h_eta, particles.eta)
@@ -342,11 +343,11 @@ class GenParticleHistos(BaseHistos):
 
 
 class DigiHistos(BaseHistos):
-    def __init__(self, name, root_file=None):
+    def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_layer = ROOT.TH1F(name+'_layer', 'Digi layer #', 60, 0, 60)
             # self.h_simenergy = ROOT.TH1F(name+'_energy', 'Digi sim-energy (GeV)', 100, 0, 2)
-        BaseHistos.__init__(self, name, root_file)
+        BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, digis):
         rnp.fill_hist(self.h_layer, digis.layer)
@@ -354,14 +355,14 @@ class DigiHistos(BaseHistos):
 
 
 class RateHistos(BaseHistos):
-    def __init__(self, name, root_file=None):
+    def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_norm = ROOT.TH1F(name+'_norm', '# of events', 1, 1, 2)
             self.h_pt = ROOT.TH1F(name+'_pt', 'rate above p_{T} thresh.; p_{T} [GeV]; rate [kHz];', 100, 0, 100)
             self.h_ptVabseta = ROOT.TH2F(name+'_ptVabseta', 'Candidate p_{T} vs |#eta|; |#eta|; p_{T} [GeV];', 34, 1.4, 3.1, 100, 0, 100)
 
             # self.h_simenergy = ROOT.TH1F(name+'_energy', 'Digi sim-energy (GeV)', 100, 0, 2)
-        BaseHistos.__init__(self, name, root_file)
+        BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, pt, eta):
         for ptf in range(0, int(pt)+1):
@@ -381,7 +382,7 @@ class RateHistos(BaseHistos):
 
 
 class TCHistos(BaseHistos):
-    def __init__(self, name, root_file=None):
+    def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_energy = ROOT.TH1F(name+'_energy', 'TC energy (GeV)', 100, 0, 2)
             self.h_subdet = ROOT.TH1F(name+'_subdet', 'TC subdet #', 8, 0, 8)
@@ -398,7 +399,7 @@ class TCHistos(BaseHistos):
             # self.h_energyVetaL21t60 = ROOT.TH2F(name+'_energyVetaL21t60', "Energy (GeV) vs Eta (layers 21 to 60)", 100, -3.5, 3.5, 100, 0, 2)
             self.h_energyPetaVphi = ROOT.TProfile2D(name+'_energyPetaVphi', "Energy profile (GeV) vs Eta and Phi", 100, -3.5, 3.5, 100, -3.2, 3.2)
 
-        BaseHistos.__init__(self, name, root_file)
+        BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, tcs):
         rnp.fill_hist(self.h_energy, tcs.energy)
@@ -422,7 +423,7 @@ class TCHistos(BaseHistos):
 
 
 class ClusterHistos(BaseHistos):
-    def __init__(self, name, root_file=None):
+    def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_energy = ROOT.TH1F(name+'_energy', 'Cluster energy (GeV); E [GeV];', 100, 0, 30)
             self.h_layer = ROOT.TH1F(name+'_layer', 'Cluster layer #; layer #;', 60, 0, 60)
@@ -433,7 +434,7 @@ class ClusterHistos(BaseHistos):
             self.h_layerVncells = ROOT.TH2F(name+'_layerVncells', "Cluster #cells vs Layer #; layer; # TC components;",  50, 0, 50, 30, 0, 30)
             # self.h_layerVnCoreCells = ROOT.TH2F(name+'_layerVnCoreCells', "Cluster #cells vs Layer #",  50, 0, 50, 30, 0, 30)
 
-        BaseHistos.__init__(self, name, root_file)
+        BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, clsts):
         rnp.fill_hist(self.h_energy, clsts.energy)
@@ -448,7 +449,7 @@ class ClusterHistos(BaseHistos):
 
 
 class Cluster3DHistos(BaseHistos):
-    def __init__(self, name, root_file=None):
+    def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_npt05 = ROOT.TH1F(name+'_npt05', '# 3D Cluster Pt > 0.5 GeV; # 3D clusters in cone;', 1000, 0, 1000)
             self.h_npt20 = ROOT.TH1F(name+'_npt20', '# 3D Cluster Pt > 2.0 GeV; # 3D clusters in cone;', 1000, 0, 1000)
@@ -472,7 +473,7 @@ class Cluster3DHistos(BaseHistos):
             self.h_bdtPi = ROOT.TH1F(name+'_bdtPi', '3D Cluster bdt Pi out; BDT-Pi out;', 100, -1, 1)
             self.h_bdtEg = ROOT.TH1F(name+'_bdtEg', '3D Cluster bdt Pi out; BDT-EG out;', 100, -1, 1)
 
-        BaseHistos.__init__(self, name, root_file)
+        BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, cl3ds):
         self.h_npt05.Fill(len(cl3ds[cl3ds.pt > 0.5].index))
@@ -503,7 +504,7 @@ class Cluster3DHistos(BaseHistos):
 
 
 class EGHistos(BaseHistos):
-    def __init__(self, name, root_file=None):
+    def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_pt = ROOT.TH1F(name+'_pt', 'EG Pt (GeV); p_{T} [GeV]', 100, 0, 100)
             self.h_eta = ROOT.TH1F(name+'_eta', 'EG eta; #eta;', 100, -4, 4)
@@ -511,7 +512,7 @@ class EGHistos(BaseHistos):
             self.h_hwQual = ROOT.TH1F(name+'_hwQual', 'EG energy (GeV); hwQual', 5, 0, 5)
             self.h_tkIso = ROOT.TH1F(name+'_tkIso', 'EG energy (GeV); hwQual', 100, 0, 2)
 
-        BaseHistos.__init__(self, name, root_file)
+        BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, egs):
         rnp.fill_hist(self.h_pt, egs.pt)
@@ -523,14 +524,14 @@ class EGHistos(BaseHistos):
 
 
 class TkEGHistos(BaseHistos):
-    def __init__(self, name, root_file=None):
+    def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_pt     = ROOT.TH1F(name+'_pt', 'TkEG Pt (GeV); p_{T} [GeV]', 100, 0, 100)
             self.h_eta    = ROOT.TH1F(name+'_eta', 'TkEG eta; #eta;', 100, -4, 4)
             self.h_energy = ROOT.TH1F(name+'_energy', 'TkEG energy (GeV); E [GeV]', 1000, 0, 1000)
             self.h_hwQual = ROOT.TH1F(name+'_hwQual', 'TkEG energy (GeV); hwQual', 5, 0, 5)
 
-            self.h_tkpt   = ROOT.TH1F(name+'_tkpt', 'TkEG Pt (GeV); p_{T} [GeV]', 100, 0, 100)
+            self.h_tkpt    = ROOT.TH1F(name+'_tkpt', 'TkEG Pt (GeV); p_{T} [GeV]', 100, 0, 100)
             self.h_tketa = ROOT.TH1F(name+'_tketa', 'TkEG eta; #eta;', 100, -4, 4)
             self.h_tkchi2 = ROOT.TH1F(name+'_tkchi2', 'TkEG chi2; #Chi^{2}', 1000, 0, 1000)
             self.h_tkchi2Red = ROOT.TH1F(name+'_tkchi2Red', 'TkEG chi2 red; reduced #Chi^{2}', 100, 0, 100)
@@ -549,7 +550,7 @@ class TkEGHistos(BaseHistos):
 
 
 
-        BaseHistos.__init__(self, name, root_file)
+        BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, tkegs):
         rnp.fill_hist(self.h_pt, tkegs.pt)
@@ -574,7 +575,7 @@ class TkEGHistos(BaseHistos):
 
 
 class TrackHistos(BaseHistos):
-    def __init__(self, name, root_file=None):
+    def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_pt = ROOT.TH1F(name+'_pt', 'Track Pt (GeV); p_{T} [GeV]', 100, 0, 100)
             self.h_eta = ROOT.TH1F(name+'_eta', 'Track eta; #eta;', 100, -4, 4)
@@ -589,7 +590,7 @@ class TrackHistos(BaseHistos):
             self.h_nstubsVpt = ROOT.TH2F(name+'_nstubsVpt', 'Track # stubs vs pT; p_{T} [GeV]; # stubs', 100, 0, 100, 10, 0, 10)
             self.h_z0Vpt = ROOT.TH2F(name+'_z0Vpt', 'Track z0 vs pT; p_{T} [GeV]; z_{0} [cm]', 100, 0, 100, 100, -10, 10)
 
-        BaseHistos.__init__(self, name, root_file)
+        BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, tracks):
         rnp.fill_hist(self.h_pt, tracks.pt)
@@ -607,7 +608,7 @@ class TrackHistos(BaseHistos):
 
 
 class TriggerTowerHistos(BaseHistos):
-    def __init__(self, name, root_file=None):
+    def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_pt = ROOT.TH1F(name+'_pt', 'Tower Pt (GeV); p_{T} [GeV];', 100, 0, 100)
             self.h_etEm = ROOT.TH1F(name+'_etEm', 'Tower Et EM (GeV)', 100, 0, 100)
@@ -625,7 +626,7 @@ class TriggerTowerHistos(BaseHistos):
             self.h_sumEt = ROOT.TH1F(name+'_sumEt', 'Tower SumEt (GeV); E_{T}^{TOT} [GeV];', 200, 0, 400)
             self.h_sumEtCentral = ROOT.TH1F(name+'_sumEtCentral', 'Tower SumEt (GeV) (central); E_{T}^{TOT} [GeV];', 200, 0, 400)
 
-        BaseHistos.__init__(self, name, root_file)
+        BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, towers):
         rnp.fill_hist(self.h_pt, towers.pt)
@@ -764,7 +765,7 @@ class ResoHistos(BaseResoHistos):
 
 
 class Reso2DHistos(BaseHistos):
-    def __init__(self, name, root_file=None):
+    def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_etaRes = ROOT.TH1F(name+'_etaRes', 'Eta 2D cluster - GEN part', 100, -0.5, 0.5)
             self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'Phi 2D cluster - GEN part', 100, -0.5, 0.5)
@@ -774,7 +775,7 @@ class Reso2DHistos(BaseHistos):
             self.h_yResVlayer = ROOT.TH2F(name+'_yResVlayer', 'Y resolution (cm) [(2D clus) - GEN]', 60, 0, 60, 100, -10, 10)
             self.h_DRRes = ROOT.TH1F(name+'_DRRes', 'DR 2D cluster - GEN part', 100, -0.5, 0.5)
 
-        BaseHistos.__init__(self, name, root_file)
+        BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, reference, target):
         rnp.fill_hist(self.h_etaRes, reference.eta-target.eta)
@@ -798,14 +799,14 @@ class Reso2DHistos(BaseHistos):
 
 
 class GeomHistos(BaseHistos):
-    def __init__(self, name, root_file=None):
+    def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_maxNNDistVlayer = ROOT.TH2F(name+'_maxNNDistVlayer', 'Max dist between NN vs layer', 60, 0, 60, 100, 0, 10)
             self.h_minNNDistVlayer = ROOT.TH2F(name+'_minNNDistVlayer', 'Max dist between NN vs layer', 60, 0, 60, 100, 0, 10)
 
             self.h_nTCsPerLayer = ROOT.TH1F(name+'_nTCsPerLayer', '# of Trigger Cells per layer', 60, 0, 60)
             self.h_radiusVlayer = ROOT.TH2F(name+'_radiusVlayer', '# of cells radius vs layer', 60, 0, 60, 200, 0, 200)
-        BaseHistos.__init__(self, name, root_file)
+        BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, tcs):
         if True:
@@ -819,7 +820,7 @@ class GeomHistos(BaseHistos):
 
 
 class DensityHistos(BaseHistos):
-    def __init__(self, name, root_file=None):
+    def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_eDensityVlayer = ROOT.TH2F(name+'_eDensityVlayer', 'E (GeV) Density per layer', 60, 0, 60, 600, 0, 30)
             self.h_nTCDensityVlayer = ROOT.TH2F(name+'_nTCDensityVlayer', '# TC Density per layer', 60, 0, 60, 20, 0, 20)
@@ -827,7 +828,7 @@ class DensityHistos(BaseHistos):
             print "v7 hack"
             self.h_eDensityVlayer = root_file.Get(name+'eDensityVlayer')
             self.h_nTCDensityVlayer = root_file.Get(name+'nTCDensityVlayer')
-        BaseHistos.__init__(self, name, root_file)
+        BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, layer, energy, nTCs):
         self.h_eDensityVlayer.Fill(layer, energy)
@@ -836,10 +837,10 @@ class DensityHistos(BaseHistos):
 
 # for convenience we define some sets
 class HistoSetClusters():
-    def __init__(self, name, root_file=None):
-        self.htc = TCHistos('h_tc_'+name, root_file)
-        self.hcl2d = ClusterHistos('h_cl2d_'+name, root_file)
-        self.hcl3d = Cluster3DHistos('h_cl3d_'+name, root_file)
+    def __init__(self, name, root_file=None, debug=False):
+        self.htc = TCHistos('h_tc_'+name, root_file, debug)
+        self.hcl2d = ClusterHistos('h_cl2d_'+name, root_file, debug)
+        self.hcl3d = Cluster3DHistos('h_cl3d_'+name, root_file, debug)
         # if not root_file:
         #     self.htc.annotateTitles(name)
         #     self.hcl2d.annotateTitles(name)
@@ -852,8 +853,8 @@ class HistoSetClusters():
 
 
 class HistoSetReso():
-    def __init__(self, name, root_file=None):
-        self.hreso = ResoHistos('h_reso_'+name, root_file)
+    def __init__(self, name, root_file=None, debug=False):
+        self.hreso = ResoHistos('h_reso_'+name, root_file, debug)
         self.hresoCone = None
         self.hreso2D = None
         # self.hresoCone = ResoHistos('h_resoCone_'+name, root_file)
@@ -877,14 +878,15 @@ class HistoEff():
 
 
 class HistoSetEff():
-    def __init__(self, name, root_file=None):
+    def __init__(self, name, root_file=None, debug=False):
         self.name = name
-        self.h_num = GenParticleHistos('h_effNum_'+name, root_file)
-        self.h_den = GenParticleHistos('h_effDen_'+name, root_file)
+        self.h_num = GenParticleHistos('h_effNum_'+name, root_file, debug)
+        self.h_den = GenParticleHistos('h_effDen_'+name, root_file, debug)
         self.h_eff = None
         self.h_ton = None
+
         if root_file:
-            self.computeEff()
+            self.computeEff(debug)
 
     def fillNum(self, particles):
         self.h_num.fill(particles)
@@ -892,17 +894,17 @@ class HistoSetEff():
     def fillDen(self, particles):
         self.h_den.fill(particles)
 
-    def computeEff(self):
+    def computeEff(self, debug=False):
         # print "Computing eff"
         if self.h_eff is None:
-            self.h_eff = HistoEff(passed=self.h_num, total=self.h_den, debug=False)
+            self.h_eff = HistoEff(passed=self.h_num, total=self.h_den, debug=debug)
 
-    def computeTurnOn(self, denominator):
-            self.h_ton = HistoEff(passed=self.h_num, total=denominator, debug=False)
+    def computeTurnOn(self, denominator, debug=False):
+            self.h_ton = HistoEff(passed=self.h_num, total=denominator, debug=debug)
 
 
 class TrackResoHistos(BaseResoHistos):
-    def __init__(self, name, root_file=None):
+    def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_ptResVpt = ROOT.TH2F(name+'_ptResVpt',
                                         'Track Pt reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];',
@@ -918,7 +920,7 @@ class TrackResoHistos(BaseResoHistos):
             self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'Track phi reso', 100, -0.4, 0.4)
             self.h_drRes = ROOT.TH1F(name+'_drRes', 'Track DR reso', 100, 0, 0.4)
 
-        BaseResoHistos.__init__(self, name, root_file)
+        BaseResoHistos.__init__(self, name, root_file, debug)
 
     def fill(self, reference, target):
         self.h_ptResVpt.Fill(reference.pt, target.pt-reference.pt)
@@ -932,7 +934,7 @@ class TrackResoHistos(BaseResoHistos):
 
 
 class EGResoHistos(BaseResoHistos):
-    def __init__(self, name, root_file=None):
+    def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_ptResVpt = ROOT.TH2F(name+'_ptResVpt', 'EG Pt reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];', 50, 0, 100, 100, -10, 10)
             self.h_ptResp = ROOT.TH1F(name+'_ptResp', 'EG Pt resp.; p_{T}^{L1}/p_{T}^{GEN}', 100, 0, 3)
@@ -942,7 +944,7 @@ class EGResoHistos(BaseResoHistos):
             self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'EG phi reso', 100, -0.4, 0.4)
             self.h_drRes = ROOT.TH1F(name+'_drRes', 'EG DR reso', 100, 0, 0.4)
 
-        BaseResoHistos.__init__(self, name, root_file)
+        BaseResoHistos.__init__(self, name, root_file, debug)
 
     def fill(self, reference, target):
         self.h_ptResVpt.Fill(reference.pt, target.pt-reference.pt)
@@ -955,7 +957,7 @@ class EGResoHistos(BaseResoHistos):
 
 
 class ClusterConeHistos(BaseHistos):
-    def __init__(self, name, root_file=None):
+    def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_ptRel = ROOT.TH1F(name+'_ptRel',
                                      'Pt best/Pt other; p_{T}^{best}/p_{T}^{other}', 100, 0, 1)
@@ -966,7 +968,7 @@ class ClusterConeHistos(BaseHistos):
 
             self.h_deltaR = ROOT.TH1F(name+'_deltaR', '#Delta R (best-other); #Delta R (best, other)', 100, 0, 0.4)
             self.h_n = ROOT.TH1F(name+'_n', '# other clusters in cone; # others', 20, 0, 20)
-        BaseHistos.__init__(self, name, root_file)
+        BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, reference, target, charge):
         self.h_ptRel.Fill(target.pt/reference.pt)
