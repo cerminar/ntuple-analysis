@@ -65,12 +65,14 @@ class HProxy:
         self.root_file = root_file
         self.instance = None
 
-    def get(self):
+    def get(self, debug=False):
         if self.instance is None:
             name = '{}_{}_{}'.format(self.tp, self.tp_sel, self.gen_sel)
             if self.gen_sel is None:
                 name = '{}_{}'.format(self.tp, self.tp_sel)
-            self.instance = self.classtype(name, self.root_file)
+            if debug:
+                print '-- HProxy:Get: {}'.format(name)
+            self.instance = self.classtype(name, self.root_file, debug)
         return self.instance
 
 
@@ -165,7 +167,7 @@ class HPlot:
 
         # print labels
         text = ', '.join([self.labels_dict[fl] for fl in histo_df[text_fields].iloc[0].values if self.labels_dict[fl] != ''])
-        histo = [his.get() for his in histo_df['histo'].values]
+        histo = [his.get(debug) for his in histo_df['histo'].values]
         return histo, labels, text
 
 
