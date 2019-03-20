@@ -181,11 +181,15 @@ tkisoeg_pt_selections += add_selections(tkisoeg_selections, tp_pt_selections)
 
 tkeg_selection = [Selection('all'),
                   Selection('M1', '|#Delta#phi| <0.08 & #DeltaR < 0.07', '(abs(dphi) < 0.08) & (dr < 0.07)'),
-                  Selection('M1P', '|#Delta#phi| <0.08 & #DeltaR < 0.07 & p_{T}^{trk} > 10GeV', '(abs(dphi) < 0.08) & (dr < 0.07) & (tkpt > 10.)'),
-                  Selection('M1S', '|#Delta#phi| <0.08 & #DeltaR < 0.07 & #stubs > 3', '(abs(dphi) < 0.08) & (dr < 0.07) & (tknstubs > 3)'),
-                  Selection('M2', '|#Delta#phi| <0.08 & #DeltaR < 0.05', '(abs(dphi) < 0.08) & (dr < 0.05)'),
-                  Selection('M2P', '|#Delta#phi| <0.08 & #DeltaR < 0.05 & p_{T}^{trk} > 10GeV', '(abs(dphi) < 0.08) & (dr < 0.05) & (tkpt > 10.)'),
-                  Selection('M2S', '|#Delta#phi| <0.08 & #DeltaR < 0.05 & #stubs > 3', '(abs(dphi) < 0.08) & (dr < 0.05) & (tknstubs > 3)'),
+                  Selection('M1P2', '|#Delta#phi| <0.08 & #DeltaR < 0.07 & p_{T}^{trk} > 2GeV', '(abs(dphi) < 0.08) & (dr < 0.07) & (tkpt > 2.)'),
+                  Selection('M1P5', '|#Delta#phi| <0.08 & #DeltaR < 0.07 & p_{T}^{trk} > 5GeV', '(abs(dphi) < 0.08) & (dr < 0.07) & (tkpt > 5.)'),
+                  Selection('M1P10', '|#Delta#phi| <0.08 & #DeltaR < 0.07 & p_{T}^{trk} > 10GeV', '(abs(dphi) < 0.08) & (dr < 0.07) & (tkpt > 10.)'),
+                  Selection('M1P2S', '|#Delta#phi| <0.08 & #DeltaR < 0.07 & p_{T}^{trk} > 2GeV', '(abs(dphi) < 0.08) & (dr < 0.07) & (tkpt > 2.) & (tknstubs > 3)'),
+                  Selection('M1P5S', '|#Delta#phi| <0.08 & #DeltaR < 0.07 & p_{T}^{trk} > 5GeV', '(abs(dphi) < 0.08) & (dr < 0.07) & (tkpt > 5.) & (tknstubs > 3)'),
+                  Selection('M1P10S', '|#Delta#phi| <0.08 & #DeltaR < 0.07 & p_{T}^{trk} > 10GeV', '(abs(dphi) < 0.08) & (dr < 0.07) & (tkpt > 10.) & (tknstubs > 3)'),
+                  # Selection('M2', '|#Delta#phi| <0.08 & #DeltaR < 0.05', '(abs(dphi) < 0.08) & (dr < 0.05)'),
+                  # Selection('M2P', '|#Delta#phi| <0.08 & #DeltaR < 0.05 & p_{T}^{trk} > 10GeV', '(abs(dphi) < 0.08) & (dr < 0.05) & (tkpt > 10.)'),
+                  # Selection('M2S', '|#Delta#phi| <0.08 & #DeltaR < 0.05 & #stubs > 3', '(abs(dphi) < 0.08) & (dr < 0.05) & (tknstubs > 3)'),
                   ]
 
 tkeg_rate_selections = []
