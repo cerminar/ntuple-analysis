@@ -653,7 +653,7 @@ def analyze(params, batch_idx=0):
         trigger3DClustersMerged = get_merged_clusters(trigger3DClusters[trigger3DClusters.quality > 0], pool)
         hmvdr_merged_cl3ds = get_merged_clusters(hmvdr_cl3ds, pool)
 
-        tkegs = get_trackmatched_egs(egs=egamma, tracks=tracks[tracks.nStubs > 3])
+        tkegs = get_trackmatched_egs(egs=egamma, tracks=tracks)
         # tkegs = get_trackmatched_egs(egs=egamma, tracks=tracks[tracks.nStubs > 3])
         debugPrintOut(debug, 'Tk matched EGs',
                       toCount=tkegs,
