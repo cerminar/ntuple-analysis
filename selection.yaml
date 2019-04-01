@@ -123,6 +123,13 @@ collections:
       # - tp_egm_plotters
       # - eg_rate_plotters
 
+  pu_studies:
+    samples:
+      - ttbar_PU200
+      - nugun_alleta_pu200
+    plotters:
+      - ttower_plotters
+
 plotters:
   rate_plotters: !!python/name:python.plotters.rate_plotters
   tp_egm_plotters: !!python/name:python.plotters.tp_plotters
@@ -192,4 +199,8 @@ samples:
 
   nugun_endcap_PU200:
     input_sample_dir: NuGun_PU200/NTP/v13/
+    events_per_job: 200
+
+  ttbar_PU200:
+    input_sample_dir: TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/TT_PU200_v21/190319_174720/0000/
     events_per_job: 200
