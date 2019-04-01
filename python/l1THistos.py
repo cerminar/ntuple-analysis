@@ -693,7 +693,7 @@ class TriggerTowerResoHistos(BaseResoHistos):
 
 
 class ResoHistos(BaseResoHistos):
-    def __init__(self, name, root_file=None):
+    def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_ptRes = ROOT.TH1F(name+'_ptRes', '3D Cluster Pt reso (GeV); p_{T}^{L1} - p_{T}^{GEN} [GeV]', 200, -40, 40)
             self.h_energyRes = ROOT.TH1F(name+'_energyRes', '3D Cluster Energy reso (GeV); E^{L1} - E^{GEN} [GeV]', 200, -100, 100)
