@@ -1,4 +1,21 @@
 #!/usr/bin/env python
+
+"""
+Main script for L1 TP analysis.
+
+The script reads the configuration, opens the input and output files for the given sample,
+runs the event loop and saves histograms to disk.
+All the analysis logic is anyhow elsewhere:
+
+Data:
+    which data are potentially read is handled in the `collections` module.
+    How to select the data is handled in the `selections` module.
+Plotters:
+    what to do with the data is handled in the `plotters` module
+Histograms:
+    which histograms are produced is handled in the `l1THistos` module (and the plotters).
+"""
+
 # import ROOT
 # from __future__ import print_function
 import sys
@@ -12,8 +29,6 @@ import optparse
 import yaml
 import traceback
 import subprocess32
-
-from multiprocessing import Pool
 from shutil import copyfile
 
 import root_numpy as rnp
