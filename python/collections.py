@@ -351,6 +351,13 @@ tkegs = DFCollection(name='TKEG', label='TkEG',
 
 
 class TPSet:
+    """
+    [TPSet] Represents a complet set of TPs and components (3D clusters + 2D and TC).
+
+    Doesn't actually provide any functionality beyond an interface to the
+    corresponding DFCollection objects.
+    """
+
     def __init__(self, cl3ds, cl2ds, tcs):
         self.tcs = tcs
         self.cl2ds = cl2ds
