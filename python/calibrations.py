@@ -1,3 +1,7 @@
+import pandas as pd
+import numpy as np
+
+
 tpg_layer_calib_v8 = [0.0,
                       0.0183664,
                       0.,
@@ -53,7 +57,7 @@ tpg_layer_calib_v8 = [0.0,
                       0.328053]
 
 dEdX_weights_v8 = [0.0,   # there is no layer zero
-                   8.603, # Mev
+                   8.603,  # Mev
                    8.0675,
                    8.0675,
                    8.0675,
@@ -108,7 +112,7 @@ dEdX_weights_v8 = [0.0,   # there is no layer zero
 
 
 dEdX_weights_v9 = [0.0,      # there is no layer zero
-                   8.366557, # Mev
+                   8.366557,  # Mev
                    10.425456,
                    10.425456,
                    10.425456,
@@ -174,6 +178,7 @@ def compute_tpg_weights(weights):
                 tpg_weights.append(0)
     return tpg_weights
 
+
 tpg_dEdx_weights_v8 = compute_tpg_weights(dEdX_weights_v8)
 tpg_dEdx_weights_v9 = compute_tpg_weights(dEdX_weights_v9)
 
@@ -190,16 +195,21 @@ def compute_kfact(layer_calib, dedx_weight, thick_corr):
             ret.append(0.)
     return ret
 
+
 kfact_v8 = compute_kfact(tpg_layer_calib_v8, tpg_dEdx_weights_v8, thickness_s200_v8)
+
 
 def get_layer_pt(cl2d, clweights=[1.]*53):
     return cl2d.pt*clweights[cl2d.layer]
 
+
 def get_layer_pt_lcl(cl2d, clweights=tpg_layer_calib_v8):
     return cl2d.mipPt*clweights[cl2d.layer]
 
+
 def get_layer_pt_dedx(cl2d, clweights=tpg_dEdx_weights_v8):
     return cl2d.mipPt*clweights[cl2d.layer]*0.001/1.092
+
 
 def get_layer_pt_calibv9(cl2d, clweights=tpg_dEdx_weights_v9):
     return cl2d.mipPt*clweights[cl2d.layer]*0.001*kfact_v8[cl2d.layer]/thickness_s200_v9
@@ -214,6 +224,7 @@ def get_component_pt(cl3d, cl2ds, clweights=[1.]*53):
     components['ptcalib'] = components.apply(lambda x: get_layer_pt(x, clweights), axis=1)
 
     return components.ptcalib.sum()
+
 
 def get_component_pt_lcl(cl3d, cl2ds):
     # print cl3d
@@ -236,6 +247,7 @@ def get_component_pt_dedx(cl3d, cl2ds):
 
     return components.ptcalib_dedx.sum()
 
+
 def get_component_pt_kfact(cl3d, cl2ds):
     # print cl3d
     # print cl3d.clusters
@@ -246,6 +258,7 @@ def get_component_pt_kfact(cl3d, cl2ds):
 
     return components.ptcalib_kfact.sum()
 
+
 def get_component_pt_v9calib(cl3d, cl2ds):
     # print cl3d
     # print cl3d.clusters
@@ -255,6 +268,14 @@ def get_component_pt_v9calib(cl3d, cl2ds):
     components['ptcalib_v9calib'] = components.apply(lambda x: get_layer_pt_calibv9(x), axis=1)
 
     return components.ptcalib_v9calib.sum()
+
+
+calibration_file_name = 'data/calib_v2.json'
+calib_factors = pd.read_json(calibration_file_name, dtype={'calib': np.float64,
+                                                           'eta_h': np.float64,
+                                                           'eta_l': np.float64,
+                                                           'pt_h': np.float64,
+                                                           'pt_l': np.float64})
 
 
 # get_layer_pt_calibv9

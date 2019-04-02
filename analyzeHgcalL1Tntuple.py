@@ -1,37 +1,32 @@
 #!/usr/bin/env python
 # import ROOT
 # from __future__ import print_function
-from NtupleDataFormat import HGCalNtuple
 import sys
-import root_numpy as rnp
-import root_numpy.tmva as rnptmva
-import pandas as pd
-import numpy as np
-from multiprocessing import Pool
-from shutil import copyfile
-
-
 # The purpose of this file is to demonstrate mainly the objects
 # that are in the HGCalNtuple
 import ROOT
 import os
-import array
 import socket
 import datetime
 import optparse
 import yaml
-import math
-
-import python.l1THistos as histos
-import python.clusterTools as clAlgo
 import traceback
 import subprocess32
-from python.utils import debugPrintOut
-from python.utils import match_etaphi
 
+from multiprocessing import Pool
+from shutil import copyfile
+
+import root_numpy as rnp
+import pandas as pd
+import numpy as np
+
+from NtupleDataFormat import HGCalNtuple
+import python.l1THistos as histos
+# import python.clusterTools as clAlgo
 import python.file_manager as fm
-import python.selections as selections
-import python.calibrations as calib
+import python.collections as collections
+from python.utils import debugPrintOut
+
 
 class Parameters:
     def __init__(self,
@@ -145,153 +140,10 @@ def dumpFrame2JSON(filename, frame):
         f.write(frame.to_json())
 
 
-def get_calibrated_clusters(calib_factors, input_3Dclusters):
-    calibrated_clusters = input_3Dclusters.copy(deep=True)
-
-    def apply_calibration(cluster):
-        calib_factor = 1
-        calib_factor_tmp = calib_factors[(calib_factors.eta_l < abs(cluster.eta)) &
-                                         (calib_factors.eta_h >= abs(cluster.eta)) &
-                                         (calib_factors.pt_l <= cluster.pt) &
-                                         (calib_factors.pt_h > cluster.pt)]
-        if not calib_factor_tmp.empty:
-            # print 'cluster pt: {}, eta: {}, calib_factor: {}'.format(cluster.pt, cluster.eta, calib_factor_tmp.calib.values[0])
-            # print calib_factor_tmp
-            calib_factor = 1./calib_factor_tmp.calib.values[0]
-        # print cluster
-        # else:
-            # if cluster.eta <= 2.8 and cluster.eta > 1.52 and cluster.pt > 4 and cluster.pt <= 100:
-            #     print cluster[['pt', 'eta']]
-        cluster.pt = cluster.pt*calib_factor
-        # cluster['pt1'] = cluster.pt*calib_factor
-        # cluster['cf'] = 1./calib_factor
-        return cluster
-        # input_3Dclusters[(input_3Dclusters.eta_l > abs(cluster.eta)) & ()]
-    calibrated_clusters = calibrated_clusters.apply(apply_calibration, axis=1)
-    return calibrated_clusters
-
-
-def get_calibrated_clusters2(calib_factors, input_3Dclusters):
-    calibrated_clusters = input_3Dclusters.copy(deep=True)
-
-    def apply_calibration(cluster):
-        calib_factor = 1.
-        calib_factor_tmp = calib_factors[(calib_factors.eta_l < abs(cluster.eta)) &
-                                         (calib_factors.eta_h >= abs(cluster.eta)) &
-                                         (calib_factors.pt_l < cluster.pt) &
-                                         (calib_factors.pt_h >= cluster.pt)]
-        if not calib_factor_tmp.empty:
-            # print 'cluster pt: {}, eta: {}, calib_factor: {}'.format(cluster.pt, cluster.eta, calib_factor_tmp.calib.values[0])
-            # print calib_factor_tmp
-            calib_factor = 1./calib_factor_tmp.calib.values[0]
-        # print cluster
-        else:
-            if cluster.eta <= 2.8 and cluster.eta > 1.52 and cluster.pt > 4 and cluster.pt <= 100:
-                print cluster[['pt', 'eta']]
-
-        cluster['pt2'] = cluster.pt*calib_factor
-        return cluster
-        # input_3Dclusters[(input_3Dclusters.eta_l > abs(cluster.eta)) & ()]
-    calibrated_clusters = calibrated_clusters.apply(apply_calibration, axis=1)
-    return calibrated_clusters
-
-
-def build3DClusters(name, algorithm, triggerClusters, pool, debug):
-    trigger3DClusters = pd.DataFrame()
-    if triggerClusters.empty:
-        return trigger3DClusters
-    clusterSides = [x for x in [triggerClusters[triggerClusters.eta > 0],
-                                triggerClusters[triggerClusters.eta < 0]] if not x.empty]
-    results3Dcl = pool.map(algorithm, clusterSides)
-    for res3D in results3Dcl:
-        trigger3DClusters = trigger3DClusters.append(res3D, ignore_index=True, sort=False)
-
-    debugPrintOut(debug, name='{} 3D clusters'.format(name),
-                  toCount=trigger3DClusters,
-                  toPrint=trigger3DClusters.iloc[:3])
-    return trigger3DClusters
-
-
-def get_merged_clusters(triggerClusters, pool, debug=0):
-    merged_clusters = pd.DataFrame(columns=triggerClusters.columns)
-    if triggerClusters.empty:
-        return merged_clusters
-    # FIXME: filter only interesting clusters
-    clusterSides = [x for x in [triggerClusters[triggerClusters.eta > 0],
-                                triggerClusters[triggerClusters.eta < 0]] if not x.empty]
-
-    results3Dcl = pool.map(clAlgo.merge3DClustersEtaPhi, clusterSides)
-    for res3D in results3Dcl:
-        merged_clusters = merged_clusters.append(res3D, ignore_index=True, sort=False)
-    return merged_clusters
-
-
-def get_trackmatched_egs(egs, tracks, debug=0):
-    newcolumns = ['pt', 'energy', 'eta', 'phi', 'hwQual']
-    newcolumns.extend(['tkpt', 'tketa', 'tkphi', 'tkz0', 'tkchi2', 'tkchi2Red', 'tknstubs', 'deta', 'dphi', 'dr'])
-    matched_egs = pd.DataFrame(columns=newcolumns)
-    if egs.empty or tracks.empty:
-        return matched_egs
-    best_match_indexes, allmatches = match_etaphi(egs[['eta', 'phi']],
-                                                  tracks[['caloeta', 'calophi']],
-                                                  tracks['pt'],
-                                                  deltaR=0.1)
-    for bestmatch_idxes in best_match_indexes.iteritems():
-        bestmatch_eg = egs.loc[bestmatch_idxes[0]]
-        bestmatch_tk = tracks.loc[bestmatch_idxes[1]]
-        matched_egs = matched_egs.append({'pt': bestmatch_eg.pt,
-                                          'energy': bestmatch_eg.energy,
-                                          'eta': bestmatch_eg.eta,
-                                          'phi': bestmatch_eg.phi,
-                                          'hwQual': bestmatch_eg.hwQual,
-                                          'tkpt': bestmatch_tk.pt,
-                                          'tketa': bestmatch_tk.eta,
-                                          'tkphi': bestmatch_tk.phi,
-                                          'tkz0': bestmatch_tk.z0,
-                                          'tkchi2': bestmatch_tk.chi2,
-                                          'tkchi2Red': bestmatch_tk.chi2Red,
-                                          'tknstubs': bestmatch_tk.nStubs,
-                                          'deta': bestmatch_tk.eta - bestmatch_eg.eta,
-                                          'dphi': bestmatch_tk.phi - bestmatch_eg.phi,
-                                          'dr': math.sqrt((bestmatch_tk.phi-bestmatch_eg.phi)**2+(bestmatch_tk.eta-bestmatch_eg.eta)**2)},
-                                          ignore_index=True, sort=False)
-    return matched_egs
-
-
-def compute_tower_data(towers):
-    if towers.empty:
-        # print '***[compute_tower_data]:WARNING input data-frame is empty'
-        return towers
-
-    towers.eval('HoE = etHad/etEm', inplace=True)
-
-    def fill_momentum(tower):
-        vector = ROOT.TLorentzVector()
-        vector.SetPtEtaPhiE(tower.pt, tower.eta, tower.phi, tower.energy)
-        tower.momentum = vector
-        # print tower.pt, tower.momentum.Pt()
-        return tower
-
-    towers['momentum'] = ROOT.TLorentzVector()
-    towers = towers.apply(fill_momentum, axis=1)
-
-    return towers
-
-
-def book_MVA_classifier(model, weight_file, variables):
-    mva_classifier = ROOT.TMVA.Reader()
-
-    for variable in variables:
-        mva_classifier.AddVariable(variable, array.array('f', [0.]))
-    mva_classifier.BookMVA(model, weight_file)
-    return mva_classifier
-
-
 # @profile
 def analyze(params, batch_idx=0):
     print (params)
     debug = int(params.debug)
-    pool = Pool(5)
 
     tc_geom_df = pd.DataFrame()
     tc_rod_bins = pd.DataFrame()
@@ -371,36 +223,9 @@ def analyze(params, batch_idx=0):
     for plotter in plotter_collection:
         plotter.book_histos()
 
-    # def apply_calibrations(original_clusters, calibration_file_name):
-    calibration_file_name = 'data/calib_v2.json'
-    calib_factors = pd.read_json(calibration_file_name, dtype={'calib': np.float64,
-                                                               'eta_h': np.float64,
-                                                               'eta_l': np.float64,
-                                                               'pt_h': np.float64,
-                                                               'pt_l': np.float64})
-
-    # setup the EGID classifies
-    mva_pu_classifier = book_MVA_classifier(model='BDT',
-                                            weight_file='data/MVAnalysis_Bkg_BDTvsPU.weights.xml',
-                                            variables=['pt_cl',
-                                                       'eta_cl',
-                                                       'maxLayer_cl',
-                                                       'hOverE_cl',
-                                                       'eMaxOverE_cl',
-                                                       'sigmaZZ_cl'])
-
-    mva_pi_classifier = book_MVA_classifier(model='BDT',
-                                            weight_file='data/MVAnalysis_Bkg_BDTvsPions.weights.xml',
-                                            variables=['pt_cl',
-                                                       'eta_cl',
-                                                       'maxLayer_cl',
-                                                       'hOverE_cl',
-                                                       'eMaxOverE_cl',
-                                                       'sigmaZZ_cl'])
-
-
     # -------------------------------------------------------
     # event loop
+    ev_manager = collections.EventManager()
 
     nev = 0
     for evt_idx in range(range_ev[0], range_ev[1]+1):
@@ -417,73 +242,18 @@ def analyze(params, batch_idx=0):
         nev += 1
 
         # get the interesting data-frames
-        genParts = event.getDataFrame(prefix='gen')
-
         # FIXME: we remove this preselection for now paying the price of reading all branches also
         # for non interesting events, is this a good idea?
         # if len(genParts[(genParts.eta > 1.7) & (genParts.eta < 2.5)]) == 0:
         #     continue
-        #
-        # dataframes = pool.map(unpack, branches)
-        genParticles = event.getDataFrame(prefix='genpart')
-        triggerCells = event.getDataFrame(prefix='tc')
-        triggerClusters = event.getDataFrame(prefix='cl')
-        trigger3DClusters = event.getDataFrame(prefix='cl3d')
+        ev_manager.read(event, debug)
 
-        hmvdr_cl3ds = event.getDataFrame(prefix='hmVRcl3d')
-        trigger3DClusters_nc = event.getDataFrame(prefix='cl3dNC')
-        hmvdr_cl3ds_nc0 = event.getDataFrame(prefix='hmVRcl3dNC0')
-        hmvdr_cl3ds_nc1 = event.getDataFrame(prefix='hmVRcl3dNC1')
-        triggerTowers = event.getDataFrame(prefix='tower')
-        simTriggerTowers = event.getDataFrame(prefix='simTower')
-        egamma = event.getDataFrame(prefix='egammaEE')
-        hgcrocTowers = event.getDataFrame(prefix='hgcrocTower')
-        waferTowers = event.getDataFrame(prefix='waferTower')
-        tracks = event.getDataFrame(prefix='l1track')
-        tkele = event.getDataFrame(prefix='tkEle')
-        tkIsoEle = event.getDataFrame(prefix='tkIsoEle')
-
-        # print tkele
-        # print tkIsoEle
         puInfo = event.getPUInfo()
-
         debugPrintOut(debug, 'PU', toCount=puInfo, toPrint=puInfo)
-        debugPrintOut(debug, 'tracks', toCount=tracks, toPrint=tracks[:3])
 
         # ----------------------------------
-        if not tc_rod_bins.empty:
-            triggerCells = pd.merge(triggerCells,
-                                    tc_rod_bins,
-                                    on='id')
-
-        genParticles['pdgid'] = genParticles.pid
-        genParticles['abseta'] = np.abs(genParticles.eta)
-
         # this is not needed anymore in recent versions of the ntuples
         # tcsWithPos = pd.merge(triggerCells, tc_geom_df[['id', 'x', 'y']], on='id')
-
-
-        triggerClusters['ncells'] = [len(x) for x in triggerClusters.cells]
-        # if 'x' not in triggerClusters.columns:
-        #     triggerClusters = pd.merge(triggerClusters, tc_geom_df[['z', 'id']], on='id')
-        #     triggerClusters['R'] = triggerClusters.z/np.sinh(triggerClusters.eta)
-        #     triggerClusters['x'] = triggerClusters.R*np.cos(triggerClusters.phi)
-
-        def cl3d_dfixtures(clusters):
-            clusters['nclu'] = [len(x) for x in clusters.clusters]
-            clusters['ptem'] = clusters.pt/(1+clusters.hoe)
-            clusters['eem'] = clusters.energy/(1+clusters.hoe)
-        #     triggerClusters['y'] = triggerClusters.R*np.sin(triggerClusters.phi)
-
-
-        cl3d_dfixtures(clusters=trigger3DClusters)
-
-        # cl3d_dfixtures(clusters=hm_cl3ds)
-        cl3d_dfixtures(clusters=hmvdr_cl3ds)
-        # cl3d_dfixtures(clusters=trigger3DClusters_nc)
-        #
-        # cl3d_dfixtures(clusters=hmvdr_cl3ds_nc0)
-        # cl3d_dfixtures(clusters=hmvdr_cl3ds_nc1)
 
         # if not trigger3DClusters.empty:
         #     trigger3DClusters['ptcalib'] = trigger3DClusters.apply(lambda x: calib.get_component_pt(x, triggerClusters), axis=1)
@@ -493,47 +263,16 @@ def analyze(params, batch_idx=0):
         #
         #     print trigger3DClusters[['eta', 'phi', 'pt', 'ptcalib', 'ptcalib_lc', 'ptcalib_dedx', 'ptcalib_kfact']]
 
-        # trigger3DClusters['nclu'] = [len(x) for x in trigger3DClusters.clusters]
-        # hm_cl3ds['nclu'] = [len(x) for x in hm_cl3ds.clusters]
-        # hmvdr_cl3ds['nclu'] = [len(x) for x in hmvdr_cl3ds.clusters]
-
-        def compute_hoe(cluster):
-            # print cluster
-            components = triggerClusters[triggerClusters.id.isin(cluster.clusters)]
-            e_energy = components[components.layer <= 28].energy.sum()
-            h_enery = components[components.layer > 28].energy.sum()
-            if e_energy != 0.:
-                cluster.hoe = h_enery/e_energy
-            return cluster
         # trigger3DClusters['hoe'] = 999.
         # trigger3DClusters = trigger3DClusters.apply(compute_hoe, axis=1)
-
-        trigger3DClusters['bdt_pu'] = rnptmva.evaluate_reader(
-            mva_pu_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
-
-        trigger3DClusters['bdt_pi'] = rnptmva.evaluate_reader(
-            mva_pi_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
-
-        triggerCells['ncells'] = 1
-
-        if not triggerCells.empty:
-            triggerCells['cells'] = triggerCells.apply(func=lambda x : [int(x.id)], axis=1)
 
         # trigger3DClusters['bdt_l'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'eMaxOverE', 'szz', 'srrtot']], 0.8)
         # trigger3DClusters['bdt_t'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'eMaxOverE', 'szz', 'srrtot']], 0.95)
 
-        trigger3DClustersP = pd.DataFrame()
-        triggerClustersGEO = pd.DataFrame()
-        trigger3DClustersGEO = pd.DataFrame()
-        triggerClustersDBS = pd.DataFrame()
-        trigger3DClustersDBS = pd.DataFrame()
-        trigger3DClustersDBSp = pd.DataFrame()
-        trigger3DClustersCalib = pd.DataFrame()
-        trigger3DClustersMerged = pd.DataFrame()
-        hmvdr_merged_cl3ds = pd.DataFrame()
-        # trigger3DClustersUncalib = trigger3DClusters.copy()
-        # hmvdr_cl3ds_uncalib = hmvdr_cl3ds.copy()
-
+        # trigger3DClustersP = pd.DataFrame()
+        # triggerClustersDBS = pd.DataFrame()
+        # trigger3DClustersDBS = pd.DataFrame()
+        # trigger3DClustersDBSp = pd.DataFrame()
         # is_v8_geometry = False
         # if is_v8_geometry:
         #     if not trigger3DClustersUncalib.empty:
@@ -550,204 +289,17 @@ def analyze(params, batch_idx=0):
         #         hmvdr_cl3ds['pt'] = hmvdr_cl3ds.apply(lambda x: calib.get_component_pt_v9calib(x, triggerCells), axis=1)
         #         # hmvdr_cl3ds_uncalib['ptcalib'] = hmvdr_cl3ds_uncalib.apply(lambda x: calib.get_component_pt_lcl(x, triggerCells), axis=1)
 
-
-        triggerTowers = compute_tower_data(triggerTowers)
-        simTriggerTowers = compute_tower_data(simTriggerTowers)
-        hgcrocTowers = compute_tower_data(hgcrocTowers)
-        waferTowers = compute_tower_data(waferTowers)
-
-        if not tc_rod_bins.empty:
-            clAlgo.computeClusterRodSharing(triggerClusters, triggerCells)
-
-        debugPrintOut(debug, 'gen parts', toCount=genParts, toPrint=genParts)
-        debugPrintOut(debug, 'gen particles',
-                      toCount=genParticles,
-                      toPrint=genParticles[genParticles.gen != -1][['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'pid', 'gen', 'reachedEE', 'fromBeamPipe']].sort_values(by='pt', ascending=False).iloc[:10])
-        # print genParticles.columns
-        # debugPrintOut(debug, 'digis',
-        #               toCount=hgcDigis,
-        #               toPrint=hgcDigis.iloc[:3])
-        debugPrintOut(debug, 'Trigger Cells',
-                      toCount=triggerCells,
-                      toPrint=triggerCells.iloc[:3])
-        debugPrintOut(debug, '2D clusters',
-                      toCount=triggerClusters,
-                      toPrint=triggerClusters.sort_values(by='pt', ascending=False).iloc[:3])
-        if not trigger3DClusters.empty:
-            debugPrintOut(debug, '3D clusters',
-                          toCount=trigger3DClusters,
-                          toPrint=trigger3DClusters[trigger3DClusters.quality > 0].sort_values(by='pt', ascending=False).iloc[:10])
-
-        if not trigger3DClusters_nc.empty:
-            debugPrintOut(debug, '3D clusters NC',
-                          toCount=trigger3DClusters_nc,
-                          toPrint=trigger3DClusters_nc[trigger3DClusters_nc.quality > 0].sort_values(by='pt', ascending=False).iloc[:10])
-
-        # if not hm_cl3ds.empty:
-        #     debugPrintOut(debug, '3D clusters (HistoMaxC3d)',
-        #                   toCount=hm_cl3ds,
-        #                   toPrint=hm_cl3ds[hm_cl3ds.quality > 0].sort_values(by='pt', ascending=False).iloc[:10])
-
-        if not hmvdr_cl3ds.empty:
-            debugPrintOut(debug, '3D clusters  (HistoMaxC3d + dR(layer))',
-                          toCount=hmvdr_cl3ds,
-                          toPrint=hmvdr_cl3ds[hmvdr_cl3ds.quality >= 0].sort_values(by='pt', ascending=False).iloc[:10])
-
-        if not hmvdr_cl3ds_nc0.empty:
-            debugPrintOut(debug, '3D clusters  (HistoMaxC3d + dR(layer) + NC0)',
-                          toCount=hmvdr_cl3ds_nc0,
-                          toPrint=hmvdr_cl3ds_nc0[hmvdr_cl3ds_nc0.quality >= 0].sort_values(by='pt', ascending=False).iloc[:10])
-
-        if not hmvdr_cl3ds_nc1.empty:
-            debugPrintOut(debug, '3D clusters  (HistoMaxC3d + dR(layer) + NC1)',
-                          toCount=hmvdr_cl3ds_nc1,
-                          toPrint=hmvdr_cl3ds_nc1[hmvdr_cl3ds_nc1.quality >= 0].sort_values(by='pt', ascending=False).iloc[:10])
-
-
-        # if not trigger3DClustersUncalib.empty:
-        #     debugPrintOut(debug, '3D clusters Uncalib',
-        #                   toCount=trigger3DClustersUncalib,
-        #                   toPrint=trigger3DClustersUncalib[trigger3DClustersUncalib.quality >= 0].sort_values(by='pt', ascending=False).iloc[:10])
-        #
-        # if not hmvdr_cl3ds_uncalib.empty:
-        #     debugPrintOut(debug, '3D clusters (HistoMaxC3d + dR(layer)) uncalib',
-        #                   toCount=hmvdr_cl3ds_uncalib,
-        #                   toPrint=hmvdr_cl3ds_uncalib[hmvdr_cl3ds_uncalib.quality >= 0].sort_values(by='pt', ascending=False).iloc[:10])
-
-        debugPrintOut(debug, 'Egamma',
-                      toCount=egamma,
-                      toPrint=egamma.sort_values(by='pt', ascending=False).iloc[:10])
-
-        if not triggerTowers.empty:
-            debugPrintOut(debug, 'Trigger Towers',
-                          toCount=triggerTowers,
-                          toPrint=triggerTowers.sort_values(by='pt', ascending=False).iloc[:10])
-        if not simTriggerTowers.empty:
-            debugPrintOut(debug, 'Sim Trigger Towers',
-                          toCount=simTriggerTowers,
-                          toPrint=simTriggerTowers.sort_values(by='pt', ascending=False).iloc[:10])
-        if not hgcrocTowers.empty:
-            debugPrintOut(debug, 'HGCROC Trigger Towers',
-                          toCount=hgcrocTowers,
-                          toPrint=hgcrocTowers.sort_values(by='pt', ascending=False).iloc[:10])
-        if not waferTowers.empty:
-            debugPrintOut(debug, 'Wafer Trigger Towers',
-                          toCount=waferTowers,
-                          toPrint=waferTowers.sort_values(by='pt', ascending=False).iloc[:10])
-
-        if not tkele.empty:
-            debugPrintOut(debug, 'Tk Electrons:',
-                          toCount=tkele,
-                          toPrint=tkele.sort_values(by='pt', ascending=False).iloc[:10])
-
-        if not tkIsoEle.empty:
-            debugPrintOut(debug, 'Tk IsoElectrons:',
-                          toCount=tkIsoEle,
-                          toPrint=tkIsoEle.sort_values(by='pt', ascending=False).iloc[:10])
-
-
-        # print '# towers eta >0 {}'.format(len(triggerTowers[triggerTowers.eta > 0]))
-        # print '# towers eta <0 {}'.format(len(triggerTowers[triggerTowers.eta < 0]))
-
-        trigger3DClustersCalib = get_calibrated_clusters(calib_factors, trigger3DClusters)
-        trigger3DClustersMerged = get_merged_clusters(trigger3DClusters[trigger3DClusters.quality > 0], pool)
-        hmvdr_merged_cl3ds = get_merged_clusters(hmvdr_cl3ds, pool)
-
-        tkegs = get_trackmatched_egs(egs=egamma, tracks=tracks)
-        # tkegs = get_trackmatched_egs(egs=egamma, tracks=tracks[tracks.nStubs > 3])
-        debugPrintOut(debug, 'Tk matched EGs',
-                      toCount=tkegs,
-                      toPrint=tkegs)
-
-        # print trigger3DClusters[:3]
-        # print trigger3DClustersCalib[:3]
-        debugPrintOut(debug, 'Calibrated 3D clusters',
-                      toCount=trigger3DClustersCalib,
-                      toPrint=trigger3DClustersCalib.sort_values(by='pt', ascending=False).iloc[:10])
-
-        if not trigger3DClustersMerged.empty:
-            debugPrintOut(debug, 'Merged 3D clusters',
-                          toCount=trigger3DClustersMerged,
-                          toPrint=trigger3DClustersMerged.sort_values(by='pt', ascending=False).iloc[:10])
-
-        if not hmvdr_merged_cl3ds.empty:
-            debugPrintOut(debug, 'Merged HM 3D clusters',
-                          toCount=hmvdr_merged_cl3ds,
-                          toPrint=hmvdr_merged_cl3ds.sort_values(by='pt', ascending=False)[['pt', 'ptem', 'eta', 'phi', 'quality']].iloc[:10])
-
-
-        # from python.selections import genpart_ele_ee_selections,gen_part_selections
-        # #print genpart_ele_ee_selections
-        # #print gen_part_selections
-        # test1_b = [fil for fil in genpart_ele_ee_selections if 'EleEtaB' in fil.name]
-        # test2_b = [fil for fil in gen_part_selections if 'GENEtaB' in fil.name]
-        # sel1_b = genParticles[genParticles.gen > 0].query(test1_b[0].selection)
-        # sel2_b = genParticles[genParticles.gen > 0].query(test2_b[0].selection)
-        # if ((not sel1_b.empty) or (not sel2_b.empty) ):
-        #     print '---- Ele sel:'
-        #     print test1_b
-        #     print sel1_b
-        #     print '---- GN sel:'
-        #     print test2_b
-        #     print sel2_b
-        #
-        # continue
-
-        if params.clusterize:
-            # Now build DBSCAN 2D clusters
-            for zside in [-1, 1]:
-                arg = [(layer, zside, triggerCells) for layer in range(0, 53)]
-                results = pool.map(clAlgo.buildDBSCANClustersUnpack, arg)
-                for clres in results:
-                    triggerClustersDBS = triggerClustersDBS.append(clres, ignore_index=True, sort=False)
-
-            if not tc_rod_bins.empty:
-                clAlgo.computeClusterRodSharing(triggerClustersDBS, triggerCells)
-
-            debugPrintOut(debug, 'DBS 2D clusters',
-                          toCount=triggerClustersDBS,
-                          toPrint=triggerClustersDBS.iloc[:3])
-
-            trigger3DClustersDBS = build3DClusters(
-                'DBS', clAlgo.build3DClustersEtaPhi, triggerClustersDBS, pool, debug)
-            trigger3DClustersDBSp = build3DClusters(
-                'DBSp', clAlgo.build3DClustersProjTowers, triggerClustersDBS, pool, debug)
-            trigger3DClustersP = build3DClusters(
-                'DEFp', clAlgo.build3DClustersProjTowers, triggerClusters, pool, debug)
-        # if doAlternative:
-        #     triggerClustersGEO = event.getDataFrame(prefix='clGEO')
-        #     trigger3DClustersGEO = event.getDataFrame(prefix='cl3dGEO')
-        #     debugPrintOut(debug, 'GEO 2D clusters',
-        #                   toCount=triggerClustersGEO,
-        #                   toPrint=triggerClustersGEO.loc[:3])
-        #     debugPrintOut(debug, 'GEO 3D clusters',
-        #                   toCount=trigger3DClustersGEO,
-        #                   toPrint=trigger3DClustersGEO.loc[:3])
-        #     print(triggerCells[triggerCells.index.isin(np.concatenate(triggerClusters.cells.iloc[:3]))])
-
+        # if params.clusterize:
+        #     # Now build DBSCAN 2D clusters
+        #     for zside in [-1, 1]:
+        #         arg = [(layer, zside, triggerCells) for layer in range(0, 53)]
+        #         results = pool.map(clAlgo.buildDBSCANClustersUnpack, arg)
+        #         for clres in results:
+        #             triggerClustersDBS = triggerClustersDBS.append(clres, ignore_index=True, sort=False)
+        #     trigger3DClustersDBS = build3DClusters(
+        #         'DBS', clAlgo.build3DClustersEtaPhi, triggerClustersDBS, pool, debug)
         # fill histograms
         # hdigis.fill(hgcDigis)
-        selections.tp_def.set_collections(triggerCells, triggerClusters, trigger3DClusters)
-        selections.tp_def_nc.set_collections(triggerCells, triggerClusters, trigger3DClusters_nc)
-
-        # selections.tp_def_uncalib.set_collections(triggerCells, triggerClusters, trigger3DClustersUncalib)
-        selections.tp_hm_vdr.set_collections(triggerCells, triggerCells, hmvdr_cl3ds)
-        selections.tp_hm_vdr_nc0.set_collections(triggerCells, triggerCells, hmvdr_cl3ds_nc0)
-        selections.tp_hm_vdr_nc1.set_collections(triggerCells, triggerCells, hmvdr_cl3ds_nc1)
-        # selections.tp_hm_vdr_uncalib.set_collections(triggerCells, triggerCells, hmvdr_cl3ds_uncalib)
-        selections.tp_hm_vdr_merged.set_collections(triggerCells, triggerCells, hmvdr_merged_cl3ds)
-        selections.tp_def_merged.set_collections(triggerCells, triggerClusters, trigger3DClustersMerged)
-        selections.tp_def_calib.set_collections(triggerCells, triggerClusters, trigger3DClustersCalib)
-        selections.gen_set.set_collections(genParticles)
-        selections.tt_set.set_collections(triggerTowers)
-        selections.simtt_set.set_collections(simTriggerTowers)
-        selections.hgcroc_tt.set_collections(hgcrocTowers)
-        selections.wafer_tt.set_collections(waferTowers)
-        selections.eg_set.set_collections(egamma)
-        selections.track_set.set_collections(tracks)
-        selections.tkeg_set.set_collections(tkegs)
-        selections.tkele_set.set_collections(tkele)
-        selections.tkisoele_set.set_collections(tkIsoEle)
 
         for plotter in plotter_collection:
             # print plotter

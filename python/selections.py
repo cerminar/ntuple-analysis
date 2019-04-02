@@ -1,5 +1,6 @@
 # ---------------------------------------------------
 
+
 class PID:
     electron = 11
     photon = 22
@@ -57,7 +58,7 @@ def add_selections(list1, list2):
 tp_id_selections = [
                     Selection('all', '', ''),
                     Selection('Em', 'EGId', 'quality >0'),
-                    #Selection('Emv1', 'EGId V1', '(showerlength > 1) & (bdt_pu > 0.026) & (bdt_pi > -0.03)')
+                    # Selection('Emv1', 'EGId V1', '(showerlength > 1) & (bdt_pu > 0.026) & (bdt_pi > -0.03)')
                     ]
 
 
@@ -159,7 +160,7 @@ eg_qual_selections = [
 
 iso_selections = [Selection('all'),
                   Selection('Iso0p2', 'Iso0p2', 'tkIso <= 0.2'),
-                  Selection('Iso0p3', 'Iso0p3', 'tkIso <= 0.3'),]
+                  Selection('Iso0p3', 'Iso0p3', 'tkIso <= 0.3'), ]
 
 
 tkisoeg_selections = []
@@ -203,58 +204,6 @@ tracks_selections = [Selection('all'),
                      Selection('Pt2', 'p_{T}^{tk} > 2 GeV', 'pt > 2'),
                      Selection('Pt10', 'p_{T}^{tk} > 10 GeV', 'pt > 10')]
 
-
-class TPSet:
-    def __init__(self, name, label):
-        self.name = name
-        self.label = label
-        self.tc_df = None
-        self.cl2d_df = None
-        self.cl3d_df = None
-
-    def set_collections(self, tc_df, cl2d_df, cl3d_df):
-        self.tc_df = tc_df
-        self.cl2d_df = cl2d_df
-        self.cl3d_df = cl3d_df
-
-    @property
-    def df(self):
-        return self.cl3d_df
-
-
-class DataFrameSet:
-    def __init__(self, name, label):
-        self.name = name
-        self.label = label
-        self.df = None
-
-    def set_collections(self, dataframe):
-        self.df = dataframe
-
-
-tp_def = TPSet('DEF', 'dRC3d')
-tp_def_nc = TPSet('DEFNC', 'dRC3d + NC')
-tp_def_uncalib = TPSet('DEFUncalib', 'dRC3d UnCalib')
-tp_def_merged = TPSet('DEFMerged', 'dRC3d(merged)')
-tp_def_calib = TPSet('DEFCalib', 'dRC3d + calib. v1')
-tp_hm = TPSet('HM', 'HistoMaxC3d')
-tp_hm_vdr = TPSet('HMvDR', 'HistoMaxC3d + dR(layer)')
-tp_hm_vdr_nc0 = TPSet('HMvDRNC0', 'HistoMaxC3d + dR(layer) + NC0')
-tp_hm_vdr_nc1 = TPSet('HMvDRNC1', 'HistoMaxC3d + dR(layer) + NC1')
-
-tp_hm_vdr_uncalib = TPSet('HMvDRUncalib', 'HistoMaxC3d + dR(layer) UnCalib')
-
-tp_hm_vdr_merged = TPSet('HMvDRMerged', 'HistoMaxC3d + dR(layer) + M')
-gen_set = DataFrameSet('GEN', '')
-tt_set = DataFrameSet('TT', 'Trigger Towers')
-simtt_set = DataFrameSet('SimTT', 'Sim Trigger Towers')
-hgcroc_tt = DataFrameSet('HgcrocTT', 'HGCROC Trigger Towers')
-wafer_tt = DataFrameSet('WaferTT', 'Wafer Trigger Towers')
-eg_set = DataFrameSet('EG', 'EGPhase2')
-track_set = DataFrameSet('L1Trk', 'L1Track')
-tkeg_set = DataFrameSet('TkEG', 'TkEG')
-tkele_set = DataFrameSet('TkEle', 'TkEle')
-tkisoele_set = DataFrameSet('TkIsoEle', 'TkIsoEle')
 
 if __name__ == "__main__":
     for sel in gen_part_selections:

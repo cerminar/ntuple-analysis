@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import clusterTools as clAlgo
 import selections as selections
+import collections as collections
 
 
 class RatePlotter:
@@ -13,6 +14,7 @@ class RatePlotter:
         self.h_rate = {}
 
     def book_histos(self):
+        self.tp_set.activate()
         tp_name = self.tp_set.name
         for selection in self.tp_selections:
             self.h_rate[selection.name] = histos.RateHistos(name='{}_{}'.format(tp_name,
@@ -40,6 +42,7 @@ class GenericDataFramePlotter(object):
         self.h_set = {}
 
     def book_histos(self):
+        self.data_set.activate()
         data_name = self.data_set.name
         for selection in self.data_selections:
             self.h_set[selection.name] = self.HistoClass(name='{}_{}_nomatch'.format(data_name,
@@ -80,6 +83,7 @@ class TPPlotter:
         self.h_tpset = {}
 
     def book_histos(self):
+        self.tp_set.activate()
         tp_name = self.tp_set.name
         for selection in self.tp_selections:
             self.h_tpset[selection.name] = histos.HistoSetClusters(name='{}_{}_nomatch'.format(tp_name, selection.name))
@@ -104,6 +108,7 @@ class GenPlotter:
         self.h_gen = {}
 
     def book_histos(self):
+        self.gen_set.activate()
         for selection in self.gen_selections:
             self.h_gen[selection.name] = histos.GenParticleHistos(name='h_genParts_{}'.format(selection.name))
 
@@ -290,6 +295,8 @@ class TPGenMatchPlotter:
         # return matchedClustersAll
 
     def book_histos(self):
+        self.gen_set.activate()
+        self.tp_set.activate()
         for tp_sel in self.tp_selections:
             for gen_sel in self.gen_selections:
                 histo_name = '{}_{}_{}'.format(self.tp_set.name,
@@ -405,6 +412,8 @@ class GenericGenMatchPlotter(object):
                     print (objects)
 
     def book_histos(self):
+        self.gen_set.activate()
+        self.data_set.activate()
         for tp_sel in self.data_selections:
             for gen_sel in self.gen_selections:
                 histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
@@ -460,9 +469,8 @@ class TkEGGenMatchPlotter(GenericGenMatchPlotter):
     def __init__(self, data_set, gen_set,
                  data_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
         super(TkEGGenMatchPlotter, self).__init__(histos.TkEGHistos, histos.EGResoHistos,
-                                                data_set, gen_set,
-                                                data_selections, gen_selections)
-
+                                                  data_set, gen_set,
+                                                  data_selections, gen_selections)
 
 
 class TTGenMatchPlotter:
@@ -477,6 +485,8 @@ class TTGenMatchPlotter:
         self.h_reso_ttcl = {}
 
     def book_histos(self):
+        self.tt_set.activate()
+        self.gen_set.activate()
         for tp_sel in self.tt_selections:
             for gen_sel in self.gen_selections:
                 histo_name = '{}_{}'.format(tp_sel.name, gen_sel.name)
@@ -569,11 +579,11 @@ class TTGenMatchPlotter:
                         print (genParticle)
 
 
-tp_plotters = [TPPlotter(selections.tp_def, selections.tp_id_selections),
+tp_plotters = [TPPlotter(collections.tp_def, selections.tp_id_selections),
                # TPPlotter(selections.tp_def_uncalib, selections.tp_id_selections),
                # TPPlotter(selections.tp_def_calib, selections.tp_id_selections)
                # TPPlotter(selections.tp_hm, selections.tp_id_selections),
-               TPPlotter(selections.tp_hm_vdr, selections.tp_id_selections),
+               TPPlotter(collections.tp_hm_vdr, selections.tp_id_selections),
                # TPPlotter(selections.tp_def_nc, selections.tp_id_selections),
                # TPPlotter(selections.tp_hm_vdr_nc0, selections.tp_id_selections),
                # TPPlotter(selections.tp_hm_vdr_nc1, selections.tp_id_selections),
@@ -582,13 +592,13 @@ tp_plotters = [TPPlotter(selections.tp_def, selections.tp_id_selections),
                # TPPlotter(selections.tp_hm_vdr_merged, selections.tp_id_selections),
 
                ]
-eg_plotters = [EGPlotter(selections.eg_set, selections.eg_qual_selections)]
-track_plotters = [TrackPlotter(selections.track_set, selections.tracks_selections)]
-tkeg_plotters = [TkEGPlotter(selections.tkeg_set, selections.tkeg_qual_selections)]
-rate_plotters = [RatePlotter(selections.tp_def, selections.tp_rate_selections),
+eg_plotters = [EGPlotter(collections.egs, selections.eg_qual_selections)]
+track_plotters = [TrackPlotter(collections.tracks, selections.tracks_selections)]
+tkeg_plotters = [TkEGPlotter(collections.tkegs, selections.tkeg_qual_selections)]
+rate_plotters = [RatePlotter(collections.cl3d_def, selections.tp_rate_selections),
                  # RatePlotter(selections.tp_def_uncalib, selections.tp_rate_selections),
                  # RatePlotter(selections.tp_hm, selections.tp_rate_selections),
-                 RatePlotter(selections.tp_hm_vdr, selections.tp_rate_selections),
+                 RatePlotter(collections.cl3d_hm, selections.tp_rate_selections),
                  # RatePlotter(selections.tp_def_nc, selections.tp_rate_selections),
                  # RatePlotter(selections.tp_hm_vdr_nc0, selections.tp_rate_selections),
                  # RatePlotter(selections.tp_hm_vdr_nc1, selections.tp_rate_selections),
@@ -598,74 +608,78 @@ rate_plotters = [RatePlotter(selections.tp_def, selections.tp_rate_selections),
                  # RatePlotter(selections.tp_def_merged, selections.tp_rate_selections)
                  ]
 
-eg_rate_plotters = [RatePlotter(selections.eg_set, selections.eg_rate_selections),
-                    RatePlotter(selections.tkeg_set, selections.tkeg_rate_selections),
-                    RatePlotter(selections.tkele_set, selections.tkisoeg_rate_selections),
-                    RatePlotter(selections.tkisoele_set, selections.tkisoeg_rate_selections),
+eg_rate_plotters = [RatePlotter(collections.egs, selections.eg_rate_selections),
+                    RatePlotter(collections.tkegs, selections.tkeg_rate_selections),
+                    RatePlotter(collections.tkeles, selections.tkisoeg_rate_selections),
+                    RatePlotter(collections.tkisoeles, selections.tkisoeg_rate_selections),
                     ]
-tp_genmatched_plotters = [TPGenMatchPlotter(selections.tp_def, selections.gen_set,
+tp_genmatched_plotters = [TPGenMatchPlotter(collections.tp_def, collections.gen_parts,
                                             selections.tp_match_selections,
                                             selections.gen_part_selections),
-                          # TPGenMatchPlotter(selections.tp_def_uncalib, selections.gen_set,
+                          # TPGenMatchPlotter(selections.tp_def_uncalib, collections.gen_parts,
                           #                   selections.tp_match_selections,
                           #                   selections.gen_part_selections),
-                          # TPGenMatchPlotter(selections.tp_def_calib, selections.gen_set,
+                          # TPGenMatchPlotter(selections.tp_def_calib, collections.gen_parts,
                           #                   selections.tp_match_selections,
                           #                   selections.gen_part_selections),
-                          # TPGenMatchPlotter(selections.tp_def_merged, selections.gen_set,
+                          # TPGenMatchPlotter(selections.tp_def_merged, collections.gen_parts,
                           #                   selections.tp_match_selections,
                           #                   selections.gen_part_selections),
-                          # TPGenMatchPlotter(selections.tp_hm, selections.gen_set,
+                          # TPGenMatchPlotter(selections.tp_hm, collections.gen_parts,
                           #                   selections.tp_match_selections,
                           #                   selections.gen_part_selections),
-                          TPGenMatchPlotter(selections.tp_hm_vdr, selections.gen_set,
+                          TPGenMatchPlotter(collections.tp_hm_vdr, collections.gen_parts,
                                             selections.tp_match_selections,
                                             selections.gen_part_selections),
-                          # TPGenMatchPlotter(selections.tp_def_nc, selections.gen_set,
+                          # TPGenMatchPlotter(selections.tp_def_nc, collections.gen_parts,
                           #                   selections.tp_match_selections,
                           #                   selections.gen_part_selections),
-                          # TPGenMatchPlotter(selections.tp_hm_vdr_nc0, selections.gen_set,
+                          # TPGenMatchPlotter(selections.tp_hm_vdr_nc0, collections.gen_parts,
                           #                   selections.tp_match_selections,
                           #                   selections.gen_part_selections),
-                          # TPGenMatchPlotter(selections.tp_hm_vdr_nc1, selections.gen_set,
+                          # TPGenMatchPlotter(selections.tp_hm_vdr_nc1, collections.gen_parts,
                           #                   selections.tp_match_selections,
                           #                   selections.gen_part_selections),
-                          # TPGenMatchPlotter(selections.tp_hm_vdr_uncalib, selections.gen_set,
+                          # TPGenMatchPlotter(selections.tp_hm_vdr_uncalib, collections.gen_parts,
                           #                   selections.tp_match_selections,
                           #                   selections.gen_part_selections),
-                          # TPGenMatchPlotter(selections.tp_hm_vdr_merged, selections.gen_set,
+                          # TPGenMatchPlotter(selections.tp_hm_vdr_merged, collections.gen_parts,
                           #                   selections.tp_match_selections,
                           #                   selections.gen_part_selections),
-                                            ]
-eg_genmatched_plotters = [EGGenMatchPlotter(selections.eg_set, selections.gen_set,
+                          ]
+
+eg_genmatched_plotters = [EGGenMatchPlotter(collections.egs, collections.gen_parts,
                                             selections.eg_pt_selections,
                                             selections.gen_part_selections),
-                          TkEGGenMatchPlotter(selections.tkeg_set, selections.gen_set,
+                          TkEGGenMatchPlotter(collections.tkegs, collections.gen_parts,
                                               selections.tkeg_pt_selections,
                                               selections.gen_part_selections),
-                          EGGenMatchPlotter(selections.tkele_set, selections.gen_set,
+                          EGGenMatchPlotter(collections.tkeles, collections.gen_parts,
                                             selections.tkisoeg_pt_selections,
                                             selections.gen_part_selections),
-                          EGGenMatchPlotter(selections.tkisoele_set, selections.gen_set,
+                          EGGenMatchPlotter(collections.tkisoeles, collections.gen_parts,
                                             selections.tkisoeg_pt_selections,
-                                            selections.gen_part_selections),]
+                                            selections.gen_part_selections), ]
 
-track_genmatched_plotters = [TrackGenMatchPlotter(selections.track_set, selections.gen_set,
+track_genmatched_plotters = [TrackGenMatchPlotter(collections.tracks, collections.gen_parts,
                                                   selections.tracks_selections,
                                                   selections.gen_part_selections)]
-genpart_plotters = [GenPlotter(selections.gen_set, selections.genpart_ele_genplotting)]
-ttower_plotters = [TTPlotter(selections.tt_set),
-                   TTPlotter(selections.simtt_set),
-                   TTPlotter(selections.hgcroc_tt),
-                   TTPlotter(selections.wafer_tt)
+
+genpart_plotters = [GenPlotter(collections.gen_parts, selections.genpart_ele_genplotting)]
+
+ttower_plotters = [TTPlotter(collections.towers_tcs),
+                   TTPlotter(collections.towers_sim),
+                   TTPlotter(collections.towers_hgcroc),
+                   TTPlotter(collections.towers_wafer)
                    ]
-ttower_genmatched_plotters = [TTGenMatchPlotter(selections.tt_set, selections.gen_set,
+
+ttower_genmatched_plotters = [TTGenMatchPlotter(collections.towers_tcs, collections.gen_parts,
                               [selections.Selection('all')], selections.gen_part_selections),
-                              TTGenMatchPlotter(selections.simtt_set, selections.gen_set,
+                              TTGenMatchPlotter(collections.towers_sim, collections.gen_parts,
                               [selections.Selection('all')], selections.gen_part_selections),
-                              TTGenMatchPlotter(selections.hgcroc_tt, selections.gen_set,
+                              TTGenMatchPlotter(collections.towers_hgcroc, collections.gen_parts,
                               [selections.Selection('all')], selections.gen_part_selections),
-                              TTGenMatchPlotter(selections.wafer_tt, selections.gen_set,
+                              TTGenMatchPlotter(collections.towers_wafer, collections.gen_parts,
                               [selections.Selection('all')], selections.gen_part_selections)
                               ]
 
