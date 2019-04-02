@@ -1,3 +1,19 @@
+"""
+Manger of the ntuple data collections.
+
+This module manages the code and the instances of objects actually
+accessing the ntuple data.
+
+Classes:
+    EventManager
+    DFCollection
+    TPSet
+
+Objects:
+    all collections (DFCollection and TPSet instances) that
+    can be used by plotters.
+"""
+
 import pandas as pd
 import numpy as np
 import ROOT
