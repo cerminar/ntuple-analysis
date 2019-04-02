@@ -1,4 +1,11 @@
-# ---------------------------------------------------
+"""
+Define and instantiate the selections.
+
+The Selection class define via string a selection to be pplied to a certain
+DataFrame. The selections are named (the name enters the final histogram name).
+Selections can be composed (added). The actual selection syntax follows the
+`pandas` `DataFrame` `query` syntax.
+"""
 
 
 class PID:
