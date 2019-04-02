@@ -17,6 +17,17 @@ class PID:
 
 
 class Selection:
+    """
+    [Selection] class.
+
+    Args:
+        name (string): the name to be used in the histo name
+                       (should not use `-` characters or spaces)
+
+        label (string): used in plot legends, no constraints
+        selection (string): see pandas.DataFrame.query syntax
+    """
+
     def __init__(self, name, label='', selection=''):
         self.name = name
         self.label = label
