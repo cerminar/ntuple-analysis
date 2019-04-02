@@ -1,3 +1,25 @@
+"""
+Definines and instantiate the plotter classes.
+
+These are the classes where the analysis logic is implemented.
+The plotter classes need to implement a standard interface:
+init:
+    accept one or more DFCollection (or TPSet) and a corresponding list of selections.
+
+book_histos:
+    activates the relevant DFCollection instances and books the HistoClasses defined in the
+    `l1THistos` module for each combination of the object and selections.
+     The naming convention of the histograms uses the namse of the objects,
+     the name of the selection and the name of the gen-matched object (if any).
+
+fill_histos:
+    actually implements the analysis logic, running the selections on the input
+    collections and filling the histograms.
+
+Several collections of plotters are also instantiated. Which one will actually be run
+is steered via the configuration file.
+"""
+
 import l1THistos as histos
 import utils as utils
 import pandas as pd
@@ -590,8 +612,8 @@ tp_plotters = [TPPlotter(collections.tp_def, selections.tp_id_selections),
                # TPPlotter(selections.tp_hm_vdr_uncalib, selections.tp_id_selections),
 
                # TPPlotter(selections.tp_hm_vdr_merged, selections.tp_id_selections),
-
                ]
+
 eg_plotters = [EGPlotter(collections.egs, selections.eg_qual_selections)]
 track_plotters = [TrackPlotter(collections.tracks, selections.tracks_selections)]
 tkeg_plotters = [TkEGPlotter(collections.tkegs, selections.tkeg_qual_selections)]
