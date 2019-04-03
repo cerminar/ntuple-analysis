@@ -89,8 +89,8 @@ collections:
       # - pion_flat2to100_PU0
       # - pion_flat2to100_PU200
     plotters:
-      - tp_egm_plotters
-      - tp_genmatched_plotters
+      # - tp_egm_plotters
+      # - tp_genmatched_plotters
       - genpart_plotters
       - eg_plotters
       - eg_genmatched_plotters
