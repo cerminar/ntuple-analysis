@@ -75,14 +75,14 @@ def data_checker(queue_all, queue_ready):
         # print('data found to be processed: {}'.format(data))
         file = ROOT.TFile(os.path.join(fm.get_eos_protocol(data), data))
         if len(file.GetListOfKeys()) == 0:
-            logger.info( 'file: {} is not OK'.format(data))
+            logger.info('file: {} is not OK'.format(data))
         else:
             fname = '{}.checked'.format(os.path.splitext(data)[0])
             open(fname, 'a').close()
             if not os.path.isfile('{}.hadded'.format(os.path.splitext(data)[0])):
                 queue_ready.put(data)
             else:
-                logger.debug( 'file: {} has already been hadded...skipping it'.format(data))
+                logger.debug('file: {} has already been hadded...skipping it'.format(data))
         file.Close()
 
 
@@ -123,7 +123,6 @@ def data_consumer(sample_name, version, queue_ready, queue_tomove):
                 else:
                     logger.info('file: {} is OK, will retry hadding!'.format(out_file_name))
                 file.Close()
-
 
 
 def data_mover(sample_name, version, out_dir, queue_tomove):
