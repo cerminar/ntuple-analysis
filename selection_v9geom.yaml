@@ -7,7 +7,7 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v75
+  plot_version: v78
   run_clustering: False
   run_density_computation: False
 
@@ -55,6 +55,15 @@ collections:
     plotters:
       - eg_plotters
       - eg_genmatched_plotters
+
+
+  single_empart_tpdebug:
+    samples:
+      - all_flat5to80_PU0
+      - all_flat5to80_PU200
+    plotters:
+      - tp_genmatched_debug
+
 
 
   single_empart_guns:
@@ -115,6 +124,7 @@ collections:
 plotters:
   rate_plotters: !!python/name:python.plotters.rate_plotters
   tp_egm_plotters: !!python/name:python.plotters.tp_plotters
+  tp_genmatched_debug: !!python/name:python.plotters.tp_genmatched_debug
   tp_genmatched_plotters: !!python/name:python.plotters.tp_genmatched_plotters
   genpart_plotters: !!python/name:python.plotters.genpart_plotters
   ttower_plotters: !!python/name:python.plotters.ttower_plotters
