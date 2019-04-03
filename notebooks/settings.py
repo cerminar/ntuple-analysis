@@ -1,3 +1,7 @@
+from samples import get_label_dict
+import selections
+import pprint
+
 # === samples =====================================================
 samples = []
 
@@ -11,6 +15,7 @@ do_rate = True
 
 # === TP ==========================================================
 tps = ['EG', 'TkEG', 'TkEle', 'TkIsoEle']
+# tps = ['DEF', 'HMvDR']
 
 # === TP selections ================================================
 tp_select = {}
@@ -75,7 +80,6 @@ gen_selections.update(get_label_dict(selections.gen_part_selections))
 gen_selections.update({'nomatch': ''})
 
 
-import pprint
 pp = pprint.PrettyPrinter(indent=4)
 print '--- TPs: '
 pp.pprint(tps)
