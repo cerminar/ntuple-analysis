@@ -122,7 +122,7 @@ class DFCollection(object):
         if not self.df.empty:
             debugPrintOut(max(debug, self.debug), self.label,
                           toCount=self.df,
-                          toPrint=self.df[:10])
+                          toPrint=self.df)
 
 
 def cl3d_fixtures(clusters):
@@ -137,9 +137,26 @@ def cl3d_fixtures(clusters):
             classifiers.mva_pi_classifier, 'BDT', clusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
 
 
-def gen_fixtures(particles):
+def gen_fixtures(particles, mc_particles):
     particles['pdgid'] = particles.pid
     particles['abseta'] = np.abs(particles.eta)
+
+    def get_mother_pdgid(particle, mc_particles):
+        if particle.gen == -1:
+            return -1
+        return mc_particles.df.loc[particle.gen-1].firstmother_pdgid
+    particles['firstmother_pdgid'] = particles.apply(func=lambda x: get_mother_pdgid(x, mc_particles), axis=1)
+
+
+def mc_fixtures(particles):
+    particles['firstmother'] = particles.index
+    particles['firstmother_pdgid'] = particles.pdgid
+
+    for particle in particles.itertuples():
+        # print particle.Index
+        particles.loc[particle.daughters, 'firstmother'] = particle.Index
+        particles.loc[particle.daughters, 'firstmother_pdgid'] = particle.pdgid
+        # print particles.loc[particle.daughters]['firstmother']
 
 
 def tc_fixtures(tcs):
@@ -289,9 +306,15 @@ def get_calibrated_clusters2(calib_factors, input_3Dclusters):
     return calibrated_clusters
 
 
+gen = DFCollection(name='MC', label='MC particles',
+                         filler_function=lambda event: event.getDataFrame(prefix='gen'),
+                         fixture_function=mc_fixtures, debug=0)
+
+
 gen_parts = DFCollection(name='GEN', label='GEN particles',
                          filler_function=lambda event: event.getDataFrame(prefix='genpart'),
-                         fixture_function=gen_fixtures)
+                         fixture_function=lambda gen_parts: gen_fixtures(gen_parts, gen),
+                         depends_on=[gen], debug=0)
 
 tcs = DFCollection(name='TC', label='Trigger Cells',
                    filler_function=lambda event: event.getDataFrame(prefix='tc'),
@@ -374,7 +397,7 @@ class TPSet:
     corresponding DFCollection objects.
     """
 
-    def __init__(self, cl3ds, cl2ds, tcs):
+    def __init__(self, tcs, cl2ds, cl3ds):
         self.tcs = tcs
         self.cl2ds = cl2ds
         self.cl3ds = cl3ds

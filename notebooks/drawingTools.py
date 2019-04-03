@@ -28,6 +28,7 @@ def getText(text, ndc_x, ndc_y):
     rtext.SetTextSize(0.03)
     return rtext
 
+
 def getLegend(x1=0.7, y1=0.71, x2=0.95, y2=0.85):
     global stuff
     legend = ROOT.TLegend(x1, y1, x2, y2)
@@ -37,6 +38,7 @@ def getLegend(x1=0.7, y1=0.71, x2=0.95, y2=0.85):
     legend.SetBorderSize(0)
     legend.SetTextSize(0.05)
     return legend
+
 
 def newCanvas(name=None, title=None, height=600, width=800, xdiv=0, ydiv=0, form=4):
     global c_idx
@@ -52,6 +54,7 @@ def newCanvas(name=None, title=None, height=600, width=800, xdiv=0, ydiv=0, form
     global stuff
     stuff.append(canvas)
     return canvas
+
 
 def drawAndProfileX(plot2d, miny=None, maxy=None, do_profile=True, options='', text=None):
     global p_idx
@@ -99,7 +102,6 @@ def draw(histograms,
     global colors
     global stuff
     global p_idx
-
 
     # 0 - determine kind and # of histos
     n_histos = len(histograms)
@@ -271,7 +273,6 @@ def draw(histograms,
     return canvas
 
 
-
 files = {}
 file_keys = {}
 
@@ -315,7 +316,6 @@ class Sample():
 #                 'ele_flat2to100_PU200',
 #                 'photonPt35_PU0',
 #                 'photonPt35_PU200']
-
 
 
 class HProxy:

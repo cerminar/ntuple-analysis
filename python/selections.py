@@ -133,11 +133,16 @@ gen_pt_selections = [Selection('Pt10', 'p_{T}^{GEN}>=10GeV', 'pt >= 10'),
                      Selection('Pt40', 'p_{T}^{GEN}>=40GeV', 'pt >= 40')]
 
 # gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {}) | (abs(pdgid) == {}) | (abs(pdgid) == {})'.format(PID.electron, PID.photon, PID.pion))]
-gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {})'.format(PID.electron))]
+gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {}) & (firstmother_pdgid == {})'.format(PID.electron, PID.electron))]
+# gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {})'.format(PID.e lectron))]
+
 
 gen_part_ee_sel = add_selections(gen_part_selections, gen_ee_selections)
 gen_part_ee_pt_sel = add_selections(gen_part_ee_sel, gen_pt_selections)
 gen_part_ee_eta_sel = add_selections(gen_part_ee_sel, gen_eta_selections)
+
+gen_part_selections_debug = add_selections(gen_part_ee_sel, [Selection('EtaBCD', '1.52 < |#eta^{GEN}| <= 2.8', '1.52 < abs(eta) <= 2.8')])
+
 
 gen_part_selections = []
 gen_part_selections += gen_part_ee_sel
@@ -224,5 +229,5 @@ tracks_selections = [Selection('all'),
 
 
 if __name__ == "__main__":
-    for sel in gen_part_selections:
+    for sel in gen_part_selections_debug:
         print sel
