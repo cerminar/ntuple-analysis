@@ -131,10 +131,10 @@ def cl3d_fixtures(clusters):
     clusters['eem'] = clusters.energy/(1+clusters.hoe)
     if False:
         clusters['bdt_pu'] = rnptmva.evaluate_reader(
-            classifiers.mva_pu_classifier, 'BDT', clusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
+            classifiers.mva_pu_classifier_builder(), 'BDT', clusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
 
         clusters['bdt_pi'] = rnptmva.evaluate_reader(
-            classifiers.mva_pi_classifier, 'BDT', clusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
+            classifiers.mva_pi_classifier_builder(), 'BDT', clusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
 
 
 def gen_fixtures(particles, mc_particles):
@@ -349,7 +349,7 @@ cl3d_def_merged = DFCollection(name='DEFMerged', label='dRC3d merged',
                                depends_on=[cl3d_def])
 
 cl3d_def_calib = DFCollection(name='DEFCalib', label='dRC3d calib.',
-                              filler_function=lambda event: get_calibrated_clusters(calib.calib_factors, cl3d_def.df),
+                              filler_function=lambda event: get_calibrated_clusters(calib.get_calib_factors(), cl3d_def.df),
                               depends_on=[cl3d_def])
 
 cl3d_hm_merged = DFCollection(name='HMvDRMerged', label='HM+dR(layer) merged',
@@ -384,7 +384,7 @@ tkeles = DFCollection(name='TkEle', label='TkEle',
 tkisoeles = DFCollection(name='TkIsoEle', label='TkIsoEle',
                          filler_function=lambda event: event.getDataFrame(prefix='tkIsoEle'))
 
-tkegs = DFCollection(name='TKEG', label='TkEG',
+tkegs = DFCollection(name='TkEG', label='TkEG',
                      filler_function=lambda event: get_trackmatched_egs(egs=egs.df, tracks=tracks.df),
                      depends_on=[egs, tracks])
 

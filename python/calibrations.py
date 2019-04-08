@@ -270,12 +270,19 @@ def get_component_pt_v9calib(cl3d, cl2ds):
     return components.ptcalib_v9calib.sum()
 
 
-calibration_file_name = 'data/calib_v2.json'
-calib_factors = pd.read_json(calibration_file_name, dtype={'calib': np.float64,
-                                                           'eta_h': np.float64,
-                                                           'eta_l': np.float64,
-                                                           'pt_h': np.float64,
-                                                           'pt_l': np.float64})
+
+calib_factors = None
 
 
+def get_calib_factors():
+
+    global calib_factors
+    if calib_factors is None:
+        calibration_file_name = 'data/calib_v2.json'
+        calib_factors = pd.read_json(calibration_file_name, dtype={'calib': np.float64,
+                                                                   'eta_h': np.float64,
+                                                                   'eta_l': np.float64,
+                                                                   'pt_h': np.float64,
+                                                                   'pt_l': np.float64})
+    return calib_factors
 # get_layer_pt_calibv9
