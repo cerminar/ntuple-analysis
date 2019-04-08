@@ -29,11 +29,39 @@ import selections as selections
 import collections as collections
 
 
-class RatePlotter:
+class BasePlotter(object):
+    def __init__(self, data_set, data_selections, gen_set=None, gen_selections=None):
+        self.data_set = data_set
+        self.data_selections = data_selections
+        self.gen_set = gen_set
+        self.gen_selections = gen_selections
+
+    @property
+    def tp_set(self):
+        return self.data_set
+
+    @property
+    def tp_selections(self):
+        return self.data_selections
+
+    def get_histo_primitives(self):
+        histo_primitives = pd.DataFrame(columns=['data', 'data_sel', 'gen_sel'])
+        gen_sel_names = ['nomatch']
+        if self.gen_selections is not None:
+            gen_sel_names = [sel.name for sel in self.gen_selections]
+        for data_sel in self.data_selections:
+            for gen_sel_name in gen_sel_names:
+                histo_primitives = histo_primitives.append({'data': self.data_set.name,
+                                                            'data_sel': data_sel.name,
+                                                            'gen_sel': gen_sel_name},
+                                                           ignore_index=True)
+        return histo_primitives
+
+
+class RatePlotter(BasePlotter):
     def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
-        self.tp_set = tp_set
-        self.tp_selections = tp_selections
         self.h_rate = {}
+        super(RatePlotter, self).__init__(tp_set, tp_selections)
 
     def book_histos(self):
         self.tp_set.activate()
@@ -56,12 +84,11 @@ class RatePlotter:
             self.h_rate[selection.name].fill_norm()
 
 
-class GenericDataFramePlotter(object):
+class GenericDataFramePlotter(BasePlotter):
     def __init__(self, HistoClass, data_set, selections=[selections.Selection('all')]):
         self.HistoClass = HistoClass
-        self.data_set = data_set
-        self.data_selections = selections
         self.h_set = {}
+        super(GenericDataFramePlotter, self).__init__(data_set, selections)
 
     def book_histos(self):
         self.data_set.activate()
@@ -98,11 +125,12 @@ class TTPlotter(GenericDataFramePlotter):
         super(TTPlotter, self).__init__(histos.TriggerTowerHistos, tt_set, tt_selections)
 
 
-class TPPlotter:
+class TPPlotter(BasePlotter):
     def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
-        self.tp_set = tp_set
-        self.tp_selections = tp_selections
+        # self.tp_set = tp_set
+        # self.tp_selections = tp_selections
         self.h_tpset = {}
+        super(TPPlotter, self).__init__(tp_set, tp_selections)
 
     def book_histos(self):
         self.tp_set.activate()
@@ -380,19 +408,18 @@ class TPGenMatchPlotterDebugger:
                                         debug)
 
 
-
-
-class TPGenMatchPlotter:
+class TPGenMatchPlotter(BasePlotter):
     def __init__(self, tp_set, gen_set,
                  tp_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
-        self.tp_set = tp_set
-        self.tp_selections = tp_selections
-        self.gen_set = gen_set
-        self.gen_selections = gen_selections
+        # self.tp_set = tp_set
+        # self.tp_selections = tp_selections
+        # self.gen_set = gen_set
+        # self.gen_selections = gen_selections
         self.h_tpset = {}
         self.h_resoset = {}
         self.h_effset = {}
         self.h_conecluster = {}
+        super(TPGenMatchPlotter, self).__init__(tp_set, tp_selections, gen_set, gen_selections)
 
     def plot3DClusterMatch(self,
                            genParticles,
@@ -613,19 +640,21 @@ class TPGenMatchPlotter:
                                                                    [sel.name for sel in self.gen_selections])
 
 
-class GenericGenMatchPlotter(object):
+class GenericGenMatchPlotter(BasePlotter):
     def __init__(self, ObjectHistoClass, ResoHistoClass,
                  data_set, gen_set,
                  data_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
         self.ObjectHistoClass = ObjectHistoClass
         self.ResoHistoClass = ResoHistoClass
-        self.data_set = data_set
-        self.data_selections = data_selections
-        self.gen_set = gen_set
-        self.gen_selections = gen_selections
+        # self.data_set = data_set
+        # self.data_selections = data_selections
+        # self.gen_set = gen_set
+        # self.gen_selections = gen_selections
         self.h_dataset = {}
         self.h_resoset = {}
         self.h_effset = {}
+        super(GenericGenMatchPlotter, self).__init__(data_set, data_selections, gen_set, gen_selections)
+
         # print self
         # print gen_selections
 
