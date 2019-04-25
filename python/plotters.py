@@ -145,10 +145,12 @@ class TPPlotter(BasePlotter):
             cl3Ds = self.tp_set.cl3d_df
             if not tp_sel.all:
                 cl3Ds = self.tp_set.cl3d_df.query(tp_sel.selection)
-            # debugPrintOut(debug, '{}_{}'.format(self.name, 'TCs'), tcs, tcs[:3])
-            # debugPrintOut(debug, '{}_{}'.format(self.name, 'CL2D'), cl2Ds, cl2Ds[:3])
-            # debugPrintOut(debug, '{}_{}'.format(self.name, 'CL3D'), cl3Ds, cl3Ds[:3])
-            self.h_tpset[tp_sel.name].fill(tcs, cl2Ds, cl3Ds)
+            # debug = 4
+            # utils.debugPrintOut(debug, '{}_{}'.format(self.tp_set.name, 'TCs'), tcs, tcs[:3])
+            # utils.debugPrintOut(debug, '{}_{}'.format(self.tp_set.name, 'CL2D'), cl2Ds, cl2Ds[:3])
+            # utils.debugPrintOut(debug, '{}_{}'.format(self.tp_set.name, 'CL3D'), cl3Ds, cl3Ds[:3])
+            if not cl3Ds.empty and not cl2Ds.empty and not tcs.empty:
+                self.h_tpset[tp_sel.name].fill(tcs, cl2Ds, cl3Ds)
 
 
 class GenPlotter:
@@ -616,6 +618,9 @@ class TPGenMatchPlotter(BasePlotter):
                 h_genseleff = self.h_effset[histo_name]
                 h_conecl = self.h_conecluster[histo_name]
                 # print 'TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name)
+                # print cl3Ds
+                # print cl2Ds
+                # print tcs
                 self.plot3DClusterMatch(genReference,
                                         cl3Ds,
                                         cl2Ds,
@@ -870,10 +875,13 @@ class TTGenMatchPlotter:
 
 
 tp_plotters = [TPPlotter(collections.tp_def, selections.tp_id_selections),
+               TPPlotter(collections.tp_truth, selections.tp_id_selections),
                # TPPlotter(selections.tp_def_uncalib, selections.tp_id_selections),
                # TPPlotter(selections.tp_def_calib, selections.tp_id_selections)
                # TPPlotter(selections.tp_hm, selections.tp_id_selections),
                TPPlotter(collections.tp_hm_vdr, selections.tp_id_selections),
+               TPPlotter(collections.tp_hm_vdr_rebin, selections.tp_id_selections),
+               TPPlotter(collections.tp_hm_vdr_stc, selections.tp_id_selections),
                # TPPlotter(selections.tp_def_nc, selections.tp_id_selections),
                # TPPlotter(selections.tp_hm_vdr_nc0, selections.tp_id_selections),
                # TPPlotter(selections.tp_hm_vdr_nc1, selections.tp_id_selections),
@@ -889,6 +897,8 @@ rate_plotters = [RatePlotter(collections.cl3d_def, selections.tp_rate_selections
                  # RatePlotter(selections.tp_def_uncalib, selections.tp_rate_selections),
                  # RatePlotter(selections.tp_hm, selections.tp_rate_selections),
                  RatePlotter(collections.cl3d_hm, selections.tp_rate_selections),
+                 RatePlotter(collections.cl3d_hm_rebin, selections.tp_rate_selections),
+                 RatePlotter(collections.cl3d_hm_stc, selections.tp_rate_selections),
                  # RatePlotter(selections.tp_def_nc, selections.tp_rate_selections),
                  # RatePlotter(selections.tp_hm_vdr_nc0, selections.tp_rate_selections),
                  # RatePlotter(selections.tp_hm_vdr_nc1, selections.tp_rate_selections),
@@ -911,6 +921,9 @@ tp_genmatched_debug = [TPGenMatchPlotterDebugger(collections.tp_def, collections
 tp_genmatched_plotters = [TPGenMatchPlotter(collections.tp_def, collections.gen_parts,
                                             selections.tp_match_selections,
                                             selections.gen_part_selections),
+                          TPGenMatchPlotter(collections.tp_truth, collections.gen_parts,
+                                            selections.tp_match_selections,
+                                            selections.gen_part_selections),
                           # TPGenMatchPlotter(selections.tp_def_uncalib, collections.gen_parts,
                           #                   selections.tp_match_selections,
                           #                   selections.gen_part_selections),
@@ -924,6 +937,12 @@ tp_genmatched_plotters = [TPGenMatchPlotter(collections.tp_def, collections.gen_
                           #                   selections.tp_match_selections,
                           #                   selections.gen_part_selections),
                           TPGenMatchPlotter(collections.tp_hm_vdr, collections.gen_parts,
+                                            selections.tp_match_selections,
+                                            selections.gen_part_selections),
+                          TPGenMatchPlotter(collections.tp_hm_vdr_rebin, collections.gen_parts,
+                                            selections.tp_match_selections,
+                                            selections.gen_part_selections),
+                          TPGenMatchPlotter(collections.tp_hm_vdr_stc, collections.gen_parts,
                                             selections.tp_match_selections,
                                             selections.gen_part_selections),
                           # TPGenMatchPlotter(selections.tp_def_nc, collections.gen_parts,
