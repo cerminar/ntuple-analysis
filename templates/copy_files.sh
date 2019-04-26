@@ -9,7 +9,7 @@ echo "Current dir: ${BATCH_DIR}"
 ls -l
 
 OUTDIR=TEMPL_OUTDIR
-if ${ISTMP}; then
+if [ "${ISTMP}" == "true" ]; then
   OUTDIR=TEMPL_OUTDIR/tmp/
 fi
 cp histos_TEMPL_SAMPLE_*.root ${OUTDIR}
