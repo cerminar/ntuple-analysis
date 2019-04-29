@@ -357,6 +357,8 @@ def analyze(params, batch_idx=0):
                       toCount=triggerCells,
                       toPrint=triggerCells.iloc[:3])
 
+
+
         # print '# towers eta >0 {}'.format(len(triggerTowers[triggerTowers.eta > 0]))
         # print '# towers eta <0 {}'.format(len(triggerTowers[triggerTowers.eta < 0]))
 
