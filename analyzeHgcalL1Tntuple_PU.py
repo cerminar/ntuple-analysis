@@ -22,6 +22,7 @@ import yaml
 
 import python.l1THistos as histos
 import python.clusterTools as clAlgo
+import python.utils as utils
 import traceback
 import subprocess32
 from python.utils import debugPrintOut
@@ -343,19 +344,65 @@ def analyze(params, batch_idx=0):
 
         # get the interesting data-frames
         triggerCells = event.getDataFrame(prefix='tc')
+        clusters = event.getDataFrame(prefix='hmVRcl3d')
+        clusters_truth = event.getDataFrame(prefix='cl3dtruth')
+        gen_info = event.getDataFrame(prefix='gen')
+        gen_particles =  event.getDataFrame(prefix='genpart')
+
         puInfo = event.getPUInfo()
 
         debugPrintOut(debug, 'PU', toCount=puInfo, toPrint=puInfo)
 
-        # ----------------------------------
-        if not tc_rod_bins.empty:
-            triggerCells = pd.merge(triggerCells,
-                                    tc_rod_bins,
-                                    on='id')
-
         debugPrintOut(debug, 'Trigger Cells',
                       toCount=triggerCells,
                       toPrint=triggerCells.iloc[:3])
+
+        # print gen_particles.columns
+        print gen_particles[['pid', 'eta', 'phi', 'pt', 'mother', 'gen']]
+
+        def find_gen_particle(cluster, triggerCells):
+            return triggerCells[triggerCells.id.isin(cluster.clusters)].genparticle.unique()[0]
+
+        def find_cluster_components(cluster, triggerCells):
+            return triggerCells[triggerCells.id.isin(cluster.clusters)]
+
+        # for index, cluster in clusters_truth.iterrows():
+        #     print cluster
+        #     print 'corresponding gen particle: {}'.format(find_gen_particle(cluster, triggerCells))
+
+        if not clusters_truth.empty:
+            clusters_truth['genparticle'] = clusters_truth.apply(func=lambda cl: find_gen_particle(cl, triggerCells), axis=1)
+
+        print clusters_truth
+
+        best_match_indexes = {}
+        best_match_indexes_truth = {}
+        if not clusters.empty:
+            best_match_indexes, allmatches = utils.match_etaphi(gen_particles[['eta', 'phi']],
+                                                                clusters[['eta', 'phi']],
+                                                                clusters['pt'],
+                                                                deltaR=0.1)
+
+        if not clusters_truth.empty:
+            best_match_indexes_truth, allmatches_truth = utils.match_etaphi(gen_particles[['eta', 'phi']],
+                                                                            clusters_truth[['eta', 'phi']],
+                                                                            clusters_truth['pt'],
+                                                                            deltaR=0.1)
+
+
+
+        for idx, gen_particle in gen_particles[(abs(gen_particles.eta) > 1.5) & (abs(gen_particles.eta) < 2.4)].iterrows():
+            if idx in best_match_indexes.keys():
+                print '-----------------------'
+                print gen_particle
+                matched3DCluster = clusters.loc[[best_match_indexes[idx]]]
+                print matched3DCluster
+                response = matched3DCluster.pt/gen_particle.pt
+
+            if idx in best_match_indexes_truth.keys():
+                matched3DCluster_truth = clusters_truth.loc[[best_match_indexes_truth[idx]]]
+                print matched3DCluster_truth
+                response_truth = matched3DCluster_truth.pt/gen_particle.pt
 
 
 
