@@ -396,12 +396,17 @@ def analyze(params, batch_idx=0):
                 print '-----------------------'
                 print gen_particle
                 matched3DCluster = clusters.loc[[best_match_indexes[idx]]]
+                print 'RECO cluster:'
                 print matched3DCluster
+                print matched3DCluster.clusters
+                print find_cluster_components(matched3DCluster.iloc[0], triggerCells)
                 response = matched3DCluster.pt/gen_particle.pt
 
             if idx in best_match_indexes_truth.keys():
                 matched3DCluster_truth = clusters_truth.loc[[best_match_indexes_truth[idx]]]
+                print 'True cluster:'
                 print matched3DCluster_truth
+                print find_cluster_components(matched3DCluster_truth.iloc[0], triggerCells)
                 response_truth = matched3DCluster_truth.pt/gen_particle.pt
 
 
