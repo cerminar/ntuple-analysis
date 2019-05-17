@@ -141,6 +141,7 @@ gen_part_ee_sel = add_selections(gen_part_selections, gen_ee_selections)
 gen_part_ee_pt_sel = add_selections(gen_part_ee_sel, gen_pt_selections)
 gen_part_ee_eta_sel = add_selections(gen_part_ee_sel, gen_eta_selections)
 
+gen_part_selections_debug = []
 gen_part_selections_debug = add_selections(gen_part_ee_sel, [Selection('EtaBCD', '1.52 < |#eta^{GEN}| <= 2.8', '1.52 < abs(eta) <= 2.8')])
 
 
@@ -223,9 +224,16 @@ tkeg_qual_selections += add_selections(eg_qual_selections, tkeg_selection)
 tkeg_pt_selections = []
 tkeg_pt_selections += add_selections(tkeg_qual_selections, tp_pt_selections)
 
-tracks_selections = [Selection('all'),
-                     Selection('Pt2', 'p_{T}^{tk} > 2 GeV', 'pt > 2'),
-                     Selection('Pt10', 'p_{T}^{tk} > 10 GeV', 'pt > 10')]
+# === L1 Track selections ===========================================
+
+tracks_quality_sels = [Selection('all'),
+                       Selection('St4', '# stubs > 3', 'nStubs > 3')]
+tracks_pt_sels = [Selection('all'),
+                  Selection('Pt2', 'p_{T}^{tk} > 2 GeV', 'pt > 2'),
+                  Selection('Pt10', 'p_{T}^{tk} > 10 GeV', 'pt > 10')]
+
+tracks_selections = []
+tracks_selections += add_selections(tracks_quality_sels, tracks_pt_sels)
 
 
 if __name__ == "__main__":
