@@ -311,6 +311,8 @@ class Sample():
         self.histo_file = ROOT.TFile(self.histo_filename, 'r')
         self.type = type
 
+    def __repr__(self):
+        return '<{} {}, {}>'.format(self.__class__.__name__, self.histo_filename, self.type)
 
 # sample_names = ['ele_flat2to100_PU0',
 #                 'ele_flat2to100_PU200',
@@ -341,8 +343,8 @@ class HProxy:
 class HPlot:
     def __init__(self, samples, tp_sets, tp_selections, gen_selections):
         self.tp_sets = tp_sets
-        self.tp_selections = tp_selections
-        self.gen_selections = gen_selections
+        # self.tp_selections = tp_selections
+        # self.gen_selections = gen_selections
         self.pus = []
         self.labels_dict = {}
 

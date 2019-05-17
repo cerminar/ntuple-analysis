@@ -1,12 +1,25 @@
-from samples import get_label_dict
-import selections
+# %load settings.py
+# from samples import get_label_dict
+import python.selections as selections
+import python.collections as collections
+
 import pprint
+
+
+
+def get_label_dict(selections):
+    dictionary = {}
+    for sel in selections:
+        dictionary[sel.name] = sel.label
+    return dictionary
+
+
 
 # === samples =====================================================
 samples = []
 
-samples = samples_nugunrates_V8
-samples += samples_nugunrates_V9
+samples = samples_ele_V8
+samples += samples_ele_V9
 
 
 sample = 'V9'
@@ -14,8 +27,8 @@ sample = 'V9'
 do_rate = True
 
 # === TP ==========================================================
-tps = ['EG', 'TkEG', 'TkEle', 'TkIsoEle']
-# tps = ['DEF', 'HMvDR']
+# tps = ['EG', 'TkEG', 'TkEle', 'TkIsoEle']
+tps = ['DEF', 'HMvDR', 'HMvDRRebin', 'HMvDRsTC', 'HMvDRTrue']
 
 # === TP selections ================================================
 tp_select = {}
@@ -24,6 +37,9 @@ tp_select['DEFNC'] = tp_select['DEF']
 tp_select['HMvDR'] = tp_select['DEF']
 tp_select['HMvDRNC0'] = tp_select['DEF']
 tp_select['HMvDRNC1'] = tp_select['DEF']
+tp_select['HMvDRRebin'] = tp_select['DEF']
+tp_select['HMvDRsTC'] = tp_select['DEF']
+tp_select['HMvDRTrue'] = tp_select['DEF']
 
 
 tp_select['EG'] = ['EGq2', 'EGq3']
@@ -37,11 +53,32 @@ tp_select['L1Trk'] = ['all', 'Pt2', 'Pt10']
 
 # ==== GEN selections ===============================================
 
-gen_select = ['GENEtaBC']
+gen_select = ['GENEtaBC', 'GENEtaD']
 # gen_select = ['GEN', 'GENEtaA', 'GENEtaB', 'GENEtaC', 'GENEtaD', 'GENEtaE',
 #               'GENEtaAB', 'GENEtaABC', 'GENEtaBC', 'GENEtaBCD', 'GENEtaBCDE' ]
 
 # tp_select['TkEG'] = ['EGq2EtaBC', 'EGq3EtaBC', 'EGq2EtaBCM2', 'EGq3EtaBCM2', 'EGq2EtaBCM2s', 'EGq3EtaBCM2s','EGq2EtaBCM3', 'EGq3EtaBCM3', 'EGq2EtaBCM3s', 'EGq3EtaBCM3s','EGq2EtaBCM4', 'EGq3EtaBCM4']
+
+
+
+event_manager = collections.EventManager()
+
+all_tpsets = {}
+for collection in event_manager.collections:
+    all_tpsets[collection.name] = collection.label
+
+
+# all_tpsets = {'DEF': 'dRC3d',
+#               'DEFCalib': 'NNDR Calib v1',
+#               'DEFNC': 'dRC3d + new Th',
+#               'HMvDR': 'HistoMaxC3d + dR(layer)',
+#               'HMvDRNC0': 'HMC3d+dR(layer)+NC0',
+#               'HMvDRNC1': 'HMC3d+dR(layer)+NC1',
+#               'EG': 'EG',
+#               'TkEG': 'TkEG',
+#               'TkEle': 'TkEle',
+#               'TkIsoEle': 'TkIsoEle',
+#               'L1Trk': 'L1Track'}
 
 
 # ==== adapt the plot retrieval
