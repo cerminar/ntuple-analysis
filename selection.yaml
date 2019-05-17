@@ -72,7 +72,7 @@ collections:
       - eg_genmatched_plotters
 
 
-  single_empart_guns:
+  single_empart_guns_tps:
     samples:
       - ele_flat2to100_PU0
       - ele_flat2to100_PU200
