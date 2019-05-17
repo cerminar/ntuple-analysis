@@ -316,15 +316,15 @@ gen = DFCollection(name='MC', label='MC particles',
 gen_parts = DFCollection(name='GEN', label='GEN particles',
                          filler_function=lambda event: event.getDataFrame(prefix='genpart'),
                          fixture_function=lambda gen_parts: gen_fixtures(gen_parts, gen),
-                         depends_on=[gen], debug=0)
+                         depends_on=[gen])
 
 tcs = DFCollection(name='TC', label='Trigger Cells',
                    filler_function=lambda event: event.getDataFrame(prefix='tc'),
                    fixture_function=tc_fixtures)
 
 tcs_truth = DFCollection(name='TCTrue', label='Trigger Cells True',
-                   filler_function=lambda event: event.getDataFrame(prefix='tctruth'),
-                   fixture_function=tc_fixtures)
+                         filler_function=lambda event: event.getDataFrame(prefix='tctruth'),
+                            fixture_function=tc_fixtures)
 
 cl2d_def = DFCollection(name='DEF2D', label='dRC2d',
                         filler_function=lambda event: event.getDataFrame(prefix='cl'),
@@ -332,11 +332,11 @@ cl2d_def = DFCollection(name='DEF2D', label='dRC2d',
 
 cl2d_truth = DFCollection(name='DEF2DTrue', label='dRC2d True',
                           filler_function=lambda event: event.getDataFrame(prefix='cltruth'),
-                          fixture_function=cl2d_fixtures, debug=4)
+                          fixture_function=cl2d_fixtures)
 
 cl3d_truth = DFCollection(name='HMvDRTrue', label='HM+dR(layer) True Cl3d',
-                       filler_function=lambda event: event.getDataFrame(prefix='cl3dtruth'),
-                       fixture_function=cl3d_fixtures)
+                          filler_function=lambda event: event.getDataFrame(prefix='cl3dtruth'),
+                          fixture_function=cl3d_fixtures)
 
 
 cl3d_def = DFCollection(name='DEF', label='dRC3d',
@@ -399,7 +399,7 @@ egs = DFCollection(name='EG', label='EG',
                    filler_function=lambda event: event.getDataFrame(prefix='egammaEE'))
 
 tracks = DFCollection(name='L1Trk', label='L1Track',
-                      filler_function=lambda event: event.getDataFrame(prefix='l1track'))
+                      filler_function=lambda event: event.getDataFrame(prefix='l1track'), debug=0)
 
 tkeles = DFCollection(name='TkEle', label='TkEle',
                       filler_function=lambda event: event.getDataFrame(prefix='tkEle'))
