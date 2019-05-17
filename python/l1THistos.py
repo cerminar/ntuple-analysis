@@ -919,6 +919,15 @@ class TrackResoHistos(BaseResoHistos):
             self.h_etaRes = ROOT.TH1F(name+'_etaRes', 'Track eta reso', 100, -0.4, 0.4)
             self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'Track phi reso', 100, -0.4, 0.4)
             self.h_drRes = ROOT.TH1F(name+'_drRes', 'Track DR reso', 100, 0, 0.4)
+            self.h_pt2stResVpt = ROOT.TH2F(name+'_pt2stResVpt', 'EG Pt 2stubs reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];',
+                                           50, 0, 100, 100, -20, 20)
+
+            self.h_pt2stResp = ROOT.TH1F(name+'_pt2stResp', 'Track Pt resp.; p_{T}^{L1}/p_{T}^{GEN}',
+                                         100, 0, 3)
+            self.h_pt2stRespVpt = ROOT.TH2F(name+'_pt2stRespVpt', 'Track Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
+                                            50, 0, 100, 100, 0, 3)
+            self.h_pt2stRespVeta = ROOT.TH2F(name+'_pt2stRespVeta', 'Track Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};',
+                                             50, -4, 4, 100, 0, 3)
 
         BaseResoHistos.__init__(self, name, root_file, debug)
 
@@ -927,16 +936,22 @@ class TrackResoHistos(BaseResoHistos):
         self.h_ptResp.Fill(target.pt/reference.pt)
         self.h_ptRespVeta.Fill(reference.eta, target.pt/reference.pt)
         self.h_ptRespVpt.Fill(reference.pt, target.pt/reference.pt)
+
+        self.h_pt2stResVpt.Fill(reference.pt, target.pt2stubs-reference.pt)
+        self.h_pt2stResp.Fill(target.pt2stubs/reference.pt)
+        self.h_pt2stRespVeta.Fill(reference.eta, target.pt2stubs/reference.pt)
+        self.h_pt2stRespVpt.Fill(reference.pt, target.pt2stubs/reference.pt)
+
         self.h_etaRes.Fill(target.eta - reference.eta)
         self.h_phiRes.Fill(target.phi - reference.phi)
         self.h_drRes.Fill(np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
-
 
 
 class EGResoHistos(BaseResoHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_ptResVpt = ROOT.TH2F(name+'_ptResVpt', 'EG Pt reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];', 50, 0, 100, 100, -10, 10)
+
             self.h_ptResp = ROOT.TH1F(name+'_ptResp', 'EG Pt resp.; p_{T}^{L1}/p_{T}^{GEN}', 100, 0, 3)
             self.h_ptRespVpt = ROOT.TH2F(name+'_ptRespVpt', 'EG Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
             self.h_ptRespVeta = ROOT.TH2F(name+'_ptRespVeta', 'EG Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};', 50, -4, 4, 100, 0, 3)
@@ -960,8 +975,8 @@ class ClusterConeHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_ptRel = ROOT.TH1F(name+'_ptRel',
-                                     'Pt best/Pt other; p_{T}^{best}/p_{T}^{other}', 100, 0, 1)
-            self.h_ptRelVpt = ROOT.TH2F(name+'_ptRelVpt', 'Pt best/Pt other vs pt (GeV); p_{T}^{best} [GeV]; p_{T}^{best}/p_{T}^{other};', 50, 0, 100, 100, 0, 1)
+                                     'Pt best/Pt other; p_{T}^{best}/p_{T}^{other}', 100, 0, 5)
+            self.h_ptRelVpt = ROOT.TH2F(name+'_ptRelVpt', 'Pt best/Pt other vs pt (GeV); p_{T}^{best} [GeV]; p_{T}^{best}/p_{T}^{other};', 50, 0, 100, 100, 0, 5)
             self.h_deltaEta = ROOT.TH1F(name+'_deltaEta', '#Delta eta; #eta^{best}-#eta^{other}', 100, -0.4, 0.4)
             self.h_deltaPhi = ROOT.TH1F(name+'_deltaPhi', '#Delta phi; #phi^{best}-#phi^{other}', 100, -0.4, 0.4)
             self.h_deltaPhiVq = ROOT.TH2F(name+'_deltaPhiVq', '#Delta phi; #phi^{best}-#phi^{other}; GEN charge;', 100, -0.4, 0.4, 3, -1, 2)
