@@ -253,15 +253,20 @@ def build2D(components):
     return cl
 
 
-def build3D(components):
-    cl3D = pd.DataFrame()
-    calib_factor = 1.084
+def build3D(components, calib_factor=1.084):
+    cl3D = pd.DataFrame(columns=['energy', 'eta', 'phi', 'pt', 'ptCore',
+                                 'layers', 'clusters', 'nclu', 'firstlayer',
+                                 'showerlength', 'seetot', 'seemax', 'spptot',
+                                 'sppmax', 'szz', 'emaxe', 'id', 'eem', 'ehad',
+                                 'hoe', 'ptem'])
     cl3D['energy'] = [components.energy.sum()*calib_factor]
 #     cl3D['energyCore'] = [components.energyCore.sum()*calib_factor]
 #     cl3D['energyCentral'] = [components[(components.layer > 9) & (components.layer < 21)].energy.sum()*calib_factor]
 
     # print components
-
+    # cl3D['PT'] = components.momentum.sum().Pt()
+    #
+    # cl3D['E'] = components.momentum.sum().E()
     cl3D['eta'] = [np.sum(components.eta*components.energy)/components.energy.sum()]
     cl3D['phi'] = [np.sum(components.phi*components.energy)/components.energy.sum()]
     # print cl3D.energy/np.cosh(cl3D.eta)
@@ -272,6 +277,10 @@ def build3D(components):
     cl3D['clusters'] = [np.array(components.id)]
     cl3D['nclu'] = [components.shape[0]]
     cl3D['firstlayer'] = [np.min(components.layer.values)]
+    cl3D['eem'] = [components[components.layer <= 28].energy.sum()*calib_factor]
+    cl3D['ehad'] = [components[components.layer > 28].energy.sum()*calib_factor]
+    cl3D['hoe'] = cl3D.ehad/cl3D.eem
+    cl3D['ptem'] = cl3D.pt/(1+cl3D.hoe)
     # FIXME: placeholder
     cl3D['showerlength'] = [1]
     cl3D['seetot'] = [1]
