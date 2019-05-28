@@ -396,3 +396,49 @@ def sum3DClusters(components):
     # print '   - merged sum:'
     # print ret
     return ret
+
+
+def get_cylind_clusters(cl3ds, tcs, cylind_size=3):
+    # def fill_momentum(cluster):
+    #     vector = ROOT.TLorentzVector()
+    #     vector.SetPtEtaPhiE(cluster.pt, cluster.eta, cluster.phi, cluster.energy)
+    #     cluster.momentum = vector
+    #     # print tower.pt, tower.momentum.Pt()
+    #     return cluster
+
+    # columns = cl3ds.columns.values
+    # columns = np.append(columns, ['E', 'PT'])
+    ret = pd.DataFrame(columns=cl3ds.columns)
+    if not cl3ds.empty:
+        cl3ds.loc[cl3ds.index, 'sinh_eta'] = np.sinh(cl3ds.eta)
+        cl3ds.loc[cl3ds.index, 'cos_phi'] = np.cos(cl3ds.phi)
+        cl3ds.loc[cl3ds.index, 'sin_phi'] = np.sin(cl3ds.phi)
+        for index, cluster in cl3ds.iterrows():
+            components = tcs[tcs.id.isin(cluster.clusters)].copy()
+            components['R_cl'] = components.z/cluster.sinh_eta
+            components['x_cl'] = components.R_cl*cluster.cos_phi
+            components['y_cl'] = components.R_cl*cluster.sin_phi
+            components['dist2'] = (components.x_cl-components.x)**2+(components.y_cl-components.y)**2
+            # components['momentum'] = ROOT.TLorentzVector()
+            # components = components.apply(fill_momentum, axis=1)
+
+            # components['dist_bool'] = components[((components.x1-components.x)**2+(components.y1-components.y)**2)<cylind_size**2]
+            # print components[['id', 'layer', 'eta', 'phi', 'energy', 'x', 'y', 'R_cl', 'z', 'x_cl', 'y_cl', 'dist2']].sort_values(by='layer', ascending=True)
+            new_cluster = build3D(components[components.dist2 < cylind_size**2], calib_factor=1.)
+            new_cluster['showerlength'] = cluster.showerlength
+            new_cluster['seetot'] = cluster.seetot
+            new_cluster['seemax'] = cluster.seemax
+            new_cluster['spptot'] = cluster.spptot
+            new_cluster['sppmax'] = cluster.sppmax
+            new_cluster['szz'] = cluster.szz
+            new_cluster['emaxe'] = cluster.emaxe
+            new_cluster['quality'] = cluster.quality
+            ret = ret.append(new_cluster, ignore_index=True, sort=False)
+            # ret['showerlength'] = cluster.showerlength
+    # print cl3ds[['id', 'energy', 'pt', 'phi', 'eta', 'showerlength', 'nclu']]
+    # print ret[['id', 'energy', 'pt', 'phi', 'eta', 'showerlength', 'nclu']]
+    return ret
+
+
+def get_cylind_clusters_unpack(clusters_tcs_cylsize):
+    return get_cylind_clusters(clusters_tcs_cylsize[0], clusters_tcs_cylsize[1], clusters_tcs_cylsize[2])

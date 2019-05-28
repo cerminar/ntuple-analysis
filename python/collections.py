@@ -190,46 +190,21 @@ def tower_fixtures(towers):
     towers = towers.apply(fill_momentum, axis=1)
 
 
-def get_cone_clusters(cl3ds, tcs, cone_size=3):
-    def fill_momentum(cluster):
-        vector = ROOT.TLorentzVector()
-        vector.SetPtEtaPhiE(cluster.pt, cluster.eta, cluster.phi, cluster.energy)
-        cluster.momentum = vector
-        # print tower.pt, tower.momentum.Pt()
-        return cluster
 
-    # columns = cl3ds.columns.values
-    # columns = np.append(columns, ['E', 'PT'])
-    ret = pd.DataFrame(columns=cl3ds.columns)
-    if not cl3ds.empty:
-        cl3ds.loc[cl3ds.index, 'sinh_eta'] = np.sinh(cl3ds.eta)
-        cl3ds.loc[cl3ds.index, 'cos_phi'] = np.cos(cl3ds.phi)
-        cl3ds.loc[cl3ds.index, 'sin_phi'] = np.sin(cl3ds.phi)
-        for index, cluster in cl3ds.iterrows():
-            components = tcs[tcs.id.isin(cluster.clusters)]
-            components.loc[components.index, 'R_cl'] = components.z/cluster.sinh_eta
-            components.loc[components.index, 'x_cl'] = components.R_cl*cluster.cos_phi
-            components.loc[components.index, 'y_cl'] = components.R_cl*cluster.sin_phi
-            components.loc[components.index, 'dist2'] = (components.x_cl-components.x)**2+(components.y_cl-components.y)**2
-            # components['momentum'] = ROOT.TLorentzVector()
-            # components = components.apply(fill_momentum, axis=1)
+def get_cylind_clusters_mp(cl3ds, tcs, cylind_size, pool):
+    cluster_sides = [x for x in [cl3ds[cl3ds.eta > 0],
+                                 cl3ds[cl3ds.eta < 0]] if not x.empty]
+    tc_sides = [x for x in [tcs[tcs.eta > 0],
+                            tcs[tcs.eta < 0]] if not x.empty]
+    cylind_sizes = [cylind_size, cylind_size]
 
-            # components['dist_bool'] = components[((components.x1-components.x)**2+(components.y1-components.y)**2)<cone_size**2]
-            # print components[['id', 'layer', 'eta', 'phi', 'energy', 'x', 'y', 'R_cl', 'z', 'x_cl', 'y_cl', 'dist2']].sort_values(by='layer', ascending=True)
-            new_cluster = clAlgo.build3D(components[components.dist2 < cone_size**2], calib_factor=1.)
-            new_cluster['showerlength'] = cluster.showerlength
-            new_cluster['seetot'] = cluster.seetot
-            new_cluster['seemax'] = cluster.seemax
-            new_cluster['spptot'] = cluster.spptot
-            new_cluster['sppmax'] = cluster.sppmax
-            new_cluster['szz'] = cluster.szz
-            new_cluster['emaxe'] = cluster.emaxe
-            new_cluster['quality'] = cluster.quality
-            ret = ret.append(new_cluster, ignore_index=True, sort=False)
-            # ret['showerlength'] = cluster.showerlength
-    # print cl3ds[['id', 'energy', 'pt', 'phi', 'eta', 'showerlength', 'nclu']]
-    # print ret[['id', 'energy', 'pt', 'phi', 'eta', 'showerlength', 'nclu']]
-    return ret
+    cluster_and_tc_sides = zip(cluster_sides, tc_sides, cylind_sizes)
+    result_3dcl = pool.map(clAlgo.get_cylind_clusters_unpack, cluster_and_tc_sides)
+    merged_clusters = pd.DataFrame(columns=cl3ds.columns)
+    for res3D in result_3dcl:
+        merged_clusters = merged_clusters.append(res3D, ignore_index=True, sort=False)
+    return merged_clusters
+
 
 
 def get_merged_cl3d(triggerClusters, pool, debug=0):
@@ -392,7 +367,7 @@ cl3d_def_nc = DFCollection(name='DEFNC', label='dRC3d NewTh',
 
 cl3d_hm = DFCollection(name='HMvDR', label='HM+dR(layer) Cl3d',
                        filler_function=lambda event: event.getDataFrame(prefix='hmVRcl3d'),
-                       fixture_function=cl3d_fixtures)
+                       fixture_function=cl3d_fixtures, debug=0)
 
 cl3d_hm_rebin = DFCollection(name='HMvDRRebin', label='HM+dR(layer) rebin Cl3d ',
                              filler_function=lambda event: event.getDataFrame(prefix='hmVRcl3dRebin'),
@@ -422,13 +397,13 @@ cl3d_hm_merged = DFCollection(name='HMvDRMerged', label='HM+dR(layer) merged',
                               filler_function=lambda event: get_merged_cl3d(cl3d_hm.df[cl3d_hm.df.quality > 0], POOL),
                               depends_on=[cl3d_hm])
 
-cl3d_hm_cone10 = DFCollection(name='HMvDRCone10', label='HM Cone 10cm', filler_function=lambda event: get_cone_clusters(cl3d_hm.df, tcs.df, 10.),
-                            depends_on=[cl3d_hm, tcs])
+cl3d_hm_cylind10 = DFCollection(name='HMvDRcylind10', label='HM Cylinder 10cm', filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, 10., POOL),
+                                depends_on=[cl3d_hm, tcs], debug=0)
 
-cl3d_hm_cone5 = DFCollection(name='HMvDRCone5', label='HM Cone 5cm', filler_function=lambda event: get_cone_clusters(cl3d_hm.df, tcs.df, 5.),
-                            depends_on=[cl3d_hm, tcs])
+cl3d_hm_cylind5 = DFCollection(name='HMvDRcylind5', label='HM Cylinder 5cm', filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, 5., POOL),
+                               depends_on=[cl3d_hm, tcs])
 
-cl3d_hm_cone2p5 = DFCollection(name='HMvDRCone2p5', label='HM Cone 2.5cm', filler_function=lambda event: get_cone_clusters(cl3d_hm.df, tcs.df, 2.5),
+cl3d_hm_cylind2p5 = DFCollection(name='HMvDRcylind2p5', label='HM Cylinder 2.5cm', filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, 2.5, POOL),
                             depends_on=[cl3d_hm, tcs])
 
 towers_tcs = DFCollection(name='TT', label='TT (TC)',
@@ -513,9 +488,9 @@ tp_def_nc = TPSet(tcs, cl2d_def, cl3d_def_nc)
 tp_def_merged = TPSet(tcs, cl2d_def, cl3d_def_merged)
 tp_def_calib = TPSet(tcs, cl2d_def, cl3d_def_calib)
 tp_hm_vdr = TPSet(tcs, tcs, cl3d_hm)
-tp_hm_cone10 = TPSet(tcs, tcs, cl3d_hm_cone10)
-tp_hm_cone5 = TPSet(tcs, tcs, cl3d_hm_cone5)
-tp_hm_cone2p5 = TPSet(tcs, tcs, cl3d_hm_cone2p5)
+tp_hm_cylind10 = TPSet(tcs, tcs, cl3d_hm_cylind10)
+tp_hm_cylind5 = TPSet(tcs, tcs, cl3d_hm_cylind5)
+tp_hm_cylind2p5 = TPSet(tcs, tcs, cl3d_hm_cylind2p5)
 tp_hm_vdr_rebin = TPSet(tcs, tcs, cl3d_hm_rebin)
 tp_hm_vdr_stc = TPSet(tcs, tcs, cl3d_hm_stc)
 tp_hm_vdr_nc0 = TPSet(tcs, tcs, cl3d_hm_nc0)
