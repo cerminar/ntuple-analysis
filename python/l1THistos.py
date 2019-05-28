@@ -699,7 +699,7 @@ class ResoHistos(BaseResoHistos):
             # self.h_energyRes = ROOT.TH1F(name+'_energyRes', '3D Cluster Energy reso (GeV); E^{L1} - E^{GEN} [GeV]', 200, -100, 100)
             self.h_ptResVeta = ROOT.TH2F(name+'_ptResVeta', '3D Cluster Pt reso (GeV) vs eta; #eta^{GEN}; p_{T}^{L1} - p_{T}^{GEN} [GeV];', 100, -3.5, 3.5, 200, -40, 40)
 
-            self.h_energyResVenergy = ROOT.TH2F(name+'_ptRes',
+            self.h_energyResVenergy = ROOT.TH2F(name+'_energyResVenergy',
                                                 '3D Cluster E reso vs E; E^{GEN} [GeV]; E^{L1} - E^{GEN} [GeV]',
                                                 100, 0, 1000, 200, -100, 100)
 
