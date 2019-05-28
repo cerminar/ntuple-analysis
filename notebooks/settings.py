@@ -49,7 +49,7 @@ tp_select['TkEle'] = ['EGq2', 'EGq3']
 
 tp_select['TkEle'] = ['EGq2', 'EGq3', 'EGq2Iso0p2', 'EGq3Iso0p2', 'EGq2Iso0p3', 'EGq3Iso0p3']
 tp_select['TkIsoEle'] = ['EGq2', 'EGq3', 'EGq2Iso0p2', 'EGq3Iso0p2', 'EGq2Iso0p3', 'EGq3Iso0p3']
-tp_select['L1Trk'] = ['all', 'Pt2', 'Pt10']
+tp_select['L1Trk'] = get_label_dict(selections.tracks_selections).keys()
 
 # ==== GEN selections ===============================================
 
