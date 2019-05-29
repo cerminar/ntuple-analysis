@@ -22,5 +22,5 @@ for filename in TEMPL_OUTDIR/tmp/TEMPL_INFILE; do
     xrdcp TEMPL_EOSPROTOCOL${filename} .
 done
 hadd -j 10 -k TEMPL_OUTFILE `ls TEMPL_INFILE`
-
+rm TEMPL_INFILE
 #mv TEMPL_OUTFILE TEMPL_OUTDIR
