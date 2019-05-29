@@ -259,6 +259,7 @@ def build3D(components, calib_factor=1.084):
                                  'showerlength', 'seetot', 'seemax', 'spptot',
                                  'sppmax', 'szz', 'emaxe', 'id', 'eem', 'ehad',
                                  'hoe', 'ptem'])
+
     cl3D['energy'] = [components.energy.sum()*calib_factor]
 #     cl3D['energyCore'] = [components.energyCore.sum()*calib_factor]
 #     cl3D['energyCentral'] = [components[(components.layer > 9) & (components.layer < 21)].energy.sum()*calib_factor]
@@ -424,7 +425,10 @@ def get_cylind_clusters(cl3ds, tcs, cylind_size=3):
 
             # components['dist_bool'] = components[((components.x1-components.x)**2+(components.y1-components.y)**2)<cylind_size**2]
             # print components[['id', 'layer', 'eta', 'phi', 'energy', 'x', 'y', 'R_cl', 'z', 'x_cl', 'y_cl', 'dist2']].sort_values(by='layer', ascending=True)
-            new_cluster = build3D(components[components.dist2 < cylind_size**2], calib_factor=1.)
+            selected_components = components[components.dist2 < cylind_size**2]
+            if selected_components.empty:
+                continue
+            new_cluster = build3D(selected_components, calib_factor=1.)
             new_cluster['showerlength'] = cluster.showerlength
             new_cluster['seetot'] = cluster.seetot
             new_cluster['seemax'] = cluster.seemax
