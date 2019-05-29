@@ -8,6 +8,7 @@ import subprocess32
 from shutil import copyfile
 import optparse
 import logging
+import time
 logger = multiprocessing.log_to_stderr()
 logger.setLevel(logging.DEBUG)
 
@@ -58,6 +59,7 @@ def data_creator(input_dir, sample_name, version, q):
                 break
         if ncopied > 999:
             break
+        time.sleep(5)
 
 
 def data_checker(queue_all, queue_ready):
