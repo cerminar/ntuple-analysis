@@ -818,11 +818,12 @@ class CalibrationPlotter(BasePlotter):
                 # print obj_matched.clusters
                 # print obj_matched.clusters[0]
                 components = tcs[tcs.id.isin(obj_matched.iloc[0].clusters)].copy()
-                layer_energy = []
-                for layer in range(1, 29, 2):
-                    components[components.layer == layer].energy.sum()
-                    layer_energy.append(components[components.layer == layer].energy.sum())
-                obj_matched['layer_energy'] = [layer_energy]
+                if 'layer_energy' not in obj_matched.columns:
+                    layer_energy = []
+                    for layer in range(1, 29, 2):
+                        # components[components.layer == layer].energy.sum()
+                        layer_energy.append(components[components.layer == layer].energy.sum())
+                    obj_matched['layer_energy'] = [layer_energy]
                 # print obj_matched[['energy', 'layer_energy']]
                 h_calibration.fill(reference=genParticle, target=obj_matched)
 
@@ -982,6 +983,7 @@ tp_plotters = [TPPlotter(collections.tp_def, selections.tp_id_selections),
                # TPPlotter(selections.tp_def_calib, selections.tp_id_selections)
                # TPPlotter(selections.tp_hm, selections.tp_id_selections),
                TPPlotter(collections.tp_hm_vdr, selections.tp_id_selections),
+               TPPlotter(collections.tp_hm_fixed, selections.tp_id_selections),
                TPPlotter(collections.tp_hm_cylind10, selections.tp_id_selections),
                TPPlotter(collections.tp_hm_cylind5, selections.tp_id_selections),
                TPPlotter(collections.tp_hm_cylind2p5, selections.tp_id_selections),
@@ -1057,6 +1059,9 @@ tp_genmatched_plotters = [TPGenMatchPlotter(collections.tp_def, collections.gen_
                           TPGenMatchPlotter(collections.tp_hm_vdr, collections.gen_parts,
                                             selections.tp_match_selections,
                                             selections.gen_part_selections),
+                          TPGenMatchPlotter(collections.tp_hm_fixed, collections.gen_parts,
+                                            selections.tp_match_selections,
+                                            selections.gen_part_selections),
                           TPGenMatchPlotter(collections.tp_hm_cylind10, collections.gen_parts,
                                             selections.tp_match_selections,
                                             selections.gen_part_selections),
@@ -1064,6 +1069,18 @@ tp_genmatched_plotters = [TPGenMatchPlotter(collections.tp_def, collections.gen_
                                             selections.tp_match_selections,
                                             selections.gen_part_selections),
                           TPGenMatchPlotter(collections.tp_hm_cylind2p5, collections.gen_parts,
+                                            selections.tp_match_selections,
+                                            selections.gen_part_selections),
+                          TPGenMatchPlotter(collections.tp_hm_fixed_calib, collections.gen_parts,
+                                            selections.tp_match_selections,
+                                            selections.gen_part_selections),
+                          TPGenMatchPlotter(collections.tp_hm_cylind10_calib, collections.gen_parts,
+                                            selections.tp_match_selections,
+                                            selections.gen_part_selections),
+                          TPGenMatchPlotter(collections.tp_hm_cylind5_calib, collections.gen_parts,
+                                            selections.tp_match_selections,
+                                            selections.gen_part_selections),
+                          TPGenMatchPlotter(collections.tp_hm_cylind2p5_calib, collections.gen_parts,
                                             selections.tp_match_selections,
                                             selections.gen_part_selections),
                           # TPGenMatchPlotter(collections.tp_hm_vdr_rebin, collections.gen_parts,

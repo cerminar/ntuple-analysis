@@ -429,6 +429,8 @@ def get_cylind_clusters(cl3ds, tcs, cylind_size=3):
             if selected_components.empty:
                 continue
             new_cluster = build3D(selected_components, calib_factor=1.)
+            # this is used for layer calibrations
+            new_cluster['layer_energy'] = [[selected_components[selected_components.layer == layer].energy.sum() for layer in range(1, 29, 2)]]
             new_cluster['showerlength'] = cluster.showerlength
             new_cluster['seetot'] = cluster.seetot
             new_cluster['seemax'] = cluster.seemax

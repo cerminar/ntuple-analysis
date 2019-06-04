@@ -253,6 +253,17 @@ def get_trackmatched_egs(egs, tracks, debug=0):
     return matched_egs
 
 
+def get_layer_calib_clusters(input_clusters, layer_calib_factors):
+    calibrated_clusters = input_clusters.copy(deep=True)
+
+    def apply_calibration(cluster):
+        cluster['energy'] = np.sum(np.array(cluster['layer_energy'])*np.array(layer_calib_factors))
+        cluster['pt'] = cluster.energy/np.cosh(cluster.eta)
+        return cluster
+    calibrated_clusters = calibrated_clusters.apply(apply_calibration, axis=1)
+    return calibrated_clusters
+
+
 def get_calibrated_clusters(calib_factors, input_3Dclusters):
     calibrated_clusters = input_3Dclusters.copy(deep=True)
 
@@ -397,14 +408,37 @@ cl3d_hm_merged = DFCollection(name='HMvDRMerged', label='HM+dR(layer) merged',
                               filler_function=lambda event: get_merged_cl3d(cl3d_hm.df[cl3d_hm.df.quality > 0], POOL),
                               depends_on=[cl3d_hm])
 
-cl3d_hm_cylind10 = DFCollection(name='HMvDRcylind10', label='HM Cylinder 10cm', filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, 10., POOL),
-                                depends_on=[cl3d_hm, tcs], debug=0)
+cl3d_hm_fixed = DFCollection(name='HMvDRfixed', label='HM fixed',
+                             filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, 999., POOL),
+                             depends_on=[cl3d_hm, tcs], debug=0)
 
-cl3d_hm_cylind5 = DFCollection(name='HMvDRcylind5', label='HM Cylinder 5cm', filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, 5., POOL),
-                               depends_on=[cl3d_hm, tcs])
+cl3d_hm_cylind10 = DFCollection(name='HMvDRcylind10', label='HM Cylinder 10cm',
+                                filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm_fixed.df, tcs.df, 10., POOL),
+                                depends_on=[cl3d_hm_fixed, tcs], debug=0)
 
-cl3d_hm_cylind2p5 = DFCollection(name='HMvDRcylind2p5', label='HM Cylinder 2.5cm', filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, 2.5, POOL),
-                            depends_on=[cl3d_hm, tcs])
+cl3d_hm_cylind5 = DFCollection(name='HMvDRcylind5', label='HM Cylinder 5cm',
+                               filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm_fixed.df, tcs.df, 5., POOL),
+                               depends_on=[cl3d_hm_fixed, tcs])
+
+cl3d_hm_cylind2p5 = DFCollection(name='HMvDRcylind2p5', label='HM Cylinder 2.5cm',
+                                 filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm_fixed.df, tcs.df, 2.5, POOL),
+                                 depends_on=[cl3d_hm_fixed, tcs], debug=0)
+
+cl3d_hm_fixed_calib = DFCollection(name='HMvDRfixedCalib', label='HM fixed calib.',
+                                   filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_fixed.df, [4.5, 0.94, 1.08, 1.04, 0.91, 1.04, 1.09, 0.91, 1.0, 0.91, 1.06, 1.07, 1.37, 1.47]),
+                                   depends_on=[cl3d_hm_fixed, tcs], debug=0)
+
+cl3d_hm_cylind10_calib = DFCollection(name='HMvDRcylind10Calib', label='HM Cylinder 10cm calib.',
+                                      filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_cylind10.df, [4.5, 0.94, 1.08, 1.04, 0.91, 1.04, 1.09, 0.91, 1.0, 0.91, 1.06, 1.07, 1.37, 1.47]),
+                                      depends_on=[cl3d_hm_cylind10, tcs], debug=0)
+
+cl3d_hm_cylind5_calib = DFCollection(name='HMvDRcylind5Calib', label='HM Cylinder 5cm calib.',
+                                     filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_cylind5.df, [4.91, 0.94, 1.09, 1.05, 0.92, 1.05, 1.11, 0.94, 1.02, 0.92, 1.1, 1.04, 1.34, 1.6]),
+                                     depends_on=[cl3d_hm_cylind5, tcs])
+
+cl3d_hm_cylind2p5_calib = DFCollection(name='HMvDRcylind2p5Calib', label='HM Cylinder 2.5cm calib.',
+                                       filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_cylind2p5.df, [8.49, 0.97, 1.19, 1.18, 1.04, 1.1, 1.25, 1.05, 1.14, 0.97, 1.17, 1.34, 1.3, 1.67]),
+                                       depends_on=[cl3d_hm_cylind2p5, tcs], debug=0)
 
 towers_tcs = DFCollection(name='TT', label='TT (TC)',
                           filler_function=lambda event: event.getDataFrame(prefix='tower'),
@@ -488,9 +522,14 @@ tp_def_nc = TPSet(tcs, cl2d_def, cl3d_def_nc)
 tp_def_merged = TPSet(tcs, cl2d_def, cl3d_def_merged)
 tp_def_calib = TPSet(tcs, cl2d_def, cl3d_def_calib)
 tp_hm_vdr = TPSet(tcs, tcs, cl3d_hm)
+tp_hm_fixed = TPSet(tcs, tcs, cl3d_hm_fixed)
 tp_hm_cylind10 = TPSet(tcs, tcs, cl3d_hm_cylind10)
 tp_hm_cylind5 = TPSet(tcs, tcs, cl3d_hm_cylind5)
 tp_hm_cylind2p5 = TPSet(tcs, tcs, cl3d_hm_cylind2p5)
+tp_hm_fixed_calib = TPSet(tcs, tcs, cl3d_hm_fixed_calib)
+tp_hm_cylind10_calib = TPSet(tcs, tcs, cl3d_hm_cylind10_calib)
+tp_hm_cylind5_calib = TPSet(tcs, tcs, cl3d_hm_cylind5_calib)
+tp_hm_cylind2p5_calib = TPSet(tcs, tcs, cl3d_hm_cylind2p5_calib)
 tp_hm_vdr_rebin = TPSet(tcs, tcs, cl3d_hm_rebin)
 tp_hm_vdr_stc = TPSet(tcs, tcs, cl3d_hm_stc)
 tp_hm_vdr_nc0 = TPSet(tcs, tcs, cl3d_hm_nc0)
