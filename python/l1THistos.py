@@ -710,10 +710,10 @@ class ResoHistos(BaseResoHistos):
             self.h_ptResVpt = ROOT.TH2F(name+'_ptResVpt', '3D Cluster Pt reso (GeV) vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1} - p_{T}^{GEN} [GeV];', 50, 0, 100, 200, -40, 40)
             # self.h_ptResVnclu = ROOT.TH2F(name+'_ptResVnclu', '3D Cluster Pt reso (GeV) vs # clusters; # 2D clus.; p_{T}^{L1} - p_{T}^{GEN} [GeV];', 50, 0, 50, 200, -40, 40)
 
-            self.h_ptResp = ROOT.TH1F(name+'_ptResp', '3D Cluster Pt resp.; p_{T}^{L1}/p_{T}^{GEN}', 100, 0, 3)
-            self.h_ptRespVpt = ROOT.TH2F(name+'_ptRespVpt', '3D Cluster Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
-            self.h_ptRespVeta = ROOT.TH2F(name+'_ptRespVeta', '3D Cluster Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};', 50, -4, 4, 100, 0, 3)
-            self.h_ptRespVnclu = ROOT.TH2F(name+'_ptRespVnclu', '3D Cluster Pt resp. vs # clus.; # 2D clust. ; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
+            self.h_ptResp = ROOT.TH1F(name+'_ptResp', '3D Cluster Pt resp.; p_{T}^{L1}/p_{T}^{GEN}', 100, 0, 2)
+            self.h_ptRespVpt = ROOT.TH2F(name+'_ptRespVpt', '3D Cluster Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 2)
+            self.h_ptRespVeta = ROOT.TH2F(name+'_ptRespVeta', '3D Cluster Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};', 50, -4, 4, 100, 0, 2)
+            self.h_ptRespVnclu = ROOT.TH2F(name+'_ptRespVnclu', '3D Cluster Pt resp. vs # clus.; # 2D clust. ; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 2)
             self.h_ptRespVetaVptL1 = ROOT.TH3F(name+'_ptRespVetaVptL1',
                                                '3D Cluster Pt resp. vs #eta and vs pT; #eta^{L1}; p_{T}^{L1} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
                                                30, 1, 4, 50, 0, 100, 100, 0, 3)
@@ -1006,6 +1006,39 @@ class ClusterConeHistos(BaseHistos):
 
     def fill_n(self, num):
         self.h_n.Fill(num)
+
+from sklearn.linear_model import LinearRegression
+class CalibrationHistos(BaseHistos):
+    def __init__(self, name, root_file=None, debug=False):
+        if not root_file:
+            # self.data = []
+            # self.reference = []
+            self.t_values = ROOT.TNtuple(name+"_calib", name+"_calib", 'e1:e3:e5:e7:e9:e11:e13:e15:e17:e19:e21:e23:e25:e27:Egen')
+        BaseHistos.__init__(self, name, root_file, debug)
+
+    def fill(self, reference, target):
+        # cluster_data = []
+        # self.data.append(target.iloc[0]['layer_energy'])
+        # self.reference.append(reference.energy)
+        energy_fill = []
+        energy_fill.extend(target.iloc[0]['layer_energy'])
+        energy_fill.append(reference.energy)
+        self.t_values.Fill(array('f', energy_fill))
+
+    def write(self):
+        # print "-------- {}".format(self.name_)
+        self.t_values.Write()
+
+        # if len(self.data) == 0:
+        #     return
+        # print np.array(self.data)
+        # print np.array(self.reference)
+        # regression = LinearRegression(fit_intercept=False)
+        # regression.fit(np.array(self.data), np.array(self.reference))
+        # print 'Calibration Name: {} coefficients: {}, score: {}'.format(self.name_, regression.coef_, regression.score(np.array(self.data), np.array(self.reference)))
+        return
+
+
 
 # if __name__ == "__main__":
 #     import sys
