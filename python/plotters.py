@@ -782,6 +782,94 @@ class TkEGGenMatchPlotter(GenericGenMatchPlotter):
                                                   data_selections, gen_selections)
 
 
+
+
+
+class CalibrationPlotter(BasePlotter):
+    def __init__(self, data_set, gen_set,
+                 data_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
+
+        self.h_calibration = {}
+        super(CalibrationPlotter, self).__init__(data_set, data_selections, gen_set, gen_selections)
+
+        # print self
+        # print gen_selections
+
+    def plotObjectMatch(self,
+                        genParticles,
+                        objects,
+                        tcs,
+                        h_calibration,
+                        algoname,
+                        debug):
+        best_match_indexes = {}
+        if not objects.empty:
+            best_match_indexes, allmatches = utils.match_etaphi(genParticles[['eta', 'phi']],
+                                                                objects[['eta', 'phi']],
+                                                                objects['pt'],
+                                                                deltaR=0.1)
+
+        for idx, genParticle in genParticles.iterrows():
+            if idx in best_match_indexes.keys():
+                # print ('-----------------------')
+                #  print(genParticle)
+                obj_matched = objects.loc[[best_match_indexes[idx]]]
+                # print obj_matched
+                # print obj_matched.clusters
+                # print obj_matched.clusters[0]
+                components = tcs[tcs.id.isin(obj_matched.iloc[0].clusters)].copy()
+                layer_energy = []
+                for layer in range(1, 29, 2):
+                    components[components.layer == layer].energy.sum()
+                    layer_energy.append(components[components.layer == layer].energy.sum())
+                obj_matched['layer_energy'] = [layer_energy]
+                # print obj_matched[['energy', 'layer_energy']]
+                h_calibration.fill(reference=genParticle, target=obj_matched)
+
+                if debug >= 4:
+                    print ('--- Dump match for algo {} ---------------'.format(algoname))
+                    print ('GEN particle: idx: {}'.format(idx))
+                    print (genParticle)
+                    print ('Matched to track object:')
+                    print (obj_matched)
+            else:
+                if debug >= 5:
+                    print ('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx))
+                    print (genParticle)
+                    print (objects)
+
+    def book_histos(self):
+        self.gen_set.activate()
+        self.data_set.activate()
+        for tp_sel in self.data_selections:
+            for gen_sel in self.gen_selections:
+                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                self.h_calibration[histo_name] = histos.CalibrationHistos(histo_name)
+
+    def fill_histos(self, debug=False):
+        for tp_sel in self.data_selections:
+            objects = self.data_set.df
+            if not tp_sel.all and not self.data_set.df.empty:
+                objects = self.data_set.df.query(tp_sel.selection)
+            for gen_sel in self.gen_selections:
+                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
+                if not gen_sel.all:
+                    genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
+                    # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
+                    # elif  particle.pdgid == PID.pizero:
+                    #     genReference = genParts[(genParts.pid == particle.pdgid)]
+
+                h_calib = self.h_calibration[histo_name]
+                # print 'TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name)
+                self.plotObjectMatch(genReference,
+                                     objects,
+                                     self.data_set.tcs.df,
+                                     h_calib,
+                                     self.data_set.name,
+                                     debug)
+
+
 class TTGenMatchPlotter:
     def __init__(self, tt_set, gen_set,
                  tt_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
@@ -934,6 +1022,19 @@ eg_rate_plotters = [RatePlotter(collections.egs, selections.eg_rate_selections),
 tp_genmatched_debug = [TPGenMatchPlotterDebugger(collections.tp_def, collections.gen_parts, collections.gen,
                                                  [selections.Selection('Em', 'EGId', 'quality >0')],
                                                  selections.gen_part_selections_debug)]
+
+tp_calib_plotters = [CalibrationPlotter(collections.tp_hm_vdr, collections.gen_parts,
+                                        selections.tp_calib_selections,
+                                        selections.gen_part_selections),
+                     CalibrationPlotter(collections.tp_hm_cylind10, collections.gen_parts,
+                                        selections.tp_calib_selections,
+                                        selections.gen_part_selections),
+                     CalibrationPlotter(collections.tp_hm_cylind5, collections.gen_parts,
+                                        selections.tp_calib_selections,
+                                        selections.gen_part_selections),
+                     CalibrationPlotter(collections.tp_hm_cylind2p5, collections.gen_parts,
+                                        selections.tp_calib_selections,
+                                        selections.gen_part_selections), ]
 
 tp_genmatched_plotters = [TPGenMatchPlotter(collections.tp_def, collections.gen_parts,
                                             selections.tp_match_selections,

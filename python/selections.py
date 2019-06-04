@@ -87,6 +87,12 @@ tp_pt_selections = [Selection('all', '', ''),
                     Selection('Pt30', 'p_{T}^{L1}>=30GeV', 'pt >= 30')
                     ]
 
+tp_calib_pt_selections = [Selection('all', '', ''),
+                          Selection('Pt10', 'p_{T}^{L1}>=10GeV', 'pt >= 10'),
+                          Selection('Pt20', 'p_{T}^{L1}>=20GeV', 'pt >= 20'),
+                    # # Selection('Pt25', 'p_{T}^{L1}>=25GeV', 'pt >= 25'),
+                    # Selection('Pt30', 'p_{T}^{L1}>=30GeV', 'pt >= 30')
+                    ]
 
 tp_eta_selections = [Selection('all', '', ''),
                      # Selection('EtaA', '|#eta^{L1}| <= 1.52', 'abs(eta) <= 1.52'),
@@ -101,10 +107,12 @@ tp_eta_selections = [Selection('all', '', ''),
                      # Selection('EtaBCDE', '1.52 < |#eta^{L1}|', '1.52 < abs(eta)')
                      ]
 
-
 tp_rate_selections = add_selections(tp_id_selections, tp_eta_selections)
 
 tp_match_selections = add_selections(tp_id_selections, tp_pt_selections)
+
+tp_calib_selections = tp_id_selections
+
 
 genpart_ele_selections = [Selection('Ele', 'e^{#pm}', 'abs(pdgid) == {}'.format(PID.electron))]
 genpart_photon_selections = [Selection('Phot', '#gamma', 'abs(pdgid) == {}'.format(PID.photon))]                      #
@@ -134,14 +142,14 @@ gen_pt_selections = [Selection('Pt10', 'p_{T}^{GEN}>=10GeV', 'pt >= 10'),
 
 # gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {}) | (abs(pdgid) == {}) | (abs(pdgid) == {})'.format(PID.electron, PID.photon, PID.pion))]
 # gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {}) & (firstmother_pdgid == {})'.format(PID.electron, PID.electron))]
-gen_part_selections = [Selection('GEN', '', '((abs(pdgid) == {}) & (firstmother_pdgid == {})) | ((abs(pdgid) == {}) & (firstmother_pdgid == {}))'.format(PID.electron, PID.electron,
+gen_selections = [Selection('GEN', '', '((abs(pdgid) == {}) & (firstmother_pdgid == {})) | ((abs(pdgid) == {}) & (firstmother_pdgid == {}))'.format(PID.electron, PID.electron,
                                                                                                                                                          PID.photon, PID.photon))]
 
 
 # gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {})'.format(PID.e lectron))]
 
 
-gen_part_ee_sel = add_selections(gen_part_selections, gen_ee_selections)
+gen_part_ee_sel = add_selections(gen_selections, gen_ee_selections)
 gen_part_ee_pt_sel = add_selections(gen_part_ee_sel, gen_pt_selections)
 gen_part_ee_eta_sel = add_selections(gen_part_ee_sel, gen_eta_selections)
 
