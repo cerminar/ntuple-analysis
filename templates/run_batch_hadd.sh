@@ -22,5 +22,10 @@ for filename in TEMPL_OUTDIR/tmp/TEMPL_INFILE; do
     xrdcp TEMPL_EOSPROTOCOL${filename} .
 done
 hadd -j 10 -k TEMPL_OUTFILE `ls TEMPL_INFILE`
+retVal=$?
+if [ $retVal -ne 0 ]; then
+    echo "****** Error: hadd failed!"
+    exit $retVal
+fi
 rm TEMPL_INFILE
 #mv TEMPL_OUTFILE TEMPL_OUTDIR
