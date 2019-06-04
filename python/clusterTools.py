@@ -274,8 +274,8 @@ def build3D(components, calib_factor=1.084):
     # print type(cl3D.energy/np.cosh(cl3D.eta))
     cl3D['pt'] = [(cl3D.energy/np.cosh(cl3D.eta)).values[0]]
     # cl3D['ptCore'] = [(cl3D.energyCore/np.cosh(cl3D.eta)).values[0]]
-    cl3D['layers'] = [components.layer.values]
-    cl3D['clusters'] = [np.array(components.id)]
+    cl3D['layers'] = [components.layer.unique()]
+    cl3D['clusters'] = [components.id.values]
     cl3D['nclu'] = [components.shape[0]]
     cl3D['firstlayer'] = [np.min(components.layer.values)]
     cl3D['eem'] = [components[components.layer <= 28].energy.sum()*calib_factor]
