@@ -9,174 +9,6 @@ import math
 stuff = []
 
 
-def gausstailfit(project_hist):
-    max_bin = project_hist.GetMaximumBin()
-    max_value = project_hist.GetBinCenter(max_bin)
-    rms_value = project_hist.GetRMS()
-
-    def gausstail(x, p):
-        #         // [Constant] * ROOT::Math::crystalball_function(x, [Alpha], [N], [Sigma], [Mean])
-        return p[0] * ROOT.Math.crystalball_function(x[0], p[3], p[4], p[2], p[1])
-
-    fitf = ROOT.TF1('gausstail', gausstail, 0, 3, 5)
-    fitf.SetParNames('norm', 'mean', 'sigma', 'alpha', 'n')
-#     fitf.FixParameter(0, 1.)
-    fitf.SetParLimits(1, 0.8, 1.1)
-
-    fitf.SetParameters(project_hist.Integral(),max_value,rms_value, 1, 1)
-#     c = newCanvas()
-#     fitf.Draw()
-#     c.Draw()
-    # print '   max_value = {}, RMS = {}'.format(max_value, rms_value)
-    result = project_hist.Fit('gausstail','NQERLS+')
-    # result.Print()
-    # print '   mean = {}, sigma = {}'.format(result.GetParams()[1], result.GetParams()[2])
-#     func = project_hist.GetFunction("gaus")
-    # print '   NDF = {}, chi2 = {}, prob = {}'.format(fitf.GetNDF(), fitf.GetChisquare(), fitf.GetProb())
-    return result
-
-
-def computeGausMean(h2d_or, rebin=1):
-    h2d = h2d_or
-    if rebin != 1:
-        h2d = h2d_or.Rebin2D(rebin, 1, uuid.uuid4().hex[:6])
-    # return values
-    x, y, ex_l, ex_h, ey_l, ey_h = [], [], [], [], [], []
-    n_x_bins = int(h2d.GetNbinsX())
-    # print n_x_bins
-    for x_bin in range(1, n_x_bins+1):
-        y_proj = h2d.ProjectionY(uuid.uuid4().hex[:6]+'_y', x_bin, x_bin)
-        integ = y_proj.Integral()
-        if integ == 0:
-            continue
-        fit_result = gausstailfit(y_proj)
-        x_value = h2d.GetXaxis().GetBinCenter(x_bin)
-        x_err_min = x_value - h2d.GetXaxis().GetBinLowEdge(x_bin)
-        x_err_plus = h2d.GetXaxis().GetBinUpEdge(x_bin) - x_value
-
-        x.append(x_value)
-        ex_l.append(x_err_min)
-        ex_h.append(x_err_plus)
-
-        y.append(fit_result.GetParams()[1])
-        ey_l.append(fit_result.GetParams()[2]/math.sqrt(integ))
-        ey_h.append(fit_result.GetParams()[2]/math.sqrt(integ))
-
-    return x, y, ex_l, ex_h, ey_l, ey_h
-
-
-def computeGausSigma(h2d_or, rebin=1):
-    h2d = h2d_or
-    if rebin != 1:
-        h2d = h2d_or.Rebin2D(rebin, 1, uuid.uuid4().hex[:6])
-    # return values
-    x, y, ex_l, ex_h, ey_l, ey_h = [], [], [], [], [], []
-    n_x_bins = int(h2d.GetNbinsX())
-    # print n_x_bins
-    for x_bin in range(1, n_x_bins+1):
-        y_proj = h2d.ProjectionY(uuid.uuid4().hex[:6]+'_y', x_bin, x_bin)
-        integ = y_proj.Integral()
-        if integ == 0:
-            continue
-        fit_result = gausstailfit(y_proj)
-        x_value = h2d.GetXaxis().GetBinCenter(x_bin)
-        x_err_min = x_value - h2d.GetXaxis().GetBinLowEdge(x_bin)
-        x_err_plus = h2d.GetXaxis().GetBinUpEdge(x_bin) - x_value
-
-        x.append(x_value)
-        ex_l.append(x_err_min)
-        ex_h.append(x_err_plus)
-
-        y.append(fit_result.GetParams()[2])
-        ey_l.append(0)
-        ey_h.append(0)
-
-    return x, y, ex_l, ex_h, ey_l, ey_h
-
-
-def computeMedians(h2d_or, rebin=1):
-    h2d = h2d_or
-    if rebin != 1:
-        h2d = h2d_or.Rebin2D(rebin, 1, uuid.uuid4().hex[:6])
-    # return values
-    median = []
-    x = []
-    median_l = []
-    median_h = []
-    x_l = []
-    x_h = []
-
-    n_x_bins = int(h2d.GetNbinsX())
-    # print n_x_bins
-    for x_bin in range(1, n_x_bins+1):
-        quantile = array('d', [1])
-        y_proj = h2d.ProjectionY(uuid.uuid4().hex[:6]+'_y', x_bin, x_bin)
-        integ = y_proj.Integral()
-        if integ == 0:
-            continue
-        y_proj.GetQuantiles(1, quantile, array('d', [0.5]))
-
-        rms = y_proj.GetRMS()
-
-        x_value = h2d.GetXaxis().GetBinCenter(x_bin)
-        x_err_min = x_value - h2d.GetXaxis().GetBinLowEdge(x_bin)
-        x_err_plus = h2d.GetXaxis().GetBinUpEdge(x_bin) - x_value
-        x.append(x_value)
-        x_l.append(x_err_min)
-        x_h.append(x_err_plus)
-        median.append(quantile[0])
-        median_l.append(0.)
-        median_h.append(0.)
-
-#         print pt_value
-#         print quantile
-#         print rms
-#         print rms/math.sqrt(integ)
-#         print integ
-
-#         a = y_proj.GetArray()
-#         print a, type(a), len(a)
-#         for i in range(1, y_proj.GetNbinsX()):
-#             print a[i]
-#         for aa in a:
-#             print aa
-    return x, median, x_l, x_h, median_l, median_h
-
-def computeAverages(h2d_or, rebin=1):
-    h2d = h2d_or
-    if rebin != 1:
-        h2d = h2d_or.Rebin2D(rebin, 1, uuid.uuid4().hex[:6])
-    # return values
-    median = []
-    x = []
-    median_l = []
-    median_h = []
-    x_l = []
-    x_h = []
-
-    n_x_bins = int(h2d.GetNbinsX())
-    # print n_x_bins
-    for x_bin in range(1, n_x_bins+1):
-        y_proj = h2d.ProjectionY(uuid.uuid4().hex[:6]+'_y', x_bin, x_bin)
-        integ = y_proj.Integral()
-        if integ == 0:
-            continue
-
-        rms = y_proj.GetRMS()
-
-        x_value = h2d.GetXaxis().GetBinCenter(x_bin)
-        x_err_min = x_value - h2d.GetXaxis().GetBinLowEdge(x_bin)
-        x_err_plus = h2d.GetXaxis().GetBinUpEdge(x_bin) - x_value
-        x.append(x_value)
-        x_l.append(x_err_min)
-        x_h.append(x_err_plus)
-        median.append(y_proj.GetMean())
-        median_l.append(rms/math.sqrt(integ))
-        median_h.append(rms/math.sqrt(integ))
-
-    return x, median, x_l, x_h, median_l, median_h
-
-
 class HistoManager(object):
     class __TheManager:
         def __init__(self):
@@ -262,23 +94,13 @@ class BaseResoHistos(BaseHistos):
         if root_file is not None:
             # print dir(self)
             for attr_2d in [attr for attr in dir(self) if (attr.startswith('h_') and 'TH2' in getattr(self, attr).ClassName())]:
-                setattr(self, attr_2d+'_mdn',
-                        self.GraphBuilder(self, attr_2d, computeMedians, 'median', '_mdn'))
-                setattr(self, attr_2d+'_avg',
-                        self.GraphBuilder(self, attr_2d, computeAverages, 'avg', '_avg'))
-                setattr(self, attr_2d+'_gmean',
-                        self.GraphBuilder(self, attr_2d, computeGausMean, 'gmean', '_gmean'))
-                setattr(self, attr_2d+'_sigma',
-                        self.GraphBuilder(self, attr_2d, computeGausSigma, '#sigma', '_sigma'))
-
+                setattr(self, attr_2d+'_graph',
+                        self.GraphBuilder(self, attr_2d))
 
     class GraphBuilder:
-        def __init__(self, h_obj, h_name, g_function, g_title, g_suffix):
+        def __init__(self, h_obj, h_name):
             self.h_obj = h_obj
             self.h_name = h_name
-            self.g_function = g_function
-            self.g_title = g_title
-            self.g_suffix = g_suffix
 
         def get_graph(self, name, title, x, y, ex_l, ex_h, ey_l, ey_h):
             global stuff
@@ -293,19 +115,21 @@ class BaseResoHistos(BaseHistos):
                 ret.SetMarkerStyle(2)
             return ret
 
-        def __call__(self, rebin=1):
+        def __call__(self, name, title, function):
             h2d = getattr(self.h_obj, self.h_name)
-            x, y, ex_l, ex_h, ey_l, ey_h = self.g_function(h2d, rebin)
-            h_title = h2d.GetTitle()
-            h_t_parts = h_title.split(';')
-            g_title = '{};; {}'.format(h_t_parts[0], self.g_title)
-            if len(h_t_parts) == 2:
-                g_title = '{}; {}; {}'.format(h_t_parts, self.g_title)
-            elif len(h_t_parts) == 3:
-                g_title += '{}; {}; {} ({})'.format(h_t_parts[:2], self.g_title, h_t_parts[2])
+            x, y, ex_l, ex_h, ey_l, ey_h = function(h2d)
+            h_title_parts = h2d.GetTitle().split(';')
+            g_title = '{};; {}'.format(h_title_parts[0], title)
+            if len(h_title_parts) == 2:
+                g_title = '{}; {}; {}'.format(h_title_parts, title)
+            elif len(h_title_parts) == 3:
+                g_title += '{}; {}; {} ({})'.format(h_title_parts[:2], title, h_title_parts[2])
 
-            return self.get_graph(h2d.GetName()+self.g_suffix,
-                                  g_title, x, y, ex_l, ex_h, ey_l, ey_h)
+            graph = self.get_graph('{}_{}'.format(h2d.GetName(), name),
+                                   g_title, x, y, ex_l, ex_h, ey_l, ey_h)
+            g_attr_name = 'g_{}_{}'.format(self.h_name.split('h_')[1], name)
+            setattr(self.h_obj, g_attr_name, graph)
+            return graph
 
 
 
