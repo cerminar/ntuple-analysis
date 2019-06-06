@@ -420,11 +420,14 @@ def get_cylind_clusters(cl3ds, tcs, cylind_size=3):
             components['x_cl'] = components.R_cl*cluster.cos_phi
             components['y_cl'] = components.R_cl*cluster.sin_phi
             components['dist2'] = (components.x_cl-components.x)**2+(components.y_cl-components.y)**2
+            # components['dist'] = np.sqrt(components.dist2)
             # components['momentum'] = ROOT.TLorentzVector()
             # components = components.apply(fill_momentum, axis=1)
 
             # components['dist_bool'] = components[((components.x1-components.x)**2+(components.y1-components.y)**2)<cylind_size**2]
-            # print components[['id', 'layer', 'eta', 'phi', 'energy', 'x', 'y', 'R_cl', 'z', 'x_cl', 'y_cl', 'dist2']].sort_values(by='layer', ascending=True)
+            # print components[['id', 'layer', 'eta', 'phi', 'energy', 'x', 'y', 'R_cl', 'z', 'x_cl', 'y_cl', 'dist']].sort_values(by='layer', ascending=True)
+            # print components[['id', 'layer', 'eta', 'phi', 'energy', 'dist']].sort_values(by='layer', ascending=True)
+
             selected_components = components[components.dist2 < cylind_size**2]
             if selected_components.empty:
                 continue
