@@ -89,6 +89,22 @@ class BaseHistos():
 
 
 class BaseResoHistos(BaseHistos):
+    """ Base class for resolution histogram classes.
+
+        The class adds a special method to produce a graph out of each
+        2D histograms of the class via e special <histoname>_graph method.
+        The interface of this method is actually defined by the __call__
+        method of the GraphBuilder class.
+        If the method is called, the newly created graph is also added permanently
+        to the class members and can be reused later.
+        Example:
+        def computeEResolution():
+            ....
+        hreso.h_energyResVenergy_graph('sigmaEOE', '#sigma_{E}/E', computeEResolution)
+        will create the graph accessible with:
+        hreso.g_energyResVenergy_sigmaEOE
+        )
+    """
     def __init__(self, name, root_file=None, debug=False):
         BaseHistos.__init__(self, name, root_file, debug)
         if root_file is not None:
