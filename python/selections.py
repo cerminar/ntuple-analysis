@@ -143,7 +143,7 @@ gen_pt_selections = [Selection('Pt10', 'p_{T}^{GEN}>=10GeV', 'pt >= 10'),
 # gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {}) | (abs(pdgid) == {}) | (abs(pdgid) == {})'.format(PID.electron, PID.photon, PID.pion))]
 # gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {}) & (firstmother_pdgid == {})'.format(PID.electron, PID.electron))]
 gen_selections = [Selection('GEN', '', '((abs(pdgid) == {}) & (firstmother_pdgid == {})) | ((abs(pdgid) == {}) & (firstmother_pdgid == {}))'.format(PID.electron, PID.electron,
-                                                                                                                                                         PID.photon, PID.photon))]
+                                                                                                                                                    PID.photon, PID.photon))]
 
 
 # gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {})'.format(PID.e lectron))]
@@ -161,6 +161,14 @@ gen_part_selections = []
 gen_part_selections += gen_part_ee_sel
 gen_part_selections += gen_part_ee_pt_sel
 gen_part_selections += gen_part_ee_eta_sel
+
+gen_part_selections_calib = []
+gen_part_selections_calib += gen_part_ee_sel
+gen_part_selections_calib += gen_part_ee_eta_sel
+gen_part_selections_calib += add_selections([gen_part_ee_eta_sel[1]], gen_pt_selections)
+# gen_part_selections_calib += gen_part_ee_eta_sel
+
+
 
 print 'gen_part_selections: {}'.format(len(gen_part_selections))
 
@@ -249,5 +257,5 @@ tracks_selections += add_selections(tracks_quality_sels, tracks_pt_sels)
 
 
 if __name__ == "__main__":
-    for sel in gen_part_selections_debug:
+    for sel in gen_part_selections_calib:
         print sel

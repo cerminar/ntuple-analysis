@@ -1027,16 +1027,19 @@ tp_genmatched_debug = [TPGenMatchPlotterDebugger(collections.tp_def, collections
 
 tp_calib_plotters = [CalibrationPlotter(collections.tp_hm_vdr, collections.gen_parts,
                                         selections.tp_calib_selections,
-                                        selections.gen_part_selections),
+                                        selections.gen_part_selections_calib),
+                     CalibrationPlotter(collections.tp_hm_fixed, collections.gen_parts,
+                                        selections.tp_calib_selections,
+                                        selections.gen_part_selections_calib),
                      CalibrationPlotter(collections.tp_hm_cylind10, collections.gen_parts,
                                         selections.tp_calib_selections,
-                                        selections.gen_part_selections),
+                                        selections.gen_part_selections_calib),
                      CalibrationPlotter(collections.tp_hm_cylind5, collections.gen_parts,
                                         selections.tp_calib_selections,
-                                        selections.gen_part_selections),
+                                        selections.gen_part_selections_calib),
                      CalibrationPlotter(collections.tp_hm_cylind2p5, collections.gen_parts,
                                         selections.tp_calib_selections,
-                                        selections.gen_part_selections), ]
+                                        selections.gen_part_selections_calib), ]
 
 tp_genmatched_plotters = [TPGenMatchPlotter(collections.tp_def, collections.gen_parts,
                                             selections.tp_match_selections,
