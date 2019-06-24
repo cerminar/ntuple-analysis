@@ -231,7 +231,7 @@ def build2D(components):
     cl = pd.DataFrame()
     cl['energy'] = [components.energy.sum()]
 
-    cl['energyCore'] = [components[components.core].energy.sum()]
+    # cl['energyCore'] = [components[components.core].energy.sum()]
     cl['x'] = [np.sum(components.x*components.energy)/components.energy.sum()]
     cl['y'] = [np.sum(components.y*components.energy)/components.energy.sum()]
     cl['z'] = [components.z.iloc[0]]
@@ -248,7 +248,7 @@ def build2D(components):
     #     cl['phi'] = [0]
     cl['cells'] = [np.array(components.id)]
     cl['ncells'] = [components.shape[0]]
-    cl['nCoreCells'] = [components[components.core].shape[0]]
+    # cl['nCoreCells'] = [components[components.core].shape[0]]
     cl['id'] = components.iloc[0].id
     return cl
 
@@ -420,6 +420,7 @@ def get_cylind_clusters(cl3ds, tcs, cylind_size=3):
             components['x_cl'] = components.R_cl*cluster.cos_phi
             components['y_cl'] = components.R_cl*cluster.sin_phi
             components['dist2'] = (components.x_cl-components.x)**2+(components.y_cl-components.y)**2
+
             # components['dist'] = np.sqrt(components.dist2)
             # components['momentum'] = ROOT.TLorentzVector()
             # components = components.apply(fill_momentum, axis=1)
