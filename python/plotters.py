@@ -273,7 +273,13 @@ class TPGenMatchPlotterDebugger:
                 # print (type(matched3DCluster.clusters.item()))
                 # matchedClusters = triggerClusters[ [x in matched3DCluster.clusters.item() for x in triggerClusters.id]]
                 matchedClusters = triggerClusters[triggerClusters.id.isin(matched3DCluster.clusters.item())]
-                # print (matchedClusters)
+
+                # we now build real 2D clusters per layer for furhter tests (e.g. layer by layer position resolution)
+                print (matchedClusters)
+                print matchedClusters.layer.unique()
+                for layer in matchedClusters.layer.unique():
+                    histoReso2D.fill(reference=genParticle, target=clAlgo.build2D(matchedClusters[matchedClusters.layer == layer]))
+
                 matchedTriggerCells = triggerCells[triggerCells.id.isin(np.concatenate(matchedClusters.cells.values))]
                 # allmatched2Dclusters. append(matchedClusters)
 
@@ -292,10 +298,8 @@ class TPGenMatchPlotterDebugger:
                 # print 'HERE'
                 # print matched3DCluster
                 # print genParticle
-                if matched3DCluster.iloc[0].pt/genParticle.pt > 1.5:
-                    debug = 7
-                if False:
-                    histoReso2D.fill(reference=genParticle, target=matchedClusters)
+                # if matched3DCluster.iloc[0].pt/genParticle.pt > 1.5:
+                #     debug = 7
                 histoReso.fill(reference=genParticle, target=matched3DCluster.iloc[0])
 
                 if False:
@@ -518,7 +522,9 @@ class TPGenMatchPlotter(BasePlotter):
                     calib_factor = 1.084
                     matched3DCluster['energyCentral'] = [matchedClusters[(matchedClusters.layer > 9) & (matchedClusters.layer < 21)].energy.sum()*calib_factor]
 
-                iso_df = computeIsolation(trigger3DClusters, idx_best_match=best_match_indexes[idx], idx_incone=allmatches[idx], dr=0.2)
+                iso_df = computeIsolation(trigger3DClusters,
+                                          idx_best_match=best_match_indexes[idx],
+                                          idx_incone=allmatches[idx], dr=0.2)
                 matched3DCluster['iso0p2'] = iso_df.energy
                 matched3DCluster['isoRel0p2'] = iso_df.pt/matched3DCluster.pt
 
@@ -526,6 +532,13 @@ class TPGenMatchPlotter(BasePlotter):
                 histoTCMatch.fill(matchedTriggerCells)
                 histoClMatch.fill(matchedClusters)
                 histo3DClMatch.fill(matched3DCluster)
+
+                # print matchedClusters
+                # print matchedClusters.layer.unique()
+                for layer in matchedClusters.layer.unique():
+                    histoReso2D.fill(reference=genParticle,
+                                     target=clAlgo.build2D(matchedClusters[matchedClusters.layer == layer]))
+
                 if False:
                     histoReso2D.fill(reference=genParticle, target=matchedClusters)
                 histoReso.fill(reference=genParticle, target=matched3DCluster.iloc[0])
@@ -782,9 +795,6 @@ class TkEGGenMatchPlotter(GenericGenMatchPlotter):
                                                   data_selections, gen_selections)
 
 
-
-
-
 class CalibrationPlotter(BasePlotter):
     def __init__(self, data_set, gen_set,
                  data_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
@@ -977,7 +987,8 @@ class TTGenMatchPlotter:
                         print (genParticle)
 
 
-tp_plotters = [TPPlotter(collections.tp_def, selections.tp_id_selections),
+tp_plotters = [
+               # TPPlotter(collections.tp_def, selections.tp_id_selections),
                # TPPlotter(collections.tp_truth, selections.tp_id_selections),
                # TPPlotter(selections.tp_def_uncalib, selections.tp_id_selections),
                # TPPlotter(selections.tp_def_calib, selections.tp_id_selections)
@@ -1066,9 +1077,10 @@ tp_calib_plotters = [CalibrationPlotter(collections.tp_hm_vdr, collections.gen_p
                                         selections.gen_part_selections_calib),
 ]
 
-tp_genmatched_plotters = [TPGenMatchPlotter(collections.tp_def, collections.gen_parts,
-                                            selections.tp_match_selections,
-                                            selections.gen_part_selections),
+tp_genmatched_plotters = [
+                          # TPGenMatchPlotter(collections.tp_def, collections.gen_parts,
+                          #                   selections.tp_match_selections,
+                          #                   selections.gen_part_selections),
                           # TPGenMatchPlotter(collections.tp_truth, collections.gen_parts,
                           #                   selections.tp_match_selections,
                           #                   selections.gen_part_selections),

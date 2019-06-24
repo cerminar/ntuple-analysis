@@ -107,7 +107,7 @@ class BaseResoHistos(BaseHistos):
     """
     def __init__(self, name, root_file=None, debug=False):
         BaseHistos.__init__(self, name, root_file, debug)
-        if root_file is not None:
+        if root_file is not None or True:
             # print dir(self)
             for attr_2d in [attr for attr in dir(self) if (attr.startswith('h_') and 'TH2' in getattr(self, attr).ClassName())]:
                 setattr(self, attr_2d+'_graph',
@@ -147,6 +147,8 @@ class BaseResoHistos(BaseHistos):
             setattr(self.h_obj, g_attr_name, graph)
             return graph
 
+        def Write(self):
+            return
 
 
 class GenPartHistos(BaseHistos):
@@ -617,26 +619,26 @@ class ResoHistos(BaseResoHistos):
 class Reso2DHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_etaRes = ROOT.TH1F(name+'_etaRes', 'Eta 2D cluster - GEN part', 100, -0.5, 0.5)
-            self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'Phi 2D cluster - GEN part', 100, -0.5, 0.5)
-            self.h_phiPRes = ROOT.TH1F(name+'_phiPRes', 'Phi (+) 2D cluster - GEN part', 100, -0.5, 0.5)
-            self.h_phiMRes = ROOT.TH1F(name+'_phiMRes', 'Phi (-) 2D cluster - GEN part', 100, -0.5, 0.5)
+            # self.h_etaRes = ROOT.TH1F(name+'_etaRes', 'Eta 2D cluster - GEN part', 100, -0.5, 0.5)
+            # self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'Phi 2D cluster - GEN part', 100, -0.5, 0.5)
+            # self.h_phiPRes = ROOT.TH1F(name+'_phiPRes', 'Phi (+) 2D cluster - GEN part', 100, -0.5, 0.5)
+            # self.h_phiMRes = ROOT.TH1F(name+'_phiMRes', 'Phi (-) 2D cluster - GEN part', 100, -0.5, 0.5)
             self.h_xResVlayer = ROOT.TH2F(name+'_xResVlayer', 'X resolution (cm) [(2D clus) - GEN]', 60, 0, 60, 100, -10, 10)
             self.h_yResVlayer = ROOT.TH2F(name+'_yResVlayer', 'Y resolution (cm) [(2D clus) - GEN]', 60, 0, 60, 100, -10, 10)
-            self.h_DRRes = ROOT.TH1F(name+'_DRRes', 'DR 2D cluster - GEN part', 100, -0.5, 0.5)
+            # self.h_DRRes = ROOT.TH1F(name+'_DRRes', 'DR 2D cluster - GEN part', 100, -0.5, 0.5)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, reference, target):
-        rnp.fill_hist(self.h_etaRes, reference.eta-target.eta)
+        # rnp.fill_hist(self.h_etaRes, reference.eta-target.eta)
+        #
+        # rnp.fill_hist(self.h_phiRes, reference.phi-target.phi)
+        # if reference.pdgid < 0:
+        #     rnp.fill_hist(self.h_phiMRes, reference.phi-target.phi)
+        # elif reference.pdgid > 0:
+        #     rnp.fill_hist(self.h_phiPRes, reference.phi-target.phi)
 
-        rnp.fill_hist(self.h_phiRes, reference.phi-target.phi)
-        if reference.pdgid < 0:
-            rnp.fill_hist(self.h_phiMRes, reference.phi-target.phi)
-        elif reference.pdgid > 0:
-            rnp.fill_hist(self.h_phiPRes, reference.phi-target.phi)
-
-        rnp.fill_hist(self.h_DRRes, np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
+        # rnp.fill_hist(self.h_DRRes, np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
         if reference.reachedEE == 2:
             if 'x' in target.columns:
                 target['xres'] = reference.posx[target.layer-1]-target.x
@@ -646,6 +648,7 @@ class Reso2DHistos(BaseHistos):
                 target['yres'] = reference.posy[target.layer-1]-target.y
                 # print target[['layer', 'yres']]
                 rnp.fill_hist(self.h_yResVlayer, target[['layer', 'yres']])
+            # print target[['layer', 'xres', 'yres']]
 
 
 class GeomHistos(BaseHistos):
@@ -706,9 +709,9 @@ class HistoSetReso():
     def __init__(self, name, root_file=None, debug=False):
         self.hreso = ResoHistos('h_reso_'+name, root_file, debug)
         self.hresoCone = None
-        self.hreso2D = None
+        # self.hreso2D = None
         # self.hresoCone = ResoHistos('h_resoCone_'+name, root_file)
-        # self.hreso2D = Reso2DHistos('h_reso2D_'+name, root_file)
+        self.hreso2D = Reso2DHistos('h_reso2D_'+name, root_file)
         # if not root_file:
         #     self.hreso.annotateTitles(name)
         #     self.hresoCone.annotateTitles(name)
