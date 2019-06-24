@@ -337,6 +337,12 @@ def get_calibrated_clusters2(calib_factors, input_3Dclusters):
     return calibrated_clusters
 
 
+calib_table = {}
+calib_table['HMvDRfixedCalib'] = [4.52, 0.93, 1.08, 1.04, 0.91, 1.04, 1.09, 0.91, 1.0, 0.9, 1.07, 1.06, 1.36, 1.47]
+calib_table['HMvDRcylind10Calib'] = [4.53, 0.88, 1.14, 1.0, 0.92, 1.06, 1.07, 0.89, 1.06, 0.83, 1.07, 1.13, 1.34, 1.49]
+calib_table['HMvDRcylind5Calib'] = [4.98, 1.03, 0.98, 1.12, 0.91, 1.05, 1.14, 0.87, 1.02, 0.97, 1.13, 1.01, 1.43, 1.4]
+calib_table['HMvDRcylind2p5Calib'] = [7.86, 1.1, 1.23, 1.0, 1.18, 1.23, 0.99, 1.15, 1.11, 1.16, 0.98, 1.4, 1.47, 1.45]
+
 gen = DFCollection(name='MC', label='MC particles',
                    filler_function=lambda event: event.getDataFrame(prefix='gen'),
                    fixture_function=mc_fixtures, debug=0)
@@ -353,7 +359,7 @@ tcs = DFCollection(name='TC', label='Trigger Cells',
 
 tcs_truth = DFCollection(name='TCTrue', label='Trigger Cells True',
                          filler_function=lambda event: event.getDataFrame(prefix='tctruth'),
-                            fixture_function=tc_fixtures)
+                         fixture_function=tc_fixtures)
 
 cl2d_def = DFCollection(name='DEF2D', label='dRC2d',
                         filler_function=lambda event: event.getDataFrame(prefix='cl'),
@@ -425,19 +431,23 @@ cl3d_hm_cylind2p5 = DFCollection(name='HMvDRcylind2p5', label='HM Cylinder 2.5cm
                                  depends_on=[cl3d_hm_fixed, tcs], debug=0)
 
 cl3d_hm_fixed_calib = DFCollection(name='HMvDRfixedCalib', label='HM fixed calib.',
-                                   filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_fixed.df, [4.5, 0.94, 1.08, 1.04, 0.91, 1.04, 1.09, 0.91, 1.0, 0.91, 1.06, 1.07, 1.37, 1.47]),
+                                   filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_fixed.df,
+                                                                                          calib_table['HMvDRfixedCalib']),
                                    depends_on=[cl3d_hm_fixed, tcs], debug=0)
 
 cl3d_hm_cylind10_calib = DFCollection(name='HMvDRcylind10Calib', label='HM Cylinder 10cm calib.',
-                                      filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_cylind10.df, [4.5, 0.94, 1.08, 1.04, 0.91, 1.04, 1.09, 0.91, 1.0, 0.91, 1.06, 1.07, 1.37, 1.47]),
+                                      filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_cylind10.df,
+                                                                                             calib_table['HMvDRcylind10Calib']),
                                       depends_on=[cl3d_hm_cylind10, tcs], debug=0)
 
 cl3d_hm_cylind5_calib = DFCollection(name='HMvDRcylind5Calib', label='HM Cylinder 5cm calib.',
-                                     filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_cylind5.df, [4.91, 0.94, 1.09, 1.05, 0.92, 1.05, 1.11, 0.94, 1.02, 0.92, 1.1, 1.04, 1.34, 1.6]),
+                                     filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_cylind5.df,
+                                                                                            calib_table['HMvDRcylind5Calib']),
                                      depends_on=[cl3d_hm_cylind5, tcs])
 
 cl3d_hm_cylind2p5_calib = DFCollection(name='HMvDRcylind2p5Calib', label='HM Cylinder 2.5cm calib.',
-                                       filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_cylind2p5.df, [8.49, 0.97, 1.19, 1.18, 1.04, 1.1, 1.25, 1.05, 1.14, 0.97, 1.17, 1.34, 1.3, 1.67]),
+                                       filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_cylind2p5.df,
+                                                                                              calib_table['HMvDRcylind2p5Calib']),
                                        depends_on=[cl3d_hm_cylind2p5, tcs], debug=0)
 
 cl3d_hm_fixed_calib1 = DFCollection(name='HMvDRfixedCalib1', label='HM fixed calib. dedx',
