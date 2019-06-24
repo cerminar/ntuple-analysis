@@ -167,20 +167,20 @@ samples:
     events_per_job : 200
 
   ele_flat2to100_PU0:
-    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v24/190423_130112/0000/
+    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v25/190619_130938/0000/
     events_per_job : 500
     # gen_selections: !!python/name:python.selections.genpart_photon_selections
 
   ele_flat2to100_PU200:
-    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU200_v24/190423_130137/0000/
+    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU200_v26/190620_132813/0000/
     events_per_job : 200
 
   photon_flat8to150_PU0:
-    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU0_v24/190423_130201/0000/
+    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU0_v25/190619_131521/0000/
     events_per_job : 500
 
   photon_flat8to150_PU200:
-    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU200_v24/190423_130229/0000/
+    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU200_v26/190620_133645/0000/
     events_per_job : 200
 
   pion_flat2to100_PU0:
@@ -196,7 +196,7 @@ samples:
     events_per_job: 500
 
   nugun_alleta_pu200:
-    input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v24/190423_130254/0000/
+    input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v25/190619_132046/0000/
     events_per_job: 200
 
   nugun_endcap_PU50:
