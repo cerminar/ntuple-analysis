@@ -1011,12 +1011,13 @@ tp_plotters = [
 eg_plotters = [EGPlotter(collections.egs, selections.eg_qual_selections)]
 track_plotters = [TrackPlotter(collections.tracks, selections.tracks_selections)]
 tkeg_plotters = [TkEGPlotter(collections.tkegs, selections.tkeg_qual_selections)]
-rate_plotters = [RatePlotter(collections.cl3d_def, selections.tp_rate_selections),
+rate_plotters = [
+                 # RatePlotter(collections.cl3d_def, selections.tp_rate_selections),
                  # RatePlotter(selections.tp_def_uncalib, selections.tp_rate_selections),
                  # RatePlotter(selections.tp_hm, selections.tp_rate_selections),
                  RatePlotter(collections.cl3d_hm, selections.tp_rate_selections),
                  # RatePlotter(collections.cl3d_hm_rebin, selections.tp_rate_selections),
-                 RatePlotter(collections.cl3d_hm_stc, selections.tp_rate_selections),
+                 # RatePlotter(collections.cl3d_hm_stc, selections.tp_rate_selections),
                  # RatePlotter(selections.tp_def_nc, selections.tp_rate_selections),
                  # RatePlotter(selections.tp_hm_vdr_nc0, selections.tp_rate_selections),
                  # RatePlotter(selections.tp_hm_vdr_nc1, selections.tp_rate_selections),
