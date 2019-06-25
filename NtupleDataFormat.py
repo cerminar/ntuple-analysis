@@ -144,17 +144,24 @@ class Event(object):
         return "%d:%d:%d" % self.eventId()
 
     def getDataFrame(self, prefix):
+        branch_blacklist = ['tc_wafer', 'tc_cell']
+
         df = pd.DataFrame()
         branches = [br.GetName() for br in self._tree.GetListOfBranches() if (
             br.GetName().startswith(prefix+'_') and not br.GetName() == '{}_n'.format(prefix))]
         if len(branches) == 0:
             return df
-
-        names = [br.split('_')[1] for br in branches]
+            
+        names = ['_'.join(br.split('_')[1:]) for br in branches]
         nd_array = rnp.tree2array(self._tree, branches=branches,
                                   start=self._entry, stop=self._entry+1, cache_size=400000000)
-        for idx in range(0, len(branches)):
-            df[names[idx]] = nd_array[branches[idx]][0]
+        for idx, branch in enumerate(branches):
+            if branch in branch_blacklist:
+                continue
+            # print names[idx]
+            # print nd_array[branch][0]
+
+            df[names[idx]] = nd_array[branch][0]
         return df
 
     def getPUInfo(self):
