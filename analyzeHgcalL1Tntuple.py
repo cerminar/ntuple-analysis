@@ -42,11 +42,16 @@ import python.file_manager as fm
 import python.collections as collections
 from python.utils import debugPrintOut
 
+# from pandas.core.common import SettingWithCopyError, SettingWithCopyWarning
+# import warnings
+# warnings.filterwarnings('error', category=SettingWithCopyWarning)
+
 
 class Parameters:
     def __init__(self,
                  input_base_dir,
                  input_sample_dir,
+                 output_filename_base,
                  output_filename,
                  output_dir,
                  clusterize,
@@ -63,6 +68,7 @@ class Parameters:
         self.debug = debug
         self.input_base_dir = input_base_dir
         self.input_sample_dir = input_sample_dir
+        self.output_filename_base = output_filename_base
         self.output_filename = output_filename
         self.output_dir = output_dir
         self.clusterize = clusterize
@@ -111,11 +117,12 @@ def get_collection_parameters(opt, cfgfile):
 
         for sample in samples:
             events_per_job = -1
-            out_file_name = 'histos_{}_{}i.root'.format(sample, plot_version)
+            output_filename_base = 'histos_{}_{}_{}'.format(sample, collection_data['file_label'], plot_version)
+            out_file_name = '{}i.root'.format(output_filename_base)
             if opt.BATCH:
                 events_per_job = cfgfile['samples'][sample]['events_per_job']
                 if opt.RUN:
-                    out_file_name = 'histos_{}_{}_{}.root'.format(sample, plot_version, opt.RUN)
+                    out_file_name = '{}_{}.root'.format(output_filename_base, opt.RUN)
 
             if opt.OUTDIR:
                 outdir = opt.OUTDIR
@@ -124,6 +131,7 @@ def get_collection_parameters(opt, cfgfile):
 
             params = Parameters(input_base_dir=cfgfile['common']['input_dir'],
                                 input_sample_dir=cfgfile['samples'][sample]['input_sample_dir'],
+                                output_filename_base=output_filename_base,
                                 output_filename=out_file,
                                 output_dir=outdir,
                                 clusterize=cfgfile['common']['run_clustering'],
@@ -266,56 +274,6 @@ def analyze(params, batch_idx=0):
         puInfo = event.getPUInfo()
         debugPrintOut(debug, 'PU', toCount=puInfo, toPrint=puInfo)
 
-        # ----------------------------------
-        # this is not needed anymore in recent versions of the ntuples
-        # tcsWithPos = pd.merge(triggerCells, tc_geom_df[['id', 'x', 'y']], on='id')
-
-        # if not trigger3DClusters.empty:
-        #     trigger3DClusters['ptcalib'] = trigger3DClusters.apply(lambda x: calib.get_component_pt(x, triggerClusters), axis=1)
-        #     trigger3DClusters['ptcalib_lc'] = trigger3DClusters.apply(lambda x: calib.get_component_pt_lcl(x, triggerClusters), axis=1)
-        #     trigger3DClusters['ptcalib_dedx'] = trigger3DClusters.apply(lambda x: calib.get_component_pt_dedx(x, triggerClusters), axis=1)
-        #     trigger3DClusters['ptcalib_kfact'] = trigger3DClusters.apply(lambda x: calib.get_component_pt_kfact(x, triggerClusters), axis=1)
-        #
-        #     print trigger3DClusters[['eta', 'phi', 'pt', 'ptcalib', 'ptcalib_lc', 'ptcalib_dedx', 'ptcalib_kfact']]
-
-        # trigger3DClusters['hoe'] = 999.
-        # trigger3DClusters = trigger3DClusters.apply(compute_hoe, axis=1)
-
-        # trigger3DClusters['bdt_l'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'eMaxOverE', 'szz', 'srrtot']], 0.8)
-        # trigger3DClusters['bdt_t'] = rnptmva.evaluate_reader(mva_classifier, 'BDT', trigger3DClusters[['pt', 'eta', 'coreshowerlength', 'firstlayer', 'hoe', 'eMaxOverE', 'szz', 'srrtot']], 0.95)
-
-        # trigger3DClustersP = pd.DataFrame()
-        # triggerClustersDBS = pd.DataFrame()
-        # trigger3DClustersDBS = pd.DataFrame()
-        # trigger3DClustersDBSp = pd.DataFrame()
-        # is_v8_geometry = False
-        # if is_v8_geometry:
-        #     if not trigger3DClustersUncalib.empty:
-        #         trigger3DClustersUncalib['pt'] = trigger3DClustersUncalib.apply(lambda x: calib.get_component_pt_dedx(x, triggerClusters), axis=1)
-        #         # trigger3DClustersUncalib['ptcalib'] = trigger3DClusters.apply(lambda x: calib.get_component_pt_lcl(x, triggerClusters), axis=1)
-        #
-        #     if not hmvdr_cl3ds_uncalib.empty:
-        #         hmvdr_cl3ds_uncalib['pt'] = hmvdr_cl3ds_uncalib.apply(lambda x: calib.get_component_pt_dedx(x, triggerCells), axis=1)
-        #         # hmvdr_cl3ds_uncalib['ptcalib'] = hmvdr_cl3ds_uncalib.apply(lambda x: calib.get_component_pt_lcl(x, triggerCells), axis=1)
-        # else:
-        #     if not trigger3DClusters.empty:
-        #         trigger3DClusters['pt'] = trigger3DClusters.apply(lambda x: calib.get_component_pt_v9calib(x, triggerClusters), axis=1)
-        #     if not hmvdr_cl3ds.empty:
-        #         hmvdr_cl3ds['pt'] = hmvdr_cl3ds.apply(lambda x: calib.get_component_pt_v9calib(x, triggerCells), axis=1)
-        #         # hmvdr_cl3ds_uncalib['ptcalib'] = hmvdr_cl3ds_uncalib.apply(lambda x: calib.get_component_pt_lcl(x, triggerCells), axis=1)
-
-        # if params.clusterize:
-        #     # Now build DBSCAN 2D clusters
-        #     for zside in [-1, 1]:
-        #         arg = [(layer, zside, triggerCells) for layer in range(0, 53)]
-        #         results = pool.map(clAlgo.buildDBSCANClustersUnpack, arg)
-        #         for clres in results:
-        #             triggerClustersDBS = triggerClustersDBS.append(clres, ignore_index=True, sort=False)
-        #     trigger3DClustersDBS = build3DClusters(
-        #         'DBS', clAlgo.build3DClustersEtaPhi, triggerClustersDBS, pool, debug)
-        # fill histograms
-        # hdigis.fill(hgcDigis)
-
         for plotter in plotter_collection:
             # print plotter
             plotter.fill_histos(debug=debug)
@@ -444,9 +402,10 @@ def main(analyze):
             params['TEMPL_CFG'] = opt.CONFIGFILE
             params['TEMPL_COLL'] = opt.COLLECTION
             params['TEMPL_SAMPLE'] = sample.name
-            params['TEMPL_OUTFILE'] = 'histos_{}_{}.root'.format(sample.name, sample.version)
+            params['TEMPL_OUTFILE'] = '{}.root'.format(sample.output_filename_base)
             params['TEMPL_EOSPROTOCOL'] = fm.get_eos_protocol(dirname=sample.output_dir)
-            params['TEMPL_INFILE'] = 'histos_{}_{}_*.root'.format(sample.name, sample.version)
+            params['TEMPL_INFILE'] = '{}_*.root'.format(sample.output_filename_base)
+            params['TEMPL_FILEBASE'] = sample.output_filename_base
             params['TEMPL_OUTDIR'] = sample.output_dir
             params['TEMPL_VIRTUALENV'] = os.path.basename(os.environ['VIRTUAL_ENV'])
             params['TEMPL_VERSION'] = sample.version

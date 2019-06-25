@@ -14,6 +14,8 @@ common:
 
 collections:
   nugun_tracks:
+    file_label:
+      tracks
     samples:
       - nugun_alleta_pu200
     plotters:
@@ -22,6 +24,8 @@ collections:
       - eg_rate_plotters
 
   single_empart_guns_tracks:
+    file_label:
+      tracks
     samples:
       - ele_flat2to100_PU0
       - ele_flat2to100_PU200
@@ -32,6 +36,8 @@ collections:
       - eg_genmatched_plotters
 
   single_part_tt:
+    file_label:
+      tt
     samples:
       - ele_flat2to100_PU0
       - ele_flat2to100_PU200
@@ -47,6 +53,8 @@ collections:
 
 
   single_empart_guns_egvalid:
+    file_label:
+      eg
     samples:
       - ele_flat2to100_PU0
       - ele_flat2to100_PU200
@@ -58,6 +66,8 @@ collections:
 
 
   single_empart_tpdebug:
+    file_label:
+      tpdebug
     samples:
       - all_flat5to80_PU0
       - all_flat5to80_PU200
@@ -66,6 +76,8 @@ collections:
 
 
   single_empart_guns_calibs:
+    file_label:
+      calibs
     samples:
       - ele_flat2to100_PU0
       # - ele_flat2to100_PU200
@@ -80,9 +92,11 @@ collections:
 
 
   single_empart_guns_tps:
+    file_label:
+      tps
     samples:
-      # - ele_flat2to100_PU0
-      # - ele_flat2to100_PU200
+      - ele_flat2to100_PU0
+      - ele_flat2to100_PU200
       - photon_flat8to150_PU0
       - photon_flat8to150_PU200
     plotters:
@@ -93,25 +107,9 @@ collections:
       # - ttower_genmatched_plotters
 
 
-  single_part_guns:
-    samples:
-      - all_flat5to80_PU0
-      - all_flat5to80_PU200
-      # - photon_flat8to150_PU0
-      # - photon_flat8to150_PU200
-      # - pion_flat2to100_PU0
-      # - pion_flat2to100_PU200
-    plotters:
-      - tp_egm_plotters
-      - tp_genmatched_plotters
-      - genpart_plotters
-      - eg_plotters
-      - eg_genmatched_plotters
-
-      # - ttower_plotters
-      # - ttower_genmatched_plotters
-
   nugun_rate:
+    file_label:
+      rate
     samples:
       - nugun_alleta_pu200
     plotters:
@@ -121,6 +119,8 @@ collections:
       - eg_rate_plotters
 
   noise_samples:
+    file_label:
+      noise
     samples:
       - nugun_alleta_pu0
       - nugun_alleta_pu200

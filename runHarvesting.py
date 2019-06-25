@@ -59,7 +59,7 @@ def data_creator(input_dir, sample_name, version, q):
                 break
         if ncopied > 999:
             break
-        time.sleep(5)
+        time.sleep(20)
 
 
 def data_checker(queue_all, queue_ready):
@@ -90,7 +90,7 @@ def data_checker(queue_all, queue_ready):
 
 def data_consumer(sample_name, version, queue_ready, queue_tomove):
     logger.info('Starting data consumer')
-    out_file_name = 'histos_{}_{}_temp.root'.format(sample_name, version)
+    out_file_name = '{}_temp.root'.format(sample_name, version)
     new_data = []
     index = 0
     while True:
@@ -111,7 +111,7 @@ def data_consumer(sample_name, version, queue_ready, queue_tomove):
                 for file in new_data:
                     fname = '{}.hadded'.format(os.path.splitext(file)[0])
                     open(fname, 'a').close()
-                out_file_name_copy = 'histos_{}_{}_tocopy_{}.root'.format(sample_name, version, index)
+                out_file_name_copy = '{}_tocopy_{}.root'.format(sample_name, index)
                 copyfile(out_file_name, out_file_name_copy)
                 queue_tomove.put(out_file_name_copy)
                 del new_data[:]
@@ -133,7 +133,7 @@ def data_mover(sample_name, version, out_dir, queue_tomove):
         data = queue_tomove.get()
         if data is sentinel:
             break
-        out_file_name = 'histos_{}_{}t.root'.format(sample_name, version)
+        out_file_name = '{}t.root'.format(sample_name)
         fm.copy_to_eos(data, out_dir, out_file_name)
 
 
@@ -146,8 +146,8 @@ def main():
                       dest='INPUTDIR',
                       help='input directory (can be an EOS path)')
     parser.add_option('-s', '--sample-name',
-                      dest='SAMPLENAME',
-                      help='name of the sample (part of the file-name)')
+                      dest='FILENAMEBASE',
+                      help='name of the sample file base (part of the file-name)')
     parser.add_option('-v', '--version',
                       dest='VERSION',
                       help='version of the processing (part of the filename)')
@@ -160,7 +160,7 @@ def main():
 
     input_dir = opt.INPUTDIR
     version = opt.VERSION
-    sample_name = opt.SAMPLENAME
+    sample_name = opt.FILENAMEBASE
     out_dir = opt.OUTPUTDIR
 
     logger.info('Starting...')
