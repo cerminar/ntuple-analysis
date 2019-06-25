@@ -254,7 +254,7 @@ def build2D(components):
 
 
 def build3D(components, calib_factor=1.084):
-    cl3D = pd.DataFrame(columns=['energy', 'eta', 'phi', 'pt', 'ptCore',
+    cl3D = pd.DataFrame(columns=['energy', 'eta', 'phi', 'pt',
                                  'layers', 'clusters', 'nclu', 'firstlayer',
                                  'showerlength', 'seetot', 'seemax', 'spptot',
                                  'sppmax', 'szz', 'emaxe', 'id', 'eem', 'ehad',
