@@ -118,15 +118,34 @@ class DFCollection(object):
     def fill(self, event, debug):
         self.df = self.filler_function(event)
         if self.fixture_function is not None:
-            self.fixture_function(self.df)
+            self.df = self.fixture_function(self.df)
         if not self.df.empty:
             debugPrintOut(max(debug, self.debug), self.label,
                           toCount=self.df,
                           toPrint=self.df)
 
 
-def cl3d_fixtures(clusters):
-    clusters['nclu'] = [len(x) for x in clusters.clusters]
+def cl3d_fixtures(clusters, tcs):
+    # for backward compatibility
+    clusters.rename(columns={'clusters_id':'clusters',
+                             'clusters_n':'nclu'},
+                    inplace=True)
+    # clusters['clusters'] = clusters['clusters_id']
+    # clusters['nclu'] = [len(x) for x in clusters.clusters]
+
+    def compute_hoe(cluster):
+        # print cluster
+        components = tcs[tcs.id.isin(cluster.clusters)]
+        e_energy = components[components.layer <= 28].energy.sum()
+        h_enery = components[components.layer > 28].energy.sum()
+        if e_energy != 0.:
+            cluster.hoe = h_enery/e_energy
+        return cluster
+
+    if 'hoe' not in clusters.columns:
+        clusters['hoe'] = 666
+        clusters = clusters.apply(compute_hoe, axis=1)
+
     clusters['ptem'] = clusters.pt/(1+clusters.hoe)
     clusters['eem'] = clusters.energy/(1+clusters.hoe)
     if False:
@@ -135,7 +154,7 @@ def cl3d_fixtures(clusters):
 
         clusters['bdt_pi'] = rnptmva.evaluate_reader(
             classifiers.mva_pi_classifier_builder(), 'BDT', clusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
-
+    return clusters
 
 def gen_fixtures(particles, mc_particles):
     particles['pdgid'] = particles.pid
@@ -146,6 +165,7 @@ def gen_fixtures(particles, mc_particles):
             return -1
         return mc_particles.df.loc[particle.gen-1].firstmother_pdgid
     particles['firstmother_pdgid'] = particles.apply(func=lambda x: get_mother_pdgid(x, mc_particles), axis=1)
+    return particles
 
 
 def mc_fixtures(particles):
@@ -157,6 +177,7 @@ def mc_fixtures(particles):
         particles.loc[particle.daughters, 'firstmother'] = particle.Index
         particles.loc[particle.daughters, 'firstmother_pdgid'] = particle.pdgid
         # print particles.loc[particle.daughters]['firstmother']
+    return particles
 
 
 def tc_fixtures(tcs):
@@ -165,11 +186,14 @@ def tc_fixtures(tcs):
         tcs['cells'] = tcs.apply(func=lambda x: [int(x.id)], axis=1)
     # tcs['xproj'] = tcs.x/tcs.z
     # tcs['yproj'] = tcs.y/tcs.z
+    return tcs
+
 
 def cl2d_fixtures(clusters):
     clusters['ncells'] = 1
     if not clusters.empty:
         clusters['ncells'] = [len(x) for x in clusters.cells]
+    return clusters
 
 
 def tower_fixtures(towers):
@@ -188,7 +212,7 @@ def tower_fixtures(towers):
 
     towers['momentum'] = ROOT.TLorentzVector()
     towers = towers.apply(fill_momentum, axis=1)
-
+    return towers
 
 
 def get_cylind_clusters_mp(cl3ds, tcs, cylind_size, pool):
@@ -371,36 +395,44 @@ cl2d_truth = DFCollection(name='DEF2DTrue', label='dRC2d True',
 
 cl3d_truth = DFCollection(name='HMvDRTrue', label='HM+dR(layer) True Cl3d',
                           filler_function=lambda event: event.getDataFrame(prefix='cl3dtruth'),
-                          fixture_function=cl3d_fixtures)
+                          fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
+                          depends_on=[tcs], debug=4)
 
 
 cl3d_def = DFCollection(name='DEF', label='dRC3d',
                         filler_function=lambda event: event.getDataFrame(prefix='cl3d'),
-                        fixture_function=cl3d_fixtures)
+                        fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
+                        depends_on=[tcs])
 
 cl3d_def_nc = DFCollection(name='DEFNC', label='dRC3d NewTh',
                            filler_function=lambda event: event.getDataFrame(prefix='cl3dNC'),
-                           fixture_function=cl3d_fixtures)
+                           fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
+                           depends_on=[tcs])
 
 cl3d_hm = DFCollection(name='HMvDR', label='HM+dR(layer) Cl3d',
                        filler_function=lambda event: event.getDataFrame(prefix='hmVRcl3d'),
-                       fixture_function=cl3d_fixtures, debug=0)
+                       fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
+                       depends_on=[tcs], debug=0)
 
 cl3d_hm_rebin = DFCollection(name='HMvDRRebin', label='HM+dR(layer) rebin Cl3d ',
                              filler_function=lambda event: event.getDataFrame(prefix='hmVRcl3dRebin'),
-                             fixture_function=cl3d_fixtures)
+                             fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
+                             depends_on=[tcs])
 
 cl3d_hm_stc = DFCollection(name='HMvDRsTC', label='HM+dR(layer) SuperTC Cl3d ',
                            filler_function=lambda event: event.getDataFrame(prefix='hmVRcl3dSTC'),
-                           fixture_function=cl3d_fixtures)
+                           fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
+                           depends_on=[tcs])
 
 cl3d_hm_nc0 = DFCollection(name='HMvDRNC0', label='HM+dR(layer) Cl3d + NewTh0',
                            filler_function=lambda event: event.getDataFrame(prefix='hmVRcl3dNC0'),
-                           fixture_function=cl3d_fixtures)
+                           fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
+                           depends_on=[tcs])
 
 cl3d_hm_nc1 = DFCollection(name='HMvDRNC1', label='HM+dR(layer) Cl3d + NewTh1',
                            filler_function=lambda event: event.getDataFrame(prefix='hmVRcl3dNC1'),
-                           fixture_function=cl3d_fixtures)
+                           fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
+                           depends_on=[tcs])
 
 cl3d_def_merged = DFCollection(name='DEFMerged', label='dRC3d merged',
                                filler_function=lambda event: get_merged_cl3d(cl3d_def.df[cl3d_def.df.quality > 0], POOL),
@@ -487,6 +519,10 @@ egs = DFCollection(name='EG', label='EG',
 
 tracks = DFCollection(name='L1Trk', label='L1Track',
                       filler_function=lambda event: event.getDataFrame(prefix='l1track'), debug=0)
+
+tracks_emu = DFCollection(name='L1TrkEmu', label='L1Track EMU',
+                          filler_function=lambda event: event.getDataFrame(prefix='l1trackemu'), debug=0)
+
 
 tkeles = DFCollection(name='TkEle', label='TkEle',
                       filler_function=lambda event: event.getDataFrame(prefix='tkEle'))
