@@ -448,19 +448,19 @@ cl3d_hm_merged = DFCollection(name='HMvDRMerged', label='HM+dR(layer) merged',
                               depends_on=[cl3d_hm])
 
 cl3d_hm_fixed = DFCollection(name='HMvDRfixed', label='HM fixed',
-                             filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [999.]*28, POOL),
+                             filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [999.]*52, POOL),
                              depends_on=[cl3d_hm, tcs], debug=0)
 
 cl3d_hm_cylind10 = DFCollection(name='HMvDRcylind10', label='HM Cylinder 10cm',
-                                filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [10.]*28, POOL),
+                                filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [10.]*52, POOL),
                                 depends_on=[cl3d_hm, tcs], debug=0)
 
 cl3d_hm_cylind5 = DFCollection(name='HMvDRcylind5', label='HM Cylinder 5cm',
-                               filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [5.]*28, POOL),
+                               filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [5.]*52, POOL),
                                depends_on=[cl3d_hm, tcs])
 
 cl3d_hm_cylind2p5 = DFCollection(name='HMvDRcylind2p5', label='HM Cylinder 2.5cm',
-                                 filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [2.5]*28, POOL),
+                                 filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [2.5]*52, POOL),
                                  depends_on=[cl3d_hm, tcs], debug=0)
 
 cl3d_hm_shape = DFCollection(name='HMvDRshape', label='HM shape',
