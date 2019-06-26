@@ -464,7 +464,7 @@ cl3d_hm_cylind2p5 = DFCollection(name='HMvDRcylind2p5', label='HM Cylinder 2.5cm
                                  depends_on=[cl3d_hm, tcs], debug=0)
 
 cl3d_hm_shape = DFCollection(name='HMvDRshape', label='HM shape',
-                             filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [1.]*2+[1.6]*2+[1.8]*2+[2.2]*2+[2.6]*2+[3.4]*2+[4.2]*2+[5.]*2+[6.]*2+[7.]*2+[7.2]*2+[7.4]*2+[7.2]*2+[7.]*2, POOL),
+                             filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [1.]*2+[1.6]*2+[1.8]*2+[2.2]*2+[2.6]*2+[3.4]*2+[4.2]*2+[5.]*2+[6.]*2+[7.]*2+[7.2]*2+[7.4]*2+[7.2]*2+[7.]*2+[2.5]*25, POOL),
                              depends_on=[cl3d_hm, tcs], debug=0)
 
 cl3d_hm_calib = DFCollection(name='HMvDRCalib', label='HM calib.',
