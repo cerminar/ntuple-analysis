@@ -399,7 +399,7 @@ def sum3DClusters(components):
     return ret
 
 
-def get_cylind_clusters(cl3ds, tcs, cylind_size=3):
+def get_cylind_clusters(cl3ds, tcs, cylind_size=[3]*28):
     # def fill_momentum(cluster):
     #     vector = ROOT.TLorentzVector()
     #     vector.SetPtEtaPhiE(cluster.pt, cluster.eta, cluster.phi, cluster.energy)
@@ -420,6 +420,11 @@ def get_cylind_clusters(cl3ds, tcs, cylind_size=3):
             components['x_cl'] = components.R_cl*cluster.cos_phi
             components['y_cl'] = components.R_cl*cluster.sin_phi
             components['dist2'] = (components.x_cl-components.x)**2+(components.y_cl-components.y)**2
+            def assign_size(comp):
+                comp['clsize'] = cylind_size[comp.layer - 1]
+                return comp
+
+            components = components.apply(assign_size, axis=1)
 
             # components['dist'] = np.sqrt(components.dist2)
             # components['momentum'] = ROOT.TLorentzVector()
@@ -427,9 +432,9 @@ def get_cylind_clusters(cl3ds, tcs, cylind_size=3):
 
             # components['dist_bool'] = components[((components.x1-components.x)**2+(components.y1-components.y)**2)<cylind_size**2]
             # print components[['id', 'layer', 'eta', 'phi', 'energy', 'x', 'y', 'R_cl', 'z', 'x_cl', 'y_cl', 'dist']].sort_values(by='layer', ascending=True)
-            # print components[['id', 'layer', 'eta', 'phi', 'energy', 'dist']].sort_values(by='layer', ascending=True)
+            # print components[['id', 'layer', 'eta', 'phi', 'energy', 'dist', 'clsize']].sort_values(by='layer', ascending=True)
 
-            selected_components = components[components.dist2 < cylind_size**2]
+            selected_components = components[components.dist2 < components.clsize**2]
             if selected_components.empty:
                 continue
             new_cluster = build3D(selected_components, calib_factor=1.)
@@ -451,4 +456,5 @@ def get_cylind_clusters(cl3ds, tcs, cylind_size=3):
 
 
 def get_cylind_clusters_unpack(clusters_tcs_cylsize):
+    # print clusters_tcs_cylsize
     return get_cylind_clusters(clusters_tcs_cylsize[0], clusters_tcs_cylsize[1], clusters_tcs_cylsize[2])
