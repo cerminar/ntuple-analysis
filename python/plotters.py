@@ -994,7 +994,7 @@ tp_plotters = [
                # TPPlotter(selections.tp_def_calib, selections.tp_id_selections)
                # TPPlotter(selections.tp_hm, selections.tp_id_selections),
                TPPlotter(collections.tp_hm_vdr, selections.tp_id_selections),
-               TPPlotter(collections.tp_hm_fixed, selections.tp_id_selections),
+               # TPPlotter(collections.tp_hm_fixed, selections.tp_id_selections),
                TPPlotter(collections.tp_hm_cylind10, selections.tp_id_selections),
                TPPlotter(collections.tp_hm_cylind5, selections.tp_id_selections),
                TPPlotter(collections.tp_hm_cylind2p5, selections.tp_id_selections),
