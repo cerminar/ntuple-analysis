@@ -226,12 +226,14 @@ def tower_fixtures(towers):
 
 def get_cylind_clusters_mp(cl3ds, tcs, cylind_size, pool):
     cluster_sides = [x for x in [cl3ds[cl3ds.eta > 0],
-                                 cl3ds[cl3ds.eta < 0]] if not x.empty]
+                                 cl3ds[cl3ds.eta < 0]]]
     tc_sides = [x for x in [tcs[tcs.eta > 0],
-                            tcs[tcs.eta < 0]] if not x.empty]
+                            tcs[tcs.eta < 0]]]
+
     cylind_sizes = [cylind_size, cylind_size]
 
     cluster_and_tc_sides = zip(cluster_sides, tc_sides, cylind_sizes)
+
     result_3dcl = pool.map(clAlgo.get_cylind_clusters_unpack, cluster_and_tc_sides)
     merged_clusters = pd.DataFrame(columns=cl3ds.columns)
     for res3D in result_3dcl:
