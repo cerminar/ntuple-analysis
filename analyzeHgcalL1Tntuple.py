@@ -61,6 +61,7 @@ class Parameters:
                  plotters,
                  maxEvents=-1,
                  computeDensity=False,
+                 htc_jobflavor='workday',
                  debug=0,
                  name=''):
         self.name = name
@@ -77,6 +78,7 @@ class Parameters:
         self.events_per_job = events_per_job
         self.version = version
         self.plotters = plotters
+        self.htc_jobflavor = htc_jobflavor
 
     def __str__(self):
         return 'Name: {},\n \
@@ -141,6 +143,7 @@ def get_collection_parameters(opt, cfgfile):
                                 events_per_job=events_per_job,
                                 computeDensity=cfgfile['common']['run_density_computation'],
                                 plotters=plotters,
+                                htc_jobflavor=collection_data['htc_jobflavor'],
                                 debug=opt.DEBUG,
                                 name=sample)
             sample_params.append(params)
@@ -409,6 +412,7 @@ def main(analyze):
             params['TEMPL_OUTDIR'] = sample.output_dir
             params['TEMPL_VIRTUALENV'] = os.path.basename(os.environ['VIRTUAL_ENV'])
             params['TEMPL_VERSION'] = sample.version
+            params['TEMPL_JOBFLAVOR'] = sample.htc_jobflavor
 
             editTemplate(infile='templates/batch.sub',
                          outfile=os.path.join(sample_batch_dir, 'batch.sub'),
