@@ -22,6 +22,8 @@ collections:
       - track_plotters
       - tkeg_plotters
       - eg_rate_plotters
+    htc_jobflavor:
+      workday
 
   single_empart_guns_tracks:
     file_label:
@@ -34,6 +36,8 @@ collections:
       - track_genmatched_plotters
       - tkeg_plotters
       - eg_genmatched_plotters
+    htc_jobflavor:
+      workday
 
   single_part_tt:
     file_label:
@@ -49,6 +53,8 @@ collections:
       # - genpart_plotters
       - ttower_plotters
       - ttower_genmatched_plotters
+    htc_jobflavor:
+      workday
 
 
 
@@ -63,6 +69,8 @@ collections:
     plotters:
       - eg_plotters
       - eg_genmatched_plotters
+    htc_jobflavor:
+      workday
 
 
   single_empart_tpdebug:
@@ -73,6 +81,8 @@ collections:
       - all_flat5to80_PU200
     plotters:
       - tp_genmatched_debug
+    htc_jobflavor:
+      workday
 
 
   single_empart_guns_calibs:
@@ -87,9 +97,8 @@ collections:
       - tp_calib_plotters
       # - ttower_plotters
       # - ttower_genmatched_plotters
-
-
-
+    htc_jobflavor:
+      workday
 
   single_empart_guns_tps:
     file_label:
@@ -105,7 +114,8 @@ collections:
       - genpart_plotters
       # - ttower_plotters
       # - ttower_genmatched_plotters
-
+    htc_jobflavor:
+      tomorrow
 
   nugun_rate:
     file_label:
@@ -117,6 +127,8 @@ collections:
       # - ttower_plotters
       - tp_egm_plotters
       - eg_rate_plotters
+    htc_jobflavor:
+      workday
 
   noise_samples:
     file_label:
@@ -133,6 +145,8 @@ collections:
       - ttower_plotters
       # - tp_egm_plotters
       # - eg_rate_plotters
+    htc_jobflavor:
+      workday
 
 plotters:
   rate_plotters: !!python/name:python.plotters.rate_plotters

@@ -3,7 +3,7 @@ arguments             = $(ClusterID) $(JOB_ID)
 output                = logs/job_$(JOB_ID).$(ClusterId).$(ProcId).out
 error                 = logs/job_$(JOB_ID).$(ClusterId).$(ProcId).err
 log                   = logs/condor.$(ClusterId).log
-+JobFlavour           = "workday"
++JobFlavour           = "TEMPL_JOBFLAVOR"
 
 RequestCpus = 1
 
