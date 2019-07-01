@@ -128,7 +128,7 @@ collections:
       - tp_egm_plotters
       - eg_rate_plotters
     htc_jobflavor:
-      workday
+      tomorrow
 
   noise_samples:
     file_label:
