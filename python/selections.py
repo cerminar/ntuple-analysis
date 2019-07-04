@@ -148,8 +148,8 @@ gen_selections = [Selection('GEN', '', '((abs(pdgid) == {}) & (firstmother_pdgid
 
 # gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {})'.format(PID.e lectron))]
 gen_part_fbrem_selection = [Selection('all', '', ''),
-                            Selection('HBrem', 'f_{BREM} >= 0.5', 'fBrem >= 0.5'),
-                            Selection('LBrem', 'f_{BREM} < 0.5', 'fBrem < 0.5'),
+                            Selection('HBrem', 'f_{BREM} >= 0.5', 'fbrem >= 0.5'),
+                            Selection('LBrem', 'f_{BREM} < 0.5', 'fbrem < 0.5'),
                             ]
 
 
