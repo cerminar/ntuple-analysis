@@ -122,7 +122,7 @@ class DFCollection(object):
         if not self.df.empty:
             debugPrintOut(max(debug, self.debug), self.label,
                           toCount=self.df,
-                          toPrint=self.df)
+                          toPrint=self.df.sort_values(by='pt', ascending=False))
 
 
 def cl3d_fixtures(clusters, tcs):
@@ -389,7 +389,7 @@ gen = DFCollection(name='MC', label='MC particles',
 gen_parts = DFCollection(name='GEN', label='GEN particles',
                          filler_function=lambda event: event.getDataFrame(prefix='genpart'),
                          fixture_function=lambda gen_parts: gen_fixtures(gen_parts, gen),
-                         depends_on=[gen])
+                         depends_on=[gen], debug=0)
 
 tcs = DFCollection(name='TC', label='Trigger Cells',
                    filler_function=lambda event: event.getDataFrame(prefix='tc'),
@@ -410,7 +410,7 @@ cl2d_truth = DFCollection(name='DEF2DTrue', label='dRC2d True',
 cl3d_truth = DFCollection(name='HMvDRTrue', label='HM+dR(layer) True Cl3d',
                           filler_function=lambda event: event.getDataFrame(prefix='cl3dtruth'),
                           fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
-                          depends_on=[tcs], debug=4)
+                          depends_on=[tcs], debug=0)
 
 
 cl3d_def = DFCollection(name='DEF', label='dRC3d',
@@ -470,7 +470,7 @@ cl3d_hm_cylind10 = DFCollection(name='HMvDRcylind10', label='HM Cylinder 10cm',
 
 cl3d_hm_cylind5 = DFCollection(name='HMvDRcylind5', label='HM Cylinder 5cm',
                                filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [5.]*52, POOL),
-                               depends_on=[cl3d_hm, tcs])
+                               depends_on=[cl3d_hm, tcs], debug=0)
 
 cl3d_hm_cylind2p5 = DFCollection(name='HMvDRcylind2p5', label='HM Cylinder 2.5cm',
                                  filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [2.5]*52, POOL),
@@ -576,6 +576,11 @@ tkisoeles = DFCollection(name='TkIsoEle', label='TkIsoEle',
 tkegs = DFCollection(name='TkEG', label='TkEG',
                      filler_function=lambda event: get_trackmatched_egs(egs=egs.df, tracks=tracks.df),
                      depends_on=[egs, tracks])
+
+tkegs_emu = DFCollection(name='TkEGEmu', label='TkEG Emu',
+                         filler_function=lambda event: get_trackmatched_egs(egs=egs.df, tracks=tracks_emu.df),
+                         depends_on=[egs, tracks_emu])
+
 
 
 class TPSet:
