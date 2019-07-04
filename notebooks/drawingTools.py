@@ -158,10 +158,15 @@ def draw(histograms,
             hist.SetStats(do_stats)
         else:
             opt = 'P'+options
+            hist.SetMarkerSize(3)
+            hist.SetMarkerStyle(7)
         if overlay:
             hist.SetLineColor(colors[hidx])
             if 'TGraph' in histo_class:
                 hist.SetMarkerColor(colors[hidx])
+                # hist.SetMarkerSize(3)
+                # hist.SetMarkerStyle(7)
+
             if hidx:
                 opt = 'same,'+opt
             else:
