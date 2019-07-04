@@ -85,14 +85,19 @@ class RatePlotter(BasePlotter):
                                                                                 selection.name))
 
     def fill_histos(self, debug=False):
+        # print '------------------'
+        # print self.tp_set.name
         for selection in self.tp_selections:
+            # print selection.selection
             if not selection.all and not self.tp_set.df.empty:
                 sel_clusters = self.tp_set.df.query(selection.selection)
             else:
                 sel_clusters = self.tp_set.df
             trigger_clusters = sel_clusters[['pt', 'eta']].sort_values(by='pt',
                                                                        ascending=False)
+            # print trigger_clusters[:5]
             if not trigger_clusters.empty:
+                print trigger_clusters.iloc[0]
                 self.h_rate[selection.name].fill(trigger_clusters.iloc[0].pt,
                                                  trigger_clusters.iloc[0].eta)
             self.h_rate[selection.name].fill_norm()
@@ -1169,12 +1174,16 @@ eg_genmatched_plotters = [EGGenMatchPlotter(collections.egs, collections.gen_par
                           TkEGGenMatchPlotter(collections.tkegs, collections.gen_parts,
                                               selections.tkeg_pt_selections,
                                               selections.gen_part_selections),
+                          TkEGGenMatchPlotter(collections.tkegs_emu, collections.gen_parts,
+                                              selections.tkeg_pt_selections,
+                                              selections.gen_part_selections),
                           EGGenMatchPlotter(collections.tkeles, collections.gen_parts,
                                             selections.tkisoeg_pt_selections,
                                             selections.gen_part_selections),
-                          EGGenMatchPlotter(collections.tkisoeles, collections.gen_parts,
-                                            selections.tkisoeg_pt_selections,
-                                            selections.gen_part_selections), ]
+                          # EGGenMatchPlotter(collections.tkisoeles, collections.gen_parts,
+                          #                   selections.tkisoeg_pt_selections,
+                          #                   selections.gen_part_selections),
+                                            ]
 
 track_genmatched_plotters = [TrackGenMatchPlotter(collections.tracks, collections.gen_parts,
                                                   selections.tracks_selections,
