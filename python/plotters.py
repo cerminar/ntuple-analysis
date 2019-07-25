@@ -840,6 +840,8 @@ class CalibrationPlotter(BasePlotter):
                         # components[components.layer == layer].energy.sum()
                         layer_energy.append(components[components.layer == layer].energy.sum())
                     obj_matched['layer_energy'] = [layer_energy]
+
+                # print algoname
                 # print obj_matched[['energy', 'layer_energy']]
                 h_calibration.fill(reference=genParticle, target=obj_matched)
 
@@ -1116,9 +1118,9 @@ tp_genmatched_plotters = [
                           TPGenMatchPlotter(collections.tp_hm_vdr, collections.gen_parts,
                                             selections.tp_match_selections,
                                             selections.gen_part_selections),
-                          TPGenMatchPlotter(collections.tp_hm_fixed, collections.gen_parts,
-                                            selections.tp_match_selections,
-                                            selections.gen_part_selections),
+                          # TPGenMatchPlotter(collections.tp_hm_fixed, collections.gen_parts,
+                          #                   selections.tp_match_selections,
+                          #                   selections.gen_part_selections),
                           # # TPGenMatchPlotter(collections.tp_hm_cylind10, collections.gen_parts,
                           # #                   selections.tp_match_selections,
                           # #                   selections.gen_part_selections),
@@ -1141,6 +1143,9 @@ tp_genmatched_plotters = [
                                             selections.tp_match_selections,
                                             selections.gen_part_selections),
                           TPGenMatchPlotter(collections.tp_hm_shape_calib, collections.gen_parts,
+                                            selections.tp_match_selections,
+                                            selections.gen_part_selections),
+                          TPGenMatchPlotter(collections.tp_hm_shapeDr_calib, collections.gen_parts,
                                             selections.tp_match_selections,
                                             selections.gen_part_selections),
                           TPGenMatchPlotter(collections.tp_hm_calib_merged, collections.gen_parts,
