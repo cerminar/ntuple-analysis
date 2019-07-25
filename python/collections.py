@@ -91,7 +91,12 @@ class DFCollection(object):
         debug (int): specify the debug level object by object (also the global one is used)
     """
 
-    def __init__(self, name, label, filler_function, fixture_function=None, depends_on=[], debug=0):
+    def __init__(self, name, label,
+                 filler_function,
+                 fixture_function=None,
+                 depends_on=[],
+                 debug=0,
+                 print_function=lambda df: df):
         self.df = None
         self.name = name
         self.label = label
@@ -100,6 +105,7 @@ class DFCollection(object):
         self.fixture_function = fixture_function
         self.depends_on = depends_on
         self.debug = debug
+        self.print_function = print_function
         self.register()
 
     def register(self):
@@ -122,7 +128,13 @@ class DFCollection(object):
         if not self.df.empty:
             debugPrintOut(max(debug, self.debug), self.label,
                           toCount=self.df,
-                          toPrint=self.df.sort_values(by='pt', ascending=False))
+                          toPrint=self.print_function(self.df))
+
+
+def tkeg_fromcluster_fixture(tkegs):
+    # print tkegs
+    tkegs.loc[tkegs.hwQual == 1, 'hwQual'] = 3
+    return tkegs
 
 
 def cl3d_fixtures(clusters, tcs):
@@ -130,7 +142,7 @@ def cl3d_fixtures(clusters, tcs):
     clusters.rename(columns={'clusters_id': 'clusters',
                              'clusters_n': 'nclu'},
                     inplace=True)
-    # clusters['clusters'] = clusters['clusters_id']
+    clusters['hwQual'] = clusters['quality']
     # clusters['nclu'] = [len(x) for x in clusters.clusters]
 
     def compute_hoe(cluster):
@@ -166,6 +178,7 @@ def cl3d_fixtures(clusters, tcs):
     return clusters
 
 def gen_fixtures(particles, mc_particles):
+    # print particles.columns
     particles['pdgid'] = particles.pid
     particles['abseta'] = np.abs(particles.eta)
 
@@ -240,6 +253,22 @@ def get_cylind_clusters_mp(cl3ds, tcs, cylind_size, pool):
         merged_clusters = merged_clusters.append(res3D, ignore_index=True, sort=False)
     return merged_clusters
 
+
+def get_dr_clusters_mp(cl3ds, tcs, dr_size, pool):
+    cluster_sides = [x for x in [cl3ds[cl3ds.eta > 0],
+                                 cl3ds[cl3ds.eta < 0]]]
+    tc_sides = [x for x in [tcs[tcs.eta > 0],
+                            tcs[tcs.eta < 0]]]
+
+    dr_sizes = [dr_size, dr_size]
+
+    cluster_and_tc_sides = zip(cluster_sides, tc_sides, dr_sizes)
+
+    result_3dcl = pool.map(clAlgo.get_dr_clusters_unpack, cluster_and_tc_sides)
+    merged_clusters = pd.DataFrame(columns=cl3ds.columns)
+    for res3D in result_3dcl:
+        merged_clusters = merged_clusters.append(res3D, ignore_index=True, sort=False)
+    return merged_clusters
 
 
 def get_merged_cl3d(triggerClusters, pool, debug=0):
@@ -379,6 +408,7 @@ calib_table['HMvDRcylind10Calib'] = [6.39, 0.99, 1.03, 1.07, 0.94, 0.96, 1.09, 1
 calib_table['HMvDRcylind5Calib'] = [6.92, 0.98, 1.05, 1.09, 0.96, 0.97, 1.11, 1.06, 0.83, 1.04, 0.92, 1.08, 1.5, 1.89]
 calib_table['HMvDRcylind2p5Calib'] = [12.35, 0.87, 1.16, 1.21, 1.06, 1.04, 1.25, 1.15, 0.97, 1.11, 1.01, 1.15, 1.64, 2.15]
 calib_table['HMvDRshapeCalib'] = [8.43, 1.69, 1.1, 1.2, 0.97, 0.97, 1.13, 1.03, 0.82, 1.0, 0.89, 1.08, 1.55, 1.82]
+calib_table['HMvDRshapeDrCalib'] = [1.]*28
 
 
 gen = DFCollection(name='MC', label='MC particles',
@@ -389,7 +419,10 @@ gen = DFCollection(name='MC', label='MC particles',
 gen_parts = DFCollection(name='GEN', label='GEN particles',
                          filler_function=lambda event: event.getDataFrame(prefix='genpart'),
                          fixture_function=lambda gen_parts: gen_fixtures(gen_parts, gen),
-                         depends_on=[gen], debug=0)
+                         depends_on=[gen],
+                         debug=0,
+                         print_function=lambda df: df[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'pid', 'gen', 'reachedEE']]
+                         )
 
 tcs = DFCollection(name='TC', label='Trigger Cells',
                    filler_function=lambda event: event.getDataFrame(prefix='tc'),
@@ -426,7 +459,9 @@ cl3d_def_nc = DFCollection(name='DEFNC', label='dRC3d NewTh',
 cl3d_hm = DFCollection(name='HMvDR', label='HM+dR(layer) Cl3d',
                        filler_function=lambda event: event.getDataFrame(prefix='hmVRcl3d'),
                        fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
-                       depends_on=[tcs], debug=0)
+                       depends_on=[tcs],
+                       debug=0,
+                       print_function=lambda df: df[['id', 'pt', 'eta', 'quality', 'hwQual']])
 
 cl3d_hm_rebin = DFCollection(name='HMvDRRebin', label='HM+dR(layer) rebin Cl3d ',
                              filler_function=lambda event: event.getDataFrame(prefix='hmVRcl3dRebin'),
@@ -457,7 +492,7 @@ cl3d_def_calib = DFCollection(name='DEFCalib', label='dRC3d calib.',
                               depends_on=[cl3d_def])
 
 cl3d_hm_merged = DFCollection(name='HMvDRMerged', label='HM+dR(layer) merged',
-                              filler_function=lambda event: get_merged_cl3d(cl3d_hm.df[cl3d_hm.df.quality > 0], POOL),
+                              filler_function=lambda event: get_merged_cl3d(cl3d_hm.df[cl3d_hm.df.quality >= 0], POOL),
                               depends_on=[cl3d_hm])
 
 cl3d_hm_fixed = DFCollection(name='HMvDRfixed', label='HM fixed',
@@ -476,9 +511,28 @@ cl3d_hm_cylind2p5 = DFCollection(name='HMvDRcylind2p5', label='HM Cylinder 2.5cm
                                  filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [2.5]*52, POOL),
                                  depends_on=[cl3d_hm, tcs], debug=0)
 
+# cl3d_hm_shape = DFCollection(name='HMvDRshape', label='HM shape ',
+#                              filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [1.]*2+[1.6]*2+[2.5]*2+[5]*2+[5]*2+[5]*2+[5]*2+[5.]*2+[6.]*2+[7.]*2+[7.2]*2+[7.4]*2+[7.2]*2+[7.]*2+[2.5]*25, POOL),
+#                              depends_on=[cl3d_hm, tcs], debug=0)
+
 cl3d_hm_shape = DFCollection(name='HMvDRshape', label='HM shape',
-                             filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [1.]*2+[1.6]*2+[1.8]*2+[2.2]*2+[2.6]*2+[3.4]*2+[4.2]*2+[5.]*2+[6.]*2+[7.]*2+[7.2]*2+[7.4]*2+[7.2]*2+[7.]*2+[2.5]*25, POOL),
+                             filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df,
+                                                                                  tcs.df,
+                                                                                  [1.]*2+[1.6]*2+[2.5]*2+[5.0]*2+[5.0]*2+[5.0]*2+[5.0]*2+[5.]*2+[6.]*2+[7.]*2+[7.2]*2+[7.4]*2+[7.2]*2+[7.]*2+[2.5]*25,
+                                                                                  # [1.]*2+[1.6]*2+[1.8]*2+[2.2]*2+[2.6]*2+[3.4]*2+[4.2]*2+[5.]*2+[6.]*2+[7.]*2+[7.2]*2+[7.4]*2+[7.2]*2+[7.]*2+[2.5]*25,
+                                                                                  POOL),
                              depends_on=[cl3d_hm, tcs], debug=0)
+
+
+cl3d_hm_shapeDr = DFCollection(name='HMvDRshapeDr', label='HM #Delta#rho < 0.015',
+                               filler_function=lambda event: get_dr_clusters_mp(cl3d_hm.df,
+                                                                                tcs.df,
+                                                                                [0.015]*53,
+                                                                                # [1.]*2+[1.6]*2+[1.8]*2+[2.2]*2+[2.6]*2+[3.4]*2+[4.2]*2+[5.]*2+[6.]*2+[7.]*2+[7.2]*2+[7.4]*2+[7.2]*2+[7.]*2+[2.5]*25,
+                                                                                POOL),
+                               depends_on=[cl3d_hm, tcs],
+                               debug=0)
+# cl3d_hm_shapeDr.activate()
 
 cl3d_hm_calib = DFCollection(name='HMvDRCalib', label='HM calib.',
                              filler_function=lambda event: get_layer_calib_clusters(cl3d_hm.df,
@@ -506,7 +560,13 @@ cl3d_hm_fixed_calib = DFCollection(name='HMvDRfixedCalib', label='HM fixed calib
 
 cl3d_hm_shape_calib = DFCollection(name='HMvDRshapeCalib', label='HM shape calib.',
                                    filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_shape.df, calib_table['HMvDRshapeCalib']),
-                                   depends_on=[cl3d_hm_shape, tcs], debug=0)
+                                   depends_on=[cl3d_hm_shape, tcs], debug=0, print_function=lambda df: df[['id', 'pt', 'eta', 'quality', 'hwQual']])
+
+
+cl3d_hm_shapeDr_calib = DFCollection(name='HMvDRshapeDrCalib', label='HM #Delta#rho < 0.015 calib.',
+                                   filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_shapeDr.df, calib_table['HMvDRshapeDrCalib']),
+                                   depends_on=[cl3d_hm_shapeDr, tcs], debug=0, print_function=lambda df: df[['id', 'pt', 'eta', 'quality', 'hwQual']])
+
 
 
 cl3d_hm_calib_merged = DFCollection(name='HMvDRCalibMerged', label='HM calib. merged',
@@ -568,14 +628,23 @@ tracks_emu = DFCollection(name='L1TrkEmu', label='L1Track EMU',
 
 
 tkeles = DFCollection(name='TkEle', label='TkEle',
-                      filler_function=lambda event: event.getDataFrame(prefix='tkEle'))
+                      filler_function=lambda event: event.getDataFrame(prefix='tkEle'),
+                      debug=0)
 
 tkisoeles = DFCollection(name='TkIsoEle', label='TkIsoEle',
                          filler_function=lambda event: event.getDataFrame(prefix='tkIsoEle'))
 
 tkegs = DFCollection(name='TkEG', label='TkEG',
                      filler_function=lambda event: get_trackmatched_egs(egs=egs.df, tracks=tracks.df),
-                     depends_on=[egs, tracks])
+                     depends_on=[egs, tracks],
+                     debug=0)
+
+tkegs_shape_calib = DFCollection(name='TkEGshapeCalib', label='TkEGshapecalib',
+                     filler_function=lambda event: get_trackmatched_egs(egs=cl3d_hm_shape_calib.df, tracks=tracks.df),
+                     fixture_function=tkeg_fromcluster_fixture,
+                     depends_on=[cl3d_hm_shape_calib, tracks],
+                     debug=0)
+# tkegs_shape_calib.activate()
 
 tkegs_emu = DFCollection(name='TkEGEmu', label='TkEG Emu',
                          filler_function=lambda event: get_trackmatched_egs(egs=egs.df, tracks=tracks_emu.df),
