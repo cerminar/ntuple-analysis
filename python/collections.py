@@ -160,7 +160,7 @@ def cl3d_fixtures(clusters, tcs):
 
     def compute_layer_energy(cluster):
         components = tcs[tcs.id.isin(cluster.clusters)]
-        cluster['layer_energy'] = [[components[components.layer == layer].energy.sum() for layer in range(1, 29, 2)]]
+        cluster['layer_energy'] = [components[components.layer == layer].energy.sum() for layer in range(1, 29, 2)]
         return cluster
 
     if 'layer_energy' not in clusters.columns:
@@ -408,7 +408,7 @@ calib_table['HMvDRcylind10Calib'] = [6.39, 0.99, 1.03, 1.07, 0.94, 0.96, 1.09, 1
 calib_table['HMvDRcylind5Calib'] = [6.92, 0.98, 1.05, 1.09, 0.96, 0.97, 1.11, 1.06, 0.83, 1.04, 0.92, 1.08, 1.5, 1.89]
 calib_table['HMvDRcylind2p5Calib'] = [12.35, 0.87, 1.16, 1.21, 1.06, 1.04, 1.25, 1.15, 0.97, 1.11, 1.01, 1.15, 1.64, 2.15]
 calib_table['HMvDRshapeCalib'] = [8.43, 1.69, 1.1, 1.2, 0.97, 0.97, 1.13, 1.03, 0.82, 1.0, 0.89, 1.08, 1.55, 1.82]
-calib_table['HMvDRshapeDrCalib'] = [1.]*28
+calib_table['HMvDRshapeDrCalib'] = [1.]*14
 
 
 gen = DFCollection(name='MC', label='MC particles',
