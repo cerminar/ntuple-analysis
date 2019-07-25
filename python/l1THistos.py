@@ -709,9 +709,9 @@ class HistoSetReso():
     def __init__(self, name, root_file=None, debug=False):
         self.hreso = ResoHistos('h_reso_'+name, root_file, debug)
         self.hresoCone = None
-        # self.hreso2D = None
+        self.hreso2D = None
         # self.hresoCone = ResoHistos('h_resoCone_'+name, root_file)
-        self.hreso2D = Reso2DHistos('h_reso2D_'+name, root_file)
+        # self.hreso2D = Reso2DHistos('h_reso2D_'+name, root_file)
         # if not root_file:
         #     self.hreso.annotateTitles(name)
         #     self.hresoCone.annotateTitles(name)
