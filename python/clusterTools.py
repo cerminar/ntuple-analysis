@@ -448,6 +448,8 @@ def get_cylind_clusters(cl3ds, tcs, cylind_size=[3]*28):
             new_cluster['szz'] = cluster.szz
             new_cluster['emaxe'] = cluster.emaxe
             new_cluster['quality'] = cluster.quality
+            if 'hwQual' in cl3ds.columns:
+                new_cluster['hwQual'] = cluster.hwQual
             ret = ret.append(new_cluster, ignore_index=True, sort=False)
             # ret['showerlength'] = cluster.showerlength
     # print cl3ds[['id', 'energy', 'pt', 'phi', 'eta', 'showerlength', 'nclu']]
@@ -458,3 +460,69 @@ def get_cylind_clusters(cl3ds, tcs, cylind_size=[3]*28):
 def get_cylind_clusters_unpack(clusters_tcs_cylsize):
     # print clusters_tcs_cylsize
     return get_cylind_clusters(clusters_tcs_cylsize[0], clusters_tcs_cylsize[1], clusters_tcs_cylsize[2])
+
+
+def get_dr_clusters(cl3ds, tcs, cylind_size=[3]*28):
+    # def fill_momentum(cluster):
+    #     vector = ROOT.TLorentzVector()
+    #     vector.SetPtEtaPhiE(cluster.pt, cluster.eta, cluster.phi, cluster.energy)
+    #     cluster.momentum = vector
+    #     # print tower.pt, tower.momentum.Pt()
+    #     return cluster
+
+    # columns = cl3ds.columns.values
+    # columns = np.append(columns, ['E', 'PT'])
+    ret = pd.DataFrame(columns=cl3ds.columns)
+    if not cl3ds.empty:
+        cl3ds.loc[cl3ds.index, 'sinh_eta'] = np.sinh(cl3ds.eta)
+        cl3ds.loc[cl3ds.index, 'cos_phi'] = np.cos(cl3ds.phi)
+        cl3ds.loc[cl3ds.index, 'sin_phi'] = np.sin(cl3ds.phi)
+        for index, cluster in cl3ds.iterrows():
+            components = tcs[tcs.id.isin(cluster.clusters)].copy()
+            components['R_cl'] = components.z/cluster.sinh_eta
+            components['x_cl'] = components.R_cl*cluster.cos_phi
+            components['y_cl'] = components.R_cl*cluster.sin_phi
+            components['dist2'] = (components.x_cl-components.x)**2+(components.y_cl-components.y)**2
+            components['dist'] = np.sqrt(components.dist2)
+            components['dr'] = components.dist/np.abs(components.z)
+
+            def assign_size(comp):
+                comp['clsize'] = cylind_size[comp.layer - 1]
+                return comp
+
+            components = components.apply(assign_size, axis=1)
+
+            # components['dist'] = np.sqrt(components.dist2)
+            # components['momentum'] = ROOT.TLorentzVector()
+            # components = components.apply(fill_momentum, axis=1)
+
+            # components['dist_bool'] = components[((components.x1-components.x)**2+(components.y1-components.y)**2)<cylind_size**2]
+            # print components[['id', 'layer', 'eta', 'phi', 'energy', 'x', 'y', 'R_cl', 'z', 'x_cl', 'y_cl', 'dist']].sort_values(by='layer', ascending=True)
+            # print components[['id', 'layer', 'eta', 'phi', 'energy', 'dist', 'z', 'dr', 'clsize']].sort_values(by='layer', ascending=True)
+
+            selected_components = components[components.dr < components.clsize]
+            if selected_components.empty:
+                continue
+            new_cluster = build3D(selected_components, calib_factor=1.)
+            # this is used for layer calibrations
+            new_cluster['layer_energy'] = [[selected_components[selected_components.layer == layer].energy.sum() for layer in range(1, 29, 2)]]
+            new_cluster['showerlength'] = cluster.showerlength
+            new_cluster['seetot'] = cluster.seetot
+            new_cluster['seemax'] = cluster.seemax
+            new_cluster['spptot'] = cluster.spptot
+            new_cluster['sppmax'] = cluster.sppmax
+            new_cluster['szz'] = cluster.szz
+            new_cluster['emaxe'] = cluster.emaxe
+            new_cluster['quality'] = cluster.quality
+            if 'hwQual' in cl3ds.columns:
+                new_cluster['hwQual'] = cluster.hwQual
+            ret = ret.append(new_cluster, ignore_index=True, sort=False)
+            # ret['showerlength'] = cluster.showerlength
+    # print cl3ds[['id', 'energy', 'pt', 'phi', 'eta', 'showerlength', 'nclu']]
+    # print ret[['id', 'energy', 'pt', 'phi', 'eta', 'showerlength', 'nclu']]
+    return ret
+
+
+def get_dr_clusters_unpack(clusters_tcs_cylsize):
+    # print clusters_tcs_cylsize
+    return get_dr_clusters(clusters_tcs_cylsize[0], clusters_tcs_cylsize[1], clusters_tcs_cylsize[2])
