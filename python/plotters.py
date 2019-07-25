@@ -541,8 +541,9 @@ class TPGenMatchPlotter(BasePlotter):
                 # print matchedClusters
                 # print matchedClusters.layer.unique()
                 for layer in matchedClusters.layer.unique():
-                    histoReso2D.fill(reference=genParticle,
-                                     target=clAlgo.build2D(matchedClusters[matchedClusters.layer == layer]))
+                    if histoReso2D is not None:
+                        histoReso2D.fill(reference=genParticle,
+                                         target=clAlgo.build2D(matchedClusters[matchedClusters.layer == layer]))
 
                 if False:
                     histoReso2D.fill(reference=genParticle, target=matchedClusters)
@@ -1052,9 +1053,12 @@ tp_calib_plotters = [CalibrationPlotter(collections.tp_hm_vdr, collections.gen_p
                      CalibrationPlotter(collections.tp_hm_shape, collections.gen_parts,
                                         selections.tp_calib_selections,
                                         selections.gen_part_selections_calib),
-                     CalibrationPlotter(collections.tp_hm_cylind10, collections.gen_parts,
+                     CalibrationPlotter(collections.tp_hm_shapeDr, collections.gen_parts,
                                         selections.tp_calib_selections,
                                         selections.gen_part_selections_calib),
+                     # CalibrationPlotter(collections.tp_hm_cylind10, collections.gen_parts,
+                     #                    selections.tp_calib_selections,
+                     #                    selections.gen_part_selections_calib),
                      CalibrationPlotter(collections.tp_hm_cylind5, collections.gen_parts,
                                         selections.tp_calib_selections,
                                         selections.gen_part_selections_calib),
@@ -1064,27 +1068,30 @@ tp_calib_plotters = [CalibrationPlotter(collections.tp_hm_vdr, collections.gen_p
                      CalibrationPlotter(collections.tp_hm_shape_calib, collections.gen_parts,
                                         selections.tp_calib_selections,
                                         selections.gen_part_selections_calib),
-                     CalibrationPlotter(collections.tp_hm_cylind10_calib, collections.gen_parts,
+                     CalibrationPlotter(collections.tp_hm_shapeDr_calib, collections.gen_parts,
                                         selections.tp_calib_selections,
                                         selections.gen_part_selections_calib),
+                     # CalibrationPlotter(collections.tp_hm_cylind10_calib, collections.gen_parts,
+                     #                    selections.tp_calib_selections,
+                     #                    selections.gen_part_selections_calib),
                      CalibrationPlotter(collections.tp_hm_cylind5_calib, collections.gen_parts,
                                         selections.tp_calib_selections,
                                         selections.gen_part_selections_calib),
                      CalibrationPlotter(collections.tp_hm_cylind2p5_calib, collections.gen_parts,
                                         selections.tp_calib_selections,
                                         selections.gen_part_selections_calib),
-                     CalibrationPlotter(collections.tp_hm_shape_calib1, collections.gen_parts,
-                                        selections.tp_calib_selections,
-                                        selections.gen_part_selections_calib),
-                     CalibrationPlotter(collections.tp_hm_cylind10_calib1, collections.gen_parts,
-                                        selections.tp_calib_selections,
-                                        selections.gen_part_selections_calib),
-                     CalibrationPlotter(collections.tp_hm_cylind5_calib1, collections.gen_parts,
-                                        selections.tp_calib_selections,
-                                        selections.gen_part_selections_calib),
-                     CalibrationPlotter(collections.tp_hm_cylind2p5_calib1, collections.gen_parts,
-                                        selections.tp_calib_selections,
-                                        selections.gen_part_selections_calib),
+                     # CalibrationPlotter(collections.tp_hm_shape_calib1, collections.gen_parts,
+                     #                    selections.tp_calib_selections,
+                     #                    selections.gen_part_selections_calib),
+                     # CalibrationPlotter(collections.tp_hm_cylind10_calib1, collections.gen_parts,
+                     #                    selections.tp_calib_selections,
+                     #                    selections.gen_part_selections_calib),
+                     # CalibrationPlotter(collections.tp_hm_cylind5_calib1, collections.gen_parts,
+                     #                    selections.tp_calib_selections,
+                     #                    selections.gen_part_selections_calib),
+                     # CalibrationPlotter(collections.tp_hm_cylind2p5_calib1, collections.gen_parts,
+                     #                    selections.tp_calib_selections,
+                     #                    selections.gen_part_selections_calib),
 ]
 
 tp_genmatched_plotters = [
@@ -1109,9 +1116,9 @@ tp_genmatched_plotters = [
                           TPGenMatchPlotter(collections.tp_hm_vdr, collections.gen_parts,
                                             selections.tp_match_selections,
                                             selections.gen_part_selections),
-                          # TPGenMatchPlotter(collections.tp_hm_fixed, collections.gen_parts,
-                          #                   selections.tp_match_selections,
-                          #                   selections.gen_part_selections),
+                          TPGenMatchPlotter(collections.tp_hm_fixed, collections.gen_parts,
+                                            selections.tp_match_selections,
+                                            selections.gen_part_selections),
                           # # TPGenMatchPlotter(collections.tp_hm_cylind10, collections.gen_parts,
                           # #                   selections.tp_match_selections,
                           # #                   selections.gen_part_selections),
