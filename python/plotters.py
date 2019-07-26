@@ -97,7 +97,7 @@ class RatePlotter(BasePlotter):
                                                                        ascending=False)
             # print trigger_clusters[:5]
             if not trigger_clusters.empty:
-                print trigger_clusters.iloc[0]
+                # print trigger_clusters.iloc[0]
                 self.h_rate[selection.name].fill(trigger_clusters.iloc[0].pt,
                                                  trigger_clusters.iloc[0].eta)
             self.h_rate[selection.name].fill_norm()
