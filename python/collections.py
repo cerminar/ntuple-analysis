@@ -400,15 +400,16 @@ def get_calibrated_clusters2(calib_factors, input_3Dclusters):
     calibrated_clusters = calibrated_clusters.apply(apply_calibration, axis=1)
     return calibrated_clusters
 
-
+# v96bis
 calib_table = {}
-calib_table['HMvDRfixedCalib'] = [4.52, 0.93, 1.08, 1.04, 0.91, 1.04, 1.09, 0.91, 1.0, 0.9, 1.07, 1.06, 1.36, 1.47]
-calib_table['HMvDRCalib'] = [6.38, 0.98, 1.03, 1.07, 0.94, 0.96, 1.09, 1.03, 0.81, 1.0, 0.9, 1.08, 1.5, 1.81]
-calib_table['HMvDRcylind10Calib'] = [6.39, 0.99, 1.03, 1.07, 0.94, 0.96, 1.09, 1.03, 0.8, 1.02, 0.9, 1.08, 1.5, 1.83]
-calib_table['HMvDRcylind5Calib'] = [6.92, 0.98, 1.05, 1.09, 0.96, 0.97, 1.11, 1.06, 0.83, 1.04, 0.92, 1.08, 1.5, 1.89]
-calib_table['HMvDRcylind2p5Calib'] = [12.35, 0.87, 1.16, 1.21, 1.06, 1.04, 1.25, 1.15, 0.97, 1.11, 1.01, 1.15, 1.64, 2.15]
-calib_table['HMvDRshapeCalib'] = [8.43, 1.69, 1.1, 1.2, 0.97, 0.97, 1.13, 1.03, 0.82, 1.0, 0.89, 1.08, 1.55, 1.82]
-calib_table['HMvDRshapeDrCalib'] = [1.]*14
+
+calib_table['HMvDRCalib'] = [1., 0.98, 1.03, 1.07, 0.94, 0.96, 1.09, 1.03, 0.81, 1.0, 0.9, 1.08, 1.5, 1.81]
+calib_table['HMvDRcylind10Calib'] = [1., 0.99, 1.03, 1.07, 0.94, 0.96, 1.09, 1.03, 0.8, 1.02, 0.9, 1.08, 1.5, 1.83]
+calib_table['HMvDRcylind5Calib'] = [1., 0.98, 1.05, 1.09, 0.96, 0.97, 1.11, 1.06, 0.83, 1.04, 0.92, 1.08, 1.5, 1.89]
+calib_table['HMvDRcylind2p5Calib'] = [1., 0.87, 1.16, 1.21, 1.06, 1.04, 1.25, 1.15, 0.97, 1.11, 1.01, 1.15, 1.64, 2.15]
+calib_table['HMvDRshapeCalib'] = [1., 1.38, 1.05, 1.07, 0.96, 0.97, 1.11, 1.04, 0.81, 1.02, 0.9, 1.07, 1.52, 1.84]
+calib_table['HMvDRshapeDrCalib'] = [1., 0.98, 1.05, 1.09, 0.96, 0.97, 1.11, 1.05, 0.83, 1.03, 0.91, 1.07, 1.51, 1.89]
+
 
 
 gen = DFCollection(name='MC', label='MC particles',
