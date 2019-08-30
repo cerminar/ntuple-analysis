@@ -271,6 +271,18 @@ def get_dr_clusters_mp(cl3ds, tcs, dr_size, pool):
     return merged_clusters
 
 
+def get_emint_clusters(triggerClusters):
+    clusters_emint = triggerClusters.copy(deep=True)
+
+    def interpret(cluster):
+        cluster.energy = cluster.ienergy[0]
+        cluster.pt = cluster.ipt[0]
+        return cluster
+
+    clusters_emint = clusters_emint.apply(interpret, axis=1)
+    return clusters_emint
+
+
 def get_merged_cl3d(triggerClusters, pool, debug=0):
     merged_clusters = pd.DataFrame(columns=triggerClusters.columns)
     if triggerClusters.empty:
@@ -424,11 +436,12 @@ gen_parts = DFCollection(name='GEN', label='GEN particles',
                          debug=0,
                          print_function=lambda df: df[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'pid', 'gen', 'reachedEE']]
                          )
+# gen_parts.activate()
 
 tcs = DFCollection(name='TC', label='Trigger Cells',
                    filler_function=lambda event: event.getDataFrame(prefix='tc'),
                    fixture_function=tc_fixtures, debug=0)
-
+# tcs.activate()
 tcs_truth = DFCollection(name='TCTrue', label='Trigger Cells True',
                          filler_function=lambda event: event.getDataFrame(prefix='tctruth'),
                          fixture_function=tc_fixtures)
@@ -462,7 +475,18 @@ cl3d_hm = DFCollection(name='HMvDR', label='HM+dR(layer) Cl3d',
                        fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
                        depends_on=[tcs],
                        debug=0,
-                       print_function=lambda df: df[['id', 'pt', 'eta', 'quality', 'hwQual']])
+                       print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality', 'hwQual', 'ienergy', 'ipt']])
+# cl3d_hm.activate()
+
+
+cl3d_hm_emint = DFCollection(name='HMvDREmInt', label='HM+dR(layer) Cl3d EM Int',
+                           filler_function=lambda event: get_emint_clusters(cl3d_hm.df),
+                           # fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
+                           depends_on=[cl3d_hm],
+                           debug=0,
+                           print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality', 'hwQual', 'ienergy', 'ipt']])
+
+# cl3d_hm_emint.activate()
 
 cl3d_hm_rebin = DFCollection(name='HMvDRRebin', label='HM+dR(layer) rebin Cl3d ',
                              filler_function=lambda event: event.getDataFrame(prefix='hmVRcl3dRebin'),
@@ -705,6 +729,7 @@ tp_hm_vdr = TPSet(tcs, tcs, cl3d_hm)
 tp_hm_fixed = TPSet(tcs, tcs, cl3d_hm_fixed)
 tp_hm_shape = TPSet(tcs, tcs, cl3d_hm_shape)
 tp_hm_shapeDr = TPSet(tcs, tcs, cl3d_hm_shapeDr)
+tp_hm_emint = TPSet(tcs, tcs, cl3d_hm_emint)
 tp_hm_cylind10 = TPSet(tcs, tcs, cl3d_hm_cylind10)
 tp_hm_cylind5 = TPSet(tcs, tcs, cl3d_hm_cylind5)
 tp_hm_cylind2p5 = TPSet(tcs, tcs, cl3d_hm_cylind2p5)
