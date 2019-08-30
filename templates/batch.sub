@@ -12,7 +12,7 @@ transfer_input_files  = copy_files.sh,TEMPL_CFG,../ntuple-tools.tar.gz
 +PostArguments        = "$(ClusterID) $(JOB_ID) true"
 
 
-+AccountingGroup = "group_u_CMS.u_zh"
++AccountingGroup = "group_u_CMS.u_zh.users"
 
 
 transfer_output_files   = ""
