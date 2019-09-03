@@ -473,6 +473,7 @@ def get_dr_clusters(cl3ds, tcs, cylind_size=[3]*28):
     # columns = cl3ds.columns.values
     # columns = np.append(columns, ['E', 'PT'])
     ret = pd.DataFrame(columns=cl3ds.columns)
+    em_layers = range(1, 29, 2)
     if not cl3ds.empty:
         cl3ds.loc[cl3ds.index, 'sinh_eta'] = np.sinh(cl3ds.eta)
         cl3ds.loc[cl3ds.index, 'cos_phi'] = np.cos(cl3ds.phi)
@@ -505,7 +506,8 @@ def get_dr_clusters(cl3ds, tcs, cylind_size=[3]*28):
                 continue
             new_cluster = build3D(selected_components, calib_factor=1.)
             # this is used for layer calibrations
-            new_cluster['layer_energy'] = [[selected_components[selected_components.layer == layer].energy.sum() for layer in range(1, 29, 2)]]
+            # FIXME: sume np.sum(...value) and measure speedup
+            new_cluster['layer_energy'] = [[np.sum(selected_components[selected_components.layer == layer].energy) for layer in em_layers]]
             new_cluster['showerlength'] = cluster.showerlength
             new_cluster['seetot'] = cluster.seetot
             new_cluster['seemax'] = cluster.seemax

@@ -158,14 +158,20 @@ def cl3d_fixtures(clusters, tcs):
         clusters['hoe'] = 666
         clusters = clusters.apply(compute_hoe, axis=1)
 
+    em_layers = range(1, 29, 2)
+    
     def compute_layer_energy(cluster):
         components = tcs[tcs.id.isin(cluster.clusters)]
         cluster['layer_energy'] = [components[components.layer == layer].energy.sum() for layer in range(1, 29, 2)]
         return cluster
 
-    if 'layer_energy' not in clusters.columns:
-        clusters = clusters.apply(compute_layer_energy, axis=1)
+    def compute_layer_energy2(cluster):
+        components = tcs[tcs.id.isin(cluster.clusters)]
+        cluster['layer_energy2'] = [np.sum(components[components.layer == layer].energy.values) for layer in em_layers]
+        return cluster
 
+    if 'layer_energy' not in clusters.columns:
+        clusters = clusters.apply(compute_layer_energy2, axis=1)
 
     clusters['ptem'] = clusters.pt/(1+clusters.hoe)
     clusters['eem'] = clusters.energy/(1+clusters.hoe)
