@@ -270,7 +270,7 @@ def get_dr_clusters_mp(cl3ds, tcs, dr_size, pool):
 
     cluster_and_tc_sides = zip(cluster_sides, tc_sides, dr_sizes)
 
-    result_3dcl = pool.map(clAlgo.get_dr_clusters_unpack, cluster_and_tc_sides)
+    result_3dcl = pool.map(clAlgo.get_dr_clusters_unpack2, cluster_and_tc_sides)
     merged_clusters = pd.DataFrame(columns=cl3ds.columns)
     for res3D in result_3dcl:
         merged_clusters = merged_clusters.append(res3D, ignore_index=True, sort=False)
@@ -562,8 +562,9 @@ cl3d_hm_shapeDr = DFCollection(name='HMvDRshapeDr', label='HM #Delta#rho < 0.015
                                                                                 # [1.]*2+[1.6]*2+[1.8]*2+[2.2]*2+[2.6]*2+[3.4]*2+[4.2]*2+[5.]*2+[6.]*2+[7.]*2+[7.2]*2+[7.4]*2+[7.2]*2+[7.]*2+[2.5]*25,
                                                                                 POOL),
                                depends_on=[cl3d_hm, tcs],
-                               debug=0)
-# cl3d_hm_shapeDr.activate()
+                               debug=4,
+                               print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality', 'hwQual']].sort_values(by='pt', ascending=False)[:10])
+
 
 cl3d_hm_calib = DFCollection(name='HMvDRCalib', label='HM calib.',
                              filler_function=lambda event: get_layer_calib_clusters(cl3d_hm.df,
