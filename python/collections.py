@@ -562,7 +562,7 @@ cl3d_hm_shapeDr = DFCollection(name='HMvDRshapeDr', label='HM #Delta#rho < 0.015
                                                                                 # [1.]*2+[1.6]*2+[1.8]*2+[2.2]*2+[2.6]*2+[3.4]*2+[4.2]*2+[5.]*2+[6.]*2+[7.]*2+[7.2]*2+[7.4]*2+[7.2]*2+[7.]*2+[2.5]*25,
                                                                                 POOL),
                                depends_on=[cl3d_hm, tcs],
-                               debug=4,
+                               debug=0,
                                print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality', 'hwQual']].sort_values(by='pt', ascending=False)[:10])
 
 
