@@ -7,7 +7,7 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v101
+  plot_version: v103
   run_clustering: False
   run_density_computation: False
 
@@ -130,6 +130,24 @@ collections:
       # - ttower_genmatched_plotters
     htc_jobflavor:
       tomorrow
+
+
+  single_had_guns_tps:
+    file_label:
+      tps
+    samples:
+      - pion_flat2to100_PU0
+      - pion_flat2to100_PU200
+    plotters:
+      - tp_egm_plotters
+      - tp_genmatched_plotters
+      - genpart_plotters
+      # - ttower_plotters
+      # - ttower_genmatched_plotters
+    htc_jobflavor:
+      tomorrow
+
+
 
   nugun_rate:
     file_label:
