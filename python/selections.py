@@ -87,6 +87,17 @@ tp_pt_selections = [Selection('all', '', ''),
                     Selection('Pt30', 'p_{T}^{L1}>=30GeV', 'pt >= 30')
                     ]
 
+
+tp_pt_selections_ext = [Selection('all', '', ''),
+                        Selection('Pt10', 'p_{T}^{L1}>=10GeV', 'pt >= 10'),
+                        Selection('Pt15', 'p_{T}^{L1}>=15GeV', 'pt >= 15'),
+                        Selection('Pt20', 'p_{T}^{L1}>=20GeV', 'pt >= 20'),
+                        Selection('Pt25', 'p_{T}^{L1}>=25GeV', 'pt >= 25'),
+                        Selection('Pt30', 'p_{T}^{L1}>=30GeV', 'pt >= 30'),
+                        Selection('Pt40', 'p_{T}^{L1}>=40GeV', 'pt >= 40')
+                        ]
+
+
 tp_calib_pt_selections = [Selection('all', '', ''),
                           Selection('Pt10', 'p_{T}^{L1}>=10GeV', 'pt >= 10'),
                           Selection('Pt20', 'p_{T}^{L1}>=20GeV', 'pt >= 20'),
@@ -220,7 +231,7 @@ tkisoeg_selections += add_selections(eg_qual_selections, iso_selections)
 eg_rate_selections = []
 eg_rate_selections += add_selections(eg_qual_selections, tp_eta_selections)
 eg_pt_selections = []
-eg_pt_selections += add_selections(eg_qual_selections, tp_pt_selections)
+eg_pt_selections += add_selections(eg_qual_selections, tp_pt_selections_ext)
 
 tkisoeg_rate_selections = []
 tkisoeg_rate_selections += add_selections(tkisoeg_selections, tp_eta_selections)
@@ -248,7 +259,7 @@ tkeg_rate_selections += add_selections(eg_rate_selections, tkeg_selection)
 tkeg_qual_selections = []
 tkeg_qual_selections += add_selections(eg_qual_selections, tkeg_selection)
 tkeg_pt_selections = []
-tkeg_pt_selections += add_selections(tkeg_qual_selections, tp_pt_selections)
+tkeg_pt_selections += add_selections(tkeg_qual_selections, tp_pt_selections_ext)
 
 # === L1 Track selections ===========================================
 
