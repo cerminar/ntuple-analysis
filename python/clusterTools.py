@@ -425,29 +425,31 @@ def get_cylind_clusters(cl3ds, tcs, cylind_size=[3]*28):
 
         components = components.apply(assign_size, axis=1)
         selected_components = components[components.dist2 < components.clsize**2]
+        # print selected_components.shape
+        if not selected_components.empty:
+            new_cluster = build3D(selected_components, calib_factor=1.).iloc[0]
+            cluster['energy'] = new_cluster.energy
+            cluster['eta'] = new_cluster.eta
+            cluster['phi'] = new_cluster.phi
+            cluster['pt'] = new_cluster.pt
+            cluster['layers'] = new_cluster.layers
+            cluster['clusters'] = new_cluster.clusters
+            cluster['nclu'] = new_cluster.nclu
+            cluster['firstlayer'] = new_cluster.firstlayer
+            cluster['eem'] = new_cluster.eem
+            cluster['ehad'] = new_cluster.ehad
+            cluster['hoe'] = new_cluster.hoe
+            cluster['ptem'] = new_cluster.ptem
 
-        new_cluster = build3D(selected_components, calib_factor=1.).iloc[0]
-        cluster['energy'] = new_cluster.energy
-        cluster['eta'] = new_cluster.eta
-        cluster['phi'] = new_cluster.phi
-        cluster['pt'] = new_cluster.pt
-        cluster['layers'] = new_cluster.layers
-        cluster['clusters'] = new_cluster.clusters
-        cluster['nclu'] = new_cluster.nclu
-        cluster['firstlayer'] = new_cluster.firstlayer
-        cluster['eem'] = new_cluster.eem
-        cluster['ehad'] = new_cluster.ehad
-        cluster['hoe'] = new_cluster.hoe
-        cluster['ptem'] = new_cluster.ptem
+            cluster['layer_energy'] = [[np.sum(selected_components[selected_components.layer == layer].energy) for layer in em_layers]]
+        else:
+            cluster['energy'] = -1
 
-        cluster['layer_energy'] = [[np.sum(selected_components[selected_components.layer == layer].energy) for layer in em_layers]]
         return cluster
 
-
-
-    ret = ret.apply(lambda cl3d : compute_dr_cluster(cl3d, tcs, cylind_size), axis=1)
-
-    return ret
+    ret = ret.apply(lambda cl3d: compute_dr_cluster(cl3d, tcs, cylind_size), axis=1)
+    # print ret.shape
+    return ret[ret.energy != -1]
 
 
 def get_cylind_clusters_unpack(clusters_tcs_cylsize):
@@ -489,29 +491,32 @@ def get_dr_clusters2(cl3ds, tcs, cylind_size=[3]*28):
 
         components = components.apply(assign_size, axis=1)
         selected_components = components[components.dr < components.clsize]
+        if not selected_components.empty:
+            new_cluster = build3D(selected_components, calib_factor=1.).iloc[0]
+            cluster['energy'] = new_cluster.energy
+            cluster['eta'] = new_cluster.eta
+            cluster['phi'] = new_cluster.phi
+            cluster['pt'] = new_cluster.pt
+            cluster['layers'] = new_cluster.layers
+            cluster['clusters'] = new_cluster.clusters
+            cluster['nclu'] = new_cluster.nclu
+            cluster['firstlayer'] = new_cluster.firstlayer
+            cluster['eem'] = new_cluster.eem
+            cluster['ehad'] = new_cluster.ehad
+            cluster['hoe'] = new_cluster.hoe
+            cluster['ptem'] = new_cluster.ptem
 
-        new_cluster = build3D(selected_components, calib_factor=1.).iloc[0]
-        cluster['energy'] = new_cluster.energy
-        cluster['eta'] = new_cluster.eta
-        cluster['phi'] = new_cluster.phi
-        cluster['pt'] = new_cluster.pt
-        cluster['layers'] = new_cluster.layers
-        cluster['clusters'] = new_cluster.clusters
-        cluster['nclu'] = new_cluster.nclu
-        cluster['firstlayer'] = new_cluster.firstlayer
-        cluster['eem'] = new_cluster.eem
-        cluster['ehad'] = new_cluster.ehad
-        cluster['hoe'] = new_cluster.hoe
-        cluster['ptem'] = new_cluster.ptem
+            cluster['layer_energy'] = [[np.sum(selected_components[selected_components.layer == layer].energy) for layer in em_layers]]
+        else:
+            cluster['energy'] = -1
 
-        cluster['layer_energy'] = [[np.sum(selected_components[selected_components.layer == layer].energy) for layer in em_layers]]
         return cluster
 
 
 
     ret = ret.apply(lambda cl3d : compute_dr_cluster(cl3d, tcs, cylind_size), axis=1)
 
-    return ret
+    return ret[ret.energy != -1]
 
 
 
