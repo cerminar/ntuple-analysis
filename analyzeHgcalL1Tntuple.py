@@ -267,19 +267,27 @@ def analyze(params, batch_idx=0):
 
         nev += 1
 
-        # get the interesting data-frames
-        # FIXME: we remove this preselection for now paying the price of reading all branches also
-        # for non interesting events, is this a good idea?
-        # if len(genParts[(genParts.eta > 1.7) & (genParts.eta < 2.5)]) == 0:
-        #     continue
-        ev_manager.read(event, debug)
+        try:
+            ev_manager.read(event, debug)
 
-        puInfo = event.getPUInfo()
-        debugPrintOut(debug, 'PU', toCount=puInfo, toPrint=puInfo)
+            puInfo = event.getPUInfo()
+            debugPrintOut(debug, 'PU', toCount=puInfo, toPrint=puInfo)
 
-        for plotter in plotter_collection:
-            # print plotter
-            plotter.fill_histos(debug=debug)
+            for plotter in plotter_collection:
+                # print plotter
+                plotter.fill_histos(debug=debug)
+
+        except Exception as inst:
+            print ("[EXCEPTION OCCURRED:] --- Event {}, @ {}".format(event.entry(),
+                                                                     datetime.datetime.now()))
+            print ('                       run: {}, lumi: {}, event: {}'.format(event.run(),
+                                                                                event.lumi(),
+                                                                                event.event()))
+            print (str(inst))
+            print ("Unexpected error:", sys.exc_info()[0])
+            traceback.print_exc()
+            sys.exit(200)
+
 
     print ("Processed {} events/{} TOT events".format(nev, ntuple.nevents()))
     print ("Writing histos to file {}".format(params.output_filename))
