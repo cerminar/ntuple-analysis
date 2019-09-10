@@ -803,18 +803,21 @@ class TrackResoHistos(BaseResoHistos):
 class EGResoHistos(BaseResoHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
+
             self.h_ptResVpt = ROOT.TH2F(name+'_ptResVpt', 'EG Pt reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];', 50, 0, 100, 100, -10, 10)
+            self.h_ptRes = ROOT.TH1F(name+'_ptResp', 'EG Pt res.; (p_{T}^{L1}-p_{T}^{GEN})/p_{T}^{GEN}', 100, -1, 1)
 
             self.h_ptResp = ROOT.TH1F(name+'_ptResp', 'EG Pt resp.; p_{T}^{L1}/p_{T}^{GEN}', 100, 0, 3)
             self.h_ptRespVpt = ROOT.TH2F(name+'_ptRespVpt', 'EG Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
             self.h_ptRespVeta = ROOT.TH2F(name+'_ptRespVeta', 'EG Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};', 50, -4, 4, 100, 0, 3)
-            self.h_etaRes = ROOT.TH1F(name+'_etaRes', 'EG eta reso', 100, -0.4, 0.4)
-            self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'EG phi reso', 100, -0.4, 0.4)
-            self.h_drRes = ROOT.TH1F(name+'_drRes', 'EG DR reso', 100, 0, 0.4)
+            self.h_etaRes = ROOT.TH1F(name+'_etaRes', 'EG eta reso; #eta^{L1}-#eta^{GEN}', 100, -0.4, 0.4)
+            self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'EG phi reso; #phi^{L1}-#phi^{GEN}', 100, -0.4, 0.4)
+            self.h_drRes = ROOT.TH1F(name+'_drRes', 'EG DR reso; #DeltaR^{L1}-#DeltaR^{GEN}', 100, 0, 0.1)
 
         BaseResoHistos.__init__(self, name, root_file, debug)
 
     def fill(self, reference, target):
+        self.h_ptRes.Fill((target.pt-reference.pt)/reference.pt)
         self.h_ptResVpt.Fill(reference.pt, target.pt-reference.pt)
         self.h_ptResp.Fill(target.pt/reference.pt)
         self.h_ptRespVeta.Fill(reference.eta, target.pt/reference.pt)
