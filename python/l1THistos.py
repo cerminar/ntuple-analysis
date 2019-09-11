@@ -805,7 +805,7 @@ class EGResoHistos(BaseResoHistos):
         if not root_file:
 
             self.h_ptResVpt = ROOT.TH2F(name+'_ptResVpt', 'EG Pt reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];', 50, 0, 100, 100, -10, 10)
-            self.h_ptRes = ROOT.TH1F(name+'_ptResp', 'EG Pt res.; (p_{T}^{L1}-p_{T}^{GEN})/p_{T}^{GEN}', 100, -1, 1)
+            self.h_ptRes = ROOT.TH1F(name+'_ptRes', 'EG Pt res.; (p_{T}^{L1}-p_{T}^{GEN})/p_{T}^{GEN}', 100, -1, 1)
 
             self.h_ptResp = ROOT.TH1F(name+'_ptResp', 'EG Pt resp.; p_{T}^{L1}/p_{T}^{GEN}', 100, 0, 3)
             self.h_ptRespVpt = ROOT.TH2F(name+'_ptRespVpt', 'EG Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
