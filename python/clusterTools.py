@@ -441,7 +441,7 @@ def get_cylind_clusters(cl3ds, tcs, cylind_size=[3]*28):
             cluster['hoe'] = new_cluster.hoe
             cluster['ptem'] = new_cluster.ptem
 
-            cluster['layer_energy'] = [[np.sum(selected_components[selected_components.layer == layer].energy) for layer in em_layers]]
+            cluster['layer_energy'] = [np.sum(selected_components[selected_components.layer == layer].energy) for layer in em_layers]
         else:
             cluster['energy'] = -1
 
@@ -506,7 +506,7 @@ def get_dr_clusters2(cl3ds, tcs, cylind_size=[3]*28):
             cluster['hoe'] = new_cluster.hoe
             cluster['ptem'] = new_cluster.ptem
 
-            cluster['layer_energy'] = [[np.sum(selected_components[selected_components.layer == layer].energy) for layer in em_layers]]
+            cluster['layer_energy'] = [np.sum(selected_components[selected_components.layer == layer].energy) for layer in em_layers]
         else:
             cluster['energy'] = -1
 
