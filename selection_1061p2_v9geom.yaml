@@ -84,7 +84,7 @@ collections:
       - eg_plotters
       - eg_genmatched_plotters
     htc_jobflavor:
-      workday
+      tomorrow
 
 
   single_empart_tpdebug:
