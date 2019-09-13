@@ -236,7 +236,7 @@ eg_pt_selections += add_selections(eg_qual_selections, tp_pt_selections_ext)
 tkisoeg_rate_selections = []
 tkisoeg_rate_selections += add_selections(tkisoeg_selections, tp_eta_selections)
 tkisoeg_pt_selections = []
-tkisoeg_pt_selections += add_selections(tkisoeg_selections, tp_pt_selections)
+tkisoeg_pt_selections += add_selections(tkisoeg_selections, tp_pt_selections_ext)
 # print 'tkisoeg_rate_selections:'
 # print tkisoeg_rate_selections
 
