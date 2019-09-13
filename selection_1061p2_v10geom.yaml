@@ -7,7 +7,7 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v102
+  plot_version: v106
   run_clustering: False
   run_density_computation: False
 
@@ -104,9 +104,9 @@ collections:
       calibs
     samples:
       - ele_flat2to100_PU0
-      # - ele_flat2to100_PU200
+      - ele_flat2to100_PU200
       - photon_flat8to150_PU0
-      # - photon_flat8to150_PU200
+      - photon_flat8to150_PU200
     plotters:
       - tp_calib_plotters
       # - ttower_plotters
