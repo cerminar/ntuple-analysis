@@ -440,7 +440,7 @@ gen_parts = DFCollection(name='GEN', label='GEN particles',
                          fixture_function=lambda gen_parts: gen_fixtures(gen_parts, gen),
                          depends_on=[gen],
                          debug=0,
-                         print_function=lambda df: df[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'pid', 'gen', 'reachedEE']]
+                         print_function=lambda df: df[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'ovz', 'pid', 'gen', 'reachedEE']]
                          )
 # gen_parts.activate()
 
@@ -481,7 +481,7 @@ cl3d_hm = DFCollection(name='HMvDR', label='HM+dR(layer) Cl3d',
                        fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
                        depends_on=[tcs],
                        debug=0,
-                       print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality', 'hwQual', 'ienergy', 'ipt']])
+                       print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'phi', 'quality', 'hwQual', 'ienergy', 'ipt']].sort_values(by='pt', ascending=False))
 # cl3d_hm.activate()
 
 
@@ -491,6 +491,16 @@ cl3d_hm_emint = DFCollection(name='HMvDREmInt', label='HM+dR(layer) Cl3d EM Int'
                            depends_on=[cl3d_hm],
                            debug=0,
                            print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality', 'hwQual', 'ienergy', 'ipt']])
+
+
+cl3d_hm_emint_merged = DFCollection(name='HMvDREmIntMerged', label='HM+dR(layer) Cl3d EM Int Merged',
+                                    filler_function=lambda event: get_merged_cl3d(cl3d_hm_emint.df[cl3d_hm.df.quality >= 0], POOL),
+                                    # fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
+                                    depends_on=[cl3d_hm_emint],
+                                    debug=0,
+                                    print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality', 'hwQual', 'ienergy', 'ipt']])
+
+
 
 # cl3d_hm_emint.activate()
 
@@ -763,3 +773,4 @@ tp_hm_vdr_stc = TPSet(tcs, tcs, cl3d_hm_stc)
 tp_hm_vdr_nc0 = TPSet(tcs, tcs, cl3d_hm_nc0)
 tp_hm_vdr_nc1 = TPSet(tcs, tcs, cl3d_hm_nc1)
 tp_hm_vdr_merged = TPSet(tcs, tcs, cl3d_hm_merged)
+tp_hm_emint_merged = TPSet(tcs, tcs, cl3d_hm_emint_merged)

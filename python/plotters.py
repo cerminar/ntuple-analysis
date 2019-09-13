@@ -1004,6 +1004,7 @@ tp_plotters = [
                TPPlotter(collections.tp_hm_vdr, selections.tp_id_selections),
                # TPPlotter(collections.tp_hm_fixed, selections.tp_id_selections),
                TPPlotter(collections.tp_hm_emint, selections.tp_id_selections),
+               TPPlotter(collections.tp_hm_emint_merged, selections.tp_id_selections),
                # TPPlotter(collections.tp_hm_cylind10, selections.tp_id_selections),
                TPPlotter(collections.tp_hm_cylind5, selections.tp_id_selections),
                # TPPlotter(collections.tp_hm_cylind2p5, selections.tp_id_selections),
