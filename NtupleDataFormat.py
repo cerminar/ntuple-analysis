@@ -144,14 +144,15 @@ class Event(object):
         return "%d:%d:%d" % self.eventId()
 
     def getDataFrame(self, prefix):
-        branch_blacklist = ['tc_wafer', 'tc_cell']
+        # print prefix
+        branch_blacklist = ['tc_wafer', 'tc_cell', 'tc_waferu', 'tc_waferv', 'tc_cellu', 'tc_cellv']
 
         df = pd.DataFrame()
         branches = [br.GetName() for br in self._tree.GetListOfBranches() if (
             br.GetName().startswith(prefix+'_') and not br.GetName() == '{}_n'.format(prefix))]
         if len(branches) == 0:
             return df
-            
+
         names = ['_'.join(br.split('_')[1:]) for br in branches]
         nd_array = rnp.tree2array(self._tree, branches=branches,
                                   start=self._entry, stop=self._entry+1, cache_size=400000000)
