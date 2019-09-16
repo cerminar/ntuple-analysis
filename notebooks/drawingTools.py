@@ -19,6 +19,47 @@ ROOT.gStyle.SetPadRightMargin(0.13)
 # ROOT.gStyle.SetCanvasColor(0)
 
 
+def DrawPrelimLabel(canvas):
+    canvas.cd()
+    tex = ROOT.TLatex()
+    global stuff
+    stuff.append(tex)
+    tex.SetTextSize(0.03)
+    tex.DrawLatexNDC(0.13,0.91,"#scale[1.5]{CMS Simulation Preliminary }")
+    tex.Draw("same");
+    return
+
+
+# void DrawLumiLabel(TCanvas* c, TString Lumi = "35.9")
+# {
+#   c->cd();
+
+#   TLatex tex;
+#   tex.SetTextSize(0.035);
+#   TString toDisplay = Lumi + " fb^{-1} (13 TeV)";
+#   tex.DrawLatexNDC(0.66,0.91,toDisplay.Data());
+#   tex.Draw("same");
+
+#   return;
+# }
+
+
+def SaveCanvas(canvas, name):
+    canvas.cd()
+    canvas.SaveAs(name+'.pdf')
+
+
+# void SaveCanvas(TCanvas* c, TString PlotName = "myPlotName")
+# {
+#   c->cd();
+#   c->SaveAs(PlotName + ".pdf");
+#   c->SaveAs(PlotName + ".root");
+
+#   return;
+# }
+
+
+
 def getText(text, ndc_x, ndc_y):
     global stuff
     rtext = ROOT.TLatex(ndc_x, ndc_y, text)
@@ -91,6 +132,8 @@ def draw(histograms,
          logy=False,
          min_y=None,
          max_y=None,
+         min_x=None,
+         max_x=None,
          text=None,
          y_axis_label=None,
          x_axis_label=None,
@@ -98,7 +141,9 @@ def draw(histograms,
          h_lines=None,
          do_stats=False,
          do_profile=False,
-         do_ratio=False):
+         do_ratio=False,
+         do_write=False,
+         write_name=None):
     global colors
     global stuff
     global p_idx
@@ -129,6 +174,8 @@ def draw(histograms,
     c_width = 800
     c_height = 600
     # do_ratio = False
+    if do_write:
+        c_width = 600
 
     if do_ratio:
         c_height = 800
@@ -145,10 +192,14 @@ def draw(histograms,
                        xdiv=int(xdiv),
                        ydiv=int(ydiv))
     if overlay:
-        canvas.SetRightMargin(0.30)
+        if not do_write:
+            canvas.SetRightMargin(0.30)
+
 
     canvas.cd()
     leg = getLegend()
+    if do_write:
+        leg = getLegend(0.6, 0.7, 0.86, 0.8)
 
     drawn_histos = []
     # drawn_histos = histograms
@@ -156,6 +207,7 @@ def draw(histograms,
         opt = options
         if 'TGraph' not in histo_class:
             hist.SetStats(do_stats)
+            hist.SetTitle("")
         else:
             opt = 'P'+options
             hist.SetMarkerSize(3)
@@ -164,8 +216,8 @@ def draw(histograms,
             hist.SetLineColor(colors[hidx])
             if 'TGraph' in histo_class:
                 hist.SetMarkerColor(colors[hidx])
-                # hist.SetMarkerSize(3)
-                # hist.SetMarkerStyle(7)
+#                 hist.SetMarkerSize(3)
+#                 hist.SetMarkerStyle(7)
 
             if hidx:
                 opt = 'same,'+opt
@@ -238,6 +290,9 @@ def draw(histograms,
             hist.GetYaxis().SetTitle(y_axis_label)
         if x_axis_label:
             hist.GetXaxis().SetTitle(x_axis_label)
+        if min_x and max_x:
+            hist.GetXaxis().SetRangeUser(min_x, max_x)
+
 
     canvas.Draw()
 
@@ -272,8 +327,16 @@ def draw(histograms,
                 ROOT.gPad.SetLogy()
 
         ROOT.gPad.Update()
+
+
+
     canvas.Update()
+    if(do_write):
+        DrawPrelimLabel(canvas)
+
     canvas.Draw()
+    if(do_write):
+        SaveCanvas(canvas, write_name)
 
     return canvas
 
