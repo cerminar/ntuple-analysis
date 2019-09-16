@@ -859,7 +859,7 @@ class CalibrationHistos(BaseHistos):
         if not root_file:
             # self.data = []
             # self.reference = []
-            self.t_values = ROOT.TNtuple(name+"_calib", name+"_calib", 'e1:e3:e5:e7:e9:e11:e13:e15:e17:e19:e21:e23:e25:e27:Egen:eta')
+            self.t_values = ROOT.TNtuple(name+"_calib", name+"_calib", 'e1:e3:e5:e7:e9:e11:e13:e15:e17:e19:e21:e23:e25:e27:Egen:eta:pt')
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, reference, target):
@@ -869,7 +869,8 @@ class CalibrationHistos(BaseHistos):
         energy_fill = []
         energy_fill.extend(target.iloc[0]['layer_energy'])
         energy_fill.append(reference.energy)
-        energy_fill.append(reference.eta)
+        energy_fill.append(target.eta)
+        energy_fill.append(target.pt)
         self.t_values.Fill(array('f', energy_fill))
 
     def write(self):
