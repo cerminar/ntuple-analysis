@@ -394,6 +394,9 @@ def sum3DClusters(components):
     ret['n025'] = len(components[components.pt > 0.25])
     ret['quality'] = [np.max(components.quality)]
     ret['bdt_out'] = [0]
+    # print components.layer_energy
+    ret['layer_energy'] = [np.sum(components.layer_energy.values.tolist(), axis=0)]
+    # print ret['layer_energy']
     # print '-------- merged:'
     # print components.sort_values(by='pt', ascending=False)
     # print '   - merged sum:'
