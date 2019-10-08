@@ -138,6 +138,7 @@ def tkeg_fromcluster_fixture(tkegs):
 
 
 def cl3d_fixtures(clusters, tcs):
+    # print clusters.columns
     # for backward compatibility
     clusters.rename(columns={'clusters_id': 'clusters',
                              'clusters_n': 'nclu'},
@@ -279,10 +280,9 @@ def get_dr_clusters_mp(cl3ds, tcs, dr_size, pool):
 
 def get_emint_clusters(triggerClusters):
     clusters_emint = triggerClusters.copy(deep=True)
-
     def interpret(cluster):
-        cluster.energy = cluster.ienergy[0]
-        cluster.pt = cluster.ipt[0]
+        cluster.energy = cluster.ienergy[-1]
+        cluster.pt = cluster.ipt[-1]
         return cluster
 
     clusters_emint = clusters_emint.apply(interpret, axis=1)
@@ -490,7 +490,7 @@ cl3d_hm_emint = DFCollection(name='HMvDREmInt', label='HM+dR(layer) Cl3d EM Int'
                            # fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
                            depends_on=[cl3d_hm],
                            debug=0,
-                           print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality', 'hwQual', 'ienergy', 'ipt']])
+                           print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality', 'hwQual', 'ienergy', 'ipt']].sort_values(by='pt', ascending=False)[:10])
 
 
 cl3d_hm_emint_merged = DFCollection(name='HMvDREmIntMerged', label='HM+dR(layer) Cl3d EM Int Merged',
@@ -499,8 +499,6 @@ cl3d_hm_emint_merged = DFCollection(name='HMvDREmIntMerged', label='HM+dR(layer)
                                     depends_on=[cl3d_hm_emint],
                                     debug=0,
                                     print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality', 'hwQual', 'ienergy', 'ipt']])
-
-
 
 # cl3d_hm_emint.activate()
 
@@ -660,7 +658,9 @@ towers_wafer = DFCollection(name='WaferTT', label='TT (Wafer)',
                             fixture_function=tower_fixtures)
 
 egs = DFCollection(name='EG', label='EG',
-                   filler_function=lambda event: event.getDataFrame(prefix='egammaEE'))
+                   filler_function=lambda event: event.getDataFrame(prefix='egammaEE'),
+                   print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
+                   debug=0)
 
 tracks = DFCollection(name='L1Trk', label='L1Track',
                       filler_function=lambda event: event.getDataFrame(prefix='l1track'), debug=0)
