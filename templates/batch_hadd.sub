@@ -11,5 +11,9 @@ transfer_input_files  = TEMPL_TASKDIR/copy_files.sh
 +PostCmd              = "copy_files.sh"
 +PostArguments        = "$(ClusterID) $(JOB_ID) false"
 
++AccountingGroup = "group_u_CMST3.all"
+
+
+
 transfer_output_files   = ""
 queue
