@@ -93,9 +93,11 @@ class RatePlotter(BasePlotter):
                 sel_clusters = self.tp_set.df.query(selection.selection)
             else:
                 sel_clusters = self.tp_set.df
+            # print sel_clusters
             trigger_clusters = sel_clusters[['pt', 'eta']].sort_values(by='pt',
                                                                        ascending=False)
             # print trigger_clusters[:5]
+
             if not trigger_clusters.empty:
                 # print trigger_clusters.iloc[0]
                 self.h_rate[selection.name].fill(trigger_clusters.iloc[0].pt,
@@ -1049,7 +1051,8 @@ rate_plotters = [
 eg_rate_plotters = [RatePlotter(collections.egs, selections.eg_rate_selections),
                     # RatePlotter(collections.tkegs, selections.tkeg_rate_selections),
                     RatePlotter(collections.tkeles, selections.tkisoeg_rate_selections),
-                    RatePlotter(collections.tkisoeles, selections.tkisoeg_rate_selections),
+                    RatePlotter(collections.tkelesEL, selections.tkisoeg_rate_selections),
+                    # RatePlotter(collections.tkisoeles, selections.tkisoeg_rate_selections),
                     ]
 
 tp_genmatched_debug = [TPGenMatchPlotterDebugger(collections.tp_def, collections.gen_parts, collections.gen,
@@ -1214,9 +1217,12 @@ eg_genmatched_plotters = [EGGenMatchPlotter(collections.egs, collections.gen_par
                           EGGenMatchPlotter(collections.tkeles, collections.gen_parts,
                                             selections.tkisoeg_pt_selections,
                                             selections.gen_part_selections),
-                          TPGenMatchPlotter(collections.tp_hm_emint_merged, collections.gen_parts,
-                                            selections.tp_match_selections,
+                          EGGenMatchPlotter(collections.tkelesEL, collections.gen_parts,
+                                            selections.tkisoeg_pt_selections,
                                             selections.gen_part_selections),
+                          # TPGenMatchPlotter(collections.tp_hm_emint_merged, collections.gen_parts,
+                          #                   selections.tp_match_selections,
+                          #                   selections.gen_part_selections),
                           # EGGenMatchPlotter(collections.tkisoeles, collections.gen_parts,
                           #                   selections.tkisoeg_pt_selections,
                           #                   selections.gen_part_selections),
