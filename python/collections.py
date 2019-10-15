@@ -671,11 +671,11 @@ tracks_emu = DFCollection(name='L1TrkEmu', label='L1Track EMU',
 
 tkeles = DFCollection(name='TkEle', label='TkEle',
                       filler_function=lambda event: event.getDataFrame(prefix='tkEle'),
-                      debug=4)
+                      debug=0)
 
 tkelesEL = DFCollection(name='TkEleEL', label='TkEle ELLIPTIC',
                         filler_function=lambda event: event.getDataFrame(prefix='tkEleEl'),
-                        debug=4)
+                        debug=0)
 
 tkisoeles = DFCollection(name='TkIsoEle', label='TkIsoEle',
                          filler_function=lambda event: event.getDataFrame(prefix='tkIsoEle'))
