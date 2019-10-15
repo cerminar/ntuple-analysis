@@ -7,10 +7,12 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v110
+  plot_version: v111
   run_clustering: False
   run_density_computation: False
 
+# +AccountingGroup = "group_u_CMS.u_zh.users"
+# +AccountingGroup = "group_u_CMST3.all"
 
 collections:
   test_guns_tps:
@@ -18,10 +20,12 @@ collections:
       tps
     samples:
       - test_photons_PU0
+      - test_ele_PU0
     plotters:
+      - eg_genmatched_plotters
       # - tp_egm_plotters
       # - tp_genmatched_plotters
-      - genpart_plotters
+      # - genpart_plotters
       # - ttower_plotters
       # - ttower_genmatched_plotters
     htc_jobflavor:
@@ -213,20 +217,20 @@ samples:
     events_per_job : 200
 
   ele_flat2to100_PU0:
-    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v37/191008_070331/0000/
+    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v39/191014_092954/0000/
     events_per_job : 500
     # gen_selections: !!python/name:python.selections.genpart_photon_selections
 
   ele_flat2to100_PU200:
-    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU200_v37/191008_070728/0000/
+    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU200_v39/191014_093100/0000/
     events_per_job : 200
 
   photon_flat8to150_PU0:
-    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU0_v37/191008_071008/0000/
+    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU0_v39/191014_093204/0000/
     events_per_job : 500
 
   photon_flat8to150_PU200:
-    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU200_v37/191007_170458/0000/
+    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU200_v39/191014_093309/0000/
     events_per_job : 200
 
   pion_flat2to100_PU0:
@@ -242,7 +246,7 @@ samples:
     events_per_job: 500
 
   nugun_alleta_pu200:
-    input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v37/191008_071434/0000/
+    input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v39/191014_093411/0000/
     events_per_job: 200
 
 
@@ -261,4 +265,8 @@ samples:
 
   test_photons_PU0:
     input_sample_dir: test/
+    events_per_job: 200
+
+  test_ele_PU0:
+    input_sample_dir: test_ele_pu0/
     events_per_job: 200
