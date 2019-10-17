@@ -698,7 +698,7 @@ tkegs_emu = DFCollection(name='TkEGEmu', label='TkEG Emu',
 
 tkeles_brl = DFCollection(name='TkEleBRL', label='TkEle B',
                           filler_function=lambda event: event.getDataFrame(prefix='tkEleBARREL'),
-                          debug=4)
+                          debug=0)
 
 tkelesEL_brl = DFCollection(name='TkEleELBRL', label='TkEle ELLIPTIC B',
                             filler_function=lambda event: event.getDataFrame(prefix='tkEleElBARREL'),
