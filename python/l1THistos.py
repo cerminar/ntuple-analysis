@@ -170,6 +170,7 @@ class GenParticleHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_eta = ROOT.TH1F(name+'_eta', 'Gen Part eta; #eta^{GEN};', 50, -3, 3)
+            self.h_abseta = ROOT.TH1F(name+'_abseta', 'Gen Part |eta|; |#eta^{GEN}|;', 16, 1.4, 3)
             self.h_pt = ROOT.TH1F(name+'_pt', 'Gen Part P_{T} (GeV); p_{T}^{GEN} [GeV];', 50, 0, 100)
             self.h_energy = ROOT.TH1F(name+'_energy', 'Gen Part Energy (GeV); E [GeV];', 100, 0, 1000)
             self.h_reachedEE = ROOT.TH1F(name+'_reachedEE', 'Gen Part reachedEE', 4, 0, 4)
@@ -178,6 +179,7 @@ class GenParticleHistos(BaseHistos):
 
     def fill(self, particles):
         rnp.fill_hist(self.h_eta, particles.eta)
+        rnp.fill_hist(self.h_abseta, particles.eta.abs())
         rnp.fill_hist(self.h_pt, particles.pt)
         rnp.fill_hist(self.h_energy, particles.energy)
         rnp.fill_hist(self.h_reachedEE, particles.reachedEE)
