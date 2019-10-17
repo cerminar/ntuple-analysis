@@ -91,18 +91,6 @@ collections:
       tomorrow
 
 
-  single_empart_tpdebug:
-    file_label:
-      tpdebug
-    samples:
-      - all_flat5to80_PU0
-      - all_flat5to80_PU200
-    plotters:
-      - tp_genmatched_debug
-    htc_jobflavor:
-      workday
-
-
   single_empart_guns_calibs:
     file_label:
       calibs
