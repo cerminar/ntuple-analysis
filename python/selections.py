@@ -72,6 +72,15 @@ def add_selections(list1, list2):
     return ret
 
 
+def prune(selection_list):
+    sel_names = set()
+    ret = []
+    for sel in selection_list:
+        if sel.name not in sel_names:
+            sel_names.add(sel.name)
+            ret.append(sel)
+    return ret
+
 # TP selections
 tp_id_selections = [
                     Selection('all', '', ''),
@@ -145,8 +154,9 @@ gen_eta_selections = [
                       # Selection('EtaBCDE', '1.52 < |#eta^{GEN}|', '1.52 < abs(eta)')
                       ]
 
+gen_eta_barrel_selections = [Selection('EtaF', '|#eta^{GEN}| <= 1.47', 'abs(eta) <= 1.47')]
 
-gen_pt_selections = [Selection('Pt10', 'p_{T}^{GEN}>=10GeV', 'pt >= 10'),
+gen_pt_selections = [Selection('Pt15', 'p_{T}^{GEN}>=15GeV', 'pt >= 15'),
                      Selection('Pt20', 'p_{T}^{GEN}>=20GeV', 'pt >= 20'),
                      Selection('Pt30', 'p_{T}^{GEN}>=30GeV', 'pt >= 30'),
                      Selection('Pt40', 'p_{T}^{GEN}>=40GeV', 'pt >= 40')]
@@ -167,7 +177,7 @@ gen_part_fbrem_selection = [Selection('all', '', ''),
 gen_part_ee_sel = add_selections(gen_selections, gen_ee_selections)
 gen_part_ee_pt_sel = add_selections(gen_part_ee_sel, gen_pt_selections)
 gen_part_ee_eta_sel = add_selections(gen_part_ee_sel, gen_eta_selections)
-gen_part_ee_eta_sel = add_selections(gen_part_ee_eta_sel, gen_part_fbrem_selection)
+# gen_part_ee_eta_sel = add_selections(gen_part_ee_eta_sel, gen_part_fbrem_selection)
 
 gen_part_selections_debug = []
 gen_part_selections_debug = add_selections(gen_part_ee_sel, [Selection('EtaBCD', '1.52 < |#eta^{GEN}| <= 2.8', '1.52 < abs(eta) <= 2.8')])
@@ -178,6 +188,12 @@ gen_part_selections += gen_part_ee_sel
 gen_part_selections += gen_part_ee_pt_sel
 gen_part_selections += gen_part_ee_eta_sel
 
+gen_part_barrel_selections = []
+gen_part_barrel_selections += gen_selections
+gen_part_barrel_selections += add_selections(gen_selections, gen_pt_selections)
+gen_part_barrel_selections += add_selections(gen_selections, gen_eta_barrel_selections)
+
+
 gen_part_selections_calib = []
 gen_part_selections_calib += gen_part_ee_sel
 gen_part_selections_calib += gen_part_ee_eta_sel
@@ -185,6 +201,7 @@ gen_part_selections_calib += add_selections([gen_part_ee_eta_sel[1]], gen_pt_sel
 # gen_part_selections_calib += gen_part_ee_eta_sel
 
 
+gen_part_selections_tketa = [gen_sel for gen_sel in gen_part_selections if 'EtaD' not in gen_sel.name]
 
 print 'gen_part_selections: {}'.format(len(gen_part_selections))
 
@@ -217,11 +234,12 @@ eg_qual_selections = [
                       # Selection('EGq1', 'q1', 'hwQual > 0'),
                       Selection('EGq2', 'hwQual 2', 'hwQual == 2'),
                       Selection('EGq3', 'hwQual 3', 'hwQual == 3'),
-                      Selection('EGq4', 'hwQual 4', 'hwQual == 4')]
+                      Selection('EGq4', 'hwQual 4', 'hwQual == 4'),
+                      Selection('EGq5', 'hwQual 5', 'hwQual == 5')]
 
 iso_selections = [Selection('all'),
                   Selection('Iso0p2', 'Iso0p2', 'tkIso <= 0.2'),
-                  Selection('Iso0p3', 'Iso0p3', 'tkIso <= 0.3'), ]
+                  Selection('Iso0p1', 'Iso0p1', 'tkIso <= 0.1'), ]
 
 
 tkisoeg_selections = []
@@ -233,12 +251,23 @@ eg_rate_selections += add_selections(eg_qual_selections, tp_eta_selections)
 eg_pt_selections = []
 eg_pt_selections += add_selections(eg_qual_selections, tp_pt_selections_ext)
 
+eg_pt_selections_barrel = []
+eg_pt_selections_barrel += add_selections([Selection('all')], tp_pt_selections_ext)
+
+
+
 tkisoeg_rate_selections = []
 tkisoeg_rate_selections += add_selections(tkisoeg_selections, tp_eta_selections)
 tkisoeg_pt_selections = []
-tkisoeg_pt_selections += add_selections(tkisoeg_selections, tp_pt_selections_ext)
+tkisoeg_pt_selections += add_selections(eg_qual_selections, tp_pt_selections_ext)
+tkisoeg_pt_selections += tkisoeg_selections
+tkisoeg_pt_selections = prune(tkisoeg_pt_selections)
+
 # print 'tkisoeg_rate_selections:'
 # print tkisoeg_rate_selections
+tkisoeg_pt_selections_barrel = []
+tkisoeg_pt_selections_barrel += tp_pt_selections_ext
+tkisoeg_pt_selections_barrel += [Selection('Iso0p1', 'Iso0p1', 'tkIso <= 0.1'), ]
 
 
 tkeg_selection = [Selection('all'),
@@ -275,4 +304,10 @@ tracks_selections += add_selections(tracks_quality_sels, tracks_pt_sels)
 
 if __name__ == "__main__":
     for sel in gen_part_selections:
+        print sel
+    for sel in eg_pt_selections:
+        print sel.name
+    for sel in tkisoeg_pt_selections:
+        print sel
+    for sel in gen_part_selections_tketa:
         print sel

@@ -696,7 +696,13 @@ tkegs_emu = DFCollection(name='TkEGEmu', label='TkEG Emu',
                          filler_function=lambda event: get_trackmatched_egs(egs=egs.df, tracks=tracks_emu.df),
                          depends_on=[egs, tracks_emu])
 
+tkeles_brl = DFCollection(name='TkEleBRL', label='TkEle B',
+                          filler_function=lambda event: event.getDataFrame(prefix='tkEleBARREL'),
+                          debug=4)
 
+tkelesEL_brl = DFCollection(name='TkEleELBRL', label='TkEle ELLIPTIC B',
+                            filler_function=lambda event: event.getDataFrame(prefix='tkEleElBARREL'),
+                            debug=0)
 
 class TPSet:
     """
