@@ -155,6 +155,7 @@ gen_eta_selections = [
                       ]
 
 gen_eta_barrel_selections = [Selection('EtaF', '|#eta^{GEN}| <= 1.47', 'abs(eta) <= 1.47')]
+eta_barrel_selections = [Selection('all'), Selection('EtaF', '|#eta^{L1}| <= 1.47', 'abs(eta) <= 1.47')]
 
 gen_pt_selections = [Selection('Pt15', 'p_{T}^{GEN}>=15GeV', 'pt >= 15'),
                      Selection('Pt20', 'p_{T}^{GEN}>=20GeV', 'pt >= 20'),
@@ -303,11 +304,13 @@ tracks_selections += add_selections(tracks_quality_sels, tracks_pt_sels)
 
 
 if __name__ == "__main__":
-    for sel in gen_part_selections:
-        print sel
-    for sel in eg_pt_selections:
-        print sel.name
-    for sel in tkisoeg_pt_selections:
-        print sel
-    for sel in gen_part_selections_tketa:
+    # for sel in gen_part_selections:
+    #     print sel
+    # for sel in eg_pt_selections:
+    #     print sel.name
+    # for sel in tkisoeg_pt_selections:
+    #     print sel
+    # for sel in gen_part_selections_tketa:
+    #     print sel
+    for sel in eg_rate_selections:
         print sel

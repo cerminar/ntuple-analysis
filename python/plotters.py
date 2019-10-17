@@ -1052,6 +1052,8 @@ eg_rate_plotters = [RatePlotter(collections.egs, selections.eg_rate_selections),
                     # RatePlotter(collections.tkegs, selections.tkeg_rate_selections),
                     RatePlotter(collections.tkeles, selections.tkisoeg_rate_selections),
                     RatePlotter(collections.tkelesEL, selections.tkisoeg_rate_selections),
+                    RatePlotter(collections.tkeles_brl, selections.eta_barrel_selections),
+                    RatePlotter(collections.tkelesEL_brl, selections.eta_barrel_selections),
                     # RatePlotter(collections.tkisoeles, selections.tkisoeg_rate_selections),
                     ]
 
