@@ -88,6 +88,45 @@ class BaseHistos():
         return '<{} {}>'.format(self.__class__.__name__, self.name_)
 
 
+class GraphBuilder:
+    def __init__(self, h_obj, h_name):
+        self.h_obj = h_obj
+        self.h_name = h_name
+
+    def get_graph(self, name, title, x, y, ex_l, ex_h, ey_l, ey_h):
+        global stuff
+        ret = ROOT.TGraphAsymmErrors()
+        stuff.append(ret)
+        ret.SetName(name)
+        ret.SetTitle(title)
+        ret.Set(len(x))
+        for idx in range(0, len(x)):
+            ret.SetPoint(idx, x[idx], y[idx])
+            ret.SetPointError(idx, ex_l[idx], ex_h[idx], ey_l[idx], ey_h[idx])
+            ret.SetMarkerStyle(2)
+        return ret
+
+    def __call__(self, name, title, function):
+        h2d = getattr(self.h_obj, self.h_name)
+        x, y, ex_l, ex_h, ey_l, ey_h = function(h2d)
+        h_title_parts = h2d.GetTitle().split(';')
+        g_title = '{};; {}'.format(h_title_parts[0], title)
+        if len(h_title_parts) == 2:
+            g_title = '{}; {}; {}'.format(h_title_parts, title)
+        elif len(h_title_parts) == 3:
+            g_title += '{}; {}; {} ({})'.format(h_title_parts[:2], title, h_title_parts[2])
+
+        graph = self.get_graph('{}_{}'.format(h2d.GetName(), name),
+                               g_title, x, y, ex_l, ex_h, ey_l, ey_h)
+        g_attr_name = 'g_{}_{}'.format(self.h_name.split('h_')[1], name)
+        setattr(self.h_obj, g_attr_name, graph)
+        return graph
+
+    def Write(self):
+        return
+
+
+
 class BaseResoHistos(BaseHistos):
     """ Base class for resolution histogram classes.
 
@@ -110,45 +149,8 @@ class BaseResoHistos(BaseHistos):
         if root_file is not None or True:
             # print dir(self)
             for attr_2d in [attr for attr in dir(self) if (attr.startswith('h_') and 'TH2' in getattr(self, attr).ClassName())]:
-                setattr(self, attr_2d+'_graph',
-                        self.GraphBuilder(self, attr_2d))
+                setattr(self, attr_2d+'_graph', GraphBuilder(self, attr_2d))
 
-    class GraphBuilder:
-        def __init__(self, h_obj, h_name):
-            self.h_obj = h_obj
-            self.h_name = h_name
-
-        def get_graph(self, name, title, x, y, ex_l, ex_h, ey_l, ey_h):
-            global stuff
-            ret = ROOT.TGraphAsymmErrors()
-            stuff.append(ret)
-            ret.SetName(name)
-            ret.SetTitle(title)
-            ret.Set(len(x))
-            for idx in range(0, len(x)):
-                ret.SetPoint(idx, x[idx], y[idx])
-                ret.SetPointError(idx, ex_l[idx], ex_h[idx], ey_l[idx], ey_h[idx])
-                ret.SetMarkerStyle(2)
-            return ret
-
-        def __call__(self, name, title, function):
-            h2d = getattr(self.h_obj, self.h_name)
-            x, y, ex_l, ex_h, ey_l, ey_h = function(h2d)
-            h_title_parts = h2d.GetTitle().split(';')
-            g_title = '{};; {}'.format(h_title_parts[0], title)
-            if len(h_title_parts) == 2:
-                g_title = '{}; {}; {}'.format(h_title_parts, title)
-            elif len(h_title_parts) == 3:
-                g_title += '{}; {}; {} ({})'.format(h_title_parts[:2], title, h_title_parts[2])
-
-            graph = self.get_graph('{}_{}'.format(h2d.GetName(), name),
-                                   g_title, x, y, ex_l, ex_h, ey_l, ey_h)
-            g_attr_name = 'g_{}_{}'.format(self.h_name.split('h_')[1], name)
-            setattr(self.h_obj, g_attr_name, graph)
-            return graph
-
-        def Write(self):
-            return
 
 
 class GenPartHistos(BaseHistos):
@@ -205,8 +207,13 @@ class RateHistos(BaseHistos):
             self.h_pt = ROOT.TH1F(name+'_pt', 'rate above p_{T} thresh.; p_{T} [GeV]; rate [kHz];', 100, 0, 100)
             self.h_ptVabseta = ROOT.TH2F(name+'_ptVabseta', 'Candidate p_{T} vs |#eta|; |#eta|; p_{T} [GeV];', 34, 1.4, 3.1, 100, 0, 100)
 
-            # self.h_simenergy = ROOT.TH1F(name+'_energy', 'Digi sim-energy (GeV)', 100, 0, 2)
         BaseHistos.__init__(self, name, root_file, debug)
+
+        if root_file is not None or True:
+            for attr_1d in [attr for attr in dir(self) if (attr.startswith('h_') and 'TH1' in getattr(self, attr).ClassName())]:
+                setattr(self, attr_1d+'_graph', GraphBuilder(self, attr_1d))
+
+            # self.h_simenergy = ROOT.TH1F(name+'_energy', 'Digi sim-energy (GeV)', 100, 0, 2)
 
     def fill(self, pt, eta):
         for ptf in range(0, int(pt)+1):

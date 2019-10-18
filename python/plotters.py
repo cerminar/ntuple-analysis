@@ -45,15 +45,21 @@ class BasePlotter(object):
         return self.data_selections
 
     def get_histo_primitives(self):
-        histo_primitives = pd.DataFrame(columns=['data', 'data_sel', 'gen_sel'])
+        histo_primitives = pd.DataFrame(columns=['data', 'data_sel', 'gen_sel', 'data_label', 'data_sel_label', 'gen_sel_label'])
         gen_sel_names = ['nomatch']
+        gen_sel_labels = ['']
         if self.gen_selections is not None:
             gen_sel_names = [sel.name for sel in self.gen_selections]
+            gen_sel_labels = [sel.label for sel in self.gen_selections]
+
         for data_sel in self.data_selections:
-            for gen_sel_name in gen_sel_names:
+            for idx,gen_sel_name in enumerate(gen_sel_names):
                 histo_primitives = histo_primitives.append({'data': self.data_set.name,
                                                             'data_sel': data_sel.name,
-                                                            'gen_sel': gen_sel_name},
+                                                            'gen_sel': gen_sel_name,
+                                                            'data_label': self.data_set.label,
+                                                            'data_sel_label': data_sel.label,
+                                                            'gen_sel_label': gen_sel_labels[idx]},
                                                            ignore_index=True)
         return histo_primitives
 

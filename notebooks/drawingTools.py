@@ -299,7 +299,8 @@ def draw(histograms,
     # we draw additional stuff if needed
     if overlay:
         canvas.cd()
-        leg.Draw()
+        if len(labels) > 1:
+            leg.Draw()
         if text:
             rtext = getText(text, 0.15, 0.85)
             rtext.Draw("same")
@@ -376,11 +377,14 @@ class Sample():
         else:
             version = ''
         self.histo_filename = '../plots1/histos_{}{}.root'.format(self.name, version)
-        self.histo_file = ROOT.TFile(self.histo_filename, 'r')
+        self.histo_file = None
         self.type = type
 
     def __repr__(self):
         return '<{} {}, {}>'.format(self.__class__.__name__, self.histo_filename, self.type)
+
+    def open_file(self):
+        self.histo_file = ROOT.TFile(self.histo_filename, 'r')
 
 # sample_names = ['ele_flat2to100_PU0',
 #                 'ele_flat2to100_PU200',

@@ -1,126 +1,96 @@
-# %load settings.py
-# from samples import get_label_dict
+# === samples =====================================================
 import python.selections as selections
 import python.collections as collections
 
 import pprint
 
 
-
-def get_label_dict(selections):
-    dictionary = {}
-    for sel in selections:
-        dictionary[sel.name] = sel.label
-    return dictionary
-
-
-
-# === samples =====================================================
 samples = []
 
-samples = samples_ele_V8
-samples += samples_ele_V9
+# samples += samples_nugunrates
+# samples += samples_nugunrates_V8
+samples += samples_nugunrates_V9
+
+for smp in samples:
+    smp.open_file()
 
 
-sample = 'V9'
+sample = 'new-ID'
 
 do_rate = True
 
 # === TP ==========================================================
-# tps = ['EG', 'TkEG', 'TkEle', 'TkIsoEle']
-tps = ['DEF', 'HMvDR', 'HMvDRRebin', 'HMvDRsTC', 'HMvDRTrue']
+# tps = ['HMvDR', 'EG', 'TkEG', 'TkEle', 'TkIsoEle']
+# tps = ['HMvDR',
+#        'EG',
+#        'TkEG',
+#        'TkEle',
+#        'TkIsoEle',
+#        'HMvDR',
+#        'HMvDRCalib',
+#        'HMvDRcylind5Calib',
+#        'HMvDRcylind2p5Calib',
+#        'HMvDRshapeCalib',
+#        'HMvDRshapeDrCalib',
+#        'HMvDRCalibMerged',
+#        'HMvDRshapeCalibMerged']
 
+tps = [
+#     'HMvDR',
+#        'HMvDRCalib',
+#        'HMvDRcylind5Calib',
+#        'HMvDRcylind2p5Calib',
+#        'HMvDRshapeCalib',
+#        'HMvDRshapeDrCalib',
+#        'HMvDREmInt',
+#        'HMvDREmIntMerged',
+       'EG',
+       'TkEle',
+       'TkEleEL',
+
+#        'HMvDRCalibMerged',
+#        'HMvDRshapeCalibMerged'
+      ]
+
+# === Load the Histo Primitives ====================================
+histo_primitives = pd.DataFrame()
+
+if do_rate:
+    from python.plotters import rate_plotters, eg_rate_plotters
+
+    for plotter in rate_plotters:
+        histo_primitives = histo_primitives.append(plotter.get_histo_primitives(), ignore_index=True)
+    for plotter in eg_rate_plotters:
+        histo_primitives = histo_primitives.append(plotter.get_histo_primitives(), ignore_index=True)
+
+
+# print histo_primitives.data.unique()
 # === TP selections ================================================
 tp_select = {}
-tp_select['DEF'] = ['Em', 'all']
-tp_select['DEFNC'] = tp_select['DEF']
-tp_select['HMvDR'] = tp_select['DEF']
-tp_select['HMvDRNC0'] = tp_select['DEF']
-tp_select['HMvDRNC1'] = tp_select['DEF']
-tp_select['HMvDRRebin'] = tp_select['DEF']
-tp_select['HMvDRsTC'] = tp_select['DEF']
-tp_select['HMvDRTrue'] = tp_select['DEF']
-
-
-tp_select['EG'] = ['EGq2', 'EGq3']
-
-tp_select['TkEG'] = get_label_dict(selections.tkeg_qual_selections).keys()
-tp_select['TkEle'] = ['EGq2', 'EGq3']
-
-tp_select['TkEle'] = ['EGq2', 'EGq3', 'EGq2Iso0p2', 'EGq3Iso0p2', 'EGq2Iso0p3', 'EGq3Iso0p3']
-tp_select['TkIsoEle'] = ['EGq2', 'EGq3', 'EGq2Iso0p2', 'EGq3Iso0p2', 'EGq2Iso0p3', 'EGq3Iso0p3']
-tp_select['L1Trk'] = get_label_dict(selections.tracks_selections).keys()
-
-# ==== GEN selections ===============================================
-
-gen_select = ['GENEtaBC', 'GENEtaD']
-# gen_select = ['GEN', 'GENEtaA', 'GENEtaB', 'GENEtaC', 'GENEtaD', 'GENEtaE',
-#               'GENEtaAB', 'GENEtaABC', 'GENEtaBC', 'GENEtaBCD', 'GENEtaBCDE' ]
-
-# tp_select['TkEG'] = ['EGq2EtaBC', 'EGq3EtaBC', 'EGq2EtaBCM2', 'EGq3EtaBCM2', 'EGq2EtaBCM2s', 'EGq3EtaBCM2s','EGq2EtaBCM3', 'EGq3EtaBCM3', 'EGq2EtaBCM3s', 'EGq3EtaBCM3s','EGq2EtaBCM4', 'EGq3EtaBCM4']
-
-
-
-event_manager = collections.EventManager()
-
-all_tpsets = {}
-for collection in event_manager.collections:
-    all_tpsets[collection.name] = collection.label
-
-
-# all_tpsets = {'DEF': 'dRC3d',
-#               'DEFCalib': 'NNDR Calib v1',
-#               'DEFNC': 'dRC3d + new Th',
-#               'HMvDR': 'HistoMaxC3d + dR(layer)',
-#               'HMvDRNC0': 'HMC3d+dR(layer)+NC0',
-#               'HMvDRNC1': 'HMC3d+dR(layer)+NC1',
-#               'EG': 'EG',
-#               'TkEG': 'TkEG',
-#               'TkEle': 'TkEle',
-#               'TkIsoEle': 'TkIsoEle',
-#               'L1Trk': 'L1Track'}
-
-
-# ==== adapt the plot retrieval
-tpsets = {}
-tpset_selections = {}
-gen_selections = {}
 
 for tp in tps:
-    tpsets[tp] = all_tpsets[tp]
+    tp_select[tp] = histo_primitives[histo_primitives.data == tp].data_sel.unique().tolist()
 
-if 'DEF' in tps or 'HMvDR' in tps:
-    if do_rate:
-        tpset_selections.update(get_label_dict(selections.tp_rate_selections))
-    else:
-        tpset_selections.update(get_label_dict(selections.tp_match_selections))
-if 'EG' in tps:
-    if do_rate:
-        tpset_selections.update(get_label_dict(selections.eg_rate_selections))
-    else:
-        tpset_selections.update(get_label_dict(selections.eg_pt_selections))
-if 'TkEG' in tps:
-    if do_rate:
-        tpset_selections.update(get_label_dict(selections.tkeg_rate_selections))
-    else:
-        tpset_selections.update(get_label_dict(selections.tkeg_pt_selections))
-if 'TkEle' in tps or 'TkIsoEle' in tps:
-    if do_rate:
-        tpset_selections.update(get_label_dict(selections.tkisoeg_rate_selections))
-    else:
-        tpset_selections.update(get_label_dict(selections.tkisoeg_pt_selections))
-if 'L1Trk' in tps:
-    tpset_selections.update(get_label_dict(selections.tracks_selections))
+# ==== GEN selections ===============================================
+gen_select ={}
+for tp in tps:
+    gen_select[tp] = histo_primitives[histo_primitives.data == tp].gen_sel.unique().tolist()
+
+#  ==== labels ===============================================
+tp_labels = histo_primitives[['data', 'data_label']].drop_duplicates().set_index('data').T.to_dict('records')[0]
+tp_selection_labels = histo_primitives[['data_sel', 'data_sel_label']].drop_duplicates().set_index('data_sel').T.to_dict('records')[0]
+gen_selection_labels = histo_primitives[['gen_sel', 'gen_sel_label']].drop_duplicates().set_index('gen_sel').T.to_dict('records')[0]
 
 
-gen_selections.update(get_label_dict(selections.gen_part_selections))
-gen_selections.update({'nomatch': ''})
 
-
+import pprint
 pp = pprint.PrettyPrinter(indent=4)
 print '--- TPs: '
 pp.pprint(tps)
 print '--- TP selections:'
 pp.pprint(tp_select)
 print '--- GEN selections:'
-print gen_select
+pp.pprint(gen_select)
+
+
+# print selections.eg_rate_selections
