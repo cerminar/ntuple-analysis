@@ -418,6 +418,11 @@ def get_calibrated_clusters2(calib_factors, input_3Dclusters):
     calibrated_clusters = calibrated_clusters.apply(apply_calibration, axis=1)
     return calibrated_clusters
 
+
+def merge_collections(barrel, endcap):
+    return barrel.append(endcap, ignore_index=True)
+
+
 # v96bis
 calib_table = {}
 
@@ -703,6 +708,18 @@ tkeles_brl = DFCollection(name='TkEleBRL', label='TkEle B',
 tkelesEL_brl = DFCollection(name='TkEleELBRL', label='TkEle ELLIPTIC B',
                             filler_function=lambda event: event.getDataFrame(prefix='tkEleElBARREL'),
                             debug=0)
+
+tkelesEL_all = DFCollection(name='TkEleELALL', label='TkEle ELLIPTIC All',
+                            filler_function=lambda event: merge_collections(barrel=tkelesEL_brl.df,
+                                                                            endcap=tkelesEL.df[tkelesEL.df.hwQual==5]),
+                            debug=4,
+                            depends_on=[tkelesEL, tkelesEL_brl])
+
+tkeles_all = DFCollection(name='TkEleALL', label='TkEle All',
+                         filler_function=lambda event: merge_collections(barrel=tkeles_brl.df, endcap=tkeles.df[tkeles.df.hwQual==5]),
+                         debug=4,
+                         depends_on=[tkeles, tkeles_brl])
+
 
 class TPSet:
     """
