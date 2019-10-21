@@ -615,8 +615,8 @@ class ResoHistos(BaseResoHistos):
 
         # if 'energyCentral' in target:
         #     self.h_centralEnergyRes.Fill(target.energyCentral - reference.energy)
-        self.h_etaRes.Fill(target.eta - reference.eta)
-        self.h_phiRes.Fill(target.phi - reference.phi)
+        self.h_etaRes.Fill(target.exeta - reference.eta)
+        self.h_phiRes.Fill(target.exphi - reference.phi)
         self.h_drRes.Fill(np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
 
         if 'n010' in target:
