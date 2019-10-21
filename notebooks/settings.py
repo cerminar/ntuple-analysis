@@ -1,3 +1,4 @@
+# %load settings.py
 # === samples =====================================================
 import python.selections as selections
 import python.collections as collections
@@ -9,47 +10,24 @@ samples = []
 
 # samples += samples_nugunrates
 # samples += samples_nugunrates_V8
-samples += samples_nugunrates_V9
+samples += samples_ele_V9
 
 for smp in samples:
     smp.open_file()
 
 
-sample = 'new-ID'
+sample = 'ele-V9'
 
-do_rate = True
+do_rate = False
+do_eff = True
 
 # === TP ==========================================================
-# tps = ['HMvDR', 'EG', 'TkEG', 'TkEle', 'TkIsoEle']
-# tps = ['HMvDR',
-#        'EG',
-#        'TkEG',
-#        'TkEle',
-#        'TkIsoEle',
-#        'HMvDR',
-#        'HMvDRCalib',
-#        'HMvDRcylind5Calib',
-#        'HMvDRcylind2p5Calib',
-#        'HMvDRshapeCalib',
-#        'HMvDRshapeDrCalib',
-#        'HMvDRCalibMerged',
-#        'HMvDRshapeCalibMerged']
-
 tps = [
-#     'HMvDR',
-#        'HMvDRCalib',
-#        'HMvDRcylind5Calib',
-#        'HMvDRcylind2p5Calib',
-#        'HMvDRshapeCalib',
-#        'HMvDRshapeDrCalib',
-#        'HMvDREmInt',
-#        'HMvDREmIntMerged',
        'EG',
        'TkEle',
        'TkEleEL',
-
-#        'HMvDRCalibMerged',
-#        'HMvDRshapeCalibMerged'
+       'TkEleBRL',
+       'TkEleELBRL'
       ]
 
 # === Load the Histo Primitives ====================================
@@ -61,6 +39,12 @@ if do_rate:
     for plotter in rate_plotters:
         histo_primitives = histo_primitives.append(plotter.get_histo_primitives(), ignore_index=True)
     for plotter in eg_rate_plotters:
+        histo_primitives = histo_primitives.append(plotter.get_histo_primitives(), ignore_index=True)
+if do_eff:
+    from python.plotters import eg_genmatched_plotters, track_genmatched_plotters
+    for plotter in eg_genmatched_plotters:
+        histo_primitives = histo_primitives.append(plotter.get_histo_primitives(), ignore_index=True)
+    for plotter in track_genmatched_plotters:
         histo_primitives = histo_primitives.append(plotter.get_histo_primitives(), ignore_index=True)
 
 
