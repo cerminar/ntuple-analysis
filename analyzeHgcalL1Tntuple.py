@@ -471,6 +471,8 @@ def main(analyze):
                 dagman_spl += 'JOB Job_{} batch.sub\n'.format(jid)
                 dagman_spl += 'VARS Job_{} JOB_ID="{}"\n'.format(jid, jid)
                 dagman_spl_retry += 'Retry Job_{} 3\n'.format(jid)
+                dagman_spl_retry += 'PRIORITY Job_{} {}\n'.format(jid, sample.htc_priority)
+
 
             dagman_sub += 'SPLICE {} {}.spl DIR {}\n'.format(
                 sample.name, sample.name, sample_batch_dir)
@@ -483,7 +485,6 @@ def main(analyze):
 
             # dagman_ret += 'Retry {} 3\n'.format(sample.name)
             dagman_ret += 'Retry {} 3\n'.format(sample.name+'_hadd')
-            dagman_ret += 'PRIORITY {} {}\n'.format(sample.name, sample.htc_priority)
             dagman_ret += 'PRIORITY {} {}\n'.format(sample.name+'_hadd', sample.htc_priority)
 
             dagman_splice = open(os.path.join(sample_batch_dir, '{}.spl'.format(sample.name)), 'w')
