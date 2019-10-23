@@ -551,12 +551,12 @@ class ResoHistos(BaseResoHistos):
             self.h_ptResVeta = ROOT.TH2F(name+'_ptResVeta', '3D Cluster Pt reso (GeV) vs eta; #eta^{GEN}; p_{T}^{L1} - p_{T}^{GEN} [GeV];', 100, -3.5, 3.5, 200, -40, 40)
 
             self.h_energyResVenergy = ROOT.TH2F(name+'_energyResVenergy',
-                                                '3D Cluster E reso vs E; E^{GEN} [GeV]; E^{L1} - E^{GEN} [GeV]',
-                                                100, 0, 1000, 200, -100, 100)
+                                                '3D Cluster E reso vs E; E^{GEN} [GeV]; (E^{L1} - E^{GEN})/E^{GEN};',
+                                                100, 0, 1000, 100, -2, 2)
 
             self.h_energyResVeta = ROOT.TH2F(name+'_energyResVeta',
-                                             '3D Cluster E reso (GeV) vs eta; #eta^{GEN}; E^{L1} - E^{GEN} [GeV];',
-                                             100, -3.5, 3.5, 200, -100, 100)
+                                             '3D Cluster E reso (GeV) vs eta; #eta^{GEN}; (E^{L1} - E^{GEN})/E^{GEN};',
+                                             100, -3.5, 3.5, 100, -2, 2)
             # self.h_energyResVnclu = ROOT.TH2F(name+'_energyResVnclu', '3D Cluster E reso (GeV) vs # clusters; # 2D clus.; E^{L1} - E^{GEN} [GeV];', 50, 0, 50, 200, -100, 100)
             self.h_ptResVpt = ROOT.TH2F(name+'_ptResVpt', '3D Cluster Pt reso (GeV) vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1} - p_{T}^{GEN} [GeV];', 50, 0, 100, 200, -40, 40)
             # self.h_ptResVnclu = ROOT.TH2F(name+'_ptResVnclu', '3D Cluster Pt reso (GeV) vs # clusters; # 2D clus.; p_{T}^{L1} - p_{T}^{GEN} [GeV];', 50, 0, 50, 200, -40, 40)
@@ -592,8 +592,8 @@ class ResoHistos(BaseResoHistos):
         # self.h_energyRes.Fill(target.energy - reference.energy)
         self.h_ptResVeta.Fill(reference.eta, target.pt - reference.pt)
         self.h_ptResVpt.Fill(reference.pt, target.pt - reference.pt)
-        self.h_energyResVeta.Fill(reference.eta, target.energy - reference.energy)
-        self.h_energyResVenergy.Fill(reference.energy, target.energy - reference.energy)
+        self.h_energyResVeta.Fill(reference.eta, (target.energy - reference.energy)/reference.energy)
+        self.h_energyResVenergy.Fill(reference.energy, (target.energy - reference.energy)/reference.energy)
         # self.h_energyResVnclu.Fill(target.nclu, target.energy - reference.energy)
         # self.h_ptResVnclu.Fill(target.nclu, target.pt - reference.pt)
 
@@ -617,7 +617,7 @@ class ResoHistos(BaseResoHistos):
         #     self.h_centralEnergyRes.Fill(target.energyCentral - reference.energy)
         self.h_etaRes.Fill(target.exeta - reference.eta)
         self.h_phiRes.Fill(target.exphi - reference.phi)
-        self.h_drRes.Fill(np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
+        self.h_drRes.Fill(np.sqrt((reference.exphi-target.phi)**2+(reference.exeta-target.eta)**2))
 
         if 'n010' in target:
             self.h_n010.Fill(target.n010)
