@@ -25,7 +25,7 @@ def DrawPrelimLabel(canvas):
     global stuff
     stuff.append(tex)
     tex.SetTextSize(0.03)
-    tex.DrawLatexNDC(0.13,0.91,"#scale[1.5]{CMS Simulation Preliminary }")
+    tex.DrawLatexNDC(0.13,0.91,"#scale[1.5]{CMS} #scale[1.]{Phase-2 Simulation}")
     tex.Draw("same");
     return
 
@@ -77,7 +77,7 @@ def getLegend(x1=0.7, y1=0.71, x2=0.95, y2=0.85):
     legend.SetFillColor(0)
     legend.SetFillStyle(0)
     legend.SetBorderSize(0)
-    legend.SetTextSize(0.05)
+    legend.SetTextSize(0.03)
     return legend
 
 
@@ -143,7 +143,8 @@ def draw(histograms,
          do_profile=False,
          do_ratio=False,
          do_write=False,
-         write_name=None):
+         write_name=None,
+         legend_position=None):
     global colors
     global stuff
     global p_idx
@@ -198,8 +199,10 @@ def draw(histograms,
 
     canvas.cd()
     leg = getLegend()
-    if do_write:
+    if do_write and legend_position is None:
         leg = getLegend(0.6, 0.7, 0.86, 0.8)
+    elif legend_position is not None:
+        leg = getLegend(legend_position[0], legend_position[1], legend_position[2], legend_position[3])
 
     drawn_histos = []
     # drawn_histos = histograms
