@@ -62,6 +62,7 @@ class Parameters:
                  maxEvents=-1,
                  computeDensity=False,
                  htc_jobflavor='workday',
+                 htc_priority=0,
                  debug=0,
                  name=''):
         self.name = name
@@ -79,6 +80,7 @@ class Parameters:
         self.version = version
         self.plotters = plotters
         self.htc_jobflavor = htc_jobflavor
+        self.htc_priority = htc_priority
 
     def __str__(self):
         return 'Name: {},\n \
@@ -111,6 +113,7 @@ def get_collection_parameters(opt, cfgfile):
     for collection, collection_data in cfgfile['collections'].items():
         samples = collection_data['samples']
         print ('--- Collection: {} with samples: {}'.format(collection, samples))
+        print collection_data['priorities']
         sample_params = []
 
         plotters = []
@@ -144,6 +147,7 @@ def get_collection_parameters(opt, cfgfile):
                                 computeDensity=cfgfile['common']['run_density_computation'],
                                 plotters=plotters,
                                 htc_jobflavor=collection_data['htc_jobflavor'],
+                                htc_priority=collection_data['priorities'][sample],
                                 debug=opt.DEBUG,
                                 name=sample)
             sample_params.append(params)
@@ -479,6 +483,8 @@ def main(analyze):
 
             # dagman_ret += 'Retry {} 3\n'.format(sample.name)
             dagman_ret += 'Retry {} 3\n'.format(sample.name+'_hadd')
+            dagman_ret += 'PRIORITY {} {}\n'.format(sample.name, sample.htc_priority)
+            dagman_ret += 'PRIORITY {} {}\n'.format(sample.name+'_hadd', sample.htc_priority)
 
             dagman_splice = open(os.path.join(sample_batch_dir, '{}.spl'.format(sample.name)), 'w')
             dagman_splice.write(dagman_spl)
