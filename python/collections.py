@@ -423,6 +423,19 @@ def merge_collections(barrel, endcap):
     return barrel.append(endcap, ignore_index=True)
 
 
+def barrel_quality(electrons):
+    hwqual = pd.to_numeric(electrons['hwQual'], downcast='integer')
+    electrons['looseTkID'] = ((hwqual.values >> 1) & 1) > 0
+    electrons['photonID'] = ((hwqual.values >> 2) & 1) > 0
+
+    return electrons
+
+def fake_endcap_quality(electrons):
+    # just added for compatibility with barrel
+    electrons['looseTkID'] = True
+    electrons['photonID'] = True
+    return electrons
+
 # v96bis
 calib_table = {}
 
@@ -676,11 +689,13 @@ tracks_emu = DFCollection(name='L1TrkEmu', label='L1Track EMU',
 
 tkeles = DFCollection(name='TkEle', label='TkEle',
                       filler_function=lambda event: event.getDataFrame(prefix='tkEle'),
-                      debug=0)
+                      fixture_function=fake_endcap_quality,
+                      debug=4)
 
-tkelesEL = DFCollection(name='TkEleEL', label='TkEle ELLIPTIC',
+tkelesEL = DFCollection(name='TkEleEL', label='TkEle Ell. match',
                         filler_function=lambda event: event.getDataFrame(prefix='tkEleEl'),
-                        debug=0)
+                        fixture_function=fake_endcap_quality,
+                        debug=4)
 
 tkisoeles = DFCollection(name='TkIsoEle', label='TkIsoEle',
                          filler_function=lambda event: event.getDataFrame(prefix='tkIsoEle'))
@@ -703,19 +718,21 @@ tkegs_emu = DFCollection(name='TkEGEmu', label='TkEG Emu',
 
 tkeles_brl = DFCollection(name='TkEleBRL', label='TkEle B',
                           filler_function=lambda event: event.getDataFrame(prefix='tkEleBARREL'),
+                          fixture_function=barrel_quality,
                           debug=0)
 
-tkelesEL_brl = DFCollection(name='TkEleELBRL', label='TkEle ELLIPTIC B',
+tkelesEL_brl = DFCollection(name='TkEleELBRL', label='TkEle Ell. match barrel',
                             filler_function=lambda event: event.getDataFrame(prefix='tkEleElBARREL'),
-                            debug=0)
+                            fixture_function=barrel_quality,
+                            debug=4)
 
-tkelesEL_all = DFCollection(name='TkEleELALL', label='TkEle ELLIPTIC All',
+tkelesEL_all = DFCollection(name='TkEleELALL', label='TkEle Ell. match all',
                             filler_function=lambda event: merge_collections(barrel=tkelesEL_brl.df,
                                                                             endcap=tkelesEL.df[tkelesEL.df.hwQual==5]),
-                            debug=0,
+                            debug=4,
                             depends_on=[tkelesEL, tkelesEL_brl])
 
-tkeles_all = DFCollection(name='TkEleALL', label='TkEle All',
+tkeles_all = DFCollection(name='TkEleALL', label='TkEle all',
                          filler_function=lambda event: merge_collections(barrel=tkeles_brl.df, endcap=tkeles.df[tkeles.df.hwQual==5]),
                          debug=0,
                          depends_on=[tkeles, tkeles_brl])

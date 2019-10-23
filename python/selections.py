@@ -168,6 +168,13 @@ eta_be_selections = [Selection('all'),
                      Selection('EtaA', '|#eta^{L1}| <= 1.52', 'abs(eta) <= 1.52'),
                      Selection('EtaBC', '1.52 < |#eta^{L1}| <= 2.4', '1.52 < abs(eta) <= 2.4')
                      ]
+barrel_quality_selections = [Selection('all'),
+                             Selection('LooseTkID', 'LooseTkID', 'looseTkID'),
+                             Selection('Iso0p1', 'Iso0p1', 'tkIso <= 0.1'),
+                             ]
+
+barrel_rate_selections = add_selections(eta_barrel_selections, barrel_quality_selections)
+all_rate_selections = prune(eta_be_selections+barrel_rate_selections)
 
 gen_pt_selection15 = [Selection('all'),
                       Selection('Pt15', 'p_{T}^{GEN}>=15GeV', 'pt >= 15')]
@@ -262,7 +269,8 @@ eg_qual_selections = [
 
 iso_selections = [Selection('all'),
                   Selection('Iso0p2', 'Iso0p2', 'tkIso <= 0.2'),
-                  Selection('Iso0p1', 'Iso0p1', 'tkIso <= 0.1'), ]
+                  Selection('Iso0p1', 'Iso0p1', 'tkIso <= 0.1'),
+                  Selection('Iso0p3', 'Iso0p3', 'tkIso <= 0.3'), ]
 
 
 tkisoeg_selections = []
@@ -276,8 +284,8 @@ eg_pt_selections += add_selections(eg_qual_selections, tp_pt_selections_ext)
 
 eg_pt_selections_barrel = []
 eg_pt_selections_barrel += add_selections([Selection('all')], tp_pt_selections_ext)
-
-
+# eg_pt_selections_barrel += barrel_quality_selections
+# eg_pt_selections_barrel = prune(eg_pt_selections_barrel)
 
 tkisoeg_rate_selections = []
 tkisoeg_rate_selections += add_selections(tkisoeg_selections, tp_eta_selections)
@@ -289,8 +297,8 @@ tkisoeg_pt_selections = prune(tkisoeg_pt_selections)
 # print 'tkisoeg_rate_selections:'
 # print tkisoeg_rate_selections
 tkisoeg_pt_selections_barrel = []
-tkisoeg_pt_selections_barrel += tp_pt_selections_ext
-tkisoeg_pt_selections_barrel += [Selection('Iso0p1', 'Iso0p1', 'tkIso <= 0.1'), ]
+# tkisoeg_pt_selections_barrel += tp_pt_selections_ext
+tkisoeg_pt_selections_barrel += add_selections(eg_pt_selections_barrel, barrel_quality_selections)
 
 
 tkeg_selection = [Selection('all'),
@@ -340,7 +348,11 @@ if __name__ == "__main__":
     #     print sel
     # for sel in gen_part_be_selections:
     #     print sel
-    for sel in gen_part_selections_tketa:
-        print sel
+    # for sel in gen_part_selections_tketa:
+    #     print sel
     # for sel in eg_pt_selections:
     #     print sel
+    for sel in tkisoeg_rate_selections:
+        print sel
+    for sel in tkisoeg_pt_selections_barrel:
+        print sel
