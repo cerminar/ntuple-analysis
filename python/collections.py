@@ -677,8 +677,21 @@ towers_wafer = DFCollection(name='WaferTT', label='TT (Wafer)',
 
 egs = DFCollection(name='EG', label='EG',
                    filler_function=lambda event: event.getDataFrame(prefix='egammaEE'),
-                   print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
+                   # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
+                   fixture_function=fake_endcap_quality,
                    debug=0)
+
+egs_brl = DFCollection(name='EGBRL', label='EG barrel',
+                       filler_function=lambda event: event.getDataFrame(prefix='egammaEB'),
+                       fixture_function=barrel_quality,
+                       # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
+                       debug=0)
+
+egs_all = DFCollection(name='EGALL', label='EG all',
+                       filler_function=lambda event: merge_collections(barrel=egs_brl.df, endcap=egs.df[egs.df.hwQual == 5]),
+                       print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
+                       debug=0,
+                       depends_on=[egs, egs_brl])
 
 tracks = DFCollection(name='L1Trk', label='L1Track',
                       filler_function=lambda event: event.getDataFrame(prefix='l1track'), debug=0)
@@ -690,12 +703,12 @@ tracks_emu = DFCollection(name='L1TrkEmu', label='L1Track EMU',
 tkeles = DFCollection(name='TkEle', label='TkEle',
                       filler_function=lambda event: event.getDataFrame(prefix='tkEle'),
                       fixture_function=fake_endcap_quality,
-                      debug=4)
+                      debug=0)
 
 tkelesEL = DFCollection(name='TkEleEL', label='TkEle Ell. match',
                         filler_function=lambda event: event.getDataFrame(prefix='tkEleEl'),
                         fixture_function=fake_endcap_quality,
-                        debug=4)
+                        debug=0)
 
 tkisoeles = DFCollection(name='TkIsoEle', label='TkIsoEle',
                          filler_function=lambda event: event.getDataFrame(prefix='tkIsoEle'))
@@ -716,7 +729,7 @@ tkegs_emu = DFCollection(name='TkEGEmu', label='TkEG Emu',
                          filler_function=lambda event: get_trackmatched_egs(egs=egs.df, tracks=tracks_emu.df),
                          depends_on=[egs, tracks_emu])
 
-tkeles_brl = DFCollection(name='TkEleBRL', label='TkEle B',
+tkeles_brl = DFCollection(name='TkEleBRL', label='TkEle barrel',
                           filler_function=lambda event: event.getDataFrame(prefix='tkEleBARREL'),
                           fixture_function=barrel_quality,
                           debug=0)
@@ -724,12 +737,12 @@ tkeles_brl = DFCollection(name='TkEleBRL', label='TkEle B',
 tkelesEL_brl = DFCollection(name='TkEleELBRL', label='TkEle Ell. match barrel',
                             filler_function=lambda event: event.getDataFrame(prefix='tkEleElBARREL'),
                             fixture_function=barrel_quality,
-                            debug=4)
+                            debug=0)
 
 tkelesEL_all = DFCollection(name='TkEleELALL', label='TkEle Ell. match all',
                             filler_function=lambda event: merge_collections(barrel=tkelesEL_brl.df,
                                                                             endcap=tkelesEL.df[tkelesEL.df.hwQual==5]),
-                            debug=4,
+                            debug=0,
                             depends_on=[tkelesEL, tkelesEL_brl])
 
 tkeles_all = DFCollection(name='TkEleALL', label='TkEle all',

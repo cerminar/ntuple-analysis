@@ -1055,6 +1055,8 @@ rate_plotters = [
                  ]
 
 eg_rate_plotters = [RatePlotter(collections.egs, selections.eg_rate_selections),
+                    RatePlotter(collections.egs_brl, selections.eg_barrel_rate_selections),
+                    RatePlotter(collections.egs_all, selections.eg_all_rate_selections),
                     # RatePlotter(collections.tkegs, selections.tkeg_rate_selections),
                     RatePlotter(collections.tkeles, selections.tkisoeg_rate_selections),
                     RatePlotter(collections.tkelesEL, selections.tkisoeg_rate_selections),
@@ -1218,6 +1220,12 @@ tp_genmatched_plotters = [
 eg_genmatched_plotters = [EGGenMatchPlotter(collections.egs, collections.gen_parts,
                                             selections.eg_pt_selections,
                                             selections.gen_part_selections),
+                          EGGenMatchPlotter(collections.egs_brl, collections.gen_parts,
+                                            selections.egqual_pt_selections_barrel,
+                                            selections.gen_part_barrel_selections),
+                          EGGenMatchPlotter(collections.egs_all, collections.gen_parts,
+                                            selections.egqual_pt_selections_barrel,
+                                            selections.gen_part_be_selections),
                           # TkEGGenMatchPlotter(collections.tkegs, collections.gen_parts,
                           #                     selections.tkeg_pt_selections,
                           #                     selections.gen_part_selections),
