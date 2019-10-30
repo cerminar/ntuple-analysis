@@ -154,23 +154,23 @@ gen_eta_selections = [
                       # Selection('EtaBCDE', '1.52 < |#eta^{GEN}|', '1.52 < abs(eta)')
                       ]
 
-gen_eta_barrel_selections = [Selection('EtaF', '|#eta^{GEN}| <= 1.47', 'abs(eta) <= 1.47')]
-gen_eta_be_selections = [Selection('EtaF', '|#eta^{GEN}| <= 1.47', 'abs(eta) <= 1.47'),
+gen_eta_barrel_selections = [Selection('EtaF', '|#eta^{GEN}| <= 1.479', 'abs(eta) <= 1.479')]
+gen_eta_be_selections = [Selection('EtaF', '|#eta^{GEN}| <= 1.479', 'abs(eta) <= 1.479'),
                          Selection('EtaD', '2.4 < |#eta^{GEN}| <= 2.8', '2.4 < abs(eta) <= 2.8'),
                          Selection('EtaBC', '1.52 < |#eta^{GEN}| <= 2.4', '1.52 < abs(eta) <= 2.4'),
                          Selection('EtaBCD', '1.52 < |#eta^{GEN}| <= 2.8', '1.52 < abs(eta) <= 2.8')
                          ]
 
 
-eta_barrel_selections = [Selection('all'), Selection('EtaF', '|#eta^{L1}| <= 1.47', 'abs(eta) <= 1.47')]
+eta_barrel_selections = [Selection('all'), Selection('EtaF', '|#eta^{L1}| <= 1.479', 'abs(eta) <= 1.479')]
 eta_be_selections = [Selection('all'),
-                     Selection('EtaF', '|#eta^{L1}| <= 1.47', 'abs(eta) <= 1.47'),
+                     Selection('EtaF', '|#eta^{L1}| <= 1.479', 'abs(eta) <= 1.479'),
                      Selection('EtaA', '|#eta^{L1}| <= 1.52', 'abs(eta) <= 1.52'),
                      Selection('EtaBC', '1.52 < |#eta^{L1}| <= 2.4', '1.52 < abs(eta) <= 2.4')
                      ]
 barrel_quality_selections = [Selection('all'),
                              Selection('LooseTkID', 'LooseTkID', 'looseTkID'),
-                             Selection('Iso0p1', 'Iso0p1', 'tkIso <= 0.1'),
+                             Selection('Iso0p1', 'Iso0p1', '((tkIso <= 0.1) & (abs(eta) <= 1.479)) | ((tkIso <= 0.125) & (abs(eta) > 1.479))'),
                              ]
 
 barrel_rate_selections = add_selections(eta_barrel_selections, barrel_quality_selections)
@@ -184,8 +184,9 @@ gen_pt_selection15 = [Selection('all'),
                       Selection('Pt15', 'p_{T}^{GEN}>=15GeV', 'pt >= 15')]
 
 gen_pt_selections = [Selection('Pt15', 'p_{T}^{GEN}>=15GeV', 'pt >= 15'),
-                     Selection('Pt20', 'p_{T}^{GEN}>=20GeV', 'pt >= 20'),
+                     # Selection('Pt20', 'p_{T}^{GEN}>=20GeV', 'pt >= 20'),
                      Selection('Pt30', 'p_{T}^{GEN}>=30GeV', 'pt >= 30'),
+                     Selection('Pt35', 'p_{T}^{GEN}>=35GeV', 'pt >= 35'),
                      Selection('Pt40', 'p_{T}^{GEN}>=40GeV', 'pt >= 40')]
 
 # gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {}) | (abs(pdgid) == {}) | (abs(pdgid) == {})'.format(PID.electron, PID.photon, PID.pion))]
@@ -353,17 +354,17 @@ if __name__ == "__main__":
     #     print sel
     # for sel in gen_part_barrel_selections:
     #     print sel
-    # for sel in gen_part_be_selections:
-    #     print sel
+    for sel in gen_part_be_selections:
+        print sel
     # for sel in gen_part_selections_tketa:
     #     print sel
     # for sel in eg_pt_selections:
     #     print sel
     # for sel in tkisoeg_rate_selections:
     #     print sel
-    # for sel in tkisoeg_pt_selections_barrel:
-    #     print sel
-    # for sel in egqual_pt_selections_barrel:
-    #     print sel
-    for sel in eg_all_rate_selections:
+    for sel in tkisoeg_pt_selections_barrel:
         print sel
+    for sel in egqual_pt_selections_barrel:
+        print sel
+    # for sel in eg_all_rate_selections:
+    #     print sel
