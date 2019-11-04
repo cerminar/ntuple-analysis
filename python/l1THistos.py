@@ -728,14 +728,20 @@ class HistoSetReso():
 
 
 class HistoEff():
-    def __init__(self, passed, total, debug=False):
+    def __init__(self, passed, total, rebin=None, debug=False):
         # print dir(total)
         for histo in [a for a in dir(total) if a.startswith('h_')]:
             if debug:
                 print histo
             hist_total = getattr(total, histo)
             hist_passed = getattr(passed, histo)
-            setattr(self, histo, ROOT.TEfficiency(hist_passed, hist_total))
+            if rebin is None:
+                setattr(self, histo, ROOT.TEfficiency(hist_passed, hist_total))
+            else:
+                setattr(self, histo, ROOT.TEfficiency(hist_passed.Rebin(rebin,
+                                                                        '{}_rebin{}'.format(hist_passed.GetName(), rebin)),
+                                                      hist_total.Rebin(rebin,
+                                                                       '{}_rebin{}'.format(hist_total.GetName(), rebin))))
             # getattr(self, histo).Sumw2()
 
 
@@ -748,7 +754,7 @@ class HistoSetEff():
         self.h_ton = None
 
         if root_file:
-            self.computeEff(debug)
+            self.computeEff(debug=debug)
 
     def fillNum(self, particles):
         self.h_num.fill(particles)
@@ -756,10 +762,10 @@ class HistoSetEff():
     def fillDen(self, particles):
         self.h_den.fill(particles)
 
-    def computeEff(self, debug=False):
+    def computeEff(self, rebin=None, debug=False):
         # print "Computing eff"
-        if self.h_eff is None:
-            self.h_eff = HistoEff(passed=self.h_num, total=self.h_den, debug=debug)
+        if self.h_eff is None or rebin is not None:
+            self.h_eff = HistoEff(passed=self.h_num, total=self.h_den, rebin=rebin, debug=debug)
 
     def computeTurnOn(self, denominator, debug=False):
             self.h_ton = HistoEff(passed=self.h_num, total=denominator, debug=debug)
