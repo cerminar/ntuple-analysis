@@ -167,7 +167,19 @@ collections:
       pion_flat2to100_PU0: 0
       pion_flat2to100_PU200: 0
 
-
+  correlator_occupancy:
+    file_label:
+      pf
+    samples:
+      - ttbar_PU200
+      - dyll_PU200
+    plotters:
+      - correlator_occupancy_plotters
+    htc_jobflavor:
+        workday
+    priorities:
+      ttbar_PU200: 2
+      dyll_PU200: 1
 
   nugun_rate:
     file_label:
@@ -221,6 +233,7 @@ plotters:
   track_genmatched_plotters: !!python/name:python.plotters.track_genmatched_plotters
   tkeg_plotters: !!python/name:python.plotters.tkeg_plotters
   tp_calib_plotters: !!python/name:python.plotters.tp_calib_plotters
+  correlator_occupancy_plotters: !!python/name:python.plotters.correlator_occupancy_plotters
     # tp_set: !null,
     # tp_selection: !!python/name:python.selections.tp_match_selections}
 #  gen_selection: gen_part_selections
@@ -279,6 +292,15 @@ samples:
   nugun_endcap_PU200:
     input_sample_dir: NuGun_PU200/NTP/v13/
     events_per_job: 200
+
+  ttbar_PU200:
+    input_sample_dir: TTbar_14TeV_TuneCP5_Pythia8/TTBar_PU200_v45/191105_102500/0000/
+    events_per_job: 200
+
+  dyll_PU200:
+    input_sample_dir: DYToLL_M-50_14TeV_TuneCP5_pythia8/DYToLL_PU200_v45/191105_102403/0000/
+    events_per_job: 200
+
 
   test_photons_PU0:
     input_sample_dir: test/

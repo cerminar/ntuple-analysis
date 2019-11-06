@@ -106,6 +106,13 @@ tp_pt_selections_ext = [Selection('all', '', ''),
                         Selection('Pt40', 'p_{T}^{L1}>=40GeV', 'pt >= 40')
                         ]
 
+tp_pt_selections_occ = [Selection('all', '', ''),
+                        Selection('Pt5', 'p_{T}^{L1}>=5GeV', 'pt >= 5'),
+                        Selection('Pt10', 'p_{T}^{L1}>=10GeV', 'pt >= 10'),
+                        Selection('Pt15', 'p_{T}^{L1}>=15GeV', 'pt >= 15'),
+                        Selection('Pt20', 'p_{T}^{L1}>=20GeV', 'pt >= 20'),
+                        ]
+
 
 tp_calib_pt_selections = [Selection('all', '', ''),
                           Selection('Pt10', 'p_{T}^{L1}>=10GeV', 'pt >= 10'),
@@ -334,6 +341,7 @@ tracks_quality_sels = [Selection('all'),
                        Selection('St4', '# stubs > 3', 'nStubs > 3')]
 tracks_pt_sels = [Selection('all'),
                   Selection('Pt2', 'p_{T}^{tk} > 2 GeV', 'pt > 2'),
+                  Selection('Pt5', 'p_{T}^{tk} > 5 GeV', 'pt > 5'),
                   Selection('Pt10', 'p_{T}^{tk} > 10 GeV', 'pt > 10')]
 
 tracks_selections = []

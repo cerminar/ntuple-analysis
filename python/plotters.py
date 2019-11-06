@@ -1003,6 +1003,35 @@ class TTGenMatchPlotter:
                         print (genParticle)
 
 
+class CorrOccupancyPlotter(BasePlotter):
+    def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
+        self.h_occ = {}
+        super(CorrOccupancyPlotter, self).__init__(tp_set, tp_selections)
+
+    def book_histos(self):
+        self.tp_set.activate()
+        tp_name = self.tp_set.name
+        for selection in self.tp_selections:
+            self.h_occ[selection.name] = histos.CorrOccupancyHistos(name='{}_{}'.format(tp_name,
+                                                                                         selection.name))
+
+    def fill_histos(self, debug=False):
+        # print '------------------'
+        # print self.tp_set.name
+        for selection in self.tp_selections:
+            # print selection.selection
+            if not selection.all and not self.tp_set.df.empty:
+                sel_clusters = self.tp_set.df.query(selection.selection)
+            else:
+                sel_clusters = self.tp_set.df
+            # print sel_clusters
+
+            if not sel_clusters.empty:
+                # print trigger_clusters.iloc[0]
+                self.h_occ[selection.name].fill(sel_clusters)
+
+
+
 tp_plotters = [
                # TPPlotter(collections.tp_def, selections.tp_id_selections),
                # TPPlotter(collections.tp_truth, selections.tp_id_selections),
@@ -1282,6 +1311,11 @@ ttower_genmatched_plotters = [TTGenMatchPlotter(collections.towers_tcs, collecti
                               TTGenMatchPlotter(collections.towers_wafer, collections.gen_parts,
                               [selections.Selection('all')], selections.gen_part_selections)
                               ]
+
+correlator_occupancy_plotters = [CorrOccupancyPlotter(collections.tracks, selections.tracks_selections),
+                                 CorrOccupancyPlotter(collections.tracks_emu, selections.tracks_selections),
+                                 CorrOccupancyPlotter(collections.egs_all, selections.tp_pt_selections_occ),
+                                 ]
 
 
 if __name__ == "__main__":
