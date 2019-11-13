@@ -508,7 +508,7 @@ cl3d_hm = DFCollection(name='HMvDR', label='HM+dR(layer) Cl3d',
 
 
 cl3d_hm_emint = DFCollection(name='HMvDREmInt', label='HM+dR(layer) Cl3d EM Int',
-                           filler_function=lambda event: get_emint_clusters(cl3d_hm.df),
+                           filler_function=lambda event: get_emint_clusters(cl3d_hm.df[cl3d_hm.df.quality>0]),
                            # fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
                            depends_on=[cl3d_hm],
                            debug=0,
