@@ -7,7 +7,7 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v119
+  plot_version: v120
   run_clustering: False
   run_density_computation: False
 
@@ -135,7 +135,7 @@ collections:
       - photon_flat8to150_PU0
       - photon_flat8to150_PU200
     plotters:
-      - tp_egm_plotters
+      # - tp_egm_plotters
       - tp_genmatched_plotters
       - genpart_plotters
       # - ttower_plotters
@@ -255,13 +255,13 @@ samples:
     events_per_job : 200
 
   photon_flat8to150_PU0:
-    # input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU0_v43/191022_152604/0000/
-    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU0_v46/191031_200300/0000/
+    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU0_v43/191022_152604/0000/
+    # input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU0_v46/191031_200300/0000/
     events_per_job : 500
 
   photon_flat8to150_PU200:
-    # input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU200_v43/191022_152721/0000/
-    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU200_v46/191031_200356/0000/
+    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU200_v43/191022_152721/0000/
+    # input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU200_v46/191031_200356/0000/
     events_per_job : 200
 
   pion_flat2to100_PU0:
@@ -277,8 +277,8 @@ samples:
     events_per_job: 500
 
   nugun_alleta_pu200:
-    # input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v43/191022_152856/0000/
-    input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v47/191105_135050/0000/
+    input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v43/191022_152856/0000/
+    # input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v47/191105_135050/0000/
     events_per_job: 200
 
   nugun_endcap_PU100:

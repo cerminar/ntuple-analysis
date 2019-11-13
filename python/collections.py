@@ -335,11 +335,11 @@ def get_trackmatched_egs(egs, tracks, debug=0):
     return matched_egs
 
 
-def get_layer_calib_clusters(input_clusters, layer_calib_factors):
+def get_layer_calib_clusters(input_clusters, layer_calib_factors, eta_corr=(0., 0.)):
     calibrated_clusters = input_clusters.copy(deep=True)
 
     def apply_calibration(cluster):
-        cluster['energy'] = np.sum(np.array(cluster['layer_energy'])*np.array(layer_calib_factors))
+        cluster['energy'] = np.sum(np.array(cluster['layer_energy'])*np.array(layer_calib_factors))+eta_corr[1]+cluster['abseta']*eta_corr[0]
         cluster['pt'] = cluster.energy/np.cosh(cluster.eta)
         return cluster
     calibrated_clusters = calibrated_clusters.apply(apply_calibration, axis=1)
@@ -622,7 +622,7 @@ cl3d_hm_shape_calib = DFCollection(name='HMvDRshapeCalib', label='HM shape calib
 
 
 cl3d_hm_shapeDr_calib = DFCollection(name='HMvDRshapeDrCalib', label='HM #Delta#rho < 0.015 calib.',
-                                   filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_shapeDr.df, calib_table['HMvDRshapeDrCalib']),
+                                   filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_shapeDr.df, [0.0, 1.4, 0.84, 1.14, 1.0, 0.98, 1.03, 1.03, 1.03, 0.92, 0.99, 0.93, 1.45, 1.88], (-17.593281, 38.969376)),
                                    depends_on=[cl3d_hm_shapeDr, tcs], debug=0, print_function=lambda df: df[['id', 'pt', 'eta', 'quality', 'hwQual']])
 
 
