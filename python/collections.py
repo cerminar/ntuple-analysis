@@ -339,7 +339,7 @@ def get_layer_calib_clusters(input_clusters, layer_calib_factors, eta_corr=(0., 
     calibrated_clusters = input_clusters.copy(deep=True)
 
     def apply_calibration(cluster):
-        cluster['energy'] = np.sum(np.array(cluster['layer_energy'])*np.array(layer_calib_factors))+eta_corr[1]+cluster['abseta']*eta_corr[0]
+        cluster['energy'] = np.sum(np.array(cluster['layer_energy'])*np.array(layer_calib_factors))+eta_corr[1]+np.abs(cluster['eta'])*eta_corr[0]
         cluster['pt'] = cluster.energy/np.cosh(cluster.eta)
         return cluster
     calibrated_clusters = calibrated_clusters.apply(apply_calibration, axis=1)
