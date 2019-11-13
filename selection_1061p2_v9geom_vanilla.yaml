@@ -143,8 +143,8 @@ collections:
     htc_jobflavor:
       tomorrow
     priorities:
-      ele_flat2to100_PU0: 0
-      ele_flat2to100_PU200: 0
+      ele_flat2to100_PU0: 1
+      ele_flat2to100_PU200: 5
       photon_flat8to150_PU0: 0
       photon_flat8to150_PU200: 0
 
