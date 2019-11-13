@@ -88,6 +88,8 @@ tp_id_selections = [
                     # Selection('Emv1', 'EGId V1', '(showerlength > 1) & (bdt_pu > 0.026) & (bdt_pi > -0.03)')
                     ]
 
+tp_rate_id_selections = [Selection('Em', 'EGId', 'quality >0'),]
+
 
 tp_pt_selections = [Selection('all', '', ''),
                     Selection('Pt10', 'p_{T}^{L1}>=10GeV', 'pt >= 10'),
@@ -134,7 +136,7 @@ tp_eta_selections = [Selection('all', '', ''),
                      # Selection('EtaBCDE', '1.52 < |#eta^{L1}|', '1.52 < abs(eta)')
                      ]
 
-tp_rate_selections = add_selections(tp_id_selections, tp_eta_selections)
+tp_rate_selections = add_selections(tp_rate_id_selections, tp_eta_selections)
 
 tp_match_selections = add_selections(tp_id_selections, tp_pt_selections)
 
@@ -363,17 +365,19 @@ if __name__ == "__main__":
     #     print sel
     # for sel in gen_part_barrel_selections:
     #     print sel
-    for sel in gen_part_be_selections:
-        print sel
+    # for sel in gen_part_be_selections:
+    #     print sel
     # for sel in gen_part_selections_tketa:
     #     print sel
     # for sel in eg_pt_selections:
     #     print sel
     # for sel in tkisoeg_rate_selections:
     #     print sel
-    for sel in tkisoeg_pt_selections_barrel:
-        print sel
-    for sel in egqual_pt_selections_barrel:
-        print sel
+    # for sel in tkisoeg_pt_selections_barrel:
+    #     print sel
+    # for sel in egqual_pt_selections_barrel:
+    #     print sel
     # for sel in eg_all_rate_selections:
     #     print sel
+    for sel in tp_rate_selections:
+        print sel
