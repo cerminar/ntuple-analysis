@@ -187,7 +187,7 @@ collections:
     samples:
       - nugun_alleta_pu200
     plotters:
-      # - rate_plotters
+      - rate_plotters
       # - ttower_plotters
       # - tp_egm_plotters
       - eg_rate_plotters

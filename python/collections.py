@@ -272,6 +272,10 @@ def get_dr_clusters_mp(cl3ds, tcs, dr_size, pool):
     cluster_and_tc_sides = zip(cluster_sides, tc_sides, dr_sizes)
 
     result_3dcl = pool.map(clAlgo.get_dr_clusters_unpack2, cluster_and_tc_sides)
+    # result_3dcl = []
+    # result_3dcl.append(clAlgo.get_dr_clusters_unpack2(cluster_and_tc_sides[0]))
+    # result_3dcl.append(clAlgo.get_dr_clusters_unpack2(cluster_and_tc_sides[1]))
+
     merged_clusters = pd.DataFrame(columns=cl3ds.columns)
     for res3D in result_3dcl:
         merged_clusters = merged_clusters.append(res3D, ignore_index=True, sort=False)
@@ -582,7 +586,7 @@ cl3d_hm_shape = DFCollection(name='HMvDRshape', label='HM shape',
 
 
 cl3d_hm_shapeDr = DFCollection(name='HMvDRshapeDr', label='HM #Delta#rho < 0.015',
-                               filler_function=lambda event: get_dr_clusters_mp(cl3d_hm.df,
+                               filler_function=lambda event: get_dr_clusters_mp(cl3d_hm.df[cl3d_hm.df.quality>0],
                                                                                 tcs.df,
                                                                                 [0.015]*53,
                                                                                 # [1.]*2+[1.6]*2+[1.8]*2+[2.2]*2+[2.6]*2+[3.4]*2+[4.2]*2+[5.]*2+[6.]*2+[7.]*2+[7.2]*2+[7.4]*2+[7.2]*2+[7.]*2+[2.5]*25,
