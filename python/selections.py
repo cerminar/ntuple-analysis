@@ -134,7 +134,7 @@ tp_eta_selections = [Selection('all', '', ''),
                      # Selection('EtaABC', '|#eta^{L1}| <= 2.4', 'abs(eta) <= 2.4'),
                      Selection('EtaBC', '1.52 < |#eta^{L1}| <= 2.4', '1.52 < abs(eta) <= 2.4'),
                      Selection('EtaBCD', '1.52 < |#eta^{L1}| <= 2.8', '1.52 < abs(eta) <= 2.8'),
-                     # Selection('EtaBCDE', '1.52 < |#eta^{L1}|', '1.52 < abs(eta)')
+                     Selection('EtaBCDE', '1.52 < |#eta^{L1}| < 3', '1.52 < abs(eta) < 3')
                      ]
 
 tp_rate_selections = add_selections(tp_rate_id_selections, tp_eta_selections)
