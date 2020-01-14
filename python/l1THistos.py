@@ -869,7 +869,7 @@ class ClusterConeHistos(BaseHistos):
     def fill_n(self, num):
         self.h_n.Fill(num)
 
-from sklearn.linear_model import LinearRegression
+
 class CalibrationHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
@@ -890,16 +890,12 @@ class CalibrationHistos(BaseHistos):
         self.t_values.Fill(array('f', energy_fill))
 
     def write(self):
-        # print "-------- {}".format(self.name_)
+        if self.__class__.__name__ not in ROOT.gDirectory.GetListOfKeys():
+            ROOT.gDirectory.mkdir(self.__class__.__name__)
+        newdir = ROOT.gDirectory.GetDirectory(self.__class__.__name__)
+        newdir.cd()
         self.t_values.Write()
-
-        # if len(self.data) == 0:
-        #     return
-        # print np.array(self.data)
-        # print np.array(self.reference)
-        # regression = LinearRegression(fit_intercept=False)
-        # regression.fit(np.array(self.data), np.array(self.reference))
-        # print 'Calibration Name: {} coefficients: {}, score: {}'.format(self.name_, regression.coef_, regression.score(np.array(self.data), np.array(self.reference)))
+        ROOT.gDirectory.cd('..')
         return
 
 
