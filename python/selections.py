@@ -16,6 +16,45 @@ class PID:
     kzero = 130
 
 
+class SelectionManager(object):
+    """
+    SelectionManager.
+
+    Manages the registration of selections to have a global dictionary of the labels for drawing.
+
+    It is a singleton.
+    """
+
+    class __TheManager:
+        def __init__(self):
+            self.selections = []
+
+        def registerSelection(self, selection):
+            # print '[EventManager] registering collection: {}'.format(collection.name)
+            self.selections.append(selection)
+
+        def get_labels(self):
+            label_dict = {}
+            for sel in self.selections:
+                label_dict[sel.name] = sel.label
+            return label_dict
+            
+    instance = None
+
+    def __new__(cls):
+        if not SelectionManager.instance:
+            SelectionManager.instance = SelectionManager.__TheManager()
+        return SelectionManager.instance
+
+    def __getattr__(self, name):
+        return getattr(self.instance, name)
+
+    def __setattr__(self, name):
+        return setattr(self.instance, name)
+
+
+
+
 class Selection:
     """
     [Selection] class.
@@ -32,6 +71,11 @@ class Selection:
         self.name = name
         self.label = label
         self.selection = selection
+        self.register()
+
+    def register(self):
+        selection_manager = SelectionManager()
+        selection_manager.registerSelection(self)
 
     def __add__(self, sel_obj):
         """ & operation """
@@ -88,7 +132,8 @@ tp_id_selections = [
                     # Selection('Emv1', 'EGId V1', '(showerlength > 1) & (bdt_pu > 0.026) & (bdt_pi > -0.03)')
                     ]
 
-tp_rate_id_selections = [Selection('Em', 'EGId', 'quality >0'),]
+tp_rate_id_selections = [Selection('all', '', ''),
+                         Selection('Em', 'EGId', 'quality >0'),]
 
 
 tp_pt_selections = [Selection('all', '', ''),
