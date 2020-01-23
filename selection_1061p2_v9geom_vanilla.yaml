@@ -107,6 +107,25 @@ collections:
       photon_flat8to150_PU200: 0
 
 
+  single_empart_guns_resotuples:
+    file_label:
+      reso
+    samples:
+      - ele_flat2to100_PU0
+      - ele_flat2to100_PU200
+      - photon_flat8to150_PU0
+      - photon_flat8to150_PU200
+    plotters:
+      - eg_resotuples_plotters
+    htc_jobflavor:
+      workday
+    priorities:
+      ele_flat2to100_PU0: 1
+      ele_flat2to100_PU200: 5
+      photon_flat8to150_PU0: 0
+      photon_flat8to150_PU200: 0
+
+
   single_empart_guns_calibs:
     file_label:
       calibs
@@ -234,6 +253,7 @@ plotters:
   tkeg_plotters: !!python/name:python.plotters_config.tkeg_plotters
   tp_calib_plotters: !!python/name:python.plotters_config.tp_calib_plotters
   correlator_occupancy_plotters: !!python/name:python.plotters_config.correlator_occupancy_plotters
+  eg_resotuples_plotters: !!python/name:python.plotters_config.eg_resotuples_plotters
     # tp_set: !null,
     # tp_selection: !!python/name:python.selections.tp_match_selections}
 #  gen_selection: gen_part_selections

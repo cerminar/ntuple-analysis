@@ -809,6 +809,95 @@ class TkEGGenMatchPlotter(GenericGenMatchPlotter):
                                                   data_selections, gen_selections)
 
 
+# class ResoNtupleMatchPlotter(GenericGenMatchPlotter):
+#     def __init__(self, data_set, gen_set,
+#                  data_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
+#         super(ResoNtupleMatchPlotter, self).__init__(histos.EGHistos, histos.ResoTuples,
+#                                                      data_set, gen_set,
+#                                                      data_selections, gen_selections)
+
+
+
+class ResoNtupleMatchPlotter(BasePlotter):
+    def __init__(self, data_set, gen_set,
+                 data_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
+
+        self.h_calibration = {}
+        super(ResoNtupleMatchPlotter, self).__init__(data_set, data_selections, gen_set, gen_selections)
+
+        # print self
+        # print gen_selections
+
+    def plotObjectMatch(self,
+                        genParticles,
+                        objects,
+                        h_calibration,
+                        algoname,
+                        debug):
+        best_match_indexes = {}
+        if not objects.empty:
+            best_match_indexes, allmatches = utils.match_etaphi(genParticles[['eta', 'phi']],
+                                                                objects[['eta', 'phi']],
+                                                                objects['pt'],
+                                                                deltaR=0.1)
+
+        for idx, genParticle in genParticles.iterrows():
+            if idx in best_match_indexes.keys():
+                # print ('-----------------------')
+                #  print(genParticle)
+                obj_matched = objects.loc[[best_match_indexes[idx]]]
+                # print obj_matched
+                # print obj_matched.clusters
+                # print obj_matched.clusters[0]
+                # print algoname
+                # print obj_matched[['energy', 'layer_energy']]
+                h_calibration.fill(reference=genParticle, target=obj_matched)
+
+                if debug >= 4:
+                    print ('--- Dump match for algo {} ---------------'.format(algoname))
+                    print ('GEN particle: idx: {}'.format(idx))
+                    print (genParticle)
+                    print ('Matched to track object:')
+                    print (obj_matched)
+            else:
+                if debug >= 5:
+                    print ('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx))
+                    print (genParticle)
+                    print (objects)
+
+    def book_histos(self):
+        self.gen_set.activate()
+        self.data_set.activate()
+        for tp_sel in self.data_selections:
+            for gen_sel in self.gen_selections:
+                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                self.h_calibration[histo_name] = histos.ResoTuples(histo_name)
+
+    def fill_histos(self, debug=False):
+        for tp_sel in self.data_selections:
+            objects = self.data_set.df
+            if not tp_sel.all and not self.data_set.df.empty:
+                objects = self.data_set.df.query(tp_sel.selection)
+            for gen_sel in self.gen_selections:
+                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
+                if not gen_sel.all:
+                    genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
+                    # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
+                    # elif  particle.pdgid == PID.pizero:
+                    #     genReference = genParts[(genParts.pid == particle.pdgid)]
+
+                h_calib = self.h_calibration[histo_name]
+                # print 'TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name)
+                self.plotObjectMatch(genReference,
+                                     objects,
+                                     h_calib,
+                                     self.data_set.name,
+                                     debug)
+
+
+
+
 class CalibrationPlotter(BasePlotter):
     def __init__(self, data_set, gen_set,
                  data_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):

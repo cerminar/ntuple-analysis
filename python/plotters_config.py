@@ -259,6 +259,30 @@ eg_genmatched_plotters = [plotters.EGGenMatchPlotter(collections.egs, collection
                                             ]
 
 
+eg_resotuples_plotters = [plotters.ResoNtupleMatchPlotter(collections.egs, collections.gen_parts,
+                                                          selections.eg_pt_selections,
+                                                          selections.gen_part_selections),
+                          plotters.ResoNtupleMatchPlotter(collections.egs_brl, collections.gen_parts,
+                                                          selections.egqual_pt_selections_barrel,
+                                                          selections.gen_part_barrel_selections),
+                          plotters.ResoNtupleMatchPlotter(collections.egs_all, collections.gen_parts,
+                                                          selections.egqual_pt_selections_barrel,
+                                                          selections.gen_part_be_selections),
+                          plotters.ResoNtupleMatchPlotter(collections.tkeles, collections.gen_parts,
+                                                          selections.tkisoeg_pt_selections,
+                                                          selections.gen_part_selections_tketa),
+                          plotters.ResoNtupleMatchPlotter(collections.tkelesEL, collections.gen_parts,
+                                                          selections.tkisoeg_pt_selections,
+                                                          selections.gen_part_selections_tketa),
+                          plotters.ResoNtupleMatchPlotter(collections.tkelesEL_brl, collections.gen_parts,
+                                                          selections.eg_pt_selections_barrel,
+                                                          selections.gen_part_barrel_selections),
+                          plotters.ResoNtupleMatchPlotter(collections.tkelesEL_all, collections.gen_parts,
+                                                          selections.tkisoeg_pt_selections_barrel,
+                                                          selections.gen_part_be_selections),
+                                            ]
+
+
 track_genmatched_plotters = [plotters.TrackGenMatchPlotter(collections.tracks, collections.gen_parts,
                                                   selections.tracks_selections,
                                                   selections.gen_part_selections),

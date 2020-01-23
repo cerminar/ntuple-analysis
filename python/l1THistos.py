@@ -870,6 +870,39 @@ class ClusterConeHistos(BaseHistos):
         self.h_n.Fill(num)
 
 
+class ResoTuples(BaseHistos):
+    def __init__(self, name, root_file=None, debug=False):
+        if not root_file:
+            # self.data = []
+            # self.reference = []
+            self.t_values = ROOT.TNtuple(name+"_reso", name+"_reso", 'e_gen:pt_gen:eta_gen:e:pt:eta')
+        BaseHistos.__init__(self, name, root_file, debug)
+
+    def fill(self, reference, target):
+        # cluster_data = []
+        # self.data.append(target.iloc[0]['layer_energy'])
+        # self.reference.append(reference.energy)
+        energy_fill = []
+
+        energy_fill.append(reference.energy)
+        energy_fill.append(reference.pt)
+        energy_fill.append(reference.eta)
+        energy_fill.append(target.energy)
+        energy_fill.append(target.pt)
+        energy_fill.append(target.eta)
+        self.t_values.Fill(array('f', energy_fill))
+
+    def write(self):
+        if self.__class__.__name__ not in ROOT.gDirectory.GetListOfKeys():
+            ROOT.gDirectory.mkdir(self.__class__.__name__)
+        newdir = ROOT.gDirectory.GetDirectory(self.__class__.__name__)
+        newdir.cd()
+        self.t_values.Write()
+        ROOT.gDirectory.cd('..')
+        return
+
+
+
 class CalibrationHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
