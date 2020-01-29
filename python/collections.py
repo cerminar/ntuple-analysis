@@ -44,7 +44,7 @@ class EventManager(object):
             self.active_collections = []
 
         def registerCollection(self, collection):
-            print '[EventManager] registering collection: {}'.format(collection.name)
+            # print '[EventManager] registering collection: {}'.format(collection.name)
             self.collections.append(collection)
 
         def registerActiveCollection(self, collection):
@@ -56,6 +56,12 @@ class EventManager(object):
                 if debug >= 3:
                     print '[EventManager] filling collection: {}'.format(collection.name)
                 collection.fill(event, debug)
+
+        def get_labels(self):
+            label_dict = {}
+            for col in self.collections:
+                label_dict[col.name] = col.label
+            return label_dict
 
     instance = None
 
