@@ -460,6 +460,37 @@ def get_cylind_clusters_unpack(clusters_tcs_cylsize):
     return get_cylind_clusters(clusters_tcs_cylsize[0], clusters_tcs_cylsize[1], clusters_tcs_cylsize[2])
 
 
+def compute_tcs_to_cluster_deltaro(cluster, tcs):
+    cluster['sinh_eta'] = np.sinh(cluster.eta)
+    cluster['cos_phi'] = np.cos(cluster.phi)
+    cluster['sin_phi' ] = np.sin(cluster.phi)
+    # cluster['t' ] = cluster.x*cluster.cos_phi - cluster.y*cluster.sin_phi
+    # cluster['u' ] = cluster.x*cluster.sin_phi + cluster.y*cluster.cos_phi
+
+    # print cluster[['t, u']]
+    # print cluster[['eta', 'phi']]
+    # print cluster[['sinh_eta', 'cos_phi', 'sin_phi']]
+    tcs.loc[tcs.index, 'R_cl'] = tcs.z/cluster.sinh_eta.iloc[0]
+    tcs.loc[tcs.index, 'x_cl'] = tcs.R_cl*cluster.cos_phi.iloc[0]
+    tcs.loc[tcs.index, 'y_cl'] = tcs.R_cl*cluster.sin_phi.iloc[0]
+    tcs.loc[tcs.index, 'dist2'] = (tcs.x_cl-tcs.x)**2+(tcs.y_cl-tcs.y)**2
+    tcs.loc[tcs.index, 'dist'] = np.sqrt(tcs.dist2)
+    tcs.loc[tcs.index, 'dr'] = tcs.dist/np.abs(tcs.z)
+
+    tcs.loc[tcs.index, 'u'] = tcs.x*cluster.cos_phi.iloc[0] + tcs.y*cluster.sin_phi.iloc[0]
+    tcs.loc[tcs.index, 't'] = -1*  tcs.x*cluster.sin_phi.iloc[0] + tcs.y*cluster.cos_phi.iloc[0]
+
+    tcs.loc[tcs.index, 'u_cl'] = tcs.x_cl*cluster.cos_phi.iloc[0] + tcs.y_cl*cluster.sin_phi.iloc[0]
+    tcs.loc[tcs.index, 't_cl'] = -1* tcs.x_cl*cluster.sin_phi.iloc[0] + tcs.y_cl*cluster.cos_phi.iloc[0]
+
+    tcs.loc[tcs.index, 'dt'] = (tcs.t-tcs.t_cl)/np.abs(tcs.z)
+    tcs.loc[tcs.index, 'du'] = (tcs.u-tcs.u_cl)/np.abs(tcs.z)
+    # print tcs.loc[tcs.index, ['R_cl', 'x', 'y', 'x_cl', 'y_cl', 't', 'u', 't_cl', 'u_cl', 'dt', 'du']]
+    # print tcs.loc[tcs.index, ['R_cl', 'x_cl', 'y_cl', 'dist2', 'dist', 'dr']]
+    return tcs
+
+
+
 def get_dr_clusters2(cl3ds, tcs, cylind_size=[3]*28):
     # def fill_momentum(cluster):
     #     vector = ROOT.TLorentzVector()
@@ -488,6 +519,7 @@ def get_dr_clusters2(cl3ds, tcs, cylind_size=[3]*28):
         components['dist'] = np.sqrt(components.dist2)
         components['dr'] = components.dist/np.abs(components.z)
 
+        # FIXME: this could be cytonized using ndarrays
         def assign_size(comp):
             comp['clsize'] = cylind_size[comp.layer - 1]
             return comp

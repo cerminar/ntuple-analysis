@@ -72,8 +72,8 @@ tp_genmatched_debug = [plotters.TPGenMatchPlotterDebugger(collections.tp_def, co
                                                  selections.gen_part_selections_debug)]
 
 tp_calib_plotters = [plotters.CalibrationPlotter(collections.tp_hm_vdr, collections.gen_parts,
-                                        selections.tp_calib_selections,
-                                        selections.gen_part_selections_calib),
+                                                 selections.tp_calib_selections,
+                                                 selections.gen_part_selections_calib),
                      # CalibrationPlotter(collections.tp_hm_calib, collections.gen_parts,
                      #                    selections.tp_calib_selections,
                      #                    selections.gen_part_selections_calib),
@@ -260,26 +260,17 @@ eg_genmatched_plotters = [plotters.EGGenMatchPlotter(collections.egs, collection
 
 
 eg_resotuples_plotters = [plotters.ResoNtupleMatchPlotter(collections.egs, collections.gen_parts,
-                                                          selections.eg_pt_selections,
+                                                          selections.eg_qual_selections,
                                                           selections.gen_part_selections),
                           plotters.ResoNtupleMatchPlotter(collections.egs_brl, collections.gen_parts,
-                                                          selections.egqual_pt_selections_barrel,
+                                                          selections.barrel_quality_selections,
                                                           selections.gen_part_barrel_selections),
-                          plotters.ResoNtupleMatchPlotter(collections.egs_all, collections.gen_parts,
-                                                          selections.egqual_pt_selections_barrel,
-                                                          selections.gen_part_be_selections),
-                          plotters.ResoNtupleMatchPlotter(collections.tkeles, collections.gen_parts,
-                                                          selections.tkisoeg_pt_selections,
-                                                          selections.gen_part_selections_tketa),
                           plotters.ResoNtupleMatchPlotter(collections.tkelesEL, collections.gen_parts,
-                                                          selections.tkisoeg_pt_selections,
+                                                          selections.tkisoeg_selections,
                                                           selections.gen_part_selections_tketa),
                           plotters.ResoNtupleMatchPlotter(collections.tkelesEL_brl, collections.gen_parts,
-                                                          selections.eg_pt_selections_barrel,
+                                                          selections.barrel_quality_selections,
                                                           selections.gen_part_barrel_selections),
-                          plotters.ResoNtupleMatchPlotter(collections.tkelesEL_all, collections.gen_parts,
-                                                          selections.tkisoeg_pt_selections_barrel,
-                                                          selections.gen_part_be_selections),
                                             ]
 
 
@@ -312,3 +303,8 @@ correlator_occupancy_plotters = [plotters.CorrOccupancyPlotter(collections.track
                                  plotters.CorrOccupancyPlotter(collections.tracks_emu, selections.tracks_selections),
                                  plotters.CorrOccupancyPlotter(collections.egs_all, selections.tp_pt_selections_occ),
                                  ]
+
+tp_cluster_tc_match_plotters = [plotters.ClusterTCGenMatchPlotter(collections.tp_hm_vdr,
+                                                                  collections.gen_parts,
+                                                                  data_selections=selections.tp_tccluster_match_selections,
+                                                                  gen_selections=selections.gen_part_ee_eta_brem_sel)]

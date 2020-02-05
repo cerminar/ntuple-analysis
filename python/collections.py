@@ -216,9 +216,11 @@ def mc_fixtures(particles):
 
 
 def tc_fixtures(tcs):
+    # print tcs.columns
     tcs['ncells'] = 1
     if not tcs.empty:
         tcs['cells'] = tcs.apply(func=lambda x: [int(x.id)], axis=1)
+        tcs['abseta'] = np.abs(tcs.eta)
     # tcs['xproj'] = tcs.x/tcs.z
     # tcs['yproj'] = tcs.y/tcs.z
     return tcs
@@ -456,7 +458,9 @@ calib_table['HMvDRcylind2p5Calib'] = [1., 0.87, 1.16, 1.21, 1.06, 1.04, 1.25, 1.
 calib_table['HMvDRshapeCalib'] = [1., 1.38, 1.05, 1.07, 0.96, 0.97, 1.11, 1.04, 0.81, 1.02, 0.9, 1.07, 1.52, 1.84]
 calib_table['HMvDRshapeDrCalib'] = [1., 0.98, 1.05, 1.09, 0.96, 0.97, 1.11, 1.05, 0.83, 1.03, 0.91, 1.07, 1.51, 1.89]
 
-
+def print_columns(df):
+    print df.columns
+    return df
 
 gen = DFCollection(name='MC', label='MC particles',
                    filler_function=lambda event: event.getDataFrame(prefix='gen'),

@@ -1030,6 +1030,70 @@ class CorrOccupancyHistos(BaseHistos):
         # print objects[:10]
         # print max_count
         self.h_eventMaxOcc.Fill(max_count)
+
+
+class TCClusterMatchHistos(BaseHistos):
+    def __init__(self, name, root_file=None, debug=False):
+        if not root_file:
+
+            self.h_dEtaVdPhi = ROOT.TH2F(name+'_dEtaVdPhi',
+                                         '#Delta#eta vs #Delta#phi; #Delta#phi [rad]; #Delta#eta;',
+                                         100, -0.1, 0.1, 100, -0.1, 0.1)
+            self.h_dEtaRMSVenergy = ROOT.TProfile(name+'_dEtaRMSVenergy',
+                                         'RMS(#Delta#eta) vs energy; E [GeV]; RMS(#Delta#eta);',
+                                         100, 0, 1000)
+            self.h_dEtaRMSVpt = ROOT.TProfile(name+'_dEtaRMSVpt',
+                                              'RMS(#Delta#eta) vs pt; E [GeV]; RMS(#Delta#eta);',
+                                              100, 0, 100)
+
+            self.h_dPhiRMSVenergy = ROOT.TProfile(name+'_dPhiRMSVenergy',
+                                         'RMS(#Delta#phi) vs energy; E [GeV]; RMS(#Delta#phi);',
+                                         100, 0, 1000)
+            self.h_dPhiRMSVpt = ROOT.TProfile(name+'_dPhiRMSVpt',
+                                              'RMS(#Delta#phi) vs pt; E [GeV]; RMS(#Delta#phi);',
+                                              100, 0, 100)
+
+            self.h_dRhoRMSVenergy = ROOT.TProfile(name+'_dRhoRMSVenergy',
+                                         'RMS(#Delta#rho) vs energy; E [GeV]; RMS(#Delta#rho);',
+                                         100, 0, 1000)
+            self.h_dRhoRMSVpt = ROOT.TProfile(name+'_dRhoRMSVpt',
+                                              'RMS(#Delta#rho) vs pt; E [GeV]; RMS(#Delta#rho);',
+                                              100, 0, 100)
+            self.h_dRho = ROOT.TH1F(name+'_dRho',
+                                    '#Delta#rho; #Delta#rho;',
+                                    100, 0, 0.2)
+            self.h_dRhoVlayer = ROOT.TH2F(name+'_dRhoVlayer',
+                                    '#Delta#rho; layer #; #Delta#rho;',
+                                    60, 0, 60, 100, 0, 0.2)
+            self.h_dRhoVabseta = ROOT.TH2F(name+'_dRhoVabseta',
+                                    '#Delta#rho; |#eta|; #Delta#rho;',
+                                    100, 1.4, 3.1, 100, 0, 0.2)
+            self.h_dtVdu = ROOT.TH2F(name+'_dtVdu',
+                                    '#Deltat vs #Deltau; #Deltat [cm]; #Deltau [cm];',
+                                    100, -0.2, 0.2, 100, -0.2, 0.2)
+
+
+
+        BaseHistos.__init__(self, name, root_file,
+        debug)
+
+    def fill(self, tcs, cluster):
+        rnp.fill_hist(self.h_dEtaVdPhi, tcs[['delta_phi', 'delta_eta']])
+        # print tcs.dr
+        # print tcs.delta_eta.std(), tcs.delta_phi.std(), tcs.dr.std()
+
+        self.h_dEtaRMSVenergy.Fill(cluster.energy.iloc[0], tcs.delta_eta.std())
+        self.h_dEtaRMSVpt.Fill(cluster.pt.iloc[0], tcs.delta_eta.std())
+        self.h_dPhiRMSVenergy.Fill(cluster.energy.iloc[0], tcs.delta_phi.std())
+        self.h_dPhiRMSVpt.Fill(cluster.pt.iloc[0], tcs.delta_phi.std())
+        self.h_dRhoRMSVenergy.Fill(cluster.energy.iloc[0], tcs.dr.std())
+        self.h_dRhoRMSVpt.Fill(cluster.pt.iloc[0], tcs.dr.std())
+
+        rnp.fill_hist(self.h_dRho, tcs.dr)
+        rnp.fill_hist(self.h_dRhoVlayer, tcs[['layer', 'dr']])
+        rnp.fill_hist(self.h_dRhoVabseta, tcs[['abseta', 'dr']])
+        rnp.fill_hist(self.h_dtVdu, tcs[['dt', 'du']])
+
 # if __name__ == "__main__":
 #     import sys
 #     def createHisto(Class):

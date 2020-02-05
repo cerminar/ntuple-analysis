@@ -19,7 +19,7 @@ fill_histos:
 Several collections of plotters are also instantiated. Which one will actually be run
 is steered via the configuration file.
 """
-
+import ROOT
 import l1THistos as histos
 import utils as utils
 import pandas as pd
@@ -1120,6 +1120,90 @@ class CorrOccupancyPlotter(BasePlotter):
                 self.h_occ[selection.name].fill(sel_clusters)
 
 
+class ClusterTCGenMatchPlotter(BasePlotter):
+    def __init__(self,  # ResoHistoClass,
+                 data_set, gen_set,
+                 data_selections=[selections.Selection('all')],
+                 gen_selections=[selections.Selection('all')]):
+        # self.ResoHistoClass = ResoHistoClass
+        self.h_tcmatching = {}
+        super(ClusterTCGenMatchPlotter, self).__init__(data_set, data_selections, gen_set, gen_selections)
+
+    def plotObjectMatch(self,
+                        genParticles,
+                        objects,
+                        tcs,
+                        h_tc_matched,
+                        algoname,
+                        debug):
+        # fill histo with all selected GEN particles before any match
+
+        best_match_indexes = {}
+        if not objects.empty:
+            best_match_indexes, allmatches = utils.match_etaphi(genParticles[['eta', 'phi']],
+                                                                objects[['eta', 'phi']],
+                                                                objects['pt'],
+                                                                deltaR=0.1)
+
+        for idx, genParticle in genParticles.iterrows():
+            if idx in best_match_indexes.keys():
+                # print ('-----------------------')
+                #  print(genParticle)
+                obj_matched = objects.loc[[best_match_indexes[idx]]]
+                sel_tcs = tcs[(tcs.z * obj_matched.eta.iloc[0] > 0)]
+                sel_tcs.loc[sel_tcs.index, 'delta_eta'] = sel_tcs.eta - obj_matched.eta.iloc[0]
+                sel_tcs.loc[sel_tcs.index, 'delta_phi'] = sel_tcs.apply(lambda tc: ROOT.TVector2.Phi_mpi_pi(tc.phi - obj_matched.phi.iloc[0]),
+                                                                        axis=1)
+                sel_tcs = clAlgo.compute_tcs_to_cluster_deltaro(cluster=obj_matched,
+                                                                tcs=sel_tcs)
+
+                h_tc_matched.fill(sel_tcs, obj_matched)
+
+                if debug >= 4:
+                    print ('--- Dump match for algo {} ---------------'.format(algoname))
+                    print ('GEN particle: idx: {}'.format(idx))
+                    print (genParticle)
+                    print ('Matched to track object:')
+                    print (obj_matched)
+            else:
+                if debug >= 5:
+                    print ('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx))
+                    print (genParticle)
+                    print (objects)
+
+    def book_histos(self):
+        self.gen_set.activate()
+        self.data_set.activate()
+        pass
+        for tp_sel in self.data_selections:
+            for gen_sel in self.gen_selections:
+                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                self.h_tcmatching[histo_name] = histos.TCClusterMatchHistos(histo_name)
+
+    def fill_histos(self, debug=False):
+        for tp_sel in self.data_selections:
+            objects = self.data_set.df
+            if not tp_sel.all and not self.data_set.df.empty:
+                objects = self.data_set.df.query(tp_sel.selection)
+            for gen_sel in self.gen_selections:
+                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
+                if not gen_sel.all:
+                    genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
+                    # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
+                    # elif  particle.pdgid == PID.pizero:
+                    #     genReference = genParts[(genParts.pid == particle.pdgid)]
+
+                h_tc_match = self.h_tcmatching[histo_name]
+                # h_resoset = self.h_resoset[histo_name]
+                # h_genseleff = self.h_effset[histo_name]
+                # print 'TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name)
+                self.plotObjectMatch(genReference,
+                                     objects,
+                                     self.data_set.tcs.df,
+                                     h_tc_match,
+                                     self.data_set.name,
+                                     debug)
 
 
 
