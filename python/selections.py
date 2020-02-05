@@ -38,7 +38,7 @@ class SelectionManager(object):
             for sel in self.selections:
                 label_dict[sel.name] = sel.label
             return label_dict
-            
+
     instance = None
 
     def __new__(cls):
@@ -161,6 +161,13 @@ tp_pt_selections_occ = [Selection('all', '', ''),
                         ]
 
 
+tp_tccluster_match_selections = [Selection('all', '', ''),
+                                 Selection('Pt5to10', '5 <= p_{T}^{L1} < 10GeV', '(pt < 10) & (pt >= 5)'),
+                                 Selection('Pt10to20', '10 <= p_{T}^{L1} < 20GeV', '(pt < 20) & (pt >= 10)')]
+]
+
+
+
 tp_calib_pt_selections = [Selection('all', '', ''),
                           Selection('Pt10', 'p_{T}^{L1}>=10GeV', 'pt >= 10'),
                           Selection('Pt20', 'p_{T}^{L1}>=20GeV', 'pt >= 20'),
@@ -262,7 +269,7 @@ gen_part_fbrem_selection = [Selection('all', '', ''),
 gen_part_ee_sel = add_selections(gen_selections, gen_ee_selections)
 gen_part_ee_pt_sel = add_selections(gen_part_ee_sel, gen_pt_selections)
 gen_part_ee_eta_sel = add_selections(gen_part_ee_sel, gen_eta_selections)
-# gen_part_ee_eta_sel = add_selections(gen_part_ee_eta_sel, gen_part_fbrem_selection)
+gen_part_ee_eta_brem_sel = add_selections(gen_part_ee_eta_sel, gen_part_fbrem_selection)
 
 gen_part_selections_debug = []
 gen_part_selections_debug = add_selections(gen_part_ee_sel, [Selection('EtaBCD', '1.52 < |#eta^{GEN}| <= 2.8', '1.52 < abs(eta) <= 2.8')])
@@ -285,6 +292,10 @@ gen_part_be_selections += gen_selections
 gen_part_be_selections += add_selections(gen_selections, gen_pt_selections)
 gen_part_be_selections += add_selections(gen_selections, gen_eta_be_selections)
 
+
+gen_part_be_reso_selections = []
+gen_part_be_reso_selections += gen_selections
+gen_part_be_reso_selections += add_selections(gen_selections, gen_eta_be_selections)
 
 gen_part_selections_calib = []
 gen_part_selections_calib += gen_part_ee_sel
@@ -426,5 +437,7 @@ if __name__ == "__main__":
     #     print sel
     # for sel in eg_all_rate_selections:
     #     print sel
-    for sel in tp_rate_selections:
+    # for sel in tp_rate_selections:
+    #     print sel
+    for sel in gen_part_ee_eta_sel:
         print sel
