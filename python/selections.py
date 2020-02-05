@@ -164,7 +164,7 @@ tp_pt_selections_occ = [Selection('all', '', ''),
 tp_tccluster_match_selections = [Selection('all', '', ''),
                                  Selection('Pt5to10', '5 <= p_{T}^{L1} < 10GeV', '(pt < 10) & (pt >= 5)'),
                                  Selection('Pt10to20', '10 <= p_{T}^{L1} < 20GeV', '(pt < 20) & (pt >= 10)')]
-]
+
 
 
 
