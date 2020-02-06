@@ -470,21 +470,25 @@ def compute_tcs_to_cluster_deltaro(cluster, tcs):
     # print cluster[['t, u']]
     # print cluster[['eta', 'phi']]
     # print cluster[['sinh_eta', 'cos_phi', 'sin_phi']]
-    tcs.loc[tcs.index, 'R_cl'] = tcs.z/cluster.sinh_eta.iloc[0]
-    tcs.loc[tcs.index, 'x_cl'] = tcs.R_cl*cluster.cos_phi.iloc[0]
-    tcs.loc[tcs.index, 'y_cl'] = tcs.R_cl*cluster.sin_phi.iloc[0]
+    tcs.loc[tcs.index, 'R_cl'] = tcs.z/cluster.sinh_eta
+    tcs.loc[tcs.index, 'x_cl'] = tcs.R_cl*cluster.cos_phi
+    tcs.loc[tcs.index, 'y_cl'] = tcs.R_cl*cluster.sin_phi
     tcs.loc[tcs.index, 'dist2'] = (tcs.x_cl-tcs.x)**2+(tcs.y_cl-tcs.y)**2
     tcs.loc[tcs.index, 'dist'] = np.sqrt(tcs.dist2)
     tcs.loc[tcs.index, 'dr'] = tcs.dist/np.abs(tcs.z)
 
-    tcs.loc[tcs.index, 'u'] = tcs.x*cluster.cos_phi.iloc[0] + tcs.y*cluster.sin_phi.iloc[0]
-    tcs.loc[tcs.index, 't'] = -1*  tcs.x*cluster.sin_phi.iloc[0] + tcs.y*cluster.cos_phi.iloc[0]
+    tcs.loc[tcs.index, 'u'] = tcs.x*cluster.cos_phi + tcs.y*cluster.sin_phi
+    tcs.loc[tcs.index, 't'] = -1*  tcs.x*cluster.sin_phi + tcs.y*cluster.cos_phi
 
-    tcs.loc[tcs.index, 'u_cl'] = tcs.x_cl*cluster.cos_phi.iloc[0] + tcs.y_cl*cluster.sin_phi.iloc[0]
-    tcs.loc[tcs.index, 't_cl'] = -1* tcs.x_cl*cluster.sin_phi.iloc[0] + tcs.y_cl*cluster.cos_phi.iloc[0]
+    tcs.loc[tcs.index, 'u_cl'] = tcs.x_cl*cluster.cos_phi + tcs.y_cl*cluster.sin_phi
+    tcs.loc[tcs.index, 't_cl'] = -1* tcs.x_cl*cluster.sin_phi + tcs.y_cl*cluster.cos_phi
 
     tcs.loc[tcs.index, 'dt'] = (tcs.t-tcs.t_cl)/np.abs(tcs.z)
     tcs.loc[tcs.index, 'du'] = (tcs.u-tcs.u_cl)/np.abs(tcs.z)
+    tcs.loc[tcs.index, 'ef'] = tcs.energy/cluster.energy
+    tcs.loc[tcs.index, 'abseta_cl'] = np.abs(cluster.eta)
+    tcs.loc[tcs.index, 'fbrem_cl'] = np.abs(cluster.fbrem)
+
     # print tcs.loc[tcs.index, ['R_cl', 'x', 'y', 'x_cl', 'y_cl', 't', 'u', 't_cl', 'u_cl', 'dt', 'du']]
     # print tcs.loc[tcs.index, ['R_cl', 'x_cl', 'y_cl', 'dist2', 'dist', 'dr']]
     return tcs
