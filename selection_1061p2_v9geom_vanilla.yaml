@@ -242,9 +242,9 @@ collections:
       tccl
     samples:
       - ele_flat2to100_PU0
-      - ele_flat2to100_PU200
+      # - ele_flat2to100_PU200
       - photon_flat8to150_PU0
-      - photon_flat8to150_PU200
+      # - photon_flat8to150_PU200
     plotters:
       # - tp_egm_plotters
       - tp_cluster_tc_match_plotters
