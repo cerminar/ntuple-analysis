@@ -1138,36 +1138,34 @@ class ClusterTCGenMatchPlotter(BasePlotter):
                         debug):
         # fill histo with all selected GEN particles before any match
 
-        # best_match_indexes = {}
-        # if not objects.empty:
-        #     best_match_indexes, allmatches = utils.match_etaphi(genParticles[['eta', 'phi']],
-        #                                                         objects[['eta', 'phi']],
-        #                                                         objects['pt'],
-        #                                                         deltaR=0.1)
+        best_match_indexes = {}
+        if not objects.empty:
+            best_match_indexes, allmatches = utils.match_etaphi(genParticles[['eta', 'phi']],
+                                                                objects[['eta', 'phi']],
+                                                                objects['pt'],
+                                                                deltaR=0.1)
         if tcs.empty:
             return
 
         for idx, genParticle in genParticles.iterrows():
-            # if idx in best_match_indexes.keys():
-                # print ('-----------------------')
-                #  print(genParticle)
-                # obj_matched = objects.loc[[best_match_indexes[idx]]]
-            sel_tcs = tcs[(tcs.z * genParticle.eta > 0)]
-            if sel_tcs.empty:
-                continue
+            if idx in best_match_indexes.keys():
+                obj_matched = objects.loc[[best_match_indexes[idx]]].iloc[0]
+                sel_tcs = tcs[(tcs.z * obj_matched.eta > 0)]
+                if sel_tcs.empty:
+                    continue
 
-            sel_tcs.loc[sel_tcs.index, 'delta_eta'] = sel_tcs.eta - genParticle.eta
-            sel_tcs.loc[sel_tcs.index, 'delta_phi'] = sel_tcs.apply(lambda tc: ROOT.TVector2.Phi_mpi_pi(tc.phi - genParticle.phi),
-                                                                    axis=1)
-            sel_tcs = clAlgo.compute_tcs_to_cluster_deltaro(cluster=genParticle,
-                                                            tcs=sel_tcs)
+                sel_tcs.loc[sel_tcs.index, 'delta_eta'] = sel_tcs.eta - obj_matched.eta
+                sel_tcs.loc[sel_tcs.index, 'delta_phi'] = sel_tcs.apply(lambda tc: ROOT.TVector2.Phi_mpi_pi(tc.phi - obj_matched.phi),
+                                                                        axis=1)
+                clAlgo.compute_tcs_to_cluster_deltaro(cluster=obj_matched,
+                                                      tcs=sel_tcs)
 
-            h_tc_matched.fill(sel_tcs, genParticle)
+                h_tc_matched.fill(sel_tcs, obj_matched)
 
-            if debug >= 4:
-                print ('--- Dump match for algo {} ---------------'.format(algoname))
-                print ('GEN particle: idx: {}'.format(idx))
-                print (genParticle)
+                if debug >= 4:
+                    print ('--- Dump match for algo {} ---------------'.format(algoname))
+                    print ('GEN particle: idx: {}'.format(idx))
+                    print (genParticle)
 
     def book_histos(self):
         self.gen_set.activate()

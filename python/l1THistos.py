@@ -1072,9 +1072,9 @@ class TCClusterMatchHistos(BaseHistos):
             self.h_dRhoVabseta = ROOT.TH2F(name+'_dRhoVabseta',
                                     '#Delta#rho; |#eta|; #Delta#rho;',
                                     100, 1.4, 3.1, 100, 0, 0.1)
-            self.h_dRhoVfbrem = ROOT.TH2F(name+'_dRhoVfbrem',
-                                    '#Delta#rho vs f_{brem}; f_{brem}; #Delta#rho;',
-                                    100, 0, 1, 100, 0, 0.1)
+            # self.h_dRhoVfbrem = ROOT.TH2F(name+'_dRhoVfbrem',
+            #                         '#Delta#rho vs f_{brem}; f_{brem}; #Delta#rho;',
+            #                         100, 0, 1, 100, 0, 0.1)
 
             self.h_dtVdu = ROOT.TH2F(name+'_dtVdu',
                                     '#Deltat vs #Deltau; #Deltat [cm]; #Deltau [cm];',
@@ -1082,9 +1082,9 @@ class TCClusterMatchHistos(BaseHistos):
             self.h_dtVdu2 = ROOT.TH2F(name+'_dtVdu2',
                                     '#Deltat vs #Deltau (E fract. weighted); #Deltat [cm]; #Deltau [cm];',
                                     100, -0.05, 0.05, 100, -0.05, 0.05)
-            self.h_fbremVabseta = ROOT.TH2F(name+'_fbremVabseta',
-                                    'f_{brem} vs |#eta|; |#eta|; f_{brem};',
-                                    100, 1.4, 3.1, 100, 0, 1)
+            # self.h_fbremVabseta = ROOT.TH2F(name+'_fbremVabseta',
+            #                         'f_{brem} vs |#eta|; |#eta|; f_{brem};',
+            #                         100, 1.4, 3.1, 100, 0, 1)
 
 
         BaseHistos.__init__(self, name, root_file, debug)
@@ -1105,10 +1105,10 @@ class TCClusterMatchHistos(BaseHistos):
         rnp.fill_hist(self.h_dRho2, tcs.dr, tcs.ef)
         rnp.fill_hist(self.h_dRhoVlayer, tcs[['layer', 'dr']])
         rnp.fill_hist(self.h_dRhoVabseta, tcs[['abseta_cl', 'dr']])
-        rnp.fill_hist(self.h_dRhoVfbrem, tcs[['fbrem_cl', 'dr']])
+        # rnp.fill_hist(self.h_dRhoVfbrem, tcs[['fbrem_cl', 'dr']])
         rnp.fill_hist(self.h_dtVdu, tcs[['dt', 'du']])
         rnp.fill_hist(self.h_dtVdu2, tcs[['dt', 'du']], tcs['ef'])
-        self.h_fbremVabseta.Fill(cluster.abseta, cluster.fbrem)
+        # self.h_fbremVabseta.Fill(cluster.abseta, cluster.fbrem)
 
 # if __name__ == "__main__":
 #     import sys
