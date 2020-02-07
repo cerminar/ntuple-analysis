@@ -461,38 +461,35 @@ def get_cylind_clusters_unpack(clusters_tcs_cylsize):
 
 
 def compute_tcs_to_cluster_deltaro(cluster, tcs):
-    cluster['sinh_eta'] = np.sinh(cluster.eta)
-    cluster['cos_phi'] = np.cos(cluster.phi)
-    cluster['sin_phi' ] = np.sin(cluster.phi)
-    # cluster['t' ] = cluster.x*cluster.cos_phi - cluster.y*cluster.sin_phi
-    # cluster['u' ] = cluster.x*cluster.sin_phi + cluster.y*cluster.cos_phi
+    cl_sinh_eta = np.sinh(cluster.eta)
+    cl_cos_phi = np.cos(cluster.phi)
+    cl_sin_phi = np.sin(cluster.phi)
 
-    # print cluster[['t, u']]
-    # print cluster[['eta', 'phi']]
-    # print cluster[['sinh_eta', 'cos_phi', 'sin_phi']]
-    tcs.loc[tcs.index, 'R_cl'] = tcs.z/cluster.sinh_eta
-    tcs.loc[tcs.index, 'x_cl'] = tcs.R_cl*cluster.cos_phi
-    tcs.loc[tcs.index, 'y_cl'] = tcs.R_cl*cluster.sin_phi
-    tcs.loc[tcs.index, 'dist2'] = (tcs.x_cl-tcs.x)**2+(tcs.y_cl-tcs.y)**2
-    tcs.loc[tcs.index, 'dist'] = np.sqrt(tcs.dist2)
-    tcs.loc[tcs.index, 'dr'] = tcs.dist/np.abs(tcs.z)
+    # compute cluster coordinate at the given z (z of the TC)
+    cl_r = tcs.z.to_numpy()/cl_sinh_eta
+    cl_x = cl_r*cl_cos_phi
+    cl_y = cl_r*cl_sin_phi
 
-    tcs.loc[tcs.index, 'u'] = tcs.x*cluster.cos_phi + tcs.y*cluster.sin_phi
-    tcs.loc[tcs.index, 't'] = -1*  tcs.x*cluster.sin_phi + tcs.y*cluster.cos_phi
+    tcs.loc[tcs.index, 'dr'] = np.sqrt((cl_x-tcs.x)**2+(cl_y-tcs.y)**2)/np.abs(tcs.z)
 
-    tcs.loc[tcs.index, 'u_cl'] = tcs.x_cl*cluster.cos_phi + tcs.y_cl*cluster.sin_phi
-    tcs.loc[tcs.index, 't_cl'] = -1* tcs.x_cl*cluster.sin_phi + tcs.y_cl*cluster.cos_phi
+    # we rotate the x-y RF to center it on the cluster (phi angle)
+    cl_u = cl_x*cl_cos_phi + cl_y*cl_sin_phi
+    cl_t = -1*cl_x*cl_sin_phi + cl_y*cl_cos_phi
+    # tcs.loc[tcs.index, 'u'] = tcs.x*cl_cos_phi + tcs.y*cl_sin_phi
+    # tcs.loc[tcs.index, 't'] = -1.*tcs.x*cl_sin_phi + tcs.y*cl_cos_phi
+    tc_u = tcs.x*cl_cos_phi + tcs.y*cl_sin_phi
+    tc_t = -1.*tcs.x*cl_sin_phi + tcs.y*cl_cos_phi
 
-    tcs.loc[tcs.index, 'dt'] = (tcs.t-tcs.t_cl)/np.abs(tcs.z)
-    tcs.loc[tcs.index, 'du'] = (tcs.u-tcs.u_cl)/np.abs(tcs.z)
+    tcs.loc[tcs.index, 'dt'] = (tc_t-cl_t)/np.abs(tcs.z)
+    tcs.loc[tcs.index, 'du'] = (tc_u-cl_u)/np.abs(tcs.z)
+
+    # tcs.loc[tcs.index, 'dt'] = (tcs.t-cl_t)/np.abs(tcs.z)
+    # tcs.loc[tcs.index, 'du'] = (tcs.u-cl_u)/np.abs(tcs.z)
+
     tcs.loc[tcs.index, 'ef'] = tcs.energy/cluster.energy
     tcs.loc[tcs.index, 'abseta_cl'] = np.abs(cluster.eta)
-    tcs.loc[tcs.index, 'fbrem_cl'] = np.abs(cluster.fbrem)
-
-    # print tcs.loc[tcs.index, ['R_cl', 'x', 'y', 'x_cl', 'y_cl', 't', 'u', 't_cl', 'u_cl', 'dt', 'du']]
-    # print tcs.loc[tcs.index, ['R_cl', 'x_cl', 'y_cl', 'dist2', 'dist', 'dr']]
-    return tcs
-
+    # tcs.loc[tcs.index, 'fbrem_cl'] = np.abs(cluster.fbrem)
+    return
 
 
 def get_dr_clusters2(cl3ds, tcs, cylind_size=[3]*28):
