@@ -255,46 +255,48 @@ def tower_fixtures(towers):
     return towers
 
 
-def get_cylind_clusters_mp(cl3ds, tcs, cylind_size, pool):
+def recluster_mp(cl3ds, tcs, cluster_size, cluster_function, pool):
     cluster_sides = [x for x in [cl3ds[cl3ds.eta > 0],
                                  cl3ds[cl3ds.eta < 0]]]
     tc_sides = [x for x in [tcs[tcs.eta > 0],
                             tcs[tcs.eta < 0]]]
 
-    cylind_sizes = [cylind_size, cylind_size]
+    cluster_sizes = [cluster_size, cluster_size]
 
-    cluster_and_tc_sides = zip(cluster_sides, tc_sides, cylind_sizes)
+    cluster_and_tc_sides = zip(cluster_sides, tc_sides, cluster_sizes)
 
-    result_3dcl = pool.map(clAlgo.get_cylind_clusters_unpack, cluster_and_tc_sides)
+    result_3dcl = pool.map(cluster_function, cluster_and_tc_sides)
+
+    # result_3dcl = []
+    # result_3dcl.append(cluster_function(cluster_and_tc_sides[0]))
+    # result_3dcl.append(cluster_function(cluster_and_tc_sides[1]))
+
+    # print result_3dcl[0]
+    # print result_3dcl[1]
+
     merged_clusters = pd.DataFrame(columns=cl3ds.columns)
     for res3D in result_3dcl:
         merged_clusters = merged_clusters.append(res3D, ignore_index=True, sort=False)
     return merged_clusters
+
+
+def get_cylind_clusters_mp(cl3ds, tcs, cylind_size, pool):
+    return recluster_mp(cl3ds, tcs,
+                        cluster_size=cylind_size,
+                        cluster_function=clAlgo.get_cylind_clusters_unpack,
+                        pool=pool)
 
 
 def get_dr_clusters_mp(cl3ds, tcs, dr_size, pool):
-    cluster_sides = [x for x in [cl3ds[cl3ds.eta > 0],
-                                 cl3ds[cl3ds.eta < 0]]]
-    tc_sides = [x for x in [tcs[tcs.eta > 0],
-                            tcs[tcs.eta < 0]]]
-
-    dr_sizes = [dr_size, dr_size]
-
-    cluster_and_tc_sides = zip(cluster_sides, tc_sides, dr_sizes)
-
-    result_3dcl = pool.map(clAlgo.get_dr_clusters_unpack, cluster_and_tc_sides)
-    # result_3dcl = []
-    # result_3dcl.append(clAlgo.get_dr_clusters_unpack(cluster_and_tc_sides[0]))
-    # result_3dcl.append(clAlgo.get_dr_clusters_unpack(cluster_and_tc_sides[1]))
-
-    merged_clusters = pd.DataFrame(columns=cl3ds.columns)
-    for res3D in result_3dcl:
-        merged_clusters = merged_clusters.append(res3D, ignore_index=True, sort=False)
-    return merged_clusters
+    return recluster_mp(cl3ds, tcs,
+                        cluster_size=dr_size,
+                        cluster_function=clAlgo.get_dr_clusters_unpack,
+                        pool=pool)
 
 
 def get_emint_clusters(triggerClusters):
     clusters_emint = triggerClusters.copy(deep=True)
+
     def interpret(cluster):
         cluster.energy = cluster.ienergy[-1]
         cluster.pt = cluster.ipt[-1]
@@ -601,7 +603,7 @@ cl3d_hm_shape = DFCollection(name='HMvDRshape', label='HM shape',
 cl3d_hm_shapeDr = DFCollection(name='HMvDRshapeDr', label='HM #Delta#rho < 0.015',
                                filler_function=lambda event: get_dr_clusters_mp(cl3d_hm.df[cl3d_hm.df.quality>0],
                                                                                 tcs.df,
-                                                                                [0.015]*53,
+                                                                                0.015,
                                                                                 # [1.]*2+[1.6]*2+[1.8]*2+[2.2]*2+[2.6]*2+[3.4]*2+[4.2]*2+[5.]*2+[6.]*2+[7.]*2+[7.2]*2+[7.4]*2+[7.2]*2+[7.]*2+[2.5]*25,
                                                                                 POOL),
                                depends_on=[cl3d_hm, tcs],
