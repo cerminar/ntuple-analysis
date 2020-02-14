@@ -253,6 +253,43 @@ def build2D(components):
     return cl
 
 
+def compute3DClQuantities(components, calib_factor=1.084):
+    cl3D = {}
+    tot_energy = np.sum(components.energy)
+    cl3D['energy'] = tot_energy*calib_factor
+    cl3D['eta'] = np.sum(components.eta*components.energy)/tot_energy
+    cl3D['phi'] = np.sum(components.phi*components.energy)/tot_energy
+    cl3D['pt'] = (cl3D['energy']/np.cosh(cl3D['eta']))
+    cl3D['layers'] = components.layer.unique()
+    cl3D['clusters'] = components.id.values
+    cl3D['nclu'] = components.shape[0]
+    cl3D['firstlayer'] = np.min(components.layer.values)
+    cl3D['eem'] = np.sum(components[components.layer <= 28].energy)*calib_factor
+    cl3D['ehad'] = np.sum(components[components.layer > 28].energy)*calib_factor
+    cl3D['hoe'] = cl3D['ehad']/cl3D['eem']
+    cl3D['ptem'] = cl3D['pt']/(1+cl3D['hoe'])
+    # FIXME: placeholder
+    cl3D['showerlength'] = 1.
+    cl3D['seetot'] = 1.
+    cl3D['seemax'] = 1.
+    cl3D['spptot'] = 1.
+    cl3D['sppmax'] = 1.
+    cl3D['szz'] = 1.
+    cl3D['emaxe'] = 1.
+    cl3D['id'] = components.iloc[0].id
+    return cl3D
+
+
+def build3DCl(components, calib_factor=1.084):
+    """
+      A more efficient version of build3D.
+
+      Builds clusters avoiding to add one column at the time.
+    """
+    return pd.DataFrame().append(compute3DClQuantities(components, calib_factor),
+                                 ignore_index=True)
+
+
 def build3D(components, calib_factor=1.084):
     cl3D = pd.DataFrame(columns=['energy', 'eta', 'phi', 'pt',
                                  'layers', 'clusters', 'nclu', 'firstlayer',
@@ -460,7 +497,9 @@ def get_cylind_clusters_unpack(clusters_tcs_cylsize):
     return get_cylind_clusters(clusters_tcs_cylsize[0], clusters_tcs_cylsize[1], clusters_tcs_cylsize[2])
 
 
-def compute_tcs_to_cluster_deltaro(cluster, tcs):
+def compute_tcs2cluster_distance(cluster, tcs,
+                                 do_deltaUT=False,
+                                 do_extra=False):
     cl_sinh_eta = np.sinh(cluster.eta)
     cl_cos_phi = np.cos(cluster.phi)
     cl_sin_phi = np.sin(cluster.phi)
@@ -472,53 +511,42 @@ def compute_tcs_to_cluster_deltaro(cluster, tcs):
 
     tcs.loc[tcs.index, 'dr'] = np.sqrt((cl_x-tcs.x)**2+(cl_y-tcs.y)**2)/np.abs(tcs.z)
 
-    # we rotate the x-y RF to center it on the cluster (phi angle)
-    cl_u = cl_x*cl_cos_phi + cl_y*cl_sin_phi
-    cl_t = -1*cl_x*cl_sin_phi + cl_y*cl_cos_phi
-    # tcs.loc[tcs.index, 'u'] = tcs.x*cl_cos_phi + tcs.y*cl_sin_phi
-    # tcs.loc[tcs.index, 't'] = -1.*tcs.x*cl_sin_phi + tcs.y*cl_cos_phi
-    tc_u = tcs.x*cl_cos_phi + tcs.y*cl_sin_phi
-    tc_t = -1.*tcs.x*cl_sin_phi + tcs.y*cl_cos_phi
+    if do_deltaUT:
+        # we rotate the x-y RF to center it on the cluster (phi angle)
+        cl_u = cl_x*cl_cos_phi + cl_y*cl_sin_phi
+        cl_t = -1*cl_x*cl_sin_phi + cl_y*cl_cos_phi
+        # tcs.loc[tcs.index, 'u'] = tcs.x*cl_cos_phi + tcs.y*cl_sin_phi
+        # tcs.loc[tcs.index, 't'] = -1.*tcs.x*cl_sin_phi + tcs.y*cl_cos_phi
+        tc_u = tcs.x*cl_cos_phi + tcs.y*cl_sin_phi
+        tc_t = -1.*tcs.x*cl_sin_phi + tcs.y*cl_cos_phi
 
-    tcs.loc[tcs.index, 'dt'] = (tc_t-cl_t)/np.abs(tcs.z)
-    tcs.loc[tcs.index, 'du'] = (tc_u-cl_u)/np.abs(tcs.z)
+        tcs.loc[tcs.index, 'dt'] = (tc_t-cl_t)/np.abs(tcs.z)
+        tcs.loc[tcs.index, 'du'] = (tc_u-cl_u)/np.abs(tcs.z)
 
-    # tcs.loc[tcs.index, 'dt'] = (tcs.t-cl_t)/np.abs(tcs.z)
-    # tcs.loc[tcs.index, 'du'] = (tcs.u-cl_u)/np.abs(tcs.z)
+    if do_extra:
+        tcs.loc[tcs.index, 'ef'] = tcs.energy/cluster.energy
+        tcs.loc[tcs.index, 'abseta_cl'] = np.abs(cluster.eta)
 
-    tcs.loc[tcs.index, 'ef'] = tcs.energy/cluster.energy
-    tcs.loc[tcs.index, 'abseta_cl'] = np.abs(cluster.eta)
-    # tcs.loc[tcs.index, 'fbrem_cl'] = np.abs(cluster.fbrem)
     return
 
 
-def get_dr_clusters2(cl3ds, tcs, cylind_size=[3]*28):
-    # def fill_momentum(cluster):
-    #     vector = ROOT.TLorentzVector()
-    #     vector.SetPtEtaPhiE(cluster.pt, cluster.eta, cluster.phi, cluster.energy)
-    #     cluster.momentum = vector
-    #     # print tower.pt, tower.momentum.Pt()
-    #     return cluster
+def compute_tcs_to_cluster_deltaro(cluster, tcs):
+    compute_tcs2cluster_distance(cluster, tcs,
+                                 do_deltaUT=True,
+                                 do_extra=True)
+    return
 
-    # columns = cl3ds.columns.values
-    # columns = np.append(columns, ['E', 'PT'])
-    # ret = pd.DataFrame(columns=cl3ds.columns)
+
+def get_dr_clusters(cl3ds, tcs, cylind_size=[3]*28):
     ret = cl3ds.copy(deep=True)
     em_layers = range(1, 29, 2)
 
-    if not ret.empty:
-        ret.loc[ret.index, 'sinh_eta'] = np.sinh(ret.eta)
-        ret.loc[ret.index, 'cos_phi'] = np.cos(ret.phi)
-        ret.loc[ret.index, 'sin_phi'] = np.sin(ret.phi)
+    if ret.empty:
+        return ret
 
     def compute_dr_cluster(cluster, tcs, cylind_size):
         components = tcs[tcs.id.isin(cluster.clusters)].copy()
-        components['R_cl'] = components.z/cluster.sinh_eta
-        components['x_cl'] = components.R_cl*cluster.cos_phi
-        components['y_cl'] = components.R_cl*cluster.sin_phi
-        components['dist2'] = (components.x_cl-components.x)**2+(components.y_cl-components.y)**2
-        components['dist'] = np.sqrt(components.dist2)
-        components['dr'] = components.dist/np.abs(components.z)
+        compute_tcs2cluster_distance(cluster, components)
 
         # FIXME: this could be cytonized using ndarrays
         def assign_size(comp):
@@ -528,101 +556,31 @@ def get_dr_clusters2(cl3ds, tcs, cylind_size=[3]*28):
         components = components.apply(assign_size, axis=1)
         selected_components = components[components.dr < components.clsize]
         if not selected_components.empty:
-            new_cluster = build3D(selected_components, calib_factor=1.).iloc[0]
-            cluster['energy'] = new_cluster.energy
-            cluster['eta'] = new_cluster.eta
-            cluster['phi'] = new_cluster.phi
-            cluster['pt'] = new_cluster.pt
-            cluster['layers'] = new_cluster.layers
-            cluster['clusters'] = new_cluster.clusters
-            cluster['nclu'] = new_cluster.nclu
-            cluster['firstlayer'] = new_cluster.firstlayer
-            cluster['eem'] = new_cluster.eem
-            cluster['ehad'] = new_cluster.ehad
-            cluster['hoe'] = new_cluster.hoe
-            cluster['ptem'] = new_cluster.ptem
-
-            cluster['layer_energy'] = [np.sum(selected_components[selected_components.layer == layer].energy) for layer in em_layers]
+            new_cluster_values = compute3DClQuantities(selected_components, calib_factor=1.)
+            cluster['energy'] = new_cluster_values['energy']
+            cluster['eta'] = new_cluster_values['eta']
+            cluster['phi'] = new_cluster_values['phi']
+            cluster['pt'] = new_cluster_values['pt']
+            cluster['layers'] = new_cluster_values['layers']
+            cluster['clusters'] = new_cluster_values['clusters']
+            cluster['nclu'] = new_cluster_values['nclu']
+            cluster['firstlayer'] = new_cluster_values['firstlayer']
+            cluster['eem'] = new_cluster_values['eem']
+            cluster['ehad'] = new_cluster_values['ehad']
+            cluster['hoe'] = new_cluster_values['hoe']
+            cluster['ptem'] = new_cluster_values['ptem']
+            # cluster['layer_energy'] = [np.sum(selected_components[selected_components.layer == layer].energy) for layer in em_layers]
+            cluster['layer_energy'] = np.histogram(selected_components.layer.values,
+                                      bins=range(0, 29, 2),
+                                      weights=selected_components.energy.values)[0]
         else:
             cluster['energy'] = -1
 
         return cluster
 
-
-
-    ret = ret.apply(lambda cl3d : compute_dr_cluster(cl3d, tcs, cylind_size), axis=1)
+    ret = ret.apply(lambda cl3d: compute_dr_cluster(cl3d, tcs, cylind_size), axis=1)
 
     return ret[ret.energy != -1]
-
-
-
-def get_dr_clusters(cl3ds, tcs, cylind_size=[3]*28):
-    # def fill_momentum(cluster):
-    #     vector = ROOT.TLorentzVector()
-    #     vector.SetPtEtaPhiE(cluster.pt, cluster.eta, cluster.phi, cluster.energy)
-    #     cluster.momentum = vector
-    #     # print tower.pt, tower.momentum.Pt()
-    #     return cluster
-
-    # columns = cl3ds.columns.values
-    # columns = np.append(columns, ['E', 'PT'])
-    ret = pd.DataFrame(columns=cl3ds.columns)
-    em_layers = range(1, 29, 2)
-    if not cl3ds.empty:
-        cl3ds.loc[cl3ds.index, 'sinh_eta'] = np.sinh(cl3ds.eta)
-        cl3ds.loc[cl3ds.index, 'cos_phi'] = np.cos(cl3ds.phi)
-        cl3ds.loc[cl3ds.index, 'sin_phi'] = np.sin(cl3ds.phi)
-        for index, cluster in cl3ds.iterrows():
-            components = tcs[tcs.id.isin(cluster.clusters)].copy()
-            components['R_cl'] = components.z/cluster.sinh_eta
-            components['x_cl'] = components.R_cl*cluster.cos_phi
-            components['y_cl'] = components.R_cl*cluster.sin_phi
-            components['dist2'] = (components.x_cl-components.x)**2+(components.y_cl-components.y)**2
-            components['dist'] = np.sqrt(components.dist2)
-            components['dr'] = components.dist/np.abs(components.z)
-
-            def assign_size(comp):
-                comp['clsize'] = cylind_size[comp.layer - 1]
-                return comp
-
-            components = components.apply(assign_size, axis=1)
-
-            # components['dist'] = np.sqrt(components.dist2)
-            # components['momentum'] = ROOT.TLorentzVector()
-            # components = components.apply(fill_momentum, axis=1)
-
-            # components['dist_bool'] = components[((components.x1-components.x)**2+(components.y1-components.y)**2)<cylind_size**2]
-            # print components[['id', 'layer', 'eta', 'phi', 'energy', 'x', 'y', 'R_cl', 'z', 'x_cl', 'y_cl', 'dist']].sort_values(by='layer', ascending=True)
-            # print components[['id', 'layer', 'eta', 'phi', 'energy', 'dist', 'z', 'dr', 'clsize']].sort_values(by='layer', ascending=True)
-
-            selected_components = components[components.dr < components.clsize]
-            if selected_components.empty:
-                continue
-            new_cluster = build3D(selected_components, calib_factor=1.)
-            # this is used for layer calibrations
-            # FIXME: sume np.sum(...value) and measure speedup
-            new_cluster['layer_energy'] = [[np.sum(selected_components[selected_components.layer == layer].energy) for layer in em_layers]]
-            new_cluster['showerlength'] = cluster.showerlength
-            new_cluster['seetot'] = cluster.seetot
-            new_cluster['seemax'] = cluster.seemax
-            new_cluster['spptot'] = cluster.spptot
-            new_cluster['sppmax'] = cluster.sppmax
-            new_cluster['szz'] = cluster.szz
-            new_cluster['emaxe'] = cluster.emaxe
-            new_cluster['quality'] = cluster.quality
-            if 'hwQual' in cl3ds.columns:
-                new_cluster['hwQual'] = cluster.hwQual
-            ret = ret.append(new_cluster, ignore_index=True, sort=False)
-            # ret['showerlength'] = cluster.showerlength
-    # print cl3ds[['id', 'energy', 'pt', 'phi', 'eta', 'showerlength', 'nclu']]
-    # print ret[['id', 'energy', 'pt', 'phi', 'eta', 'showerlength', 'nclu']]
-    return ret
-
-
-def get_dr_clusters_unpack2(clusters_tcs_cylsize):
-    # print clusters_tcs_cylsize
-    return get_dr_clusters2(clusters_tcs_cylsize[0], clusters_tcs_cylsize[1], clusters_tcs_cylsize[2])
-
 
 
 def get_dr_clusters_unpack(clusters_tcs_cylsize):
