@@ -146,39 +146,41 @@ def tkeg_fromcluster_fixture(tkegs):
 def cl3d_fixtures(clusters, tcs):
     # print clusters.columns
     # for backward compatibility
+    if clusters.empty:
+        return clusters
+
     clusters.rename(columns={'clusters_id': 'clusters',
                              'clusters_n': 'nclu'},
                     inplace=True)
-    clusters['hwQual'] = clusters['quality']
-    # clusters['nclu'] = [len(x) for x in clusters.clusters]
-
-    def compute_hoe(cluster):
-        # print cluster
-        components = tcs[tcs.id.isin(cluster.clusters)]
-        e_energy = components[components.layer <= 28].energy.sum()
-        h_enery = components[components.layer > 28].energy.sum()
-        if e_energy != 0.:
-            cluster.hoe = h_enery/e_energy
-        return cluster
-
+    # clusters['hwQual'] = clusters['quality']
+    do_compute_hoe = False
+    do_compute_layer_energy = False
     if 'hoe' not in clusters.columns:
-        clusters['hoe'] = 666
-        clusters = clusters.apply(compute_hoe, axis=1)
-
-    em_layers = range(1, 29, 2)
-
-    def compute_layer_energy(cluster):
-        components = tcs[tcs.id.isin(cluster.clusters)]
-        cluster['layer_energy'] = [components[components.layer == layer].energy.sum() for layer in range(1, 29, 2)]
-        return cluster
-
-    def compute_layer_energy2(cluster):
-        components = tcs[tcs.id.isin(cluster.clusters)]
-        cluster['layer_energy'] = [np.sum(components[components.layer == layer].energy.values) for layer in em_layers]
-        return cluster
-
+        do_compute_hoe = True
     if 'layer_energy' not in clusters.columns:
-        clusters = clusters.apply(compute_layer_energy2, axis=1)
+        do_compute_layer_energy = True
+
+    # em_layers = range(1, 29, 2)
+
+    def compute_layer_energy2(cluster, do_layer_energy=True, do_hoe=False):
+        components = tcs[tcs.id.isin(cluster.clusters)]
+        hist, bins = np.histogram(components.layer.values,
+                                  bins=range(0, 29, 2),
+                                  weights=components.energy.values)
+        if do_layer_energy:
+            cluster['layer_energy'] = hist
+        if do_hoe:
+            em_energy = np.sum(hist)
+            hoe = -1
+            if em_energy != 0:
+                hoe = max(0, cluster.energy - em_energy)/em_energy
+            cluster['hoe'] = hoe
+        return cluster
+
+    if do_compute_hoe or do_compute_layer_energy:
+        clusters = clusters.apply(lambda cl: compute_layer_energy2(cl,
+                                                                   do_compute_layer_energy,
+                                                                   do_compute_hoe), axis=1)
 
     clusters['ptem'] = clusters.pt/(1+clusters.hoe)
     clusters['eem'] = clusters.energy/(1+clusters.hoe)
@@ -189,6 +191,7 @@ def cl3d_fixtures(clusters, tcs):
         clusters['bdt_pi'] = rnptmva.evaluate_reader(
             classifiers.mva_pi_classifier_builder(), 'BDT', clusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
     return clusters
+
 
 def gen_fixtures(particles, mc_particles):
     # print particles.columns
@@ -279,10 +282,10 @@ def get_dr_clusters_mp(cl3ds, tcs, dr_size, pool):
 
     cluster_and_tc_sides = zip(cluster_sides, tc_sides, dr_sizes)
 
-    result_3dcl = pool.map(clAlgo.get_dr_clusters_unpack2, cluster_and_tc_sides)
+    result_3dcl = pool.map(clAlgo.get_dr_clusters_unpack, cluster_and_tc_sides)
     # result_3dcl = []
-    # result_3dcl.append(clAlgo.get_dr_clusters_unpack2(cluster_and_tc_sides[0]))
-    # result_3dcl.append(clAlgo.get_dr_clusters_unpack2(cluster_and_tc_sides[1]))
+    # result_3dcl.append(clAlgo.get_dr_clusters_unpack(cluster_and_tc_sides[0]))
+    # result_3dcl.append(clAlgo.get_dr_clusters_unpack(cluster_and_tc_sides[1]))
 
     merged_clusters = pd.DataFrame(columns=cl3ds.columns)
     for res3D in result_3dcl:
@@ -513,7 +516,7 @@ cl3d_hm = DFCollection(name='HMvDR', label='HM+dR(layer) Cl3d',
                        fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
                        depends_on=[tcs],
                        debug=0,
-                       print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'phi', 'quality', 'hwQual', 'ienergy', 'ipt']].sort_values(by='pt', ascending=False))
+                       print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'phi', 'quality', 'ienergy', 'ipt']].sort_values(by='pt', ascending=False))
 # cl3d_hm.activate()
 
 
@@ -522,7 +525,7 @@ cl3d_hm_emint = DFCollection(name='HMvDREmInt', label='HM+dR(layer) Cl3d EM Int'
                            # fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
                            depends_on=[cl3d_hm],
                            debug=0,
-                           print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality', 'hwQual', 'ienergy', 'ipt']].sort_values(by='pt', ascending=False)[:10])
+                           print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality', 'ienergy', 'ipt']].sort_values(by='pt', ascending=False)[:10])
 
 
 cl3d_hm_emint_merged = DFCollection(name='HMvDREmIntMerged', label='HM+dR(layer) Cl3d EM Int Merged',
@@ -530,7 +533,7 @@ cl3d_hm_emint_merged = DFCollection(name='HMvDREmIntMerged', label='HM+dR(layer)
                                     # fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
                                     depends_on=[cl3d_hm_emint],
                                     debug=0,
-                                    print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality', 'hwQual', 'ienergy', 'ipt']])
+                                    print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality', 'ienergy', 'ipt']])
 
 # cl3d_hm_emint.activate()
 
@@ -603,7 +606,7 @@ cl3d_hm_shapeDr = DFCollection(name='HMvDRshapeDr', label='HM #Delta#rho < 0.015
                                                                                 POOL),
                                depends_on=[cl3d_hm, tcs],
                                debug=0,
-                               print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality', 'hwQual']].sort_values(by='pt', ascending=False)[:10])
+                               print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality']].sort_values(by='pt', ascending=False)[:10])
 
 
 cl3d_hm_calib = DFCollection(name='HMvDRCalib', label='HM calib.',
@@ -632,12 +635,12 @@ cl3d_hm_fixed_calib = DFCollection(name='HMvDRfixedCalib', label='HM fixed calib
 
 cl3d_hm_shape_calib = DFCollection(name='HMvDRshapeCalib', label='HM shape calib.',
                                    filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_shape.df, calib_table['HMvDRshapeCalib']),
-                                   depends_on=[cl3d_hm_shape, tcs], debug=0, print_function=lambda df: df[['id', 'pt', 'eta', 'quality', 'hwQual']])
+                                   depends_on=[cl3d_hm_shape, tcs], debug=0, print_function=lambda df: df[['id', 'pt', 'eta', 'quality']])
 
 
 cl3d_hm_shapeDr_calib = DFCollection(name='HMvDRshapeDrCalib', label='HM #Delta#rho < 0.015 calib.',
                                    filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_shapeDr.df, [0.0, 1.4, 0.84, 1.14, 1.0, 0.98, 1.03, 1.03, 1.03, 0.92, 0.99, 0.93, 1.45, 1.88], (-17.593281, 38.969376)),
-                                   depends_on=[cl3d_hm_shapeDr, tcs], debug=0, print_function=lambda df: df[['id', 'pt', 'eta', 'quality', 'hwQual']])
+                                   depends_on=[cl3d_hm_shapeDr, tcs], debug=0, print_function=lambda df: df[['id', 'pt', 'eta', 'quality']])
 
 
 
