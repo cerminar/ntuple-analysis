@@ -130,6 +130,8 @@ class DFCollection(object):
     def fill(self, event, debug):
         self.df = self.filler_function(event)
         if self.fixture_function is not None:
+            # FIXME: wouldn't this be more efficient
+            # self.fixture_function(self.df)
             self.df = self.fixture_function(self.df)
         if not self.df.empty:
             debugPrintOut(max(debug, self.debug), self.label,
@@ -160,7 +162,23 @@ def cl3d_fixtures(clusters, tcs):
     if 'layer_energy' not in clusters.columns:
         do_compute_layer_energy = True
 
-    # em_layers = range(1, 29, 2)
+    def compute_layer_energy3(cluster, do_layer_energy=True, do_hoe=False):
+        components = tcs[tcs.id.isin(cluster.clusters)]
+        hist, bins = np.histogram(components.layer.values,
+                                  bins=range(0, 29, 2),
+                                  weights=components.energy.values)
+        results = []
+        if do_layer_energy:
+            results.append(hist)
+        if do_hoe:
+            em_energy = np.sum(hist)
+            hoe = -1
+            if em_energy != 0:
+                hoe = max(0, cluster.energy - em_energy)/em_energy
+            results.append(hoe)
+        return results
+
+
 
     def compute_layer_energy2(cluster, do_layer_energy=True, do_hoe=False):
         components = tcs[tcs.id.isin(cluster.clusters)]
@@ -178,9 +196,19 @@ def cl3d_fixtures(clusters, tcs):
         return cluster
 
     if do_compute_hoe or do_compute_layer_energy:
-        clusters = clusters.apply(lambda cl: compute_layer_energy2(cl,
-                                                                   do_compute_layer_energy,
-                                                                   do_compute_hoe), axis=1)
+        # clusters = clusters.apply(lambda cl: compute_layer_energy2(cl,
+        #                                                            do_compute_layer_energy,
+        #                                                            do_compute_hoe), axis=1)
+        new_columns = []
+        if do_compute_layer_energy:
+            new_columns.append('layer_energy')
+        if do_compute_hoe:
+            new_columns.append('hoe')
+        clusters[new_columns] = clusters.apply(lambda cl: compute_layer_energy3(cl,
+                                                                                do_compute_layer_energy,
+                                                                                do_compute_hoe),
+                                               result_type='expand',
+                                               axis=1)
 
     clusters['ptem'] = clusters.pt/(1+clusters.hoe)
     clusters['eem'] = clusters.energy/(1+clusters.hoe)
