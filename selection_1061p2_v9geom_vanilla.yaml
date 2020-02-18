@@ -7,7 +7,7 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v124
+  plot_version: v125
   run_clustering: False
   run_density_computation: False
 
@@ -139,11 +139,12 @@ collections:
       # - ttower_plotters
       # - ttower_genmatched_plotters
     htc_jobflavor:
-      workday
+      longlunch
     priorities:
-      ele_flat2to100_PU0: 0
-      ele_flat2to100_PU200: 0
-      photon_flat8to150_PU0: 0
+      ele_flat2to100_PU0: 5
+      ele_flat2to100_PU200: 3
+      photon_flat8to150_PU0: 4
+      photon_flat8to150_PU200: 1
 
   single_empart_guns_tps:
     file_label:
@@ -251,7 +252,7 @@ collections:
       # - ttower_plotters
       # - ttower_genmatched_plotters
     htc_jobflavor:
-      workday
+      microcentury
     priorities:
       ele_flat2to100_PU0: 5
       ele_flat2to100_PU200: 3

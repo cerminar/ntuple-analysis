@@ -1075,6 +1075,19 @@ class TCClusterMatchHistos(BaseHistos):
             # self.h_dRhoVfbrem = ROOT.TH2F(name+'_dRhoVfbrem',
             #                         '#Delta#rho vs f_{brem}; f_{brem}; #Delta#rho;',
             #                         100, 0, 1, 100, 0, 0.1)
+            self.h_dtVlayer = ROOT.TH2F(name+'_dtVlayer',
+                                    '#Deltat vs layer; layer #; #Deltat;',
+                                    60, 0, 60, 100, -0.05, 0.05)
+            self.h_duVlayer = ROOT.TH2F(name+'_duVlayer',
+                                    '#Delta#rho; layer #; #Deltau;',
+                                    60, 0, 60, 100, -0.05, 0.05)
+
+            self.h_dtVlayer2 = ROOT.TH2F(name+'_dtVlayer2',
+                                    '#Deltat vs layer; layer #; #Deltat;',
+                                    60, 0, 60, 100, -0.05, 0.05)
+            self.h_duVlayer2 = ROOT.TH2F(name+'_duVlayer2',
+                                    '#Delta#rho; layer #; #Deltau;',
+                                    60, 0, 60, 100, -0.05, 0.05)
 
             self.h_dtVdu = ROOT.TH2F(name+'_dtVdu',
                                     '#Deltat vs #Deltau; #Deltat [cm]; #Deltau [cm];',
@@ -1104,6 +1117,12 @@ class TCClusterMatchHistos(BaseHistos):
         rnp.fill_hist(self.h_dRho, tcs.dr)
         rnp.fill_hist(self.h_dRho2, tcs.dr, tcs.ef)
         rnp.fill_hist(self.h_dRhoVlayer, tcs[['layer', 'dr']])
+        rnp.fill_hist(self.h_dtVlayer2, tcs[['layer', 'dt']], tcs['ef'])
+        rnp.fill_hist(self.h_duVlayer2, tcs[['layer', 'du']], tcs['ef'])
+
+        rnp.fill_hist(self.h_dtVlayer, tcs[['layer', 'dt']])
+        rnp.fill_hist(self.h_duVlayer, tcs[['layer', 'du']])
+
         rnp.fill_hist(self.h_dRhoVabseta, tcs[['abseta_cl', 'dr']])
         # rnp.fill_hist(self.h_dRhoVfbrem, tcs[['fbrem_cl', 'dr']])
         rnp.fill_hist(self.h_dtVdu, tcs[['dt', 'du']])
