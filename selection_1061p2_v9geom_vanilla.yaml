@@ -139,7 +139,7 @@ collections:
       # - ttower_plotters
       # - ttower_genmatched_plotters
     htc_jobflavor:
-      longlunch
+      microcentury
     priorities:
       ele_flat2to100_PU0: 5
       ele_flat2to100_PU200: 3

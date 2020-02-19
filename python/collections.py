@@ -322,6 +322,13 @@ def get_dr_clusters_mp(cl3ds, tcs, dr_size, pool):
                         pool=pool)
 
 
+def get_dtdu_clusters_mp(cl3ds, tcs, dr_size, pool):
+    return recluster_mp(cl3ds, tcs,
+                        cluster_size=dr_size,
+                        cluster_function=clAlgo.get_dtdu_clusters_unpack,
+                        pool=pool)
+
+
 def get_emint_clusters(triggerClusters):
     clusters_emint = triggerClusters.copy(deep=True)
 
@@ -639,6 +646,16 @@ cl3d_hm_shapeDr = DFCollection(name='HMvDRshapeDr', label='HM #Delta#rho < 0.015
                                print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality']].sort_values(by='pt', ascending=False)[:10])
 
 
+cl3d_hm_shapeDtDu = DFCollection(name='HMvDRshapeDtDu', label='HM #Deltau #Deltat',
+                                 filler_function=lambda event: get_dtdu_clusters_mp(cl3d_hm.df[cl3d_hm.df.quality>0],
+                                                                                    tcs.df,
+                                                                                    (0.015, 0.007),
+                                                                                    POOL),
+                                 depends_on=[cl3d_hm, tcs],
+                                 debug=0,
+                                 print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality']].sort_values(by='pt', ascending=False)[:10])
+
+
 cl3d_hm_calib = DFCollection(name='HMvDRCalib', label='HM calib.',
                              filler_function=lambda event: get_layer_calib_clusters(cl3d_hm.df,
                                                                                     calib_table['HMvDRCalib']),
@@ -850,6 +867,7 @@ tp_hm_vdr = TPSet(tcs, tcs, cl3d_hm)
 tp_hm_fixed = TPSet(tcs, tcs, cl3d_hm_fixed)
 tp_hm_shape = TPSet(tcs, tcs, cl3d_hm_shape)
 tp_hm_shapeDr = TPSet(tcs, tcs, cl3d_hm_shapeDr)
+tp_hm_shapeDtDu = TPSet(tcs, tcs, cl3d_hm_shapeDtDu)
 tp_hm_emint = TPSet(tcs, tcs, cl3d_hm_emint)
 tp_hm_cylind10 = TPSet(tcs, tcs, cl3d_hm_cylind10)
 tp_hm_cylind5 = TPSet(tcs, tcs, cl3d_hm_cylind5)
