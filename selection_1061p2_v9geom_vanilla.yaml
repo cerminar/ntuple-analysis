@@ -95,6 +95,7 @@ collections:
       - ele_flat2to100_PU200
       - photon_flat8to150_PU0
       - photon_flat8to150_PU200
+      - dyll_PU200
     plotters:
       - eg_plotters
       - eg_genmatched_plotters
@@ -105,7 +106,7 @@ collections:
       ele_flat2to100_PU200: 5
       photon_flat8to150_PU0: 0
       photon_flat8to150_PU200: 0
-
+      dyll_PU200: 5
 
   single_empart_guns_resotuples:
     file_label:
@@ -288,23 +289,27 @@ plotters:
 #test: !!python/name:python.selections.gen_part_selections
 samples:
   ele_flat2to100_PU0:
-    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v43/191022_152328/0000/
+    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v48/200210_131917/0000/
+    # input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v43/191022_152328/0000/
     # input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v47/191105_134845/0000/
     events_per_job : 500
     # gen_selections: !!python/name:python.selections.genpart_photon_selections
 
   ele_flat2to100_PU200:
-    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU200_v43/191022_152446/0000/
+    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU200_v48/200210_132344/0000/
+    # input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU200_v43/191022_152446/0000/
     # input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU200_v47/191105_134950/0000/
     events_per_job : 200
 
   photon_flat8to150_PU0:
-    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU0_v43/191022_152604/0000/
+    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU0_v48/200210_132919/0000/
+    # input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU0_v43/191022_152604/0000/
     # input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU0_v46/191031_200300/0000/
     events_per_job : 500
 
   photon_flat8to150_PU200:
-    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU200_v43/191022_152721/0000/
+    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU200_v48/200210_133036/0000/
+    # input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU200_v43/191022_152721/0000/
     # input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU200_v46/191031_200356/0000/
     events_per_job : 200
 
@@ -342,7 +347,8 @@ samples:
     events_per_job: 200
 
   dyll_PU200:
-    input_sample_dir: DYToLL_M-50_14TeV_TuneCP5_pythia8/DYToLL_PU200_v45/191105_102403/0000/
+    input_sample_dir: DYToLL_M-50_14TeV_TuneCP5_pythia8/DYToLL_PU200_v48/200210_133300/0000/
+    # input_sample_dir: DYToLL_M-50_14TeV_TuneCP5_pythia8/DYToLL_PU200_v45/191105_102403/0000/
     events_per_job: 200
 
 
