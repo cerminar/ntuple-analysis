@@ -217,6 +217,13 @@ gen_eta_selections = [
                       # Selection('EtaBCDE', '1.52 < |#eta^{GEN}|', '1.52 < abs(eta)')
                       ]
 
+
+gen_eta_sel = [Selection('EtaDE', '2.4 < |#eta^{GEN}| <= 3.0', '2.4 < abs(eta) <= 3.0'),
+               Selection('EtaBC', '1.52 < |#eta^{GEN}| <= 2.4', '1.52 < abs(eta) <= 2.4'),
+               Selection('EtaBCD', '1.52 < |#eta^{GEN}| <= 2.8', '1.52 < abs(eta) <= 2.8'),
+                      ]
+
+
 gen_eta_barrel_selections = [Selection('EtaF', '|#eta^{GEN}| <= 1.479', 'abs(eta) <= 1.479')]
 gen_eta_be_selections = [Selection('EtaF', '|#eta^{GEN}| <= 1.479', 'abs(eta) <= 1.479'),
                          Selection('EtaD', '2.4 < |#eta^{GEN}| <= 2.8', '2.4 < abs(eta) <= 2.8'),
@@ -253,17 +260,41 @@ gen_pt_selections = [Selection('Pt15', 'p_{T}^{GEN}>=15GeV', 'pt >= 15'),
                      Selection('Pt35', 'p_{T}^{GEN}>=35GeV', 'pt >= 35'),
                      Selection('Pt40', 'p_{T}^{GEN}>=40GeV', 'pt >= 40')]
 
+
+gen_pt_sel = [Selection('Pt15', 'p_{T}^{GEN}>=15GeV', 'pt >= 15'),
+                     # Selection('Pt10to25', '10 #leq p_{T}^{GEN} < 25GeV', '(pt >= 10) & (pt < 25)'),
+                     # Selection('Pt20', 'p_{T}^{GEN}>=20GeV', 'pt >= 20'),
+                     Selection('Pt30', 'p_{T}^{GEN}>=30GeV', 'pt >= 30'),
+                     # Selection('Pt35', 'p_{T}^{GEN}>=35GeV', 'pt >= 35'),
+                     Selection('Pt40', 'p_{T}^{GEN}>=40GeV', 'pt >= 40')]
+
+
 # gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {}) | (abs(pdgid) == {}) | (abs(pdgid) == {})'.format(PID.electron, PID.photon, PID.pion))]
 # gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {}) & (firstmother_pdgid == {})'.format(PID.electron, PID.electron))]
+# FIXME: add fabs to firstmother_if
 gen_selections = [Selection('GEN', '', '((abs(pdgid) == {}) & (firstmother_pdgid == {})) | ((abs(pdgid) == {}) & (firstmother_pdgid == {}))'.format(PID.electron, PID.electron,
                                                                                                                                                     PID.photon, PID.photon))]
 
+gen_ele_sel = [Selection('GEN', '', '((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {}))'.format(PID.electron,
+                                                                                                   PID.electron))]
 
-# gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {})'.format(PID.e lectron))]
+gen_ee_sel = [Selection('all'),
+              Selection('END', 'ECAll', 'reachedEE >0 '),
+              Selection('EC', 'EC', 'reachedEE == 2')]
+
+
 gen_part_fbrem_selection = [Selection('all', '', ''),
                             Selection('HBrem', 'f_{BREM} >= 0.5', 'fbrem >= 0.5'),
                             Selection('LBrem', 'f_{BREM} < 0.5', 'fbrem < 0.5'),
                             ]
+
+genpart_ele_sel = add_selections(gen_ele_sel, gen_ee_sel)
+genpart_ele_pt_sel = add_selections(genpart_ele_sel, gen_pt_sel)
+genpart_ele_eta_sel = add_selections(genpart_ele_sel, gen_eta_sel)
+genpart_ele_eta_brem_sel = add_selections(genpart_ele_eta_sel, gen_part_fbrem_selection)
+
+
+# gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {})'.format(PID.e lectron))]
 
 
 gen_part_ee_sel = add_selections(gen_selections, gen_ee_selections)
@@ -281,6 +312,12 @@ gen_part_selections += gen_part_ee_pt_sel
 # gen_part_selections += gen_part_ee_eta_sel
 gen_part_selections += add_selections(gen_part_ee_eta_sel, gen_pt_selection15)
 
+gen_part_ele_selections = []
+gen_part_ele_selections += genpart_ele_sel
+gen_part_ele_selections += genpart_ele_pt_sel
+# gen_part_selections += gen_part_ee_eta_sel
+gen_part_ele_selections += add_selections(genpart_ele_eta_sel, gen_pt_selection15)
+
 
 gen_part_barrel_selections = []
 gen_part_barrel_selections += gen_selections
@@ -289,6 +326,7 @@ gen_part_barrel_selections += add_selections(gen_selections, gen_eta_barrel_sele
 
 gen_part_be_selections = []
 gen_part_be_selections += gen_selections
+
 gen_part_be_selections += add_selections(gen_selections, gen_pt_selections)
 gen_part_be_selections += add_selections(gen_selections, gen_eta_be_selections)
 
@@ -305,6 +343,7 @@ gen_part_selections_calib += add_selections([gen_part_ee_eta_sel[1]], gen_pt_sel
 
 
 gen_part_selections_tketa = [gen_sel for gen_sel in gen_part_selections if 'EtaD' not in gen_sel.name]
+gen_part_ele_selections_tketa = [gen_sel for gen_sel in gen_part_ele_selections if 'EtaD' not in gen_sel.name]
 # gen_part_selections_tketa += []
 print 'gen_part_selections: {}'.format(len(gen_part_selections))
 
@@ -439,5 +478,5 @@ if __name__ == "__main__":
     #     print sel
     # for sel in tp_rate_selections:
     #     print sel
-    for sel in gen_part_ee_eta_sel:
+    for sel in gen_part_ele_selections:
         print sel
