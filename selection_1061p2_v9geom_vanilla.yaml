@@ -123,6 +123,8 @@ collections:
       ele_flat2to100_PU0: 1
       ele_flat2to100_PU200: 5
       dyll_PU200: 4
+    weights:
+      dyll_PU200: data/dyll_pt_weights.root
 
 
   single_empart_guns_resotuples:
@@ -142,7 +144,6 @@ collections:
       ele_flat2to100_PU200: 5
       photon_flat8to150_PU0: 0
       photon_flat8to150_PU200: 0
-
 
   single_empart_guns_calibs:
     file_label:
@@ -255,7 +256,6 @@ collections:
       nugun_alleta_pu0: 0
       nugun_alleta_pu200: 0
 
-
   single_empart_guns_tccluster_matcher:
     file_label:
       tccl
@@ -276,7 +276,6 @@ collections:
       ele_flat2to100_PU200: 3
       photon_flat8to150_PU0: 4
       photon_flat8to150_PU200: 2
-
 
 plotters:
   rate_plotters: !!python/name:python.plotters_config.rate_plotters
