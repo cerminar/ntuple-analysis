@@ -180,12 +180,24 @@ class GenParticleHistos(BaseHistos):
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, particles):
-        rnp.fill_hist(self.h_eta, particles.eta)
-        rnp.fill_hist(self.h_abseta, particles.eta.abs())
-        rnp.fill_hist(self.h_pt, particles.pt)
-        rnp.fill_hist(self.h_energy, particles.energy)
-        rnp.fill_hist(self.h_reachedEE, particles.reachedEE)
-        rnp.fill_hist(self.h_fBrem, particles.fbrem)
+        rnp.fill_hist(hist=self.h_eta,
+                      array=particles.eta,
+                      weights=particles.weight)
+        rnp.fill_hist(hist=self.h_abseta,
+                      array=particles.eta.abs(),
+                      weights=particles.weight)
+        rnp.fill_hist(hist=self.h_pt,
+                      array=particles.pt,
+                      weights=particles.weight)
+        rnp.fill_hist(hist=self.h_energy,
+                      array=particles.energy,
+                      weights=particles.weight)
+        rnp.fill_hist(hist=self.h_reachedEE,
+                      array=particles.reachedEE,
+                      weights=particles.weight)
+        rnp.fill_hist(hist=self.h_fBrem,
+                      array=particles.fbrem,
+                      weights=particles.weight)
 
 
 class DigiHistos(BaseHistos):
@@ -366,12 +378,15 @@ class EGHistos(BaseHistos):
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, egs):
-        rnp.fill_hist(self.h_pt, egs.pt)
-        rnp.fill_hist(self.h_eta, egs.eta)
-        rnp.fill_hist(self.h_energy, egs.energy)
-        rnp.fill_hist(self.h_hwQual, egs.hwQual)
+        weight = np.ones(egs.shape[0])
+        if 'weight' in egs.columns:
+            weight = egs.weight
+        rnp.fill_hist(hist=self.h_pt,     array=egs.pt,     weights=weight)
+        rnp.fill_hist(hist=self.h_eta,    array=egs.eta,    weights=weight)
+        rnp.fill_hist(hist=self.h_energy, array=egs.energy, weights=weight)
+        rnp.fill_hist(hist=self.h_hwQual, array=egs.hwQual, weights=weight)
         if 'tkIso' in egs.columns:
-            rnp.fill_hist(self.h_tkIso, egs.tkIso)
+            rnp.fill_hist(hist=self.h_tkIso, array=egs.tkIso, weights=weight)
 
 
 class TkEGHistos(BaseHistos):
@@ -833,14 +848,14 @@ class EGResoHistos(BaseResoHistos):
         BaseResoHistos.__init__(self, name, root_file, debug)
 
     def fill(self, reference, target):
-        self.h_ptRes.Fill((target.pt-reference.pt)/reference.pt)
-        self.h_ptResVpt.Fill(reference.pt, target.pt-reference.pt)
-        self.h_ptResp.Fill(target.pt/reference.pt)
-        self.h_ptRespVeta.Fill(reference.eta, target.pt/reference.pt)
-        self.h_ptRespVpt.Fill(reference.pt, target.pt/reference.pt)
-        self.h_etaRes.Fill(target.eta - reference.eta)
-        self.h_phiRes.Fill(target.phi - reference.phi)
-        self.h_drRes.Fill(np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
+        self.h_ptRes.Fill((target.pt-reference.pt)/reference.pt, reference.weight)
+        self.h_ptResVpt.Fill(reference.pt, target.pt-reference.pt, reference.weight)
+        self.h_ptResp.Fill(target.pt/reference.pt, reference.weight)
+        self.h_ptRespVeta.Fill(reference.eta, target.pt/reference.pt, reference.weight)
+        self.h_ptRespVpt.Fill(reference.pt, target.pt/reference.pt, reference.weight)
+        self.h_etaRes.Fill(target.eta - reference.eta, reference.weight)
+        self.h_phiRes.Fill(target.phi - reference.phi, reference.weight)
+        self.h_drRes.Fill(np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2), reference.weight)
 
 
 class ClusterConeHistos(BaseHistos):
