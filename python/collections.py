@@ -28,6 +28,20 @@ import python.classifiers as classifiers
 import python.calibrations as calib
 
 
+class WeightFile(object):
+    def __init__(self, file_name):
+        self.file_ = ROOT.TFile(file_name)
+        self.cache_ = {}
+
+    def get_weight_1d(self, histo_name, variable):
+        histo = None
+        if histo_name not in self.cache_.keys():
+            self.cache_[histo_name] = self.file_.Get(histo_name)
+        histo = self.cache_[histo_name]
+        bin_n = histo.FindBin(variable)
+        return histo.GetBinContent(bin_n)
+
+
 class EventManager(object):
     """
     EventManager.
@@ -42,6 +56,10 @@ class EventManager(object):
         def __init__(self):
             self.collections = []
             self.active_collections = []
+            self.weight_file = None
+
+        def read_weight_file(self, weight_file_name):
+            self.weight_file = WeightFile(weight_file_name)
 
         def registerCollection(self, collection):
             # print '[EventManager] registering collection: {}'.format(collection.name)
@@ -55,7 +73,7 @@ class EventManager(object):
             for collection in self.active_collections:
                 if debug >= 3:
                     print '[EventManager] filling collection: {}'.format(collection.name)
-                collection.fill(event, debug)
+                collection.fill(event, self.weight_file, debug)
 
         def get_labels(self):
             label_dict = {}
@@ -102,7 +120,8 @@ class DFCollection(object):
                  fixture_function=None,
                  depends_on=[],
                  debug=0,
-                 print_function=lambda df: df):
+                 print_function=lambda df: df,
+                 weight_function=None):
         self.df = None
         self.name = name
         self.label = label
@@ -112,6 +131,7 @@ class DFCollection(object):
         self.depends_on = depends_on
         self.debug = debug
         self.print_function = print_function
+        self.weight_function = weight_function
         self.register()
 
     def register(self):
@@ -127,12 +147,14 @@ class DFCollection(object):
             event_manager.registerActiveCollection(self)
         return self.is_active
 
-    def fill(self, event, debug):
+    def fill(self, event, weight_file=None, debug=0):
         self.df = self.filler_function(event)
         if self.fixture_function is not None:
             # FIXME: wouldn't this be more efficient
             # self.fixture_function(self.df)
             self.df = self.fixture_function(self.df)
+        if self.weight_function is not None:
+            self.df = self.weight_function(self.df, weight_file)
         if not self.df.empty:
             debugPrintOut(max(debug, self.debug), self.label,
                           toCount=self.df,
@@ -502,6 +524,18 @@ def print_columns(df):
     print df.columns
     return df
 
+
+def gen_part_pt_weights(gen_parts, weight_file):
+    def compute_weight(gen_part):
+        return weight_file.get_weight_1d('h_weights', gen_part.pt)
+
+    if weight_file is None:
+        gen_parts['weight'] = 1
+    else:
+        gen_parts['weight'] = gen_parts.apply(compute_weight, axis=1)
+    return gen_parts
+
+
 gen = DFCollection(name='MC', label='MC particles',
                    filler_function=lambda event: event.getDataFrame(prefix='gen'),
                    fixture_function=mc_fixtures, debug=0)
@@ -511,8 +545,10 @@ gen_parts = DFCollection(name='GEN', label='GEN particles',
                          filler_function=lambda event: event.getDataFrame(prefix='genpart'),
                          fixture_function=lambda gen_parts: gen_fixtures(gen_parts, gen),
                          depends_on=[gen],
-                         debug=0,
-                         print_function=lambda df: df[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'ovz', 'pid', 'gen', 'reachedEE']]
+                         debug=4,
+                         # print_function=lambda df: df[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'ovz', 'pid', 'gen', 'reachedEE', 'firstmother_pdgid']],
+                         print_function=lambda df: df[['eta', 'phi', 'pt', 'weight']].sort_values(by='pt', ascending=False),
+                         weight_function=gen_part_pt_weights
                          )
 # gen_parts.activate()
 

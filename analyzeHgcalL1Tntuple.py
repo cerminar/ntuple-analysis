@@ -46,41 +46,10 @@ from python.utils import debugPrintOut
 # import warnings
 # warnings.filterwarnings('error', category=SettingWithCopyWarning)
 
+class Parameters(dict):
 
-class Parameters:
-    def __init__(self,
-                 input_base_dir,
-                 input_sample_dir,
-                 output_filename_base,
-                 output_filename,
-                 output_dir,
-                 clusterize,
-                 eventsToDump,
-                 events_per_job,
-                 version,
-                 plotters,
-                 maxEvents=-1,
-                 computeDensity=False,
-                 htc_jobflavor='workday',
-                 htc_priority=0,
-                 debug=0,
-                 name=''):
-        self.name = name
-        self.maxEvents = maxEvents
-        self.debug = debug
-        self.input_base_dir = input_base_dir
-        self.input_sample_dir = input_sample_dir
-        self.output_filename_base = output_filename_base
-        self.output_filename = output_filename
-        self.output_dir = output_dir
-        self.clusterize = clusterize
-        self.eventsToDump = eventsToDump
-        self.computeDensity = computeDensity
-        self.events_per_job = events_per_job
-        self.version = version
-        self.plotters = plotters
-        self.htc_jobflavor = htc_jobflavor
-        self.htc_priority = htc_priority
+    def __getattr__(self, name):
+        return self[name]
 
     def __str__(self):
         return 'Name: {},\n \
@@ -134,22 +103,28 @@ def get_collection_parameters(opt, cfgfile):
 
             out_file = os.path.join(outdir, out_file_name)
 
-            params = Parameters(input_base_dir=cfgfile['common']['input_dir'],
-                                input_sample_dir=cfgfile['samples'][sample]['input_sample_dir'],
-                                output_filename_base=output_filename_base,
-                                output_filename=out_file,
-                                output_dir=outdir,
-                                clusterize=cfgfile['common']['run_clustering'],
-                                eventsToDump=[],
-                                version=plot_version,
-                                maxEvents=int(opt.NEVENTS),
-                                events_per_job=events_per_job,
-                                computeDensity=cfgfile['common']['run_density_computation'],
-                                plotters=plotters,
-                                htc_jobflavor=collection_data['htc_jobflavor'],
-                                htc_priority=collection_data['priorities'][sample],
-                                debug=opt.DEBUG,
-                                name=sample)
+            weight_file = None
+            if 'weights' in collection_data.keys():
+                if sample in collection_data['weights'].keys():
+                    weight_file = collection_data['weights'][sample]
+
+            params = Parameters({'input_base_dir': cfgfile['common']['input_dir'],
+                                 'input_sample_dir': cfgfile['samples'][sample]['input_sample_dir'],
+                                 'output_filename_base': output_filename_base,
+                                 'output_filename': out_file,
+                                 'output_dir': outdir,
+                                 'clusterize': cfgfile['common']['run_clustering'],
+                                 'eventsToDump': [],
+                                 'version': plot_version,
+                                 'maxEvents': int(opt.NEVENTS),
+                                 'events_per_job': events_per_job,
+                                 'computeDensity': cfgfile['common']['run_density_computation'],
+                                 'plotters': plotters,
+                                 'htc_jobflavor': collection_data['htc_jobflavor'],
+                                 'htc_priority': collection_data['priorities'][sample],
+                                 'weight_file': weight_file,
+                                 'debug': opt.DEBUG,
+                                 'name': sample})
             sample_params.append(params)
         collection_params[collection] = sample_params
     return collection_params
@@ -256,6 +231,9 @@ def analyze(params, batch_idx=0):
     # -------------------------------------------------------
     # event loop
     ev_manager = collections.EventManager()
+
+    if params.weight_file is not None:
+        ev_manager.read_weight_file(params.weight_file)
 
     nev = 0
     for evt_idx in range(range_ev[0], range_ev[1]+1):
