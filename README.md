@@ -4,17 +4,14 @@ The python scripts in this repository should help you get started analysing the 
 
 ## Pre-requisites
 
+For setting up the python version on lxplus you can just source the script:
 
-
+`source setup_lxplus.sh`
 
 Setup a `virtualenv` using `virtualenvwrapper`.
 
 Follow the `virtualenvwrapper` [installation instructions](https://virtualenvwrapper.readthedocs.io/en/latest/install.html) to install it in the `~/.local/` directory (using `$ pip install --user virtualenvwrapper`). This needs to be done only once for your account.
 Note, on lxplus you might need to use `$ pip install --upgrade --user virtualenvwrapper` to avoid clashes with the system-wide installation.
-
-For setting up the python version on lxplus you can just source the script:
-
-`source setup_lxplus.sh`
 
 For starting using virtualenvwrapper
 
