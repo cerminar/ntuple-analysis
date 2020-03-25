@@ -545,7 +545,7 @@ gen_parts = DFCollection(name='GEN', label='GEN particles',
                          filler_function=lambda event: event.getDataFrame(prefix='genpart'),
                          fixture_function=lambda gen_parts: gen_fixtures(gen_parts, gen),
                          depends_on=[gen],
-                         debug=4,
+                         debug=0,
                          # print_function=lambda df: df[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'ovz', 'pid', 'gen', 'reachedEE', 'firstmother_pdgid']],
                          print_function=lambda df: df[['eta', 'phi', 'pt', 'weight']].sort_values(by='pt', ascending=False),
                          weight_function=gen_part_pt_weights
