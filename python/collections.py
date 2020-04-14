@@ -720,11 +720,23 @@ cl3d_hm_shape_calib = DFCollection(name='HMvDRshapeCalib', label='HM shape calib
                                    filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_shape.df, calib_table['HMvDRshapeCalib']),
                                    depends_on=[cl3d_hm_shape, tcs], debug=0, print_function=lambda df: df[['id', 'pt', 'eta', 'quality']])
 
-
 cl3d_hm_shapeDr_calib = DFCollection(name='HMvDRshapeDrCalib', label='HM #Delta#rho < 0.015 calib.',
-                                   filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_shapeDr.df, [0.0, 1.4, 0.84, 1.14, 1.0, 0.98, 1.03, 1.03, 1.03, 0.92, 0.99, 0.93, 1.45, 1.88], (-17.593281, 38.969376)),
-                                   depends_on=[cl3d_hm_shapeDr, tcs], debug=0, print_function=lambda df: df[['id', 'pt', 'eta', 'quality']])
+                                   filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_shapeDr.df,
+                                                                                          [0.0, 1.23, 0.87, 1.2, 0.97, 0.95, 1.05, 1.05, 1.01, 0.93, 1.04, 0.96, 1.35, 1.83],
+                                                                                          (-17.6839, 39.2417)),
+                                   depends_on=[cl3d_hm_shapeDr, tcs],
+                                   debug=0,
+                                   print_function=lambda df: df[['id', 'pt', 'eta', 'quality']])
 
+
+
+cl3d_hm_shapeDtDu_calib = DFCollection(name='HMvDRshapeDtDuCalib', label='HM #Deltat#Deltau calib.',
+                                   filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_shapeDr.df,
+                                                                                          [0.0, 1.53, 0.83, 1.26, 1.05, 0.98, 1.19, 1.07, 1.04, 0.89, 1.27, 1.07, 1.34, 1.8],
+                                                                                          (-14.5587, 34.5388)),
+                                   depends_on=[cl3d_hm_shapeDtDu, tcs],
+                                   debug=0,
+                                   print_function=lambda df: df[['id', 'pt', 'eta', 'quality']])
 
 
 cl3d_hm_calib_merged = DFCollection(name='HMvDRCalibMerged', label='HM calib. merged',
