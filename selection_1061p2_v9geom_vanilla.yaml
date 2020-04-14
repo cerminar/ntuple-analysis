@@ -231,7 +231,7 @@ collections:
       # - tp_egm_plotters
       - eg_rate_plotters
     htc_jobflavor:
-      tomorrow
+      workday
     priorities:
       nugun_alleta_pu200: 3
 
