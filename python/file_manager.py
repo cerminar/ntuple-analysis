@@ -1,3 +1,4 @@
+# from __future__ import absolute_import
 import os
 import subprocess32
 from NtupleDataFormat import HGCalNtuple
@@ -51,16 +52,28 @@ def copy_to_eos(file_name, target_dir, target_file_name):
     return eos_proc.returncode
 
 
-def listFiles(input_dir, match='.root'):
+def listFiles(input_dir, match='.root', recursive=True):
     onlyfiles = []
+    onlydirs = []
     if not input_dir.startswith('/eos'):
         onlyfiles = [os.path.join(input_dir, f) for f in os.listdir(input_dir) if os.path.isfile(os.path.join(input_dir, f)) and match in f]
+        if recursive:
+            onlydirs = [os.path.join(input_dir, f) for f in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir, f))]
     else:
         # we read the input files via EOS
         protocol = get_eos_protocol(dirname=input_dir)
-        eos_proc = subprocess32.Popen(['eos', protocol, 'ls', input_dir], stdout=subprocess32.PIPE)
-        onlyfiles = [os.path.join(input_dir, f.rstrip()) for f in eos_proc.stdout.readlines() if match in f]
+        options = '-l'
+        eos_proc = subprocess32.Popen(['eos', protocol, 'ls', options, input_dir], stdout=subprocess32.PIPE)
+        lines = eos_proc.stdout.readlines()
+        onlyfiles = [os.path.join(input_dir, f.split()[-1].rstrip()) for f in lines if match in f and f.split()[0][0] != 'd']
+        if recursive:
+            onlydirs = [os.path.join(input_dir, f.split()[-1].rstrip()) for f in lines if f.split()[0][0] is 'd']
 
+    for dirname in onlydirs:
+        onlyfiles.extend(listFiles(dirname, match, recursive))
+    # print 'PWD: {}'.format(input_dir)
+    # print 'DIRS: {}'.format(onlydirs)
+    # print 'FILES: {}'.format(onlyfiles)
     return sorted(onlyfiles)
 
 
@@ -204,7 +217,17 @@ def get_njobs(nev_toprocess, nev_perjob, metadata, debug=0):
     return ret
 
 
+
+
 if __name__ == "__main__":
+    """
+    Meant to test the module functionality
+
+    Run from main directory using:
+    python -m python.file_manager
+
+    """
+
     #
     # file_metadata = get_metadata(input_dir='/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1015/SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v11/180814_140939/0000/',
     #                              tree='hgcalTriggerNtuplizer/HGCalTriggerNtuple')
@@ -229,7 +252,23 @@ if __name__ == "__main__":
     # #             target_file_name='metadata.json')
     #
     # print jobs
+    input_dir = '/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v53/'
+    # input_dir = '/Users/cerminar/Workspace/hgcal-analysis/ntuple-tools/'
 
-    get_checksum(filename=plots1/histos_nugun_alleta_pu200_v55.root)
+    found_files = listFiles(input_dir, match='.root')
+    print found_files
+    print '# of files: {}'.format(len(found_files))
+
+
+    # input_dir='/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1061p2/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v29/190902_144701/0000/'
+    tree_name = 'hgcalTriggerNtuplizer/HGCalTriggerNtuple'
+    input_files, range_ev = get_files_and_events_for_batchprocessing(input_dir=input_dir,
+                                                                        tree=tree_name,
+                                                                        nev_toprocess=-1,
+                                                                        nev_perjob=200,
+                                                                        batch_id=121,
+                                                                        debug=True)
+
+    # get_checksum(filename=plots1/histos_nugun_alleta_pu200_v55.root)
 
 # get_njobs(nev_toprocess=-1, nev_perjob=500, metadata=file_metadata)
