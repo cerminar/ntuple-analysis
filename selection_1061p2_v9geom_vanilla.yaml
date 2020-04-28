@@ -305,6 +305,9 @@ plotters:
 
 #test: !!python/name:python.selections.gen_part_selections
 samples:
+  tree_name: hgcalTriggerNtuplizer/HGCalTriggerNtuple
+  # tree_name: l1CaloTriggerNtuplizer/HGCalTriggerNtuple
+  
   ele_flat2to100_PU0:
     input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v48/200210_131917/0000/
     # input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v43/191022_152328/0000/
