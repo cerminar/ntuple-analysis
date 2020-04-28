@@ -110,6 +110,7 @@ def get_collection_parameters(opt, cfgfile):
 
             params = Parameters({'input_base_dir': cfgfile['common']['input_dir'],
                                  'input_sample_dir': cfgfile['samples'][sample]['input_sample_dir'],
+                                 'tree_name': cfgfile['samples']['tree_name'],
                                  'output_filename_base': output_filename_base,
                                  'output_filename': out_file,
                                  'output_dir': outdir,
@@ -176,7 +177,7 @@ def analyze(params, batch_idx=0):
             tc_geom_tree.PrintCacheStats()
         print ('...done')
 
-    tree_name = 'hgcalTriggerNtuplizer/HGCalTriggerNtuple'
+    # tree_name = 'hgcalTriggerNtuplizer/HGCalTriggerNtuple'
     input_files = []
     range_ev = (0, params.maxEvents)
 
@@ -184,14 +185,14 @@ def analyze(params, batch_idx=0):
         print 'This is interactive processing...'
         input_files = fm.get_files_for_processing(input_dir=os.path.join(params.input_base_dir,
                                                                          params.input_sample_dir),
-                                                  tree=tree_name,
+                                                  tree=params.tree_name,
                                                   nev_toprocess=params.maxEvents,
                                                   debug=debug)
     else:
         print 'This is batch processing...'
         input_files, range_ev = fm.get_files_and_events_for_batchprocessing(input_dir=os.path.join(params.input_base_dir,
                                                                                                    params.input_sample_dir),
-                                                                            tree=tree_name,
+                                                                            tree=params.tree_name,
                                                                             nev_toprocess=params.maxEvents,
                                                                             nev_perjob=params.events_per_job,
                                                                             batch_id=batch_idx,
@@ -202,7 +203,7 @@ def analyze(params, batch_idx=0):
     for file_name in input_files:
         print '        - {}'.format(file_name)
 
-    ntuple = HGCalNtuple(input_files, tree=tree_name)
+    ntuple = HGCalNtuple(input_files, tree=params.tree_name)
     if params.events_per_job == -1:
         if params.maxEvents == -1:
             range_ev = (0, ntuple.nevents())
@@ -378,7 +379,7 @@ def main(analyze):
             print(sample)
             nevents = int(opt.NEVENTS)
             n_jobs = fm.get_number_of_jobs_for_batchprocessing(input_dir=os.path.join(sample.input_base_dir, sample.input_sample_dir),
-                                                               tree='hgcalTriggerNtuplizer/HGCalTriggerNtuple',
+                                                               tree=sample.tree_name,
                                                                nev_toprocess=nevents,
                                                                nev_perjob=sample.events_per_job,
                                                                debug=int(opt.DEBUG))
