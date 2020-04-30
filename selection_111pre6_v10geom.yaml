@@ -291,24 +291,24 @@ samples:
   tree_name: l1CaloTriggerNtuplizer/HGCalTriggerNtuple
 
   ele_flat2to100_PU0:
-    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v54/
+    input_sample_dir: SingleElectron_PT2to100/SingleE_FlatPt-2to100_PU0_v54/
     # input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v43/191022_152328/0000/
     # input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU0_v47/191105_134845/0000/
     events_per_job : 500
     # gen_selections: !!python/name:python.selections.genpart_photon_selections
 
   ele_flat2to100_PU200:
-    input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU200_v54/
+    input_sample_dir: SingleElectron_PT2to100/SingleE_FlatPt-2to100_PU200_v54/
     # input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU200_v43/191022_152446/0000/
     # input_sample_dir: SingleE_FlatPt-2to100/SingleE_FlatPt-2to100_PU200_v47/191105_134950/0000/
     events_per_job : 200
 
   photon_flat8to150_PU0:
-    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU0_v54/
+    input_sample_dir: PhotonFlatPt8To150/SinglePhoton_FlatPt-8to150_PU0_v54/
     events_per_job : 500
 
   photon_flat8to150_PU200:
-    input_sample_dir: SinglePhoton_FlatPt-8to150/SinglePhoton_FlatPt-8to150_PU200_v54/
+    input_sample_dir: PhotonFlatPt8To150/SinglePhoton_FlatPt-8to150_PU200_v54/
     events_per_job : 200
 
   pion_flat2to100_PU0:
@@ -324,7 +324,7 @@ samples:
     events_per_job: 500
 
   nugun_alleta_pu200:
-    input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v54/
+    input_sample_dir: Nu_E10-pythia8-gun/NuGunAllEta_PU200_v54/
     # input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v47/191105_135050/0000/
     events_per_job: 200
 
