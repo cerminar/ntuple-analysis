@@ -1,5 +1,104 @@
+"""
+Manager of the calibration data.
+
+This module provides the code managing the calibration data used by the collections.
+
+Classes:
+    EventManager
+    DFCollection
+    TPSet
+
+Objects:
+    all collections (DFCollection and TPSet instances) that
+    can be used by plotters.
+"""
 import pandas as pd
 import numpy as np
+
+
+class CalibManager(object):
+    """
+    CalibManager.
+
+    Manages the calibration data ensuring they are read only once
+    and  coherently served to the collections when/if needed.
+
+    It is a singleton.
+    """
+
+    class __TheManager:
+        def __init__(self):
+            self.calib_version = None
+            self.calib_table = {
+                'calib-v96bis': {
+                      'HMvDRCalib': {
+                           'layer_calibs': [1., 0.98, 1.03, 1.07, 0.94, 0.96, 1.09, 1.03, 0.81, 1.0, 0.9, 1.08, 1.5, 1.81]
+                           },
+                      'HMvDRcylind10Calib': {
+                           'layer_calibs': [1., 0.99, 1.03, 1.07, 0.94, 0.96, 1.09, 1.03, 0.8, 1.02, 0.9, 1.08, 1.5, 1.83]
+                           },
+                      'HMvDRcylind5Calib': {
+                           'layer_calibs': [1., 0.98, 1.05, 1.09, 0.96, 0.97, 1.11, 1.06, 0.83, 1.04, 0.92, 1.08, 1.5, 1.89]
+                           },
+                      'HMvDRcylind2p5Calib': {
+                           'layer_calibs': [1., 0.87, 1.16, 1.21, 1.06, 1.04, 1.25, 1.15, 0.97, 1.11, 1.01, 1.15, 1.64, 2.15]
+                           },
+                      'HMvDRshapeCalib': {
+                           'layer_calibs': [1., 1.38, 1.05, 1.07, 0.96, 0.97, 1.11, 1.04, 0.81, 1.02, 0.9, 1.07, 1.52, 1.84]
+                           },
+                      'HMvDRshapeDrCalib': {
+                           'layer_calibs': [1., 0.98, 1.05, 1.09, 0.96, 0.97, 1.11, 1.05, 0.83, 1.03, 0.91, 1.07, 1.51, 1.89]
+                           },
+                          },
+                'calib-v120': {
+                      'HMvDRCalib': {
+                           'layer_calibs': [1., 0.98, 1.03, 1.07, 0.94, 0.96, 1.09, 1.03, 0.81, 1.0, 0.9, 1.08, 1.5, 1.81]
+                           },
+                      'HMvDRcylind10Calib': {
+                           'layer_calibs': [1., 0.99, 1.03, 1.07, 0.94, 0.96, 1.09, 1.03, 0.8, 1.02, 0.9, 1.08, 1.5, 1.83]
+                           },
+                      'HMvDRcylind5Calib': {
+                           'layer_calibs': [1., 0.98, 1.05, 1.09, 0.96, 0.97, 1.11, 1.06, 0.83, 1.04, 0.92, 1.08, 1.5, 1.89]
+                           },
+                      'HMvDRcylind2p5Calib': {
+                           'layer_calibs': [1., 0.87, 1.16, 1.21, 1.06, 1.04, 1.25, 1.15, 0.97, 1.11, 1.01, 1.15, 1.64, 2.15]
+                           },
+                      'HMvDRshapeCalib': {
+                           'layer_calibs': [1., 1.38, 1.05, 1.07, 0.96, 0.97, 1.11, 1.04, 0.81, 1.02, 0.9, 1.07, 1.52, 1.84]
+                           },
+                      'HMvDRshapeDrCalib': {
+                           'layer_calibs': [0.0, 1.23, 0.87, 1.2, 0.97, 0.95, 1.05, 1.05, 1.01, 0.93, 1.04, 0.96, 1.35, 1.83],
+                           'eta_calibs': (-17.6839, 39.2417)
+                           },
+                      'HMvDRshapeDtDuCalib': {
+                           'layer_calibs': [0.0, 1.53, 0.83, 1.26, 1.05, 0.98, 1.19, 1.07, 1.04, 0.89, 1.27, 1.07, 1.34, 1.8],
+                           'eta_calibs': (-14.5587, 34.5388)
+                           },
+                         }
+                }
+
+        def set_calibration_version(self, version):
+            if version not in self.calib_table.keys():
+                print("calibration version: {} not among availble sets: {}".format(version,
+                                                                                   self.calib_table.keys()))
+                raise KeyError('Unknown calibration version: {}, check configuration file!'.format(version))
+            self.calib_version = version
+
+        def get_calibration(self, collection_name, calib_key):
+            return self.calib_table[self.calib_version][collection_name][calib_key]
+
+    instance = None
+
+    def __new__(cls):
+        if not CalibManager.instance:
+            CalibManager.instance = CalibManager.__TheManager()
+        return CalibManager.instance
+
+    def __getattr__(self, name):
+        return getattr(self.instance, name)
+
+    def __setattr__(self, name):
+        return setattr(self.instance, name)
 
 
 tpg_layer_calib_v8 = [0.0,

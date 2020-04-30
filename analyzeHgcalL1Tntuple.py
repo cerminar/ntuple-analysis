@@ -41,7 +41,7 @@ import python.l1THistos as histos
 import python.file_manager as fm
 import python.collections as collections
 from python.utils import debugPrintOut
-
+import python.calibrations as calibs
 # from pandas.core.common import SettingWithCopyError, SettingWithCopyWarning
 # import warnings
 # warnings.filterwarnings('error', category=SettingWithCopyWarning)
@@ -117,6 +117,7 @@ def get_collection_parameters(opt, cfgfile):
                                  'clusterize': cfgfile['common']['run_clustering'],
                                  'eventsToDump': [],
                                  'version': plot_version,
+                                 'calib_version':  cfgfile['common']['calib_version'],
                                  'maxEvents': int(opt.NEVENTS),
                                  'events_per_job': events_per_job,
                                  'computeDensity': cfgfile['common']['run_density_computation'],
@@ -232,6 +233,9 @@ def analyze(params, batch_idx=0):
     # -------------------------------------------------------
     # event loop
     ev_manager = collections.EventManager()
+
+    calib_manager = calibs.CalibManager()
+    calib_manager.set_calibration_version(params.calib_version)
 
     if params.weight_file is not None:
         ev_manager.read_weight_file(params.weight_file)
