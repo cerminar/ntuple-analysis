@@ -254,7 +254,7 @@ gen_pt_selection15 = [Selection('all'),
                       Selection('Pt15', 'p_{T}^{GEN}>=15GeV', 'pt >= 15')]
 
 gen_pt_selections = [Selection('Pt15', 'p_{T}^{GEN}>=15GeV', 'pt >= 15'),
-                     Selection('Pt10to25', '10 #leq p_{T}^{GEN} < 25GeV', '(pt >= 10) & (pt < 25)'),
+                     # Selection('Pt10to25', '10 #leq p_{T}^{GEN} < 25GeV', '(pt >= 10) & (pt < 25)'),
                      # Selection('Pt20', 'p_{T}^{GEN}>=20GeV', 'pt >= 20'),
                      Selection('Pt30', 'p_{T}^{GEN}>=30GeV', 'pt >= 30'),
                      Selection('Pt35', 'p_{T}^{GEN}>=35GeV', 'pt >= 35'),
