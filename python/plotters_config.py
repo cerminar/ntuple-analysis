@@ -73,12 +73,14 @@ tp_genmatched_debug = [plotters.TPGenMatchPlotterDebugger(collections.tp_def, co
                                                  [selections.Selection('Em', 'EGId', 'quality >0')],
                                                  selections.gen_part_selections_debug)]
 
-tp_calib_plotters = [plotters.CalibrationPlotter(collections.tp_hm_vdr, collections.gen_parts,
-                                                 selections.tp_calib_selections,
-                                                 selections.gen_part_selections_calib),
-                     # CalibrationPlotter(collections.tp_hm_calib, collections.gen_parts,
-                     #                    selections.tp_calib_selections,
-                     #                    selections.gen_part_selections_calib),
+tp_calib_plotters = [plotters.CalibrationPlotter(
+                        collections.tp_hm_vdr, collections.gen_parts,
+                        selections.tp_calib_selections,
+                        selections.gen_part_selections_calib),
+                     plotters.CalibrationPlotter(
+                        collections.tp_hm_calib, collections.gen_parts,
+                        selections.tp_calib_selections,
+                        selections.gen_part_selections_calib),
                      # CalibrationPlotter(collections.tp_hm_emint, collections.gen_parts,
                      #                    selections.tp_calib_selections,
                      #                    selections.gen_part_selections_calib),
@@ -88,9 +90,14 @@ tp_calib_plotters = [plotters.CalibrationPlotter(collections.tp_hm_vdr, collecti
                      # CalibrationPlotter(collections.tp_hm_shape, collections.gen_parts,
                      #                    selections.tp_calib_selections,
                      #                    selections.gen_part_selections_calib),
-                     plotters.CalibrationPlotter(collections.tp_hm_shapeDr, collections.gen_parts,
-                                        selections.tp_calib_selections,
-                                        selections.gen_part_selections_calib),
+                     plotters.CalibrationPlotter(
+                         collections.tp_hm_shapeDr, collections.gen_parts,
+                         selections.tp_calib_selections,
+                         selections.gen_part_selections_calib),
+                     plotters.CalibrationPlotter(
+                         collections.tp_hm_shapeDr_calib, collections.gen_parts,
+                         selections.tp_calib_selections,
+                         selections.gen_part_selections_calib),
                      plotters.CalibrationPlotter(collections.tp_hm_shapeDtDu, collections.gen_parts,
                                         selections.tp_calib_selections,
                                         selections.gen_part_selections_calib),
