@@ -337,12 +337,35 @@ eg_resotuples_plotters = [plotters.ResoNtupleMatchPlotter(collections.egs, colle
                                             ]
 
 
-track_genmatched_plotters = [plotters.TrackGenMatchPlotter(collections.tracks, collections.gen_parts,
-                                                  selections.tracks_selections,
-                                                  selections.gen_part_selections),
-                             plotters.TrackGenMatchPlotter(collections.tracks_emu, collections.gen_parts,
-                                                  selections.tracks_selections,
-                                                  selections.gen_part_selections)]
+tp_resotuples_plotters = [
+    plotters.ResoNtupleMatchPlotter(
+        collections.tp_hm_vdr, collections.gen_parts,
+        selections.tp_calib_selections,
+        selections.gen_part_selections_calib),
+    plotters.ResoNtupleMatchPlotter(
+        collections.tp_hm_calib, collections.gen_parts,
+        selections.tp_calib_selections,
+        selections.gen_part_selections_calib),
+    plotters.ResoNtupleMatchPlotter(
+        collections.tp_hm_shapeDr, collections.gen_parts,
+        selections.tp_calib_selections,
+        selections.gen_part_selections_calib),
+    plotters.ResoNtupleMatchPlotter(
+        collections.tp_hm_shapeDr_calib, collections.gen_parts,
+        selections.tp_calib_selections,
+        selections.gen_part_selections_calib),
+    ]
+
+
+track_genmatched_plotters = [
+    plotters.TrackGenMatchPlotter(
+        collections.tracks, collections.gen_parts,
+        selections.tracks_selections,
+        selections.gen_part_selections),
+    plotters.TrackGenMatchPlotter(
+        collections.tracks_emu, collections.gen_parts,
+        selections.tracks_selections,
+        selections.gen_part_selections)]
 
 genpart_plotters = [plotters.GenPlotter(collections.gen_parts, selections.genpart_ele_genplotting)]
 
