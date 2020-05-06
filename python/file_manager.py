@@ -147,6 +147,8 @@ def get_metadata(input_dir, tree, debug=0):
 def get_files_to_process(nev_toprocess, metadata, debug=0):
     nevents_tot = 0
     for key, value in metadata.iteritems():
+        if debug > 4:
+            print key, value
         # FIXME: if value is 0 maybe one should check again and rewrite the json?
         nevents_tot += int(value)
     if debug > 2:
@@ -171,7 +173,7 @@ def get_files_to_process(nev_toprocess, metadata, debug=0):
 
 def get_njobs(nev_toprocess, nev_perjob, metadata, debug=0):
 
-    needed_files = sorted(get_files_to_process(nev_toprocess, metadata))
+    needed_files = sorted(get_files_to_process(nev_toprocess, metadata, debug))
     nevents_tot = 0
     comulative = {}
     for file_name in needed_files:
