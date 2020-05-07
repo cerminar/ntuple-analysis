@@ -589,7 +589,7 @@ cl3d_def_nc = DFCollection(
 
 cl3d_hm = DFCollection(
     name='HMvDR', label='HM+dR(layer) Cl3d',
-    filler_function=lambda event: event.getDataFrame(prefix='HMvDR'),  # hmVRcl3d
+    filler_function=lambda event: event.getDataFrame(prefix='HMvDR', fallback='hmVRcl3d'),
     fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
     depends_on=[tcs],
     debug=0,
