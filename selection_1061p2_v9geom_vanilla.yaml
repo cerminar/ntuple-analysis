@@ -137,7 +137,8 @@ collections:
       - photon_flat8to150_PU0
       - photon_flat8to150_PU200
     plotters:
-      - eg_resotuples_plotters
+      # - eg_resotuples_plotters
+      - tp_resotuples_plotters
     htc_jobflavor:
       workday
     priorities:
@@ -296,6 +297,7 @@ plotters:
   tp_calib_plotters: !!python/name:python.plotters_config.tp_calib_plotters
   correlator_occupancy_plotters: !!python/name:python.plotters_config.correlator_occupancy_plotters
   eg_resotuples_plotters: !!python/name:python.plotters_config.eg_resotuples_plotters
+  tp_resotuples_plotters: !!python/name:python.plotters_config.tp_resotuples_plotters
   tp_cluster_tc_match_plotters: !!python/name:python.plotters_config.tp_cluster_tc_match_plotters
     # tp_set: !null,
     # tp_selection: !!python/name:python.selections.tp_match_selections}
