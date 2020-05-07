@@ -154,29 +154,7 @@ class Event(object):
         """Returns 'run:lumi:event' string."""
         return "%d:%d:%d" % self.eventId()
 
-    def getDataFrame2(self, prefix):
-        # print prefix
-        branch_blacklist = ['tc_wafer', 'tc_cell', 'tc_waferu', 'tc_waferv', 'tc_cellu', 'tc_cellv']
-
-        df = pd.DataFrame()
-        branches = [br.GetName() for br in self._tree.GetListOfBranches() if (
-            br.GetName().startswith(prefix+'_') and not br.GetName() == '{}_n'.format(prefix))]
-        if len(branches) == 0:
-            return df
-
-        names = ['_'.join(br.split('_')[1:]) for br in branches]
-        nd_array = rnp.tree2array(self._tree, branches=branches,
-                                  start=self._entry, stop=self._entry+1, cache_size=400000000)
-        for idx, branch in enumerate(branches):
-            if branch in branch_blacklist:
-                continue
-            # print names[idx]
-            # print nd_array[branch][0]
-
-            df[names[idx]] = nd_array[branch][0]
-        return df
-
-    def getDataFrame(self, prefix):
+    def getDataFrame(self, prefix, fallback=None):
 
         branches = [br for br in self._branches
                     if br.startswith(prefix+'_') and
@@ -184,6 +162,8 @@ class Event(object):
         names = ['_'.join(br.split('_')[1:]) for br in branches]
 
         if len(branches) == 0:
+            if fallback is not None:
+                return self.getDataFrame(prefix=fallback)
             return pd.DataFrame()
 
         nd_array = rnp.tree2array(self._tree,
