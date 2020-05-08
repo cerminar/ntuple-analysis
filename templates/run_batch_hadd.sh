@@ -17,15 +17,16 @@ workon TEMPL_VIRTUALENV
 
 cd ${BATCH_DIR}
 date
+mkdir infiles/
 for filename in TEMPL_OUTDIR/tmp/TEMPL_INFILE; do
     echo ${filename}
-    xrdcp TEMPL_EOSPROTOCOL${filename} .
+    xrdcp TEMPL_EOSPROTOCOL${filename} infiles/
 done
-hadd -j 10 -k TEMPL_OUTFILE `ls TEMPL_INFILE`
+hadd -j 10 -k TEMPL_OUTFILE `ls infiles/TEMPL_INFILE`
 retVal=$?
 if [ $retVal -ne 0 ]; then
     echo "****** Error: hadd failed!"
     exit $retVal
 fi
-rm TEMPL_INFILE
+# rm TEMPL_INFILE
 #mv TEMPL_OUTFILE TEMPL_OUTDIR
