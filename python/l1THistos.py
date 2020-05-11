@@ -314,9 +314,12 @@ class ClusterHistos(BaseHistos):
 class Cluster3DHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_npt05 = ROOT.TH1F(name+'_npt05', '# 3D Cluster Pt > 0.5 GeV; # 3D clusters in cone;', 1000, 0, 1000)
-            self.h_npt20 = ROOT.TH1F(name+'_npt20', '# 3D Cluster Pt > 2.0 GeV; # 3D clusters in cone;', 1000, 0, 1000)
-            self.h_pt = ROOT.TH1F(name+'_pt', '3D Cluster Pt (GeV); p_{T} [GeV]', 100, 0, 100)
+            self.h_npt05 = ROOT.TH1F(
+                name+'_npt05', '# 3D Cluster Pt > 0.5 GeV; # 3D clusters in cone;', 1000, 0, 1000)
+            self.h_npt20 = ROOT.TH1F(
+                name+'_npt20', '# 3D Cluster Pt > 2.0 GeV; # 3D clusters in cone;', 1000, 0, 1000)
+            self.h_pt = ROOT.TH1F(
+                name+'_pt', '3D Cluster Pt (GeV); p_{T} [GeV]', 100, 0, 100)
             self.h_eta = ROOT.TH1F(name+'_eta', '3D Cluster eta; #eta;', 100, -4, 4)
             self.h_energy = ROOT.TH1F(name+'_energy', '3D Cluster energy (GeV); E [GeV]', 1000, 0, 1000)
             self.h_nclu = ROOT.TH1F(name+'_nclu', '3D Cluster # clusters; # 2D components;', 60, 0, 60)
