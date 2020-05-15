@@ -10,7 +10,7 @@ common:
   plot_version: v134
   run_clustering: False
   run_density_computation: False
-  calib_version: calib-v131
+  calib_version: calib-v134
 # +AccountingGroup = "group_u_CMS.u_zh.users"
 # +AccountingGroup = "group_u_CMST3.all"
 
