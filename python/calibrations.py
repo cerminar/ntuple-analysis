@@ -130,7 +130,7 @@ class CalibManager(object):
                 'calib-v134': {
                       'HMvDRCalib': {
                            'layer_calibs': [0.0, 2.0, 1.45, 0.5, 1.62, 0.5, 1.05, 1.84, 0.5, 0.5, 0.5, 2.0, 2.0, 1.27],
-                           'eta_calibs': (-30.7929 77.8589)
+                           'eta_calibs': (-30.7929, 77.8589)
                            },
                       'HMvDRcylind10Calib': {
                            'layer_calibs': [1., 0.99, 1.03, 1.07, 0.94, 0.96, 1.09, 1.03, 0.8, 1.02, 0.9, 1.08, 1.5, 1.83]
@@ -146,7 +146,7 @@ class CalibManager(object):
                            },
                       'HMvDRshapeDrCalib': {
                            'layer_calibs': [0.0, 2.0, 1.5, 0.5, 1.64, 0.5, 1.17, 1.8, 0.55, 0.5, 0.5, 2.0, 2.0, 1.57],
-                           'eta_calibs': (-7.46054 46.086)
+                           'eta_calibs': (-7.46054, 46.086)
                            },
                       'HMvDRshapeDtDuCalib': {
                            'layer_calibs': [0.0, 1.53, 0.83, 1.26, 1.05, 0.98, 1.19, 1.07, 1.04, 0.89, 1.27, 1.07, 1.34, 1.8],
