@@ -146,7 +146,7 @@ class CalibManager(object):
                            },
                       'HMvDRshapeDrCalib': {
                            'layer_calibs': [0.0, 2.0, 1.5, 0.5, 1.64, 0.5, 1.17, 1.8, 0.55, 0.5, 0.5, 2.0, 2.0, 1.57],
-                           'eta_calibs': (-49.5978 90.5972)
+                           'eta_calibs': (-49.5978, 90.5972)
                            },
                       'HMvDRshapeDtDuCalib': {
                            'layer_calibs': [0.0, 1.53, 0.83, 1.26, 1.05, 0.98, 1.19, 1.07, 1.04, 0.89, 1.27, 1.07, 1.34, 1.8],
