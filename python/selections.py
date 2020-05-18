@@ -273,7 +273,7 @@ gen_pt_sel = [Selection('Pt15', 'p_{T}^{GEN}>=15GeV', 'pt >= 15'),
 # gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {}) | (abs(pdgid) == {}) | (abs(pdgid) == {})'.format(PID.electron, PID.photon, PID.pion))]
 # gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {}) & (firstmother_pdgid == {})'.format(PID.electron, PID.electron))]
 # FIXME: add fabs to firstmother_if
-gen_selections = [Selection('GEN', '', '((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})) | ((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {}))'.format(PID.electron, PID.electron,
+gen_selections = [Selection('GEN', '', '((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})) | ((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})) & (pt <= 100)'.format(PID.electron, PID.electron,
                                                                                                                                                     PID.photon, PID.photon))]
 
 gen_ele_sel = [Selection('GEN', '', '((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {}))'.format(PID.electron,
@@ -381,10 +381,11 @@ eg_qual_selections = [
                       Selection('EGq4', 'hwQual 4', 'hwQual == 4'),
                       Selection('EGq5', 'hwQual 5', 'hwQual == 5')]
 
-iso_selections = [Selection('all'),
-                  Selection('Iso0p2', 'Iso0p2', 'tkIso <= 0.2'),
-                  Selection('Iso0p1', 'Iso0p1', 'tkIso <= 0.1'),
-                  Selection('Iso0p3', 'Iso0p3', 'tkIso <= 0.3'), ]
+iso_selections = [
+    Selection('all'),
+    Selection('Iso0p2', 'Iso0p2', 'tkIso <= 0.2'),
+    Selection('Iso0p1', 'Iso0p1', 'tkIso <= 0.1'),
+    Selection('Iso0p3', 'Iso0p3', 'tkIso <= 0.3'), ]
 
 
 tkisoeg_selections = []
