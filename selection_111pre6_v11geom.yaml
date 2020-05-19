@@ -216,7 +216,7 @@ collections:
     htc_jobflavor:
       workday
     priorities:
-      nugun_alleta_pu200: 3
+      nugun_alleta_pu200: 6
 
   noise_samples:
     file_label:
