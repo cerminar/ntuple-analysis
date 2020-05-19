@@ -273,7 +273,7 @@ gen_pt_sel = [Selection('Pt15', 'p_{T}^{GEN}>=15GeV', 'pt >= 15'),
 # gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {}) | (abs(pdgid) == {}) | (abs(pdgid) == {})'.format(PID.electron, PID.photon, PID.pion))]
 # gen_part_selections = [Selection('GEN', '', '(abs(pdgid) == {}) & (firstmother_pdgid == {})'.format(PID.electron, PID.electron))]
 # FIXME: add fabs to firstmother_if
-gen_selections = [Selection('GEN', '', '((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})) | ((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})) & (pt <= 100)'.format(PID.electron, PID.electron,
+gen_selections = [Selection('GEN', '', '(((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})) | ((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {}))) & (pt <= 100)'.format(PID.electron, PID.electron,
                                                                                                                                                     PID.photon, PID.photon))]
 
 gen_ele_sel = [Selection('GEN', '', '((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {}))'.format(PID.electron,
