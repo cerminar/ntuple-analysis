@@ -7,10 +7,10 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v134C
+  plot_version: v134D
   run_clustering: False
   run_density_computation: False
-  calib_version: calib-v134
+  calib_version: calib-v134C
 # +AccountingGroup = "group_u_CMS.u_zh.users"
 # +AccountingGroup = "group_u_CMST3.all"
 
@@ -214,7 +214,7 @@ collections:
       # - tp_egm_plotters
       - eg_rate_plotters
     htc_jobflavor:
-      workday
+      longlunch
     priorities:
       nugun_alleta_pu200: 6
 
@@ -324,7 +324,7 @@ samples:
   nugun_alleta_pu200:
     input_sample_dir: MinBias_TuneCP5_14TeV-pythia8/NuGunAllEta_PU200_v55/
     # input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v47/191105_135050/0000/
-    events_per_job: 200
+    events_per_job: 300
 
   # ttbar_PU200:
   #   input_sample_dir: TTbar_14TeV_TuneCP5_Pythia8/TTBar_PU200_v45/191105_102500/0000/
