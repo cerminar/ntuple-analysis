@@ -7,7 +7,7 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v134D
+  plot_version: v134E
   run_clustering: False
   run_density_computation: False
   calib_version: calib-v134C
@@ -118,7 +118,7 @@ collections:
       - photon_flat8to150_PU0
       - photon_flat8to150_PU200
     plotters:
-      # - eg_resotuples_plotters
+      - eg_resotuples_plotters
       - tp_resotuples_plotters
     htc_jobflavor:
       workday
