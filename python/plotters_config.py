@@ -327,10 +327,10 @@ eg_resotuples_plotters = [
         collections.egs, collections.gen_parts,
         selections.eg_qual_selections,
         selections.gen_part_selections),
-    plotters.ResoNtupleMatchPlotter(
-        collections.egs_brl, collections.gen_parts,
-        selections.barrel_quality_selections,
-        selections.gen_part_barrel_selections),
+    # plotters.ResoNtupleMatchPlotter(
+    #     collections.egs_brl, collections.gen_parts,
+    #     selections.barrel_quality_selections,
+    #     selections.gen_part_barrel_selections),
     # plotters.ResoNtupleMatchPlotter(
     #     collections.tkelesEL, collections.gen_parts,
     #     selections.tkisoeg_selections,
