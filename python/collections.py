@@ -244,6 +244,8 @@ def cl3d_fixtures(clusters, tcs):
 
 
 def gen_fixtures(particles, mc_particles):
+    if particles.empty:
+        return particles
     # print particles.columns
     particles['pdgid'] = particles.pid
     particles['abseta'] = np.abs(particles.eta)
@@ -526,6 +528,7 @@ def print_columns(df):
     print df.columns
     return df
 
+
 def gen_part_pt_weights(gen_parts, weight_file):
     def compute_weight(gen_part):
         return weight_file.get_weight_1d('h_weights', gen_part.pt)
@@ -766,6 +769,16 @@ cl3d_hm_shapeDr_calib = DFCollection(
     debug=0,
     print_function=lambda df: df[['id', 'pt', 'eta', 'quality']])
 
+cl3d_hm_shapeDr_calib_new = DFCollection(
+    name='HMvDRshapeDrCalibNew', label='HM #Delta#rho < 0.015 calib.',
+    filler_function=lambda event: get_layer_calib_clusters(
+        cl3d_hm_shapeDr.df,
+        calib_mgr.get_calibration('HMvDRshapeDrCalibNew', 'layer_calibs'),
+        calib_mgr.get_calibration('HMvDRshapeDrCalibNew', 'eta_calibs'),
+        debug=False),
+    depends_on=[cl3d_hm_shapeDr, tcs],
+    debug=0,
+    print_function=lambda df: df[['id', 'pt', 'eta', 'quality']])
 
 cl3d_hm_shapeDtDu_calib = DFCollection(
     name='HMvDRshapeDtDuCalib', label='HM #Deltat#Deltau calib.',
@@ -994,6 +1007,7 @@ tp_hm_cylind2p5 = TPSet(tcs, tcs, cl3d_hm_cylind2p5)
 tp_hm_fixed_calib = TPSet(tcs, tcs, cl3d_hm_fixed_calib)
 tp_hm_shape_calib = TPSet(tcs, tcs, cl3d_hm_shape_calib)
 tp_hm_shapeDr_calib = TPSet(tcs, tcs, cl3d_hm_shapeDr_calib)
+tp_hm_shapeDr_calib_new = TPSet(tcs, tcs, cl3d_hm_shapeDr_calib_new)
 tp_hm_calib = TPSet(tcs, tcs, cl3d_hm_calib)
 tp_hm_cylind10_calib = TPSet(tcs, tcs, cl3d_hm_cylind10_calib)
 tp_hm_cylind5_calib = TPSet(tcs, tcs, cl3d_hm_cylind5_calib)
