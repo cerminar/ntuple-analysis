@@ -786,7 +786,7 @@ cl3d_hm_shapeDtDu_calib = DFCollection(
         cl3d_hm_shapeDr.df,
         calib_mgr.get_calibration('HMvDRshapeDtDuCalib', 'layer_calibs'),
         calib_mgr.get_calibration('HMvDRshapeDtDuCalib', 'eta_calibs'),
-        debug=True),
+        debug=False),
     depends_on=[cl3d_hm_shapeDtDu, tcs],
     debug=0,
     print_function=lambda df: df[['id', 'pt', 'eta', 'quality']])
