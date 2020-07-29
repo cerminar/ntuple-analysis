@@ -240,6 +240,11 @@ def analyze(params, batch_idx=0):
     if params.weight_file is not None:
         ev_manager.read_weight_file(params.weight_file)
 
+    if event is None:
+        # this prevents rare situation where, running in batch mode,
+        # the end of the range and the end of the file coincide
+        break
+
     nev = 0
     for evt_idx in range(range_ev[0], range_ev[1]+1):
         # print(evt_idx)
