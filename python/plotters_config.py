@@ -268,9 +268,13 @@ tp_resotuples_plotters = [
         selections.tp_calib_selections,
         selections.gen_part_selections_calib),
     plotters.ResoNtupleMatchPlotter(
-        collections.tp_hm_shapeDtDu_calib, collections.gen_parts,
+        collections.tp_hm_emint, collections.gen_parts,
         selections.tp_calib_selections,
         selections.gen_part_selections_calib),
+    # plotters.ResoNtupleMatchPlotter(
+    #     collections.tp_hm_shapeDtDu_calib, collections.gen_parts,
+    #     selections.tp_calib_selections,
+    #     selections.gen_part_selections_calib),
     ]
 
 
