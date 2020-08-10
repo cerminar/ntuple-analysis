@@ -7,7 +7,7 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v140D
+  plot_version: v141A
   run_clustering: False
   run_density_computation: False
   calib_version: calib-v134C
@@ -75,8 +75,10 @@ collections:
     samples:
       - ele_flat2to100_PU0
       - ele_flat2to100_PU200
-      - photon_flat8to150_PU0
-      - photon_flat8to150_PU200
+      - doubleele_flat1to100_PU0
+      - doubleele_flat1to100_PU200
+      # - photon_flat8to150_PU0
+      # - photon_flat8to150_PU200
       # - dyll_PU200
     plotters:
       - eg_plotters
@@ -292,13 +294,23 @@ samples:
   # tree_name: hgcalTriggerNtuplizer/HGCalTriggerNtuple
   tree_name: l1CaloTriggerNtuplizer/HGCalTriggerNtuple
 
+  doubleele_flat1to100_PU0:
+    input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU0_v60G/
+    events_per_job : 500
+    # gen_selections: !!python/name:python.selections.genpart_photon_selections
+
+  doubleele_flat1to100_PU200:
+    input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU200_v60G1/
+    events_per_job : 200
+
+
   ele_flat2to100_PU0:
-    input_sample_dir: SingleElectron_PT2to200/SingleE_FlatPt-2to200_PU0_v60E/
+    input_sample_dir: SingleElectron_PT2to200/SingleE_FlatPt-2to200_PU0_v60G/
     events_per_job : 500
     # gen_selections: !!python/name:python.selections.genpart_photon_selections
 
   ele_flat2to100_PU200:
-    input_sample_dir: SingleElectron_PT2to200/SingleE_FlatPt-2to200_PU200_v60E/
+    input_sample_dir: SingleElectron_PT2to200/SingleE_FlatPt-2to200_PU200_v60G/
     events_per_job : 200
 
   photon_flat8to150_PU0:
@@ -322,7 +334,7 @@ samples:
     events_per_job: 500
 
   nugun_alleta_pu200:
-    input_sample_dir: MinBias_TuneCP5_14TeV-pythia8/NuGunAllEta_PU200_v55/
+    input_sample_dir: MinBias_TuneCP5_14TeV-pythia8/NuGunAllEta_PU200_v60G/
     # input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v47/191105_135050/0000/
     events_per_job: 300
 
