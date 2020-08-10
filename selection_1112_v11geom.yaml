@@ -90,6 +90,9 @@ collections:
       ele_flat2to100_PU200: 5
       photon_flat8to150_PU0: 0
       photon_flat8to150_PU200: 0
+      doubleele_flat1to100_PU0: 2
+      doubleele_flat1to100_PU200: 4
+
       # dyll_PU200: 5
 
   electron_eff_eg:
@@ -302,7 +305,6 @@ samples:
   doubleele_flat1to100_PU200:
     input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU200_v60G1/
     events_per_job : 200
-
 
   ele_flat2to100_PU0:
     input_sample_dir: SingleElectron_PT2to200/SingleE_FlatPt-2to200_PU0_v60G/
