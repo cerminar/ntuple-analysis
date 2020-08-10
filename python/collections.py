@@ -889,7 +889,7 @@ tkeles = DFCollection(
     debug=0)
 
 tkelesEL = DFCollection(
-    name='TkEleEL', label='TkEle Ell. match',
+    name='tkEleEllEE', label='TkEle Ell. match',
     filler_function=lambda event: event.getDataFrame(prefix='tkEleEl'),
     fixture_function=fake_endcap_quality,
     debug=0)
@@ -924,7 +924,7 @@ tkeles_brl = DFCollection(
     debug=0)
 
 tkelesEL_brl = DFCollection(
-    name='TkEleELBRL', label='TkEle Ell. match barrel',
+    name='tkEleEllEB', label='TkEle Ell. match barrel',
     filler_function=lambda event: event.getDataFrame(prefix='tkEleElBARREL'),
     fixture_function=barrel_quality,
     debug=0)
