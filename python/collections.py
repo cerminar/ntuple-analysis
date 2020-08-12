@@ -507,11 +507,26 @@ def get_calibrated_clusters2(calib_factors, input_3Dclusters):
     return calibrated_clusters
 
 
+def select_and_merge_collections(barrel, endcap):
+    barrel_final = barrel
+    endcap_final = endcap
+    if not endcap.empty:
+        endcap_final = endcap[endcap.hwQual == 5]
+    return merge_collections(
+        barrel=barrel_final,
+        endcap=endcap_final)
+
+
 def merge_collections(barrel, endcap):
+    if barrel.empty:
+        return endcap
     return barrel.append(endcap, ignore_index=True)
 
 
 def barrel_quality(electrons):
+    if electrons.empty:
+        # electrons.columns = ['pt', 'energy', 'eta', 'phi', 'hwQual']
+        return electrons
     hwqual = pd.to_numeric(electrons['hwQual'], downcast='integer')
     electrons['looseTkID'] = ((hwqual.values >> 1) & 1) > 0
     electrons['photonID'] = ((hwqual.values >> 2) & 1) > 0
@@ -857,20 +872,23 @@ egs = DFCollection(
     filler_function=lambda event: event.getDataFrame(prefix='egammaEE'),
     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
     fixture_function=fake_endcap_quality,
-    debug=0)
+    debug=4)
 
 egs_brl = DFCollection(
     name='EGBRL', label='EG barrel',
     filler_function=lambda event: event.getDataFrame(prefix='egammaEB'),
     fixture_function=barrel_quality,
     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
-    debug=0)
+    debug=4)
 
 egs_all = DFCollection(
     name='EGALL', label='EG all',
-    filler_function=lambda event: merge_collections(barrel=egs_brl.df, endcap=egs.df[egs.df.hwQual == 5]),
-    print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
-    debug=0,
+    filler_function=lambda event: select_and_merge_collections(
+        barrel=egs_brl.df,
+        endcap=egs.df),
+    print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(
+        by='hwQual', ascending=False)[:10],
+    debug=4,
     depends_on=[egs, egs_brl])
 
 tracks = DFCollection(
@@ -889,10 +907,10 @@ tkeles = DFCollection(
     debug=0)
 
 tkelesEL = DFCollection(
-    name='tkEleEllEE', label='TkEle Ell. match',
-    filler_function=lambda event: event.getDataFrame(prefix='tkEleEl'),
+    name='tkEleEE', label='TkEle (Ell.) EE',
+    filler_function=lambda event: event.getDataFrame(prefix='tkEleEE'),
     fixture_function=fake_endcap_quality,
-    debug=0)
+    debug=4)
 
 tkisoeles = DFCollection(
     name='TkIsoEle', label='TkIsoEle',
@@ -924,16 +942,16 @@ tkeles_brl = DFCollection(
     debug=0)
 
 tkelesEL_brl = DFCollection(
-    name='tkEleEllEB', label='TkEle Ell. match barrel',
-    filler_function=lambda event: event.getDataFrame(prefix='tkEleElBARREL'),
+    name='tkEleEB', label='TkEle (Ell.) EB',
+    filler_function=lambda event: event.getDataFrame(prefix='tkEleEB'),
     fixture_function=barrel_quality,
-    debug=0)
+    debug=4)
 
 tkelesEL_all = DFCollection(
-    name='TkEleELALL', label='TkEle Ell. match all',
-    filler_function=lambda event: merge_collections(
+    name='tkEleEllAll', label='TkEle Ell. match all',
+    filler_function=lambda event: select_and_merge_collections(
         barrel=tkelesEL_brl.df,
-        endcap=tkelesEL.df[tkelesEL.df.hwQual == 5]),
+        endcap=tkelesEL.df),
     debug=0,
     depends_on=[tkelesEL, tkelesEL_brl])
 
