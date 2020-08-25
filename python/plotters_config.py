@@ -38,18 +38,20 @@ rate_plotters = [
     # plotters.RatePlotter(collections.cl3d_hm_emint, selections.tp_rate_selections),
 ]
 
-eg_rate_plotters = [plotters.RatePlotter(collections.egs, selections.eg_rate_selections),
-                    # plotters.RatePlotter(collections.egs_brl, selections.eg_barrel_rate_selections),
-                    # plotters.RatePlotter(collections.egs_all, selections.eg_all_rate_selections),
-                    # # RatePlotter(collections.tkegs, selections.tkeg_rate_selections),
-                    # # RatePlotter(collections.tkeles, selections.tkisoeg_rate_selections),
-                    # plotters.RatePlotter(collections.tkelesEL, selections.tkisoeg_rate_selections),
-                    # # RatePlotter(collections.tkeles_brl, selections.barrel_rate_selections),
-                    # plotters.RatePlotter(collections.tkelesEL_brl, selections.barrel_rate_selections),
-                    # # RatePlotter(collections.tkeles_all, selections.all_rate_selections),
-                    # plotters.RatePlotter(collections.tkelesEL_all, selections.all_rate_selections),
-                    # RatePlotter(collections.tkisoeles, selections.tkisoeg_rate_selections),
-                    ]
+eg_rate_plotters = [
+    plotters.RatePlotter(
+        collections.egs, selections.eg_rate_selections),
+    plotters.RatePlotter(
+        collections.egs_brl, selections.eg_barrel_rate_selections),
+    plotters.RatePlotter(
+        collections.egs_all, selections.eg_all_rate_selections),
+    plotters.RatePlotter(
+        collections.tkelesEL, selections.tkisoeg_rate_selections),
+    plotters.RatePlotter(
+        collections.tkelesEL_brl, selections.barrel_rate_selections),
+    plotters.RatePlotter(
+        collections.tkelesEL_all, selections.all_rate_selections),
+]
 
 tp_genmatched_debug = [plotters.TPGenMatchPlotterDebugger(collections.tp_def, collections.gen_parts, collections.gen,
                                                  [selections.Selection('Em', 'EGId', 'quality >0')],
