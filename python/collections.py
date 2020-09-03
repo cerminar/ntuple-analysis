@@ -200,8 +200,6 @@ def cl3d_fixtures(clusters, tcs):
             results.append(hoe)
         return results
 
-
-
     def compute_layer_energy2(cluster, do_layer_energy=True, do_hoe=False):
         components = tcs[tcs.id.isin(cluster.clusters)]
         hist, bins = np.histogram(components.layer.values,
@@ -533,11 +531,13 @@ def barrel_quality(electrons):
 
     return electrons
 
+
 def fake_endcap_quality(electrons):
     # just added for compatibility with barrel
     electrons['looseTkID'] = True
     electrons['photonID'] = True
     return electrons
+
 
 def print_columns(df):
     print df.columns
