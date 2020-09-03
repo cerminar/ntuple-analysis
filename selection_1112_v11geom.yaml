@@ -7,7 +7,7 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v141A
+  plot_version: v143A
   run_clustering: False
   run_density_computation: False
   calib_version: calib-v134C
@@ -73,8 +73,8 @@ collections:
     file_label:
       eg
     samples:
-      - ele_flat2to100_PU0
-      - ele_flat2to100_PU200
+      # - ele_flat2to100_PU0
+      # - ele_flat2to100_PU200
       - doubleele_flat1to100_PU0
       - doubleele_flat1to100_PU200
       # - photon_flat8to150_PU0
@@ -298,12 +298,12 @@ samples:
   tree_name: l1CaloTriggerNtuplizer/HGCalTriggerNtuple
 
   doubleele_flat1to100_PU0:
-    input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU0_v60G2/
+    input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU0_v61A/
     events_per_job : 500
     # gen_selections: !!python/name:python.selections.genpart_photon_selections
 
   doubleele_flat1to100_PU200:
-    input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU200_v60G2/
+    input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU200_v61B/
     events_per_job : 200
 
   ele_flat2to100_PU0:
