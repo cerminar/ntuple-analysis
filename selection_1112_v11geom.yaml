@@ -295,7 +295,7 @@ plotters:
 #test: !!python/name:python.selections.gen_part_selections
 samples:
   # tree_name: hgcalTriggerNtuplizer/HGCalTriggerNtuple
-  tree_name: l1CaloTriggerNtuplizer/HGCalTriggerNtuple
+  tree_name: l1CaloTriggerNtuplizer_egOnly/HGCalTriggerNtuple
 
   doubleele_flat1to100_PU0:
     input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU0_v62A/
