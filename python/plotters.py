@@ -719,7 +719,7 @@ class GenericGenMatchPlotter(BasePlotter):
 
         best_match_indexes = {}
         if not objects.empty:
-            best_match_indexes, allmatches = utils.match_etaphi(genParticles[['eta', 'phi']],
+            best_match_indexes, allmatches = utils.match_etaphi(genParticles[['exeta', 'exphi']],
                                                                 objects[['eta', 'phi']],
                                                                 objects['pt'],
                                                                 deltaR=0.1)
