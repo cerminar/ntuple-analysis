@@ -570,7 +570,7 @@ gen_parts = DFCollection(
     depends_on=[gen],
     debug=0,
     # print_function=lambda df: df[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'ovz', 'pid', 'gen', 'reachedEE', 'firstmother_pdgid']],
-    print_function=lambda df: df[['eta', 'phi', 'pt', 'weight']].sort_values(by='pt', ascending=False),
+    print_function=lambda df: df[['gen', 'pid', 'eta', 'phi', 'pt', 'mother', 'ovz', 'dvz', 'reachedEE']].sort_values(by='mother', ascending=False),
     weight_function=gen_part_pt_weights)
 
 tcs = DFCollection(

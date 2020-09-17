@@ -633,7 +633,7 @@ class ResoHistos(BaseResoHistos):
 
         # if 'energyCentral' in target:
         #     self.h_centralEnergyRes.Fill(target.energyCentral - reference.energy)
-        if 'exeta' in target:
+        if 'exeta' in reference:
             self.h_etaRes.Fill(target.exeta - reference.eta)
             self.h_phiRes.Fill(target.exphi - reference.phi)
             self.h_drRes.Fill(np.sqrt((reference.exphi-target.phi)**2+(reference.exeta-target.eta)**2))
@@ -844,9 +844,12 @@ class EGResoHistos(BaseResoHistos):
             self.h_ptResp = ROOT.TH1F(name+'_ptResp', 'EG Pt resp.; p_{T}^{L1}/p_{T}^{GEN}', 100, 0, 3)
             self.h_ptRespVpt = ROOT.TH2F(name+'_ptRespVpt', 'EG Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
             self.h_ptRespVeta = ROOT.TH2F(name+'_ptRespVeta', 'EG Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};', 50, -4, 4, 100, 0, 3)
+
             self.h_etaRes = ROOT.TH1F(name+'_etaRes', 'EG eta reso; #eta^{L1}-#eta^{GEN}', 100, -0.4, 0.4)
             self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'EG phi reso; #phi^{L1}-#phi^{GEN}', 100, -0.4, 0.4)
-            self.h_drRes = ROOT.TH1F(name+'_drRes', 'EG DR reso; #DeltaR^{L1}-#DeltaR^{GEN}', 100, 0, 0.1)
+
+            self.h_exetaRes = ROOT.TH1F(name+'_exetaRes', 'EG eta reso; #eta^{L1}-#eta^{GEN}_{calo}', 100, -0.4, 0.4)
+            self.h_exphiRes = ROOT.TH1F(name+'_exphiRes', 'EG phi reso; #phi^{L1}-#phi^{GEN}_{calo}', 100, -0.4, 0.4)
 
         BaseResoHistos.__init__(self, name, root_file, debug)
 
@@ -858,7 +861,9 @@ class EGResoHistos(BaseResoHistos):
         self.h_ptRespVpt.Fill(reference.pt, target.pt/reference.pt, reference.weight)
         self.h_etaRes.Fill(target.eta - reference.eta, reference.weight)
         self.h_phiRes.Fill(target.phi - reference.phi, reference.weight)
-        self.h_drRes.Fill(np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2), reference.weight)
+
+        self.h_exetaRes.Fill(target.eta - reference.exeta, reference.weight)
+        self.h_exphiRes.Fill(target.phi - reference.exphi, reference.weight)
 
 
 class ClusterConeHistos(BaseHistos):
