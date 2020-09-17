@@ -376,9 +376,9 @@ genpart_ele_genplotting += add_selections(genpart_ele_selections, gen_ee_selecti
 
 eg_qual_selections = [
                       # Selection('EGq1', 'q1', 'hwQual > 0'),
-                      Selection('EGq2', 'hwQual 2', 'hwQual == 2'),
-                      Selection('EGq3', 'hwQual 3', 'hwQual == 3'),
-                      Selection('EGq4', 'hwQual 4', 'hwQual == 4'),
+                      # Selection('EGq2', 'hwQual 2', 'hwQual == 2'),
+                      # Selection('EGq3', 'hwQual 3', 'hwQual == 3'),
+                      # Selection('EGq4', 'hwQual 4', 'hwQual == 4'),
                       Selection('EGq5', 'hwQual 5', 'hwQual == 5')]
 
 iso_selections = [
