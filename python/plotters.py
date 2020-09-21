@@ -722,7 +722,7 @@ class GenericGenMatchPlotter(BasePlotter):
             best_match_indexes, allmatches = utils.match_extetaphi(genParticles[['exeta', 'exphi']],
                                                                    objects[['eta', 'phi']],
                                                                    objects['pt'],
-                                                                   deltaR=0.1)
+                                                                   deltaR=0.05)
 
         for idx, genParticle in genParticles.iterrows():
             if idx in best_match_indexes.keys():
