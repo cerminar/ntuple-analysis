@@ -689,7 +689,9 @@ class TPGenMatchPlotter(BasePlotter):
 class GenericGenMatchPlotter(BasePlotter):
     def __init__(self, ObjectHistoClass, ResoHistoClass,
                  data_set, gen_set,
-                 data_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
+                 data_selections=[selections.Selection('all')],
+                 gen_selections=[selections.Selection('all')],
+                 gen_eta_phi_columns=['exeta', 'exphi']):
         self.ObjectHistoClass = ObjectHistoClass
         self.ResoHistoClass = ResoHistoClass
         # self.data_set = data_set
@@ -699,6 +701,7 @@ class GenericGenMatchPlotter(BasePlotter):
         self.h_dataset = {}
         self.h_resoset = {}
         self.h_effset = {}
+        self.gen_eta_phi_columns = gen_eta_phi_columns
         super(GenericGenMatchPlotter, self).__init__(data_set, data_selections, gen_set, gen_selections)
 
         # print self
@@ -719,10 +722,10 @@ class GenericGenMatchPlotter(BasePlotter):
 
         best_match_indexes = {}
         if not objects.empty:
-            best_match_indexes, allmatches = utils.match_extetaphi(genParticles[['exeta', 'exphi']],
-                                                                   objects[['eta', 'phi']],
-                                                                   objects['pt'],
-                                                                   deltaR=0.05)
+            best_match_indexes, allmatches = utils.match_etaphi(genParticles[self.gen_eta_phi_columns],
+                                                                objects[['eta', 'phi']],
+                                                                objects['pt'],
+                                                                deltaR=0.1)
 
         for idx, genParticle in genParticles.iterrows():
             if idx in best_match_indexes.keys():
@@ -787,15 +790,18 @@ class GenericGenMatchPlotter(BasePlotter):
 
 class TrackGenMatchPlotter(GenericGenMatchPlotter):
     def __init__(self, data_set, gen_set,
-                 data_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
+                 data_selections=[selections.Selection('all')],
+                 gen_selections=[selections.Selection('all')]):
         super(TrackGenMatchPlotter, self).__init__(histos.TrackHistos, histos.TrackResoHistos,
                                                    data_set, gen_set,
-                                                   data_selections, gen_selections)
+                                                   data_selections, gen_selections,
+                                                   gen_eta_phi_columns=['eta', 'phi'])
 
 
 class EGGenMatchPlotter(GenericGenMatchPlotter):
     def __init__(self, data_set, gen_set,
-                 data_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
+                 data_selections=[selections.Selection('all')],
+                 gen_selections=[selections.Selection('all')]):
         super(EGGenMatchPlotter, self).__init__(histos.EGHistos, histos.EGResoHistos,
                                                 data_set, gen_set,
                                                 data_selections, gen_selections)
@@ -803,7 +809,8 @@ class EGGenMatchPlotter(GenericGenMatchPlotter):
 
 class TkEGGenMatchPlotter(GenericGenMatchPlotter):
     def __init__(self, data_set, gen_set,
-                 data_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
+                 data_selections=[selections.Selection('all')],
+                 gen_selections=[selections.Selection('all')]):
         super(TkEGGenMatchPlotter, self).__init__(histos.TkEGHistos, histos.EGResoHistos,
                                                   data_set, gen_set,
                                                   data_selections, gen_selections)
