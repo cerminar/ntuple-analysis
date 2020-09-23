@@ -52,12 +52,6 @@ eg_rate_plotters = [
         collections.tkelesEL_all, selections.all_rate_selections),
 ]
 
-tp_genmatched_debug = [
-    plotters.TPGenMatchPlotterDebugger(
-        collections.tp_def, collections.gen_parts, collections.gen,
-        [selections.Selection('Em', 'EGId', 'quality >0')],
-        selections.gen_part_selections_debug)]
-
 tp_calib_plotters = [
     plotters.CalibrationPlotter(
         collections.tp_hm_vdr, collections.gen_parts,
