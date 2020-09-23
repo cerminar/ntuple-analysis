@@ -152,6 +152,25 @@ class BaseResoHistos(BaseHistos):
                 setattr(self, attr_2d+'_graph', GraphBuilder(self, attr_2d))
 
 
+class BaseTuples(BaseHistos):
+    def __init__(self, tuple_suffix, tuple_variables,
+                 name, root_file=None, debug=False):
+        if not root_file:
+            self.t_values = ROOT.TNtuple(
+                '{}_{}'.format(name, tuple_suffix),
+                '{}_{}'.format(name, tuple_suffix),
+                tuple_variables)
+        BaseHistos.__init__(self, name, root_file, debug)
+
+    def write(self):
+        if self.__class__.__name__ not in ROOT.gDirectory.GetListOfKeys():
+            ROOT.gDirectory.mkdir(self.__class__.__name__)
+        newdir = ROOT.gDirectory.GetDirectory(self.__class__.__name__)
+        newdir.cd()
+        self.t_values.Write()
+        ROOT.gDirectory.cd('..')
+        return
+
 
 class GenPartHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
@@ -893,67 +912,67 @@ class ClusterConeHistos(BaseHistos):
         self.h_n.Fill(num)
 
 
-class ResoTuples(BaseHistos):
+class IsoTuples(BaseTuples):
     def __init__(self, name, root_file=None, debug=False):
-        if not root_file:
-            # self.data = []
-            # self.reference = []
-            self.t_values = ROOT.TNtuple(name+"_reso", name+"_reso", 'e_gen:pt_gen:eta_gen:e:pt:eta')
-        BaseHistos.__init__(self, name, root_file, debug)
+        BaseTuples.__init__(
+            self, 'iso', 'pid_gen:e_gen:pt_gen:eta_gen:e:pt:eta:iso',
+            name, root_file, debug)
+
+    def fill(self, reference, target):
+        values_fill = []
+
+        if reference is not None:
+            values_fill.append(reference.pid)
+            values_fill.append(reference.energy)
+            values_fill.append(reference.pt)
+            values_fill.append(reference.eta)
+        else:
+            values_fill.extend([-1]*4)
+
+        values_fill.append(target.energy)
+        values_fill.append(target.pt)
+        values_fill.append(target.eta)
+        values_fill.append(target.tkIso)
+
+        self.t_values.Fill(array('f', values_fill))
+
+
+class ResoTuples(BaseTuples):
+    def __init__(self, name, root_file=None, debug=False):
+        BaseTuples.__init__(
+            self, 'reso', 'e_gen:pt_gen:eta_gen:e:pt:eta',
+            name, root_file, debug)
+
+    def fill(self, reference, target):
+        values_fill = []
+
+        values_fill.append(reference.energy)
+        values_fill.append(reference.pt)
+        values_fill.append(reference.eta)
+        values_fill.append(target.energy)
+        values_fill.append(target.pt)
+        values_fill.append(target.eta)
+        self.t_values.Fill(array('f', values_fill))
+
+
+class CalibrationHistos(BaseTuples):
+    def __init__(self, name, root_file=None, debug=False):
+        BaseTuples.__init__(
+            self, 'calib',
+            'e1:e3:e5:e7:e9:e11:e13:e15:e17:e19:e21:e23:e25:e27:Egen:eta:pt:ptgen',
+            name, root_file, debug)
 
     def fill(self, reference, target):
         # cluster_data = []
         # self.data.append(target.iloc[0]['layer_energy'])
         # self.reference.append(reference.energy)
-        energy_fill = []
-
-        energy_fill.append(reference.energy)
-        energy_fill.append(reference.pt)
-        energy_fill.append(reference.eta)
-        energy_fill.append(target.energy)
-        energy_fill.append(target.pt)
-        energy_fill.append(target.eta)
-        self.t_values.Fill(array('f', energy_fill))
-
-    def write(self):
-        if self.__class__.__name__ not in ROOT.gDirectory.GetListOfKeys():
-            ROOT.gDirectory.mkdir(self.__class__.__name__)
-        newdir = ROOT.gDirectory.GetDirectory(self.__class__.__name__)
-        newdir.cd()
-        self.t_values.Write()
-        ROOT.gDirectory.cd('..')
-        return
-
-
-
-class CalibrationHistos(BaseHistos):
-    def __init__(self, name, root_file=None, debug=False):
-        if not root_file:
-            # self.data = []
-            # self.reference = []
-            self.t_values = ROOT.TNtuple(name+"_calib", name+"_calib", 'e1:e3:e5:e7:e9:e11:e13:e15:e17:e19:e21:e23:e25:e27:Egen:eta:pt:ptgen')
-        BaseHistos.__init__(self, name, root_file, debug)
-
-    def fill(self, reference, target):
-        # cluster_data = []
-        # self.data.append(target.iloc[0]['layer_energy'])
-        # self.reference.append(reference.energy)
-        energy_fill = []
-        energy_fill.extend(target.iloc[0]['layer_energy'])
-        energy_fill.append(reference.energy)
-        energy_fill.append(target.eta)
-        energy_fill.append(target.pt)
-        energy_fill.append(reference.pt)
-        self.t_values.Fill(array('f', energy_fill))
-
-    def write(self):
-        if self.__class__.__name__ not in ROOT.gDirectory.GetListOfKeys():
-            ROOT.gDirectory.mkdir(self.__class__.__name__)
-        newdir = ROOT.gDirectory.GetDirectory(self.__class__.__name__)
-        newdir.cd()
-        self.t_values.Write()
-        ROOT.gDirectory.cd('..')
-        return
+        values_fill = []
+        values_fill.extend(target.iloc[0]['layer_energy'])
+        values_fill.append(reference.energy)
+        values_fill.append(target.eta)
+        values_fill.append(target.pt)
+        values_fill.append(reference.pt)
+        self.t_values.Fill(array('f', values_fill))
 
 
 class CorrOccupancyHistos(BaseHistos):
