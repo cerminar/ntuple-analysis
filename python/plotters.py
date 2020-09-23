@@ -957,6 +957,92 @@ class ClusterTCGenMatchPlotter(BasePlotter):
                                      debug)
 
 
+class IsoTuplePlotter(BasePlotter):
+    def __init__(self,
+                 data_set, gen_set,
+                 data_selections=[selections.Selection('all')],
+                 gen_selections=[selections.Selection('all')]):
+        self.h_resoset = {}
+        super(IsoTuplePlotter, self).__init__(data_set, data_selections, gen_set, gen_selections)
+
+        # print self
+        # print gen_selections
+
+    def plotObjectMatch(self,
+                        genParticles,
+                        objects,
+                        h_gen,
+                        h_gen_matched,
+                        h_object_matched,
+                        h_reso,
+                        algoname,
+                        debug):
+        # fill histo with all selected GEN particles before any match
+        if h_gen:
+            h_gen.fill(genParticles)
+
+        best_match_indexes = {}
+        if not objects.empty:
+            best_match_indexes, allmatches = utils.match_etaphi(genParticles[['exeta', 'exphi']],
+                                                                objects[['eta', 'phi']],
+                                                                objects['pt'],
+                                                                deltaR=0.1)
+        # print best_match_indexes
+
+        for idx, genParticle in genParticles.iterrows():
+            if idx in best_match_indexes.keys():
+                # print ('-----------------------')
+                # print (genParticle)
+                obj_matched = objects.loc[[best_match_indexes[idx]]]
+                # h_object_matched.fill(obj_matched)
+                h_reso.fill(reference=genParticle, target=obj_matched)
+
+                if h_gen_matched is not None:
+                    h_gen_matched.fill(genParticles.loc[[idx]])
+
+        for idx, obj in objects.loc[~objects.index.isin(best_match_indexes.values())].iterrows():
+            h_reso.fill(reference=None, target=obj)
+
+
+
+    def book_histos(self):
+        self.gen_set.activate()
+        self.data_set.activate()
+        for tp_sel in self.data_selections:
+            for gen_sel in self.gen_selections:
+                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                self.h_resoset[histo_name] = histos.IsoTuples(histo_name)
+
+    def fill_histos(self, debug=False):
+        for tp_sel in self.data_selections:
+            objects = self.data_set.df
+            if not tp_sel.all and not self.data_set.df.empty:
+                objects = self.data_set.df.query(tp_sel.selection)
+            for gen_sel in self.gen_selections:
+                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
+                if not gen_sel.all:
+                    if not self.gen_set.df.empty:
+                        genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
+                    # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
+                    # elif  particle.pdgid == PID.pizero:
+                    #     genReference = genParts[(genParts.pid == particle.pdgid)]
+
+                h_resoset = self.h_resoset[histo_name]
+                # print 'TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name)
+                # print genReference
+                # print objects
+                self.plotObjectMatch(genReference,
+                                     objects,
+                                     None,
+                                     None,
+                                     None,
+                                     h_resoset,
+                                     self.data_set.name,
+                                     debug)
+
+
+
 
 if __name__ == "__main__":
     for sel in selections.add_selections(selections.tp_id_selections,

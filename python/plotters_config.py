@@ -253,12 +253,25 @@ ttower_genmatched_plotters = [
         [selections.Selection('all')], selections.gen_part_selections)
 ]
 
-correlator_occupancy_plotters = [plotters.CorrOccupancyPlotter(collections.tracks, selections.tracks_selections),
-                                 plotters.CorrOccupancyPlotter(collections.tracks_emu, selections.tracks_selections),
-                                 plotters.CorrOccupancyPlotter(collections.egs_all, selections.tp_pt_selections_occ),
-                                 ]
+correlator_occupancy_plotters = [
+    plotters.CorrOccupancyPlotter(collections.tracks, selections.tracks_selections),
+    plotters.CorrOccupancyPlotter(collections.tracks_emu, selections.tracks_selections),
+    plotters.CorrOccupancyPlotter(collections.egs_all, selections.tp_pt_selections_occ),
+]
 
-tp_cluster_tc_match_plotters = [plotters.ClusterTCGenMatchPlotter(collections.tp_hm_vdr,
-                                                                  collections.gen_parts,
-                                                                  data_selections=selections.tp_tccluster_match_selections,
-                                                                  gen_selections=selections.gen_part_ee_eta_brem_sel)]
+tp_cluster_tc_match_plotters = [
+    plotters.ClusterTCGenMatchPlotter(
+        collections.tp_hm_vdr,
+        collections.gen_parts,
+        data_selections=selections.tp_tccluster_match_selections,
+        gen_selections=selections.gen_part_ee_eta_brem_sel)
+]
+
+eg_isotuples_plotters = [
+    plotters.IsoTuplePlotter(
+        collections.tkelesEL,
+        collections.gen_parts,
+        selections.eg_qual_selections,
+        selections.gen_part_ee_sel
+        )
+]
