@@ -1,5 +1,5 @@
 
-from utils import debugPrintOut
+from python.utils import debugPrintOut
 
 from bokeh.io import show
 from bokeh.models import (

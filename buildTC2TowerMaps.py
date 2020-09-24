@@ -185,8 +185,8 @@ def analyze(params, batch_idx=0):
         tower_tc_mapping.to_csv(file_name, sep=' ', float_format='%.0f', header=False, index=False)
         return tower_tc_mapping
 
-    hgcroc_sel_cells = dump_mapping(sel_cells, field='hgcroc_tt_bin', file_name='TCmapping_hgcroc_eta-phi_v2.txt')
-    wafer_sel_cells = dump_mapping(sel_cells, field='wafer_tt_bin', file_name='TCmapping_wafer_eta-phi_v2.txt')
+    hgcroc_sel_cells = dump_mapping(sel_cells, field='hgcroc_tt_bin', file_name='TCmapping_hgcroc_eta-phi_v3.txt')
+    wafer_sel_cells = dump_mapping(sel_cells, field='wafer_tt_bin', file_name='TCmapping_wafer_eta-phi_v3.txt')
 
     missing = np.array(['1780744193', '1780744194', '1780744195', '1780744196',
                         '1780744197', '1780744198', '1780744199', '1780744200',
