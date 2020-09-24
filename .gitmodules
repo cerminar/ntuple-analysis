@@ -1,0 +1,3 @@
+[submodule "plot-drawing-tools"]
+	path = plot-drawing-tools
+	url = git@github.com:cerminar/plot-drawing-tools.git
