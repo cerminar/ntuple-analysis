@@ -963,6 +963,71 @@ tkeles_all = DFCollection(
     debug=0,
     depends_on=[tkeles, tkeles_brl])
 
+# try to cleanup a bit
+
+egs_EE = DFCollection(
+    name='EgEE', label='EG EE',
+    filler_function=lambda event: event.getDataFrame(prefix='egammaEE'),
+    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
+    fixture_function=fake_endcap_quality,
+    debug=0)
+
+egs_EB = DFCollection(
+    name='EgEB', label='EG EB',
+    filler_function=lambda event: event.getDataFrame(prefix='egammaEB'),
+    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
+    fixture_function=fake_endcap_quality,
+    debug=0)
+
+egs_EE_pf_r1 = DFCollection(
+    name='PFEgEEr1', label='EG EE Corr. (r1)',
+    filler_function=lambda event: event.getDataFrame(prefix='PFegammaEE'),
+    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
+    fixture_function=fake_endcap_quality,
+    debug=0)
+
+egs_EE_pf_r2 = DFCollection(
+    name='PFEgEEr2', label='EG EE Corr. (r2)',
+    filler_function=lambda event: event.getDataFrame(prefix='PFegammaEENoTk'),
+    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
+    fixture_function=fake_endcap_quality,
+    debug=0)
+
+egs_EE_pf = DFCollection(
+    name='PFEgEE', label='EG EE Corr.',
+    filler_function=lambda event: pd.concat([egs_EE_pf_r2.df, egs_EE_pf_r1.df], ignore_index=True),
+    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
+    fixture_function=fake_endcap_quality,
+    depends_on=[egs_EE_pf_r1, egs_EE_pf_r2],
+    debug=0)
+
+
+tkeles_EE = DFCollection(
+    name='tkEleEE', label='TkEle EE',
+    filler_function=lambda event: event.getDataFrame(prefix='tkEleEE'),
+    fixture_function=fake_endcap_quality,
+    debug=0)
+
+tkeles_EB = DFCollection(
+    name='tkEleEB', label='TkEle EB',
+    filler_function=lambda event: event.getDataFrame(prefix='tkEleEB'),
+    fixture_function=fake_endcap_quality,
+    debug=0)
+
+tkeles_EE_pf = DFCollection(
+    name='PFtkEleEE', label='TkEle EE Corr.',
+    filler_function=lambda event: event.getDataFrame(prefix='PFtkEleEE'),
+    fixture_function=fake_endcap_quality,
+    debug=0)
+
+tkeles_EB_pf = DFCollection(
+    name='PFtkEleEB', label='TkEle EB Corr',
+    filler_function=lambda event: event.getDataFrame(prefix='PFtkEleEB'),
+    fixture_function=fake_endcap_quality,
+    debug=0)
+
+
+
 
 class TPSet:
     """
