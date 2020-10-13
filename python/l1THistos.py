@@ -411,6 +411,33 @@ class EGHistos(BaseHistos):
             rnp.fill_hist(hist=self.h_tkIso, array=egs.tkIso, weights=weight)
 
 
+class TkEleHistos(BaseHistos):
+    def __init__(self, name, root_file=None, debug=False):
+        if not root_file:
+            self.h_pt = ROOT.TH1F(name+'_pt', 'Pt (GeV); p_{T} [GeV]', 100, 0, 100)
+            self.h_eta = ROOT.TH1F(name+'_eta', 'eta; #eta;', 100, -2.5, 2.5)
+            self.h_energy = ROOT.TH1F(name+'_energy', 'energy (GeV); E [GeV]', 1000, 0, 1000)
+            self.h_hwQual = ROOT.TH1F(name+'_hwQual', 'quality; hwQual', 10, 0, 10)
+            self.h_tkpt = ROOT.TH1F(name+'_tkpt', 'Tk Pt (GeV); p_{T}^{L1Tk} [GeV]', 100, 0, 100)
+            self.h_dpt = ROOT.TH1F(name+'_dpt', 'Delta Tk Pt (GeV); #Delta p_{T}^{L1Tk-Calo} [GeV]', 100, -50, 50)
+            self.h_tkchi2 = ROOT.TH1F(name+'_tkchi2', 'Tk chi2; #Chi^{2}', 1000, 0, 1000)
+            self.h_ptVtkpt = ROOT.TH2F(name+'_ptVtkpt', 'TkEG Pt (GeV) vs TkPt; p_{T}^{Tk} [GeV]; p_{T}^{EG} [GeV]', 100, 0, 100, 100, 0, 100)
+
+        BaseHistos.__init__(self, name, root_file, debug)
+
+    def fill(self, tkegs):
+        rnp.fill_hist(self.h_pt, tkegs.pt)
+        rnp.fill_hist(self.h_eta, tkegs.eta)
+        rnp.fill_hist(self.h_energy, tkegs.energy)
+        rnp.fill_hist(self.h_hwQual, tkegs.hwQual)
+        rnp.fill_hist(self.h_tkpt, tkegs.tkPt)
+        rnp.fill_hist(self.h_dpt, tkegs.tkPt-tkegs.pt)
+        rnp.fill_hist(self.h_tkchi2, tkegs.tkChi2)
+        rnp.fill_hist(self.h_ptVtkpt, tkegs[['tkPt', 'pt']])
+
+
+
+
 class TkEGHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
