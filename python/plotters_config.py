@@ -24,7 +24,6 @@ tp_plotters = [
     # TPPlotter(selections.tp_hm_vdr_merged, selections.tp_id_selections),
 ]
 
-eg_plotters = [plotters.EGPlotter(collections.egs, selections.eg_qual_selections)]
 track_plotters = [plotters.TrackPlotter(collections.tracks, selections.tracks_selections)]
 tkeg_plotters = [plotters.TkEGPlotter(collections.tkegs, selections.tkeg_qual_selections)]
 rate_plotters = [
@@ -99,25 +98,46 @@ tp_genmatched_plotters = [
         selections.tp_match_selections, selections.gen_part_selections),
                           ]
 
+eg_plotters = [
+    plotters.EGPlotter(collections.egs_EE, selections.eg_qpt_ee_selections),
+    plotters.EGPlotter(collections.egs_EE_pf, selections.eg_qpt_ee_selections),
+    plotters.TkElePlotter(collections.tkeles_EE, selections.eg_qpt_ee_selections),
+    plotters.TkElePlotter(collections.tkeles_EB, selections.eg_qpt_eb_selections),
+    plotters.TkElePlotter(collections.tkeles_EE_pf, selections.eg_qpt_ee_selections),
+    plotters.TkElePlotter(collections.tkeles_EB_pf, selections.eg_qpt_eb_selections)
+    ]
+
+
+
+# NOTE: collections and selections have been revised (and trimmed)
 eg_genmatched_plotters = [
     plotters.EGGenMatchPlotter(
-        collections.egs, collections.gen_parts,
-        selections.eg_pt_selections, selections.gen_part_selections),
+        collections.egs_EE, collections.gen_parts,
+        selections.eg_qpt_ee_selections, selections.gen_part_ee_selections),
     plotters.EGGenMatchPlotter(
-        collections.egs_brl, collections.gen_parts,
-        selections.egqual_pt_selections_barrel, selections.gen_part_barrel_selections),
+        collections.egs_EB, collections.gen_parts,
+        selections.eg_qpt_eb_selections, selections.gen_part_eb_selections),
     plotters.EGGenMatchPlotter(
-        collections.egs_all, collections.gen_parts,
-        selections.egqual_pt_selections_barrel, selections.gen_part_be_selections),
+        collections.egs_EE_pf, collections.gen_parts,
+        selections.eg_qpt_ee_selections, selections.gen_part_ee_selections),
+    # plotters.EGGenMatchPlotter(
+    #     collections.egs_all, collections.gen_parts,
+    #     selections.egqual_pt_selections_barrel, selections.gen_part_be_selections),
     plotters.EGGenMatchPlotter(
-        collections.tkelesEL, collections.gen_parts,
-        selections.tkisoeg_pt_selections, selections.gen_part_selections_tketa),
+        collections.tkeles_EE, collections.gen_parts,
+        selections.eg_qpt_ee_selections, selections.gen_part_tkee_selections),
     plotters.EGGenMatchPlotter(
-        collections.tkelesEL_brl, collections.gen_parts,
-        selections.eg_pt_selections_barrel, selections.gen_part_barrel_selections),
+        collections.tkeles_EB, collections.gen_parts,
+        selections.eg_qpt_eb_selections, selections.gen_part_eb_selections),
     plotters.EGGenMatchPlotter(
-        collections.tkelesEL_all, collections.gen_parts,
-        selections.tkisoeg_pt_selections_barrel, selections.gen_part_be_selections),
+        collections.tkeles_EE_pf, collections.gen_parts,
+        selections.eg_qpt_ee_selections, selections.gen_part_tkee_selections),
+    plotters.EGGenMatchPlotter(
+        collections.tkeles_EB_pf, collections.gen_parts,
+        selections.eg_qpt_eb_selections, selections.gen_part_eb_selections),
+    # plotters.EGGenMatchPlotter(
+    #     collections.tkelesEL_all, collections.gen_parts,
+    #     selections.tkisoeg_pt_selections_barrel, selections.gen_part_be_selections),
 ]
 
 

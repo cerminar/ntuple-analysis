@@ -206,9 +206,9 @@ gen_ee_selections = [Selection('', '', 'reachedEE == 2')]
 
 gen_eta_selections = [
     # Selection('EtaA', '|#eta^{GEN}| <= 1.52', 'abs(eta) <= 1.52'),
-    Selection('EtaB', '1.52 < |#eta^{GEN}| <= 1.7', '1.52 < abs(eta) <= 1.7'),
-    Selection('EtaC', '1.7 < |#eta^{GEN}| <= 2.4', '1.7 < abs(eta) <= 2.4'),
-    Selection('EtaD', '2.4 < |#eta^{GEN}| <= 2.8', '2.4 < abs(eta) <= 2.8'),
+    # Selection('EtaB', '1.52 < |#eta^{GEN}| <= 1.7', '1.52 < abs(eta) <= 1.7'),
+    # Selection('EtaC', '1.7 < |#eta^{GEN}| <= 2.4', '1.7 < abs(eta) <= 2.4'),
+    # Selection('EtaD', '2.4 < |#eta^{GEN}| <= 2.8', '2.4 < abs(eta) <= 2.8'),
     Selection('EtaDE', '2.4 < |#eta^{GEN}| <= 3.0', '2.4 < abs(eta) <= 3.0'),
     # Selection('EtaE', '|#eta^{GEN}| > 2.8', 'abs(eta) > 2.8'),
     # Selection('EtaAB', '|#eta^{GEN}| <= 1.7', 'abs(eta) <= 1.7'),
@@ -259,7 +259,8 @@ gen_pt_selections = [Selection('Pt15', 'p_{T}^{GEN}>=15GeV', 'pt >= 15'),
                      # Selection('Pt20', 'p_{T}^{GEN}>=20GeV', 'pt >= 20'),
                      Selection('Pt30', 'p_{T}^{GEN}>=30GeV', 'pt >= 30'),
                      Selection('Pt35', 'p_{T}^{GEN}>=35GeV', 'pt >= 35'),
-                     Selection('Pt40', 'p_{T}^{GEN}>=40GeV', 'pt >= 40')]
+                     # Selection('Pt40', 'p_{T}^{GEN}>=40GeV', 'pt >= 40')
+                     ]
 
 
 gen_pt_sel = [Selection('Pt15', 'p_{T}^{GEN}>=15GeV', 'pt >= 15'),
@@ -287,7 +288,7 @@ gen_ee_sel = [Selection('', '', 'reachedEE >0 ')]
 
 gen_part_fbrem_selection = [Selection('all', '', ''),
                             Selection('HBrem', 'f_{BREM} >= 0.5', 'fbrem >= 0.5'),
-                            Selection('LBrem', 'f_{BREM} < 0.5', 'fbrem < 0.5'),
+                            Selection('LBrem', 'ff_{BREM} < 0.5', 'fbrem < 0.5'),
                             ]
 
 genpart_ele_sel = add_selections(gen_ele_sel, gen_ee_sel)
@@ -313,6 +314,20 @@ gen_part_selections += gen_part_ee_sel
 gen_part_selections += gen_part_ee_pt_sel
 gen_part_selections += gen_part_ee_eta_sel
 # gen_part_selections += add_selections(gen_part_ee_eta_sel, gen_pt_selection15)
+
+gen_part_ee_selections = []
+gen_part_ee_selections += gen_part_ee_sel
+gen_part_ee_selections += gen_part_ee_pt_sel
+gen_part_ee_selections += gen_part_ee_eta_sel
+
+gen_part_tkee_selections = [gen_sel for gen_sel in gen_part_selections if 'EtaD' not in gen_sel.name and 'EtaBCD' not in gen_sel.name]
+
+
+gen_part_eb_selections = []
+gen_part_eb_selections += gen_selections
+gen_part_eb_selections += add_selections(gen_selections, gen_pt_selections)
+gen_part_eb_selections += add_selections(gen_selections, gen_eta_barrel_selections)
+
 
 gen_part_ele_selections = []
 gen_part_ele_selections += genpart_ele_sel
@@ -374,11 +389,29 @@ genpart_pion_ee_selections += add_selections(genpart_pion_ee_selections_tmp, gen
 genpart_ele_genplotting = [Selection('all')]
 genpart_ele_genplotting += add_selections(genpart_ele_selections, gen_ee_selections)
 
+# EG selection quality and Pt EE
+eg_qual_ee_sel = [
+    Selection('EGq4', 'hwQual 4', 'hwQual == 4'),
+    Selection('EGq5', 'hwQual 5', 'hwQual == 5')]
+
+eg_qpt_ee_selections = []
+eg_qpt_ee_selections += add_selections(eg_qual_ee_sel, tp_pt_selections)
+
+# EG selection quality and Pt EB
+
+eg_qual_eb_sel = [
+    Selection('all'),
+    Selection('LooseTkID', 'LooseTkID', 'looseTkID')]
+
+
+eg_qpt_eb_selections = []
+eg_qpt_eb_selections += add_selections(eg_qual_eb_sel, tp_pt_selections)
+
 eg_qual_selections = [
                       # Selection('EGq1', 'q1', 'hwQual > 0'),
                       # Selection('EGq2', 'hwQual 2', 'hwQual == 2'),
                       # Selection('EGq3', 'hwQual 3', 'hwQual == 3'),
-                      # Selection('EGq4', 'hwQual 4', 'hwQual == 4'),
+                      Selection('EGq4', 'hwQual 4', 'hwQual == 4'),
                       Selection('EGq5', 'hwQual 5', 'hwQual == 5')]
 
 iso_selections = [
@@ -451,7 +484,7 @@ tracks_selections += add_selections(tracks_quality_sels, tracks_pt_sels)
 
 
 if __name__ == "__main__":
-    for sel in gen_part_selections:
+    for sel in gen_part_tkee_selections:
         print sel
     # for sel in eg_pt_selections:
     #     print sel.name
