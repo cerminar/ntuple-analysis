@@ -7,7 +7,7 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v145D
+  plot_version: v145E
   run_clustering: False
   run_density_computation: False
   calib_version: calib-v134C
@@ -82,7 +82,7 @@ collections:
       # - dyll_PU200
     plotters:
       - eg_plotters
-      # - eg_genmatched_plotters
+      - eg_genmatched_plotters
     htc_jobflavor:
       tomorrow
     priorities:
