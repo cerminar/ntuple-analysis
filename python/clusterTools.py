@@ -1,3 +1,4 @@
+from __future__ import print_function
 import pandas as pd
 import numpy as np
 from sklearn.cluster import DBSCAN
@@ -15,10 +16,10 @@ def buildTriggerTowerCluster(allTowers, seedTower, debug):
                               & (allTowers.iPhi >= (iPhi_seed - 1))]
     clusterTowers.loc[clusterTowers.index, 'logEnergy'] = np.log(clusterTowers.energy)
     if debug >= 5:
-        print '---- SEED:'
-        print seedTower
-        print 'Cluster components:'
-        print clusterTowers
+        print('---- SEED:')
+        print(seedTower)
+        print('Cluster components:')
+        print(clusterTowers)
     ret = pd.DataFrame(columns=['energy', 'eta', 'phi', 'pt'])
     ret['energy'] = [clusterTowers.energy.sum()]
     ret['logEnergy'] = np.log(ret.energy)
@@ -293,7 +294,7 @@ def build3DCl(components, calib_factor=1.084):
 
 
 def build3D(components, calib_factor=1.084):
-    print '**** [build3D] WARNING is now deprecated, use build3DCl or compute3DClQuantities instead!'
+    print('**** [build3D] WARNING is now deprecated, use build3DCl or compute3DClQuantities instead!')
     cl3D = pd.DataFrame(columns=['energy', 'eta', 'phi', 'pt',
                                  'layers', 'clusters', 'nclu', 'firstlayer',
                                  'showerlength', 'seetot', 'seemax', 'spptot',

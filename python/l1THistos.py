@@ -1,3 +1,4 @@
+from __future__ import print_function
 import ROOT
 import root_numpy as rnp
 import numpy as np
@@ -58,7 +59,7 @@ class BaseHistos():
                          if histo.GetName().startswith(name+'_')]
                          # if name+'_' in histo.GetName()]
             if debug:
-                print selhistos
+                print(selhistos)
             for hinst, histo_name in selhistos:
                 attr_name = 'h_'+histo_name.split(name+'_')[1]
                 setattr(self, attr_name, hinst)
@@ -257,7 +258,7 @@ class RateHistos(BaseHistos):
     def normalize(self, norm):
         nev = self.h_norm.GetBinContent(1)
         if(nev != norm):
-            print 'normalize to {}'.format(norm)
+            print('normalize to {}'.format(norm))
             self.h_norm.Scale(norm/nev)
             self.h_pt.Scale(norm/nev)
             self.h_ptVabseta.Scale(norm/nev)
@@ -752,7 +753,7 @@ class DensityHistos(BaseHistos):
             self.h_eDensityVlayer = ROOT.TH2F(name+'_eDensityVlayer', 'E (GeV) Density per layer', 60, 0, 60, 600, 0, 30)
             self.h_nTCDensityVlayer = ROOT.TH2F(name+'_nTCDensityVlayer', '# TC Density per layer', 60, 0, 60, 20, 0, 20)
         elif 'v7' in root_file.GetName() and "NuGun" not in root_file.GetName():
-            print "v7 hack"
+            print("v7 hack")
             self.h_eDensityVlayer = root_file.Get(name+'eDensityVlayer')
             self.h_nTCDensityVlayer = root_file.Get(name+'nTCDensityVlayer')
         BaseHistos.__init__(self, name, root_file, debug)
@@ -797,7 +798,7 @@ class HistoEff():
         # print dir(total)
         for histo in [a for a in dir(total) if a.startswith('h_')]:
             if debug:
-                print histo
+                print(histo)
             hist_total = getattr(total, histo)
             hist_passed = getattr(passed, histo)
             if rebin is None:

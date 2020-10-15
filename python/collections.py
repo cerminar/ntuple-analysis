@@ -14,6 +14,7 @@ Objects:
     can be used by plotters.
 """
 
+from __future__ import print_function
 import pandas as pd
 import numpy as np
 import ROOT
@@ -66,13 +67,13 @@ class EventManager(object):
             self.collections.append(collection)
 
         def registerActiveCollection(self, collection):
-            print '[EventManager] registering collection as active: {}'.format(collection.name)
+            print('[EventManager] registering collection as active: {}'.format(collection.name))
             self.active_collections.append(collection)
 
         def read(self, event, debug):
             for collection in self.active_collections:
                 if debug >= 3:
-                    print '[EventManager] filling collection: {}'.format(collection.name)
+                    print('[EventManager] filling collection: {}'.format(collection.name))
                 collection.fill(event, self.weight_file, debug)
 
         def get_labels(self):
@@ -414,8 +415,8 @@ def get_layer_calib_clusters(input_clusters,
                              eta_corr=(0., 0.),
                              debug=False):
     if debug:
-        print layer_calib_factors
-        print eta_corr
+        print(layer_calib_factors)
+        print(eta_corr)
     calibrated_clusters = input_clusters.copy(deep=True)
 
     # def apply_calibration(cluster):
@@ -496,7 +497,7 @@ def get_calibrated_clusters2(calib_factors, input_3Dclusters):
         # print cluster
         else:
             if cluster.eta <= 2.8 and cluster.eta > 1.52 and cluster.pt > 4 and cluster.pt <= 100:
-                print cluster[['pt', 'eta']]
+                print(cluster[['pt', 'eta']])
 
         cluster['pt2'] = cluster.pt*calib_factor
         return cluster
@@ -540,7 +541,7 @@ def fake_endcap_quality(electrons):
 
 
 def print_columns(df):
-    print df.columns
+    print(df.columns)
     return df
 
 

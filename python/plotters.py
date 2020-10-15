@@ -19,6 +19,7 @@ fill_histos:
 Several collections of plotters are also instantiated. Which one will actually be run
 is steered via the configuration file.
 """
+from __future__ import print_function
 import ROOT
 import l1THistos as histos
 import utils as utils
@@ -256,10 +257,10 @@ class TPGenMatchPlotter(BasePlotter):
             components = all3DClusters[all3DClusters.index.isin(idx_incone)]
             ret = clAlgo.sum3DClusters(components)
             if debug > 0:
-                print '-------- in cone:'
-                print components.sort_values(by='pt', ascending=False)
-                print '   - Cone sum:'
-                print ret
+                print('-------- in cone:')
+                print(components.sort_values(by='pt', ascending=False))
+                print('   - Cone sum:')
+                print(ret)
             return ret
 
         best_match_indexes = {}
@@ -332,8 +333,8 @@ class TPGenMatchPlotter(BasePlotter):
                                                    h_clustersInCone,
                                                    debug=0):
                         if debug > 4:
-                            print '- best match: {}, all matches: {}'.format(idx_bestmatch,
-                                                                             idx_allmatches)
+                            print('- best match: {}, all matches: {}'.format(idx_bestmatch,
+                                                                             idx_allmatches))
                         bestcl = cl3ds.loc[idx_bestmatch]
                         h_clustersInCone.fill_n(len(idx_allmatches)-1)
                         for idx in idx_allmatches:
@@ -359,8 +360,8 @@ class TPGenMatchPlotter(BasePlotter):
                     histoGenMatched.fill(genParticles.loc[[idx]])
 
                 if debug >= 6:
-                    print ('--- Dump match for algo {} ---------------'.format(algoname))
-                    print ('GEN particle: idx: {}'.format(idx))
+                    print(('--- Dump match for algo {} ---------------'.format(algoname)))
+                    print(('GEN particle: idx: {}'.format(idx)))
                     print (genParticle)
                     print ('Matched to 3D cluster:')
                     print (matched3DCluster)
@@ -369,18 +370,18 @@ class TPGenMatchPlotter(BasePlotter):
                     print ('matched cells:')
                     print (matchedTriggerCells)
 
-                    print ('3D cluster energy: {}'.format(matched3DCluster.energy.sum()))
-                    print ('3D cluster pt: {}'.format(matched3DCluster.pt.sum()))
+                    print(('3D cluster energy: {}'.format(matched3DCluster.energy.sum())))
+                    print(('3D cluster pt: {}'.format(matched3DCluster.pt.sum())))
                     calib_factor = 1.084
-                    print ('sum 2D cluster energy: {}'.format(matchedClusters.energy.sum()*calib_factor))
+                    print(('sum 2D cluster energy: {}'.format(matchedClusters.energy.sum()*calib_factor)))
                     # print ('sum 2D cluster pt: {}'.format(matchedClusters.pt.sum()*calib_factor))
-                    print ('sum TC energy: {}'.format(matchedTriggerCells.energy.sum()))
+                    print(('sum TC energy: {}'.format(matchedTriggerCells.energy.sum())))
                     print ('Sum of matched clusters in cone:')
                     print (clustersInCone)
             else:
                 if debug >= 5:
-                    print ('==== Warning no match found for algo {}, idx {} ======================'.format(algoname,
-                                                                                                           idx))
+                    print(('==== Warning no match found for algo {}, idx {} ======================'.format(algoname,
+                                                                                                           idx)))
                     if debug >= 2:
                         print (genParticle)
                         print (trigger3DClusters)
@@ -503,14 +504,14 @@ class GenericGenMatchPlotter(BasePlotter):
                     h_gen_matched.fill(genParticles.loc[[idx]])
 
                 if debug >= 4:
-                    print ('--- Dump match for algo {} ---------------'.format(algoname))
-                    print ('GEN particle: idx: {}'.format(idx))
+                    print(('--- Dump match for algo {} ---------------'.format(algoname)))
+                    print(('GEN particle: idx: {}'.format(idx)))
                     print (genParticle)
                     print ('Matched to track object:')
                     print (obj_matched)
             else:
                 if debug >= 5:
-                    print ('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx))
+                    print(('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx)))
                     print (genParticle)
                     print (objects)
 
@@ -616,14 +617,14 @@ class ResoNtupleMatchPlotter(BasePlotter):
                 h_calibration.fill(reference=genParticle, target=obj_matched)
 
                 if debug >= 4:
-                    print ('--- Dump match for algo {} ---------------'.format(algoname))
-                    print ('GEN particle: idx: {}'.format(idx))
+                    print(('--- Dump match for algo {} ---------------'.format(algoname)))
+                    print(('GEN particle: idx: {}'.format(idx)))
                     print (genParticle)
                     print ('Matched to track object:')
                     print (obj_matched)
             else:
                 if debug >= 5:
-                    print ('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx))
+                    print(('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx)))
                     print (genParticle)
                     print (objects)
 
@@ -703,14 +704,14 @@ class CalibrationPlotter(BasePlotter):
                 h_calibration.fill(reference=genParticle, target=obj_matched)
 
                 if debug >= 4:
-                    print ('--- Dump match for algo {} ---------------'.format(algoname))
-                    print ('GEN particle: idx: {}'.format(idx))
+                    print(('--- Dump match for algo {} ---------------'.format(algoname)))
+                    print(('GEN particle: idx: {}'.format(idx)))
                     print (genParticle)
                     print ('Matched to track object:')
                     print (obj_matched)
             else:
                 if debug >= 5:
-                    print ('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx))
+                    print(('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx)))
                     print (genParticle)
                     print (objects)
 
@@ -840,14 +841,14 @@ class TTGenMatchPlotter:
                 # histoResoCone.fill(reference=genParticle, target=clustersInCone.iloc[0])
 
                 if debug >= 4:
-                    print ('--- Dump match for algo {} ---------------'.format(algoname))
-                    print ('GEN particle: idx: {}'.format(idx))
+                    print(('--- Dump match for algo {} ---------------'.format(algoname)))
+                    print(('GEN particle: idx: {}'.format(idx)))
                     print (genParticle)
                     print ('Matched Trigger Tower:')
                     print (matchedTower)
             else:
                 if debug >= 0:
-                    print ('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx))
+                    print(('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx)))
                     if debug >= 2:
                         print (genParticle)
 
@@ -923,8 +924,8 @@ class ClusterTCGenMatchPlotter(BasePlotter):
                 h_tc_matched.fill(sel_tcs, obj_matched)
 
                 if debug >= 4:
-                    print ('--- Dump match for algo {} ---------------'.format(algoname))
-                    print ('GEN particle: idx: {}'.format(idx))
+                    print(('--- Dump match for algo {} ---------------'.format(algoname)))
+                    print(('GEN particle: idx: {}'.format(idx)))
                     print (genParticle)
 
     def book_histos(self):
@@ -1052,9 +1053,9 @@ class IsoTuplePlotter(BasePlotter):
 if __name__ == "__main__":
     for sel in selections.add_selections(selections.tp_id_selections,
                                          selections.tp_eta_selections):
-        print sel
+        print(sel)
 
-    print selections.add_selections(selections.tp_id_selections,
-                                    selections.tp_pt_selections)
+    print(selections.add_selections(selections.tp_id_selections,
+                                    selections.tp_pt_selections))
 
-    print selections.gen_selection
+    print(selections.gen_selection)

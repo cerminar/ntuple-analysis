@@ -8,6 +8,7 @@ Selections can be composed (added). The actual selection syntax follows the
 """
 
 
+from __future__ import print_function
 class PID:
     electron = 11
     photon = 22
@@ -362,7 +363,7 @@ gen_part_selections_calib += add_selections([gen_part_ee_eta_sel[1]], gen_pt_sel
 gen_part_selections_tketa = [gen_sel for gen_sel in gen_part_selections if 'EtaD' not in gen_sel.name]
 gen_part_ele_selections_tketa = [gen_sel for gen_sel in gen_part_ele_selections if 'EtaD' not in gen_sel.name]
 # gen_part_selections_tketa += []
-print 'gen_part_selections: {}'.format(len(gen_part_selections))
+print('gen_part_selections: {}'.format(len(gen_part_selections)))
 
 genpart_ele_ee_selections = []
 genpart_ele_ee_selections_tmp = add_selections(genpart_ele_selections, gen_ee_selections)
@@ -485,7 +486,7 @@ tracks_selections += add_selections(tracks_quality_sels, tracks_pt_sels)
 
 if __name__ == "__main__":
     for sel in gen_part_tkee_selections:
-        print sel
+        print(sel)
     # for sel in eg_pt_selections:
     #     print sel.name
     # for sel in tkisoeg_pt_selections:

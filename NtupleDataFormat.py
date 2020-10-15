@@ -1,6 +1,7 @@
 # import math
 # import collections
 
+from __future__ import print_function
 import ROOT
 import pandas as pd
 import root_numpy as rnp
@@ -52,21 +53,21 @@ class HGCalNtuple(object):
         self._entries = self._tree.GetEntries()
 
     def setCache(self, learn_events=-1, entry_range=None):
-        print 'Resetting cache: {}'.format(self._tree.SetCacheSize(0))
+        print('Resetting cache: {}'.format(self._tree.SetCacheSize(0)))
         cachesize = 400000000
-        print 'Setting new cache size: {}'.format(self._tree.SetCacheSize(cachesize))
+        print('Setting new cache size: {}'.format(self._tree.SetCacheSize(cachesize)))
         if learn_events != -1:
-            print 'Setting # of entries for cache learning: {} to {}'.format(
-                self._tree.SetCacheLearnEntries(learn_events), learn_events)
+            print('Setting # of entries for cache learning: {} to {}'.format(
+                self._tree.SetCacheLearnEntries(learn_events), learn_events))
         else:
-            print self._tree.AddBranchToCache("*", True)
+            print(self._tree.AddBranchToCache("*", True))
             # print self._tree.AddBranchToCache("cl_layer")
             self._tree.StopCacheLearningPhase()
 
         if entry_range:
-            print 'Setting cache entry range: {}'.format(
-                self._tree.SetCacheEntryRange(entry_range[0], entry_range[-1]))
-        print 'Cache size: {}'.format(self._tree.GetCacheSize())
+            print('Setting cache entry range: {}'.format(
+                self._tree.SetCacheEntryRange(entry_range[0], entry_range[-1])))
+        print('Cache size: {}'.format(self._tree.GetCacheSize()))
 
     def PrintCacheStats(self):
         self._tree.PrintCacheStats('cachedbranches')

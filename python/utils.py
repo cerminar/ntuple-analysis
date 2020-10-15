@@ -1,3 +1,4 @@
+from __future__ import print_function
 import math as m
 import numpy as np
 from scipy.spatial import cKDTree
@@ -42,6 +43,6 @@ def debugPrintOut(level, name, toCount, toPrint):
     if level == 0:
         return
     if level >= 3:
-        print('# {}: {}'.format(name, len(toCount)))
+        print(('# {}: {}'.format(name, len(toCount))))
     if level >= 4 and not toPrint.empty:
         print(toPrint)

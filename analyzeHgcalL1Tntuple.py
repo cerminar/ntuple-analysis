@@ -18,6 +18,7 @@ Histograms:
 
 # import ROOT
 # from __future__ import print_function
+from __future__ import print_function
 import sys
 # The purpose of this file is to demonstrate mainly the objects
 # that are in the HGCalNtuple
@@ -45,6 +46,7 @@ import python.calibrations as calibs
 # from pandas.core.common import SettingWithCopyError, SettingWithCopyWarning
 # import warnings
 # warnings.filterwarnings('error', category=SettingWithCopyWarning)
+
 
 class Parameters(dict):
 
@@ -81,8 +83,8 @@ def get_collection_parameters(opt, cfgfile):
     collection_params = {}
     for collection, collection_data in cfgfile['collections'].items():
         samples = collection_data['samples']
-        print ('--- Collection: {} with samples: {}'.format(collection, samples))
-        print collection_data['priorities']
+        print('--- Collection: {} with samples: {}'.format(collection, samples))
+        print(collection_data['priorities'])
         sample_params = []
 
         plotters = []
@@ -159,7 +161,7 @@ def analyze(params, batch_idx=0):
         geom_file = os.path.join(params.input_base_dir, 'geom/test_triggergeom.root')
         tc_geom_tree = HGCalNtuple([geom_file], tree='hgcaltriggergeomtester/TreeTriggerCells')
         tc_geom_tree.setCache(learn_events=100)
-        print ('read TC GEOM tree with # events: {}'.format(tc_geom_tree.nevents()))
+        print('read TC GEOM tree with # events: {}'.format(tc_geom_tree.nevents()))
         tc_geom_df = convertGeomTreeToDF(tc_geom_tree._tree)
         tc_geom_df['radius'] = np.sqrt(tc_geom_df['x']**2+tc_geom_df['y']**2)
         tc_geom_df['eta'] = np.arcsinh(tc_geom_df.z/tc_geom_df.radius)
@@ -183,14 +185,14 @@ def analyze(params, batch_idx=0):
     range_ev = (0, params.maxEvents)
 
     if params.events_per_job == -1:
-        print 'This is interactive processing...'
+        print('This is interactive processing...')
         input_files = fm.get_files_for_processing(input_dir=os.path.join(params.input_base_dir,
                                                                          params.input_sample_dir),
                                                   tree=params.tree_name,
                                                   nev_toprocess=params.maxEvents,
                                                   debug=debug)
     else:
-        print 'This is batch processing...'
+        print('This is batch processing...')
         input_files, range_ev = fm.get_files_and_events_for_batchprocessing(input_dir=os.path.join(params.input_base_dir,
                                                                                                    params.input_sample_dir),
                                                                             tree=params.tree_name,
@@ -200,17 +202,17 @@ def analyze(params, batch_idx=0):
                                                                             debug=debug)
 
     # print ('- dir {} contains {} files.'.format(params.input_sample_dir, len(input_files)))
-    print '- will read {} files from dir {}:'.format(len(input_files), params.input_sample_dir)
+    print('- will read {} files from dir {}:'.format(len(input_files), params.input_sample_dir))
     for file_name in input_files:
-        print '        - {}'.format(file_name)
+        print('        - {}'.format(file_name))
 
     ntuple = HGCalNtuple(input_files, tree=params.tree_name)
     if params.events_per_job == -1:
         if params.maxEvents == -1:
             range_ev = (0, ntuple.nevents())
 
-    print ('- created TChain containing {} events'.format(ntuple.nevents()))
-    print ('- reading from event: {} to event {}'.format(range_ev[0], range_ev[1]))
+    print('- created TChain containing {} events'.format(ntuple.nevents()))
+    print('- reading from event: {} to event {}'.format(range_ev[0], range_ev[1]))
 
     ntuple.setCache(learn_events=1, entry_range=range_ev)
     output = ROOT.TFile(params.output_filename, "RECREATE")
@@ -223,7 +225,7 @@ def analyze(params, batch_idx=0):
     # instantiate all the plotters
     plotter_collection = []
     plotter_collection.extend(params.plotters)
-    print plotter_collection
+    print(plotter_collection)
 
     # -------------------------------------------------------
     # book histos
@@ -252,9 +254,10 @@ def analyze(params, batch_idx=0):
             break
 
         if debug >= 2 or event.entry() % 100 == 0:
-            print ("--- Event {}, @ {}".format(event.entry(),
-                                               datetime.datetime.now()))
-            print ('    run: {}, lumi: {}, event: {}'.format(
+            print("--- Event {}, @ {}".format(
+                event.entry(),
+                datetime.datetime.now()))
+            print('    run: {}, lumi: {}, event: {}'.format(
                 event.run(), event.lumi(), event.event()))
 
         nev += 1
@@ -270,23 +273,21 @@ def analyze(params, batch_idx=0):
                 plotter.fill_histos(debug=debug)
 
         except Exception as inst:
-            print ("[EXCEPTION OCCURRED:] --- Event {}, @ {}".format(event.entry(),
-                                                                     datetime.datetime.now()))
-            print ('                       run: {}, lumi: {}, event: {}'.format(event.run(),
-                                                                                event.lumi(),
-                                                                                event.event()))
-            print (str(inst))
-            print ("Unexpected error:", sys.exc_info()[0])
+            print("[EXCEPTION OCCURRED:] --- Event {}, @ {}".format(
+                event.entry(), datetime.datetime.now()))
+            print('                       run: {}, lumi: {}, event: {}'.format(
+                event.run(), event.lumi(), event.event()))
+            print(str(inst))
+            print("Unexpected error:", sys.exc_info()[0])
             traceback.print_exc()
             sys.exit(200)
 
-
-    print ("Processed {} events/{} TOT events".format(nev, ntuple.nevents()))
-    print ("Writing histos to file {}".format(params.output_filename))
+    print("Processed {} events/{} TOT events".format(nev, ntuple.nevents()))
+    print("Writing histos to file {}".format(params.output_filename))
 
     lastfile = ntuple.tree().GetFile()
-    print 'Read bytes: {}, # of transaction: {}'.format(
-        lastfile.GetBytesRead(),  lastfile.GetReadCalls())
+    print('Read bytes: {}, # of transaction: {}'.format(
+        lastfile.GetBytesRead(),  lastfile.GetReadCalls()))
     if debug == -4:
         ntuple.PrintCacheStats()
 
@@ -356,17 +357,17 @@ def main(analyze):
                                   if sample.name == opt.SAMPLE]
                     samples_to_process.append(sel_sample[0])
             else:
-                print ('Collection: {}, available samples: {}'.format(
-                    opt.COLLECTION, collection_params[opt.COLLECTION]))
+                print(('Collection: {}, available samples: {}'.format(
+                    opt.COLLECTION, collection_params[opt.COLLECTION])))
                 sys.exit(0)
         else:
-            print ('ERROR: collection {} not in the cfg file'.format(opt.COLLECTION))
+            print('ERROR: collection {} not in the cfg file'.format(opt.COLLECTION))
             sys.exit(10)
     else:
-        print ('\nAvailable collections: {}'.format(collection_params.keys()))
+        print('\nAvailable collections: {}'.format(collection_params.keys()))
         sys.exit(0)
 
-    print ('About to process samples: {}'.format(samples_to_process))
+    print('About to process samples: {}'.format(samples_to_process))
 
     if opt.BATCH and not opt.RUN:
         batch_dir = 'batch_{}_{}'.format(opt.COLLECTION, cfgfile['common']['plot_version'])
@@ -392,11 +393,11 @@ def main(analyze):
                                                                nev_toprocess=nevents,
                                                                nev_perjob=sample.events_per_job,
                                                                debug=int(opt.DEBUG))
-            print ('Total # of events to be processed: {}'.format(nevents))
-            print ('# of events per job: {}'.format(sample.events_per_job))
+            print('Total # of events to be processed: {}'.format(nevents))
+            print('# of events per job: {}'.format(sample.events_per_job))
             if n_jobs == 0:
                 n_jobs = 1
-            print ('# of jobs to be submitted: {}'.format(n_jobs))
+            print('# of jobs to be submitted: {}'.format(n_jobs))
 
             params = {}
             params['TEMPL_TASKDIR'] = sample_batch_dir
@@ -460,7 +461,6 @@ def main(analyze):
                 dagman_spl += 'VARS Job_{} JOB_ID="{}"\n'.format(jid, jid)
                 dagman_spl_retry += 'Retry Job_{} 3\n'.format(jid)
                 dagman_spl_retry += 'PRIORITY Job_{} {}\n'.format(jid, sample.htc_priority)
-
 
             dagman_sub += 'SPLICE {} {}.spl DIR {}\n'.format(
                 sample.name, sample.name, sample_batch_dir)
@@ -528,7 +528,7 @@ if __name__ == "__main__":
     try:
         main(analyze=analyze)
     except Exception as inst:
-        print (str(inst))
-        print ("Unexpected error:", sys.exc_info()[0])
+        print(str(inst))
+        print("Unexpected error:", sys.exc_info()[0])
         traceback.print_exc()
         sys.exit(100)
