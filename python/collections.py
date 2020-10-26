@@ -15,6 +15,7 @@ Objects:
 """
 
 from __future__ import print_function
+from __future__ import absolute_import
 import pandas as pd
 import numpy as np
 import ROOT
@@ -22,7 +23,7 @@ import math
 
 import root_numpy.tmva as rnptmva
 
-from utils import debugPrintOut, match_etaphi
+from .utils import debugPrintOut, match_etaphi
 import python.clusterTools as clAlgo
 from python.mp_pool import POOL
 import python.classifiers as classifiers
