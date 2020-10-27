@@ -5,6 +5,7 @@ import subprocess32
 from NtupleDataFormat import HGCalNtuple
 import json
 import uuid
+from io import open
 
 
 def get_checksum(filename):
@@ -53,22 +54,26 @@ def copy_to_eos(file_name, target_dir, target_file_name):
     return eos_proc.returncode
 
 
-def listFiles(input_dir, match='.root', recursive=True):
+def listFiles(input_dir, match=b'.root', recursive=True):
     onlyfiles = []
     onlydirs = []
     if not input_dir.startswith('/eos'):
-        onlyfiles = [os.path.join(input_dir, f) for f in os.listdir(input_dir) if os.path.isfile(os.path.join(input_dir, f)) and match in f]
+        onlyfiles = [os.path.join(input_dir, f) for f in os.listdir(input_dir)
+                     if os.path.isfile(os.path.join(input_dir, f)) and match.decode('utf-8') in f]
         if recursive:
-            onlydirs = [os.path.join(input_dir, f) for f in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir, f))]
+            onlydirs = [os.path.join(input_dir, f) for f in os.listdir(input_dir)
+                        if os.path.isdir(os.path.join(input_dir, f))]
     else:
         # we read the input files via EOS
         protocol = get_eos_protocol(dirname=input_dir)
         options = '-l'
         eos_proc = subprocess32.Popen(['eos', protocol, 'ls', options, input_dir], stdout=subprocess32.PIPE)
         lines = eos_proc.stdout.readlines()
-        onlyfiles = [os.path.join(input_dir, f.split()[-1].rstrip()) for f in lines if match in f and f.split()[0][0] != 'd']
+        onlyfiles = [os.path.join(input_dir, f.decode('utf-8').split()[-1].rstrip()) for f in lines
+                     if match in f and f.decode('utf-8').split()[0][0] != 'd']
         if recursive:
-            onlydirs = [os.path.join(input_dir, f.split()[-1].rstrip()) for f in lines if f.split()[0][0] is 'd']
+            onlydirs = [os.path.join(input_dir, f.decode('utf-8').split()[-1].rstrip()) for f in lines
+                        if f.decode('utf-8').split()[0][0] == 'd']
 
     for dirname in onlydirs:
         onlyfiles.extend(listFiles(dirname, match, recursive))
@@ -113,7 +118,7 @@ def get_number_of_jobs_for_batchprocessing(input_dir, tree, nev_toprocess, nev_p
 def get_metadata(input_dir, tree, debug=0):
     json_name = 'metadata.json'
     file_metadata = {}
-    json_files = listFiles(input_dir, match=json_name)
+    json_files = listFiles(input_dir, match=json_name.encode())
     if len(json_files) == 0:
         print('no metadata file {} in input dir: {}'.format(json_name, input_dir))
         print('Will now index files...')
@@ -127,7 +132,7 @@ def get_metadata(input_dir, tree, debug=0):
             if debug > 2:
                 print(' [{}] file: {} # events: {}'.format(idx, file_name, nevents))
 
-        with open(json_name, 'w') as fp:
+        with open(json_name, 'w', encoding='utf-8') as fp:
             json.dump(file_metadata, fp)
         copy_to_eos(file_name=json_name,
                     target_dir=input_dir,
@@ -138,7 +143,7 @@ def get_metadata(input_dir, tree, debug=0):
         copy_from_eos(input_dir=input_dir,
                       file_name=json_name,
                       target_file_name=unique_filename)
-        with open(unique_filename, 'r') as fp:
+        with open(unique_filename, 'r', encoding='utf-8') as fp:
             file_metadata = json.load(fp)
         os.remove(unique_filename)
 
@@ -147,7 +152,7 @@ def get_metadata(input_dir, tree, debug=0):
 
 def get_files_to_process(nev_toprocess, metadata, debug=0):
     nevents_tot = 0
-    for key, value in metadata.iteritems():
+    for key, value in metadata.items():
         if debug > 4:
             print(key, value)
         # FIXME: if value is 0 maybe one should check again and rewrite the json?
@@ -255,22 +260,26 @@ if __name__ == "__main__":
     # #             target_file_name='metadata.json')
     #
     # print jobs
-    input_dir = '/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v53/'
-    # input_dir = '/Users/cerminar/Workspace/hgcal-analysis/ntuple-tools/'
 
-    found_files = listFiles(input_dir, match='.root')
+    local_dir = u'/Users/cerminar/cernbox/hgcal/CMSSW1015/'
+    local_files = listFiles(local_dir, match=b'.root')
+    print(len(local_files))
+
+    input_dir = u'/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v53/'
+    # input_dir = '/Users/cerminar/Workspace/hgcal-analysis/ntuple-tools/'
+    found_files = listFiles(input_dir, match=b'.root')
     print(found_files)
     print('# of files: {}'.format(len(found_files)))
 
-
-    # input_dir='/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1061p2/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v29/190902_144701/0000/'
+    # # input_dir='/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1061p2/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v29/190902_144701/0000/'
     tree_name = 'hgcalTriggerNtuplizer/HGCalTriggerNtuple'
-    input_files, range_ev = get_files_and_events_for_batchprocessing(input_dir=input_dir,
-                                                                        tree=tree_name,
-                                                                        nev_toprocess=-1,
-                                                                        nev_perjob=200,
-                                                                        batch_id=121,
-                                                                        debug=True)
+    input_files, range_ev = get_files_and_events_for_batchprocessing(
+        input_dir=input_dir,
+        tree=tree_name,
+        nev_toprocess=-1,
+        nev_perjob=200,
+        batch_id=121,
+        debug=True)
 
     # get_checksum(filename=plots1/histos_nugun_alleta_pu200_v55.root)
 
