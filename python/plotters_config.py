@@ -1,6 +1,7 @@
-import plotters
-import collections
-import selections
+from __future__ import absolute_import
+from . import plotters
+from . import collections
+from . import selections
 
 tp_plotters = [
     # TPPlotter(collections.tp_def, selections.tp_id_selections),

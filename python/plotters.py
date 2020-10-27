@@ -20,13 +20,14 @@ Several collections of plotters are also instantiated. Which one will actually b
 is steered via the configuration file.
 """
 from __future__ import print_function
+from __future__ import absolute_import
 import ROOT
-import l1THistos as histos
-import utils as utils
 import pandas as pd
 import numpy as np
-import clusterTools as clAlgo
-import selections as selections
+from . import l1THistos as histos
+from . import utils as utils
+from . import clusterTools as clAlgo
+from . import selections as selections
 # import collections as collections
 
 
@@ -496,6 +497,8 @@ class GenericGenMatchPlotter(BasePlotter):
             if idx in best_match_indexes.keys():
                 # print ('-----------------------')
                 #  print(genParticle)
+                # print (objects)
+                # print (best_match_indexes)
                 obj_matched = objects.loc[[best_match_indexes[idx]]]
                 h_object_matched.fill(obj_matched)
                 h_reso.fill(reference=genParticle, target=obj_matched)
@@ -1058,4 +1061,4 @@ if __name__ == "__main__":
     print(selections.add_selections(selections.tp_id_selections,
                                     selections.tp_pt_selections))
 
-    print(selections.gen_selection)
+    # print(selections.gen_selection)
