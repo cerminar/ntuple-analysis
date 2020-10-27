@@ -43,6 +43,8 @@ import python.file_manager as fm
 import python.collections as collections
 from python.utils import debugPrintOut
 import python.calibrations as calibs
+import python.plotters_config
+
 # from pandas.core.common import SettingWithCopyError, SettingWithCopyWarning
 # import warnings
 # warnings.filterwarnings('error', category=SettingWithCopyWarning)
@@ -342,7 +344,7 @@ def main(analyze):
     # read the config file
     cfgfile = None
     with open(opt.CONFIGFILE, 'r') as stream:
-        cfgfile = yaml.load(stream)
+        cfgfile = yaml.load(stream, Loader=yaml.FullLoader)
 
     collection_params = get_collection_parameters(opt, cfgfile)
 
