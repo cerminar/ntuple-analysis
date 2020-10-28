@@ -134,6 +134,8 @@ class DFCollection(object):
         self.debug = debug
         self.print_function = print_function
         self.weight_function = weight_function
+        self.n_queries = 0
+        self.cached_queries = dict()
         self.register()
 
     def register(self):
@@ -150,6 +152,7 @@ class DFCollection(object):
         return self.is_active
 
     def fill(self, event, weight_file=None, debug=0):
+        self.clear_query_cache(debug)
         self.df = self.filler_function(event)
         if self.fixture_function is not None:
             # FIXME: wouldn't this be more efficient
@@ -161,6 +164,21 @@ class DFCollection(object):
         debugPrintOut(max(debug, self.debug), self.label,
                       toCount=self.df,
                       toPrint=self.print_function(self.df))
+
+    def query(self, query):
+        self.n_queries += 1
+        if query not in self.cached_queries:
+            ret = self.df.query(query)
+            self.cached_queries[query] = ret
+            return ret
+        return self.cached_queries[query]
+
+    def clear_query_cache(self, debug=0):
+        if (debug > 5)
+            print ('Coll: {} # queries: {} # unique queries: {}'.format(
+                self.name, self.n_queries, len(self.cached_queries.keys()))
+        self.n_queries = 0
+        self.cached_queries.clear()
 
 
 def tkeg_fromcluster_fixture(tkegs):

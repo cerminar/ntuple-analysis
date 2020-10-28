@@ -55,7 +55,7 @@ class BasePlotter(object):
             gen_sel_labels = [sel.label for sel in self.gen_selections]
 
         for data_sel in self.data_selections:
-            for idx,gen_sel_name in enumerate(gen_sel_names):
+            for idx, gen_sel_name in enumerate(gen_sel_names):
                 histo_primitives = histo_primitives.append({'data': self.data_set.name,
                                                             'data_sel': data_sel.name,
                                                             'gen_sel': gen_sel_name,
@@ -65,6 +65,14 @@ class BasePlotter(object):
                                                            ignore_index=True)
         return histo_primitives
 
+    def get_selected_objects(collection, selections):
+        ret = []
+        for sel in selections:
+            if not sel.all and not collection.df.empty:
+                ret.append((collection.query(sel.selection), sel.name))
+            else:
+                ret.append((collection.df, sel.name))
+        return ret
     # def change_genpart_selection(self, newselection):
     #     """Allow customization of gen selection per sample."""
     #     if self.gen_selections is not None:
@@ -127,11 +135,11 @@ class GenericDataFramePlotter(BasePlotter):
                                                                                      selection.name))
 
     def fill_histos(self, debug=False):
-        for data_sel in self.data_selections:
-            data = self.data_set.df
-            if not data_sel.all and not self.data_set.df.empty:
-                data = self.data_set.df.query(data_sel.selection)
-            self.h_set[data_sel.name].fill(data)
+        data_sets = BasePlotter.get_selected_objects(
+            self.data_set, self.data_selections)
+
+        for data, data_sel_name in data_sets:
+            self.h_set[data_sel_name].fill(data)
 
 
 class TkElePlotter(GenericDataFramePlotter):
@@ -199,12 +207,14 @@ class GenPlotter:
             self.h_gen[selection.name] = histos.GenParticleHistos(name='h_genParts_{}'.format(selection.name))
 
     def fill_histos(self, debug=False):
-        gen_parts_all = self.gen_set.df[self.gen_set.df.gen > 0]
-        for gen_sel in self.gen_selections:
-            gen_parts = gen_parts_all
-            if not gen_sel.all:
-                gen_parts = gen_parts_all.query(gen_sel.selection)
-            self.h_gen[gen_sel.name].fill(gen_parts)
+        gen_sets = BasePlotter.get_selected_objects(
+            self.gen_set,
+            selections.add_selections(
+                self.gen_selections,
+                [selections.Selection('', '', 'gen > 0')]))
+
+        for gen_parts, gen_sel_name in gen_sets:
+            self.h_gen[gen_sel_name].fill(gen_parts)
 
 
 class TPGenMatchPlotter(BasePlotter):
@@ -535,18 +545,13 @@ class GenericGenMatchPlotter(BasePlotter):
                 self.h_effset[histo_name] = histos.HistoSetEff(histo_name)
 
     def fill_histos(self, debug=False):
-        data_sets = []
-        gen_sets = []
-        for tp_sel in self.data_selections:
-            objects = self.data_set.df
-            if not tp_sel.all and not self.data_set.df.empty:
-                objects = self.data_set.df.query(tp_sel.selection)
-            data_sets.append((objects, tp_sel.name))
-        for gen_sel in self.gen_selections:
-            genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
-            if not gen_sel.all:
-                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
-            gen_sets.append((genReference, gen_sel.name))
+        data_sets = BasePlotter.get_selected_objects(
+            self.data_set, self.data_selections)
+        gen_sets = BasePlotter.get_selected_objects(
+            self.gen_set,
+            selections.add_selections(
+                self.gen_selections,
+                [selections.Selection('', '', 'gen > 0')]))
 
         for objects, tp_sel_name in data_sets:
             for genReference, gen_sel_name in gen_sets:
@@ -650,18 +655,17 @@ class ResoNtupleMatchPlotter(BasePlotter):
                 self.h_calibration[histo_name] = histos.ResoTuples(histo_name)
 
     def fill_histos(self, debug=False):
-        for tp_sel in self.data_selections:
-            objects = self.data_set.df
-            if not tp_sel.all and not self.data_set.df.empty:
-                objects = self.data_set.df.query(tp_sel.selection)
-            for gen_sel in self.gen_selections:
-                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
-                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
-                if not gen_sel.all:
-                    genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
-                    # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
-                    # elif  particle.pdgid == PID.pizero:
-                    #     genReference = genParts[(genParts.pid == particle.pdgid)]
+        data_sets = BasePlotter.get_selected_objects(
+            self.data_set, self.data_selections)
+        gen_sets = BasePlotter.get_selected_objects(
+            self.gen_set,
+            selections.add_selections(
+                self.gen_selections,
+                [selections.Selection('', '', 'gen > 0')]))
+
+        for objects, tp_sel_name in data_sets:
+            for genReference, gen_sel_name in gen_sets:
+                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel_name, gen_sel_name)
 
                 h_calib = self.h_calibration[histo_name]
                 # print 'TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name)
@@ -737,18 +741,13 @@ class CalibrationPlotter(BasePlotter):
                 self.h_calibration[histo_name] = histos.CalibrationHistos(histo_name)
 
     def fill_histos(self, debug=False):
-        data_sets = []
-        gen_sets = []
-        for tp_sel in self.data_selections:
-            objects = self.data_set.df
-            if not tp_sel.all and not self.data_set.df.empty:
-                objects = self.data_set.df.query(tp_sel.selection)
-            data_sets.append((objects, tp_sel.name))
-        for gen_sel in self.gen_selections:
-            genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
-            if not gen_sel.all:
-                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
-            gen_sets.append((genReference, gen_sel.name))
+        data_sets = BasePlotter.get_selected_objects(
+            self.data_set, self.data_selections)
+        gen_sets = BasePlotter.get_selected_objects(
+            self.gen_set,
+            selections.add_selections(
+                self.gen_selections,
+                [selections.Selection('', '', 'gen > 0')]))
 
         for objects, tp_sel_name in data_sets:
             for genReference, gen_sel_name in gen_sets:
@@ -955,18 +954,13 @@ class ClusterTCGenMatchPlotter(BasePlotter):
                 self.h_tcmatching[histo_name] = histos.TCClusterMatchHistos(histo_name)
 
     def fill_histos(self, debug=False):
-        data_sets = []
-        gen_sets = []
-        for tp_sel in self.data_selections:
-            objects = self.data_set.df
-            if not tp_sel.all and not self.data_set.df.empty:
-                objects = self.data_set.df.query(tp_sel.selection)
-            data_sets.append((objects, tp_sel.name))
-        for gen_sel in self.gen_selections:
-            genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
-            if not gen_sel.all:
-                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
-            gen_sets.append((genReference, gen_sel.name))
+        data_sets = BasePlotter.get_selected_objects(
+            self.data_set, self.data_selections)
+        gen_sets = BasePlotter.get_selected_objects(
+            self.gen_set,
+            selections.add_selections(
+                self.gen_selections,
+                [selections.Selection('', '', 'gen > 0')]))
 
         for objects, tp_sel_name in data_sets:
             for genReference, gen_sel_name in gen_sets:
@@ -1041,18 +1035,13 @@ class IsoTuplePlotter(BasePlotter):
                 self.h_resoset[histo_name] = histos.IsoTuples(histo_name)
 
     def fill_histos(self, debug=False):
-        data_sets = []
-        gen_sets = []
-        for tp_sel in self.data_selections:
-            objects = self.data_set.df
-            if not tp_sel.all and not self.data_set.df.empty:
-                objects = self.data_set.df.query(tp_sel.selection)
-            data_sets.append((objects, tp_sel.name))
-        for gen_sel in self.gen_selections:
-            genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
-            if not gen_sel.all and not self.gen_set.df.empty:
-                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
-            gen_sets.append((genReference, gen_sel.name))
+        data_sets = BasePlotter.get_selected_objects(
+            self.data_set, self.data_selections)
+        gen_sets = BasePlotter.get_selected_objects(
+            self.gen_set,
+            selections.add_selections(
+                self.gen_selections,
+                [selections.Selection('', '', 'gen > 0')]))
 
         for objects, tp_sel_name in data_sets:
             for genReference, gen_sel_name in gen_sets:
