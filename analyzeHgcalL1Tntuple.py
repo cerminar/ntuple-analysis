@@ -48,6 +48,7 @@ import python.plotters_config
 # from pandas.core.common import SettingWithCopyError, SettingWithCopyWarning
 # import warnings
 # warnings.filterwarnings('error', category=SettingWithCopyWarning)
+ROOT.ROOT.EnableImplicitMT()
 
 
 class Parameters(dict):
