@@ -157,10 +157,10 @@ class DFCollection(object):
             self.df = self.fixture_function(self.df)
         if self.weight_function is not None:
             self.df = self.weight_function(self.df, weight_file)
-        if not self.df.empty:
-            debugPrintOut(max(debug, self.debug), self.label,
-                          toCount=self.df,
-                          toPrint=self.print_function(self.df))
+
+        debugPrintOut(max(debug, self.debug), self.label,
+                      toCount=self.df,
+                      toPrint=self.print_function(self.df))
 
 
 def tkeg_fromcluster_fixture(tkegs):
