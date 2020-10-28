@@ -165,13 +165,15 @@ class DFCollection(object):
                       toCount=self.df,
                       toPrint=self.print_function(self.df))
 
-    def query(self, query):
+    def query(self, selection):
         self.n_queries += 1
-        if query not in self.cached_queries:
-            ret = self.df.query(query)
-            self.cached_queries[query] = ret
+        if selection.all or self.df.empty:
+            return self.df
+        if selection.name not in self.cached_queries:
+            ret = self.df.query(selection.selection)
+            self.cached_queries[selection.name] = ret
             return ret
-        return self.cached_queries[query]
+        return self.cached_queries[selection.name]
 
     def clear_query_cache(self, debug=0):
         if (debug > 5):
