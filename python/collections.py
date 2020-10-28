@@ -176,7 +176,7 @@ class DFCollection(object):
     def clear_query_cache(self, debug=0):
         if (debug > 5):
             print ('Coll: {} # queries: {} # unique queries: {}'.format(
-                self.name, self.n_queries, len(self.cached_queries.keys()))
+                self.name, self.n_queries, len(self.cached_queries.keys())))
         self.n_queries = 0
         self.cached_queries.clear()
 
