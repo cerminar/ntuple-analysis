@@ -99,8 +99,8 @@ collections:
       # ele_flat2to100_PU200: 5
       # photon_flat8to150_PU0: 0
       # photon_flat8to150_PU200: 0
-      # doubleele_flat1to100_PU0: 2
-      doubleele_flat1to100_PU200: 2200
+      doubleele_flat1to100_PU0: 2100
+      doubleele_flat1to100_PU200: 1600
 
 
       # dyll_PU200: 5
