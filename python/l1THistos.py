@@ -402,9 +402,12 @@ class EGHistos(BaseHistos):
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, egs):
-        weight = np.ones(egs.shape[0])
+        weight = None
         if 'weight' in egs.columns:
             weight = egs.weight
+        else:
+            weight = np.ones(egs.shape[0])
+
         rnp.fill_hist(hist=self.h_pt,     array=egs.pt,     weights=weight)
         rnp.fill_hist(hist=self.h_eta,    array=egs.eta,    weights=weight)
         rnp.fill_hist(hist=self.h_energy, array=egs.energy, weights=weight)
@@ -436,8 +439,6 @@ class TkEleHistos(BaseHistos):
         rnp.fill_hist(self.h_dpt, tkegs.tkPt-tkegs.pt)
         rnp.fill_hist(self.h_tkchi2, tkegs.tkChi2)
         rnp.fill_hist(self.h_ptVtkpt, tkegs[['tkPt', 'pt']])
-
-
 
 
 class TkEGHistos(BaseHistos):
