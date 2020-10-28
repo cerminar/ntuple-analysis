@@ -30,6 +30,9 @@ import optparse
 import yaml
 import traceback
 import subprocess32
+import time
+import platform
+
 from shutil import copyfile
 
 import root_numpy as rnp
@@ -531,12 +534,12 @@ def main(analyze):
         ret_nevents += analyze(sample, batch_idx=batch_idx)
     return ret_nevents
 
-import time
 
 if __name__ == "__main__":
 
-    
-    tic = time.perf_counter()
+    tic = 0
+    if '3.8' in platform.python_version():
+        tic = time.perf_counter()
     nevents = 0
     try:
         nevents += main(analyze=analyze)
@@ -545,19 +548,21 @@ if __name__ == "__main__":
         print("Unexpected error:", sys.exc_info()[0])
         traceback.print_exc()
         sys.exit(100)
-    toc = time.perf_counter()
-    analysis_time = toc - tic
-    time_per_event = analysis_time/nevents
-    print('Analyzed {} events in {:.2f} s ({:.2f} s/ev)'.format(
-        nevents, analysis_time, time_per_event))
-    job_flavors = {
-        'espresso (20 minutes)': 20*60,        # 20 minutes
-        'microcentury (1 hour)': 1*60*60,  # 1 hour
-        'longlunch (2 hours)': 2*60*60,     # 2 hour
-        'workday (8 hours)': 8*60*60,       # 8 hour
-        'tomorrow (1 days)': 24*60*60,     # 1 days
-        'testmatch (3 days)': 3*24*60*60,  # 3 days
-        'nextweek (1 week)': 7*24*60*60,   # 1 week
-        }
-    for job_flavor, job_time in job_flavors.items():
-        print ("{}: # ev: {}".format(job_flavor, int(job_time/(1.1*time_per_event))))
+
+    if tic != 0:
+        toc = time.perf_counter()
+        analysis_time = toc - tic
+        time_per_event = analysis_time/nevents
+        print('Analyzed {} events in {:.2f} s ({:.2f} s/ev)'.format(
+            nevents, analysis_time, time_per_event))
+        job_flavors = {
+            'espresso (20 minutes)': 20*60,        # 20 minutes
+            'microcentury (1 hour)': 1*60*60,  # 1 hour
+            'longlunch (2 hours)': 2*60*60,     # 2 hour
+            'workday (8 hours)': 8*60*60,       # 8 hour
+            'tomorrow (1 days)': 24*60*60,     # 1 days
+            'testmatch (3 days)': 3*24*60*60,  # 3 days
+            'nextweek (1 week)': 7*24*60*60,   # 1 week
+            }
+        for job_flavor, job_time in job_flavors.items():
+            print ("{}: # ev: {}".format(job_flavor, int(job_time/(1.1*time_per_event))))
