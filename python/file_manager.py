@@ -54,9 +54,11 @@ def copy_to_eos(file_name, target_dir, target_file_name):
     return eos_proc.returncode
 
 
-def listFiles(input_dir, match=b'.root', recursive=True):
+def listFiles(input_dir, match=b'.root', recursive=True, debug=0):
     onlyfiles = []
     onlydirs = []
+    # print ('--- PWD: {}'.format(input_dir))
+
     if not input_dir.startswith('/eos'):
         onlyfiles = [os.path.join(input_dir, f) for f in os.listdir(input_dir)
                      if os.path.isfile(os.path.join(input_dir, f)) and match.decode('utf-8') in f]
@@ -75,11 +77,13 @@ def listFiles(input_dir, match=b'.root', recursive=True):
             onlydirs = [os.path.join(input_dir, f.decode('utf-8').split()[-1].rstrip()) for f in lines
                         if f.decode('utf-8').split()[0][0] == 'd']
 
+    if debug > 3:
+        print ('--- PWD: {}'.format(input_dir))
+        print ('DIRS: {}'.format(onlydirs))
+        print ('FILES: {}'.format(onlyfiles))
+
     for dirname in onlydirs:
         onlyfiles.extend(listFiles(dirname, match, recursive))
-    # print 'PWD: {}'.format(input_dir)
-    # print 'DIRS: {}'.format(onlydirs)
-    # print 'FILES: {}'.format(onlyfiles)
     return sorted(onlyfiles)
 
 
@@ -272,14 +276,26 @@ if __name__ == "__main__":
     print('# of files: {}'.format(len(found_files)))
 
     # # input_dir='/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1061p2/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v29/190902_144701/0000/'
-    tree_name = 'hgcalTriggerNtuplizer/HGCalTriggerNtuple'
-    input_files, range_ev = get_files_and_events_for_batchprocessing(
-        input_dir=input_dir,
-        tree=tree_name,
-        nev_toprocess=-1,
-        nev_perjob=200,
-        batch_id=121,
-        debug=True)
+    # tree_name = 'hgcalTriggerNtuplizer/HGCalTriggerNtuple'
+    # input_files, range_ev = get_files_and_events_for_batchprocessing(
+    #     input_dir=input_dir,
+    #     tree=tree_name,
+    #     nev_toprocess=-1,
+    #     nev_perjob=200,
+    #     batch_id=121,
+    #     debug=True)
+
+    input_dir='/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6//DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU0_v63A/'
+    tree_name = 'l1CaloTriggerNtuplizer_egOnly/HGCalTriggerNtuple'
+    nev_toprocess = 100
+    files = get_files_for_processing(input_dir, tree_name, nev_toprocess, debug=4)
+
+
+    input_dir='/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6//DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU200_v63B/'
+    tree_name = 'l1CaloTriggerNtuplizer_egOnly/HGCalTriggerNtuple'
+    nev_toprocess = 100
+    files = get_files_for_processing(input_dir, tree_name, nev_toprocess, debug=4)
+
 
     # get_checksum(filename=plots1/histos_nugun_alleta_pu200_v55.root)
 
