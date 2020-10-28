@@ -405,20 +405,25 @@ class TPGenMatchPlotter(BasePlotter):
                 self.h_conecluster[histo_name] = histos.ClusterConeHistos(histo_name)
 
     def fill_histos(self, debug=False):
-        for tp_sel in self.tp_selections:
+        data_sets = []
+        gen_sets = []
+        for tp_sel in self.data_selections:
             tcs = self.tp_set.tc_df
             cl2Ds = self.tp_set.cl2d_df
             cl3Ds = self.tp_set.cl3d_df
             if not tp_sel.all:
                 cl3Ds = self.tp_set.cl3d_df.query(tp_sel.selection)
-            for gen_sel in self.gen_selections:
+            data_sets.append((tcs, cl2Ds, cl3Ds, tp_sel.name))
+        for gen_sel in self.gen_selections:
+            genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
+            if not gen_sel.all:
+                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
+            gen_sets.append((genReference, gen_sel.name))
+
+        for tcs, cl2Ds, cl3D, tp_sel_name in data_sets:
+            for genReference, gen_sel_name in gen_sets:
+
                 histo_name = '{}_{}_{}'.format(self.tp_set.name, tp_sel.name, gen_sel.name)
-                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
-                if not gen_sel.all:
-                    genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
-                    # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
-                    # elif  particle.pdgid == PID.pizero:
-                    #     genReference = genParts[(genParts.pid == particle.pdgid)]
 
                 h_tpset_match = self.h_tpset[histo_name]
                 h_resoset = self.h_resoset[histo_name]
@@ -488,10 +493,11 @@ class GenericGenMatchPlotter(BasePlotter):
 
         best_match_indexes = {}
         if not objects.empty:
-            best_match_indexes, allmatches = utils.match_etaphi(genParticles[self.gen_eta_phi_columns],
-                                                                objects[['eta', 'phi']],
-                                                                objects['pt'],
-                                                                deltaR=0.1)
+            best_match_indexes, allmatches = utils.match_etaphi(
+                genParticles[self.gen_eta_phi_columns],
+                objects[['eta', 'phi']],
+                objects['pt'],
+                deltaR=0.1)
 
         for idx, genParticle in genParticles.iterrows():
             if idx in best_match_indexes.keys():
@@ -529,18 +535,22 @@ class GenericGenMatchPlotter(BasePlotter):
                 self.h_effset[histo_name] = histos.HistoSetEff(histo_name)
 
     def fill_histos(self, debug=False):
+        data_sets = []
+        gen_sets = []
         for tp_sel in self.data_selections:
             objects = self.data_set.df
             if not tp_sel.all and not self.data_set.df.empty:
                 objects = self.data_set.df.query(tp_sel.selection)
-            for gen_sel in self.gen_selections:
-                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
-                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
-                if not gen_sel.all:
-                    genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
-                    # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
-                    # elif  particle.pdgid == PID.pizero:
-                    #     genReference = genParts[(genParts.pid == particle.pdgid)]
+            data_sets.append((objects, tp_sel.name))
+        for gen_sel in self.gen_selections:
+            genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
+            if not gen_sel.all:
+                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
+            gen_sets.append((genReference, gen_sel.name))
+
+        for objects, tp_sel_name in data_sets:
+            for genReference, gen_sel_name in gen_sets:
+                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel_name, gen_sel_name)
 
                 h_obj_match = self.h_dataset[histo_name]
                 h_resoset = self.h_resoset[histo_name]
@@ -554,7 +564,7 @@ class GenericGenMatchPlotter(BasePlotter):
                                      h_resoset,
                                      self.data_set.name,
                                      debug)
-
+        # print ("# of queries: {}".format(qcounter))
 
 class TrackGenMatchPlotter(GenericGenMatchPlotter):
     def __init__(self, data_set, gen_set,
@@ -727,18 +737,22 @@ class CalibrationPlotter(BasePlotter):
                 self.h_calibration[histo_name] = histos.CalibrationHistos(histo_name)
 
     def fill_histos(self, debug=False):
+        data_sets = []
+        gen_sets = []
         for tp_sel in self.data_selections:
             objects = self.data_set.df
             if not tp_sel.all and not self.data_set.df.empty:
                 objects = self.data_set.df.query(tp_sel.selection)
-            for gen_sel in self.gen_selections:
-                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
-                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
-                if not gen_sel.all:
-                    genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
-                    # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
-                    # elif  particle.pdgid == PID.pizero:
-                    #     genReference = genParts[(genParts.pid == particle.pdgid)]
+            data_sets.append((objects, tp_sel.name))
+        for gen_sel in self.gen_selections:
+            genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
+            if not gen_sel.all:
+                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
+            gen_sets.append((genReference, gen_sel.name))
+
+        for objects, tp_sel_name in data_sets:
+            for genReference, gen_sel_name in gen_sets:
+                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel_name, gen_sel_name)
 
                 h_calib = self.h_calibration[histo_name]
                 # print 'TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name)
@@ -941,18 +955,22 @@ class ClusterTCGenMatchPlotter(BasePlotter):
                 self.h_tcmatching[histo_name] = histos.TCClusterMatchHistos(histo_name)
 
     def fill_histos(self, debug=False):
+        data_sets = []
+        gen_sets = []
         for tp_sel in self.data_selections:
             objects = self.data_set.df
             if not tp_sel.all and not self.data_set.df.empty:
                 objects = self.data_set.df.query(tp_sel.selection)
-            for gen_sel in self.gen_selections:
-                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
-                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
-                if not gen_sel.all:
-                    genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
-                    # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
-                    # elif  particle.pdgid == PID.pizero:
-                    #     genReference = genParts[(genParts.pid == particle.pdgid)]
+            data_sets.append((objects, tp_sel.name))
+        for gen_sel in self.gen_selections:
+            genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
+            if not gen_sel.all:
+                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
+            gen_sets.append((genReference, gen_sel.name))
+
+        for objects, tp_sel_name in data_sets:
+            for genReference, gen_sel_name in gen_sets:
+                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel_name, gen_sel_name)
 
                 h_tc_match = self.h_tcmatching[histo_name]
                 # h_resoset = self.h_resoset[histo_name]
@@ -1023,19 +1041,22 @@ class IsoTuplePlotter(BasePlotter):
                 self.h_resoset[histo_name] = histos.IsoTuples(histo_name)
 
     def fill_histos(self, debug=False):
+        data_sets = []
+        gen_sets = []
         for tp_sel in self.data_selections:
             objects = self.data_set.df
             if not tp_sel.all and not self.data_set.df.empty:
                 objects = self.data_set.df.query(tp_sel.selection)
-            for gen_sel in self.gen_selections:
-                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
-                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
-                if not gen_sel.all:
-                    if not self.gen_set.df.empty:
-                        genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
-                    # FIXME: this doesn't work for pizeros since they are never listed in the genParticles...we need a working solution
-                    # elif  particle.pdgid == PID.pizero:
-                    #     genReference = genParts[(genParts.pid == particle.pdgid)]
+            data_sets.append((objects, tp_sel.name))
+        for gen_sel in self.gen_selections:
+            genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
+            if not gen_sel.all and not self.gen_set.df.empty:
+                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
+            gen_sets.append((genReference, gen_sel.name))
+
+        for objects, tp_sel_name in data_sets:
+            for genReference, gen_sel_name in gen_sets:
+                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel_name, gen_sel_name)
 
                 h_resoset = self.h_resoset[histo_name]
                 # print 'TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name)
