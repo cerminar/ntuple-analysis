@@ -29,6 +29,8 @@ collections:
       workday
     priorities:
       nugun_alleta_pu200: 0
+    events_per_job:
+      nugun_alleta_pu200: 10
 
   single_empart_guns_tracks:
     file_label:
@@ -84,7 +86,7 @@ collections:
       - eg_plotters
       - eg_genmatched_plotters
     htc_jobflavor:
-      tomorrow
+      longlunch
     priorities:
       ele_flat2to100_PU0: 1
       ele_flat2to100_PU200: 5
@@ -92,6 +94,14 @@ collections:
       photon_flat8to150_PU200: 0
       doubleele_flat1to100_PU0: 2
       doubleele_flat1to100_PU200: 7
+    events_per_job:
+      # ele_flat2to100_PU0: 1
+      # ele_flat2to100_PU200: 5
+      # photon_flat8to150_PU0: 0
+      # photon_flat8to150_PU200: 0
+      # doubleele_flat1to100_PU0: 2
+      doubleele_flat1to100_PU200: 2200
+
 
       # dyll_PU200: 5
 

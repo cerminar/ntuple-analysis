@@ -87,7 +87,6 @@ def get_collection_parameters(opt, cfgfile):
     for collection, collection_data in cfgfile['collections'].items():
         samples = collection_data['samples']
         print('--- Collection: {} with samples: {}'.format(collection, samples))
-        print(collection_data['priorities'])
         sample_params = []
 
         plotters = []
@@ -100,6 +99,10 @@ def get_collection_parameters(opt, cfgfile):
             out_file_name = '{}i.root'.format(output_filename_base)
             if opt.BATCH:
                 events_per_job = cfgfile['samples'][sample]['events_per_job']
+                if 'events_per_job' in collection_data.keys():
+                    if sample in collection_data['events_per_job']:
+                        events_per_job = collection_data['events_per_job'][sample]
+
                 if opt.RUN:
                     out_file_name = '{}_{}.root'.format(output_filename_base, opt.RUN)
 
@@ -300,7 +303,7 @@ def analyze(params, batch_idx=0):
 
     output.Close()
 
-    return
+    return nev
 
 
 def editTemplate(infile, outfile, params):
@@ -523,15 +526,37 @@ def main(analyze):
     # pool.map(analyze, [singleEleE50_PU200])
 
     # samples = test_sample
+    ret_nevents = 0
     for sample in samples_to_process:
-        analyze(sample, batch_idx=batch_idx)
+        ret_nevents += analyze(sample, batch_idx=batch_idx)
+    return ret_nevents
 
+import time
 
 if __name__ == "__main__":
+
+    tic = time.perf_counter()
+    nevents = 0
     try:
-        main(analyze=analyze)
+        nevents += main(analyze=analyze)
     except Exception as inst:
         print(str(inst))
         print("Unexpected error:", sys.exc_info()[0])
         traceback.print_exc()
         sys.exit(100)
+    toc = time.perf_counter()
+    analysis_time = toc - tic
+    time_per_event = analysis_time/nevents
+    print('Analyzed {} events in {:.2f} s ({:.2f} ev/s)'.format(
+        nevents, analysis_time, time_per_event))
+    job_flavors = {
+        'espresso (20 minutes)': 20*60,        # 20 minutes
+        'microcentury (1 hour)': 1*60*60,  # 1 hour
+        'longlunch (2 hours)': 2*60*60,     # 2 hour
+        'workday (8 hours)': 8*60*60,       # 8 hour
+        'tomorrow (1 days)': 24*60*60,     # 1 days
+        'testmatch (3 days)': 3*24*60*60,  # 3 days
+        'nextweek (1 week)': 7*24*60*60,   # 1 week
+        }
+    for job_flavor, job_time in job_flavors.items():
+        print ("{}: # ev: {}".format(job_flavor, int(job_time*(0.1*time_per_event))))
