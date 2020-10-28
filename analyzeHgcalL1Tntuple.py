@@ -351,7 +351,10 @@ def main(analyze):
     # read the config file
     cfgfile = None
     with open(opt.CONFIGFILE, 'r') as stream:
-        cfgfile = yaml.load(stream, Loader=yaml.FullLoader)
+        if '3.8' in platform.python_version():
+            cfgfile = yaml.load(stream, Loader=yaml.FullLoader)
+        else:
+            cfgfile = yaml.load(stream)
 
     collection_params = get_collection_parameters(opt, cfgfile)
 
