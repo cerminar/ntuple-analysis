@@ -535,6 +535,7 @@ import time
 
 if __name__ == "__main__":
 
+    
     tic = time.perf_counter()
     nevents = 0
     try:
@@ -547,7 +548,7 @@ if __name__ == "__main__":
     toc = time.perf_counter()
     analysis_time = toc - tic
     time_per_event = analysis_time/nevents
-    print('Analyzed {} events in {:.2f} s ({:.2f} ev/s)'.format(
+    print('Analyzed {} events in {:.2f} s ({:.2f} s/ev)'.format(
         nevents, analysis_time, time_per_event))
     job_flavors = {
         'espresso (20 minutes)': 20*60,        # 20 minutes
@@ -559,4 +560,4 @@ if __name__ == "__main__":
         'nextweek (1 week)': 7*24*60*60,   # 1 week
         }
     for job_flavor, job_time in job_flavors.items():
-        print ("{}: # ev: {}".format(job_flavor, int(job_time*(0.1*time_per_event))))
+        print ("{}: # ev: {}".format(job_flavor, int(job_time/(1.1*time_per_event))))
