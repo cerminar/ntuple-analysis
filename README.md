@@ -29,6 +29,11 @@ You can use the file directly using:
 
 `pip install -r requirements.txt`
 
+If you want to use python 3 (recommended)
+
+`mkvirtualenv -p <path_python3.8> <venvname>`
+`pip install -r requirements_py3.8.txt`
+
 After this initial (once in a time) setup is done you can just activate the virtualenv calling:
 
 `workon  <venvname>`
@@ -54,7 +59,7 @@ The configuration file specifies the details of the jobs:
    - collections of samples, i.e. group of samples to be processed homogeneously: for each collection the list of plotters (see below) to be run is provided.
 
 An example of configuration file can be found in:
-[selection.yaml](selection.yaml)
+[selection_1112_v11geom.yaml](selection_1112_v11geom.yaml)
 
 
 ### Reading ntuple branches or creating derived ones
