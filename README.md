@@ -32,6 +32,7 @@ You can use the file directly using:
 If you want to use python 3 (recommended)
 
 `mkvirtualenv -p <path_python3.8> <venvname>`
+
 `pip install -r requirements_py3.8.txt`
 
 After this initial (once in a time) setup is done you can just activate the virtualenv calling:
