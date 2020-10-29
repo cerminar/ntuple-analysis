@@ -696,32 +696,24 @@ class ResoHistos(BaseResoHistos):
         BaseResoHistos.__init__(self, name, root_file)
 
     def fill(self, reference, target):
-        target_pt = target.pt
-        target_ptem = target.ptem
-        target_energy = target.energy
-
-        target_eta = target.eta
-        target_phi = target.phi
-        reference_pt = reference.pt
-        reference_energy = reference.energy
-
-        reference_eta = reference.eta
-        reference_phi = reference.phi
-        # reference_weight = reference.weight
+        target_pt, target_ptem, target_energy, target_eta, target_phi, target_nclu = \
+            target[['pt', 'ptem', 'energy', 'eta', 'phi', 'nclu']].values[0]
+        reference_pt, reference_energy, reference_eta, reference_phi = \
+            reference[['pt', 'energy', 'eta', 'phi']].values
 
         self.h_ptRes.Fill((target_pt - reference_pt)/reference_pt)
         # self.h_energyRes.Fill(target_energy - reference.energy)
         self.h_ptResVeta.Fill(reference_eta, target_pt - reference_pt)
         self.h_ptResVpt.Fill(reference_pt, target_pt - reference_pt)
         self.h_energyResVeta.Fill(reference_eta, (target_energy - reference_energy)/reference_energy)
-        self.h_energyResVenergy.Fill(reference.energy, (target_energy - reference_energy)/reference_energy)
+        self.h_energyResVenergy.Fill(reference_energy, (target_energy - reference_energy)/reference_energy)
         # self.h_energyResVnclu.Fill(target.nclu, target_energy - reference.energy)
         # self.h_ptResVnclu.Fill(target.nclu, target_pt - reference_pt)
 
         self.h_ptResp.Fill(target_pt/reference_pt)
         self.h_ptRespVeta.Fill(reference_eta, target_pt/reference_pt)
         self.h_ptRespVpt.Fill(reference_pt, target_pt/reference_pt)
-        self.h_ptRespVnclu.Fill(target.nclu, target_pt/reference_pt)
+        self.h_ptRespVnclu.Fill(target_nclu, target_pt/reference_pt)
         self.h_ptRespVetaVptL1.Fill(abs(target_eta), target_pt, target_pt/reference_pt)
 
         self.h_ptemResp.Fill(target_ptem/reference_pt)
@@ -937,12 +929,17 @@ class TrackResoHistos(BaseResoHistos):
         BaseResoHistos.__init__(self, name, root_file, debug)
 
     def fill(self, reference, target):
-        target_pt = target.pt
-        target_eta = target.eta
-        target_phi = target.phi
-        reference_pt = reference.pt
-        reference_eta = reference.eta
-        reference_phi = reference.phi
+        target_pt, target_eta, target_phi = \
+            target[['pt', 'eta', 'phi']].values[0]
+        reference_pt, reference_eta, reference_phi = \
+            reference[['pt', 'eta', 'phi']].values
+
+        # target_pt = target.pt
+        # target_eta = target.eta
+        # target_phi = target.phi
+        # reference_pt = reference.pt
+        # reference_eta = reference.eta
+        # reference_phi = reference.phi
 
         self.h_ptResVpt.Fill(reference_pt, target_pt-reference_pt)
         self.h_ptResp.Fill(target_pt/reference_pt)
@@ -979,13 +976,10 @@ class EGResoHistos(BaseResoHistos):
         BaseResoHistos.__init__(self, name, root_file, debug)
 
     def fill(self, reference, target):
-        target_pt = target.pt
-        target_eta = target.eta
-        target_phi = target.phi
-        reference_pt = reference.pt
-        reference_eta = reference.eta
-        reference_phi = reference.phi
-        reference_weight = reference.weight
+        # NOTE: target is a dataframe while reference is a series
+        target_pt, target_eta, target_phi = target[['pt', 'eta', 'phi']].values[0]
+        reference_pt, reference_eta, reference_phi, reference_exeta, reference_exphi, reference_weight = \
+            reference[['pt', 'eta', 'phi', 'exeta', 'exphi', 'weight']].values
 
         self.h_ptRes.Fill((target_pt-reference_pt)/reference_pt, reference_weight)
         self.h_ptResVpt.Fill(reference_pt, target_pt-reference_pt, reference_weight)
@@ -995,8 +989,8 @@ class EGResoHistos(BaseResoHistos):
         self.h_etaRes.Fill(target_eta - reference_eta, reference_weight)
         self.h_phiRes.Fill(target_phi - reference_phi, reference_weight)
 
-        self.h_exetaRes.Fill(target_eta - reference.exeta, reference_weight)
-        self.h_exphiRes.Fill(target_phi - reference.exphi, reference_weight)
+        self.h_exetaRes.Fill(target_eta - reference_exeta, reference_weight)
+        self.h_exphiRes.Fill(target_phi - reference_exphi, reference_weight)
 
 
 class ClusterConeHistos(BaseHistos):
