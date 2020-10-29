@@ -696,10 +696,16 @@ class ResoHistos(BaseResoHistos):
         BaseResoHistos.__init__(self, name, root_file)
 
     def fill(self, reference, target):
-        target_pt, target_ptem, target_energy, target_eta, target_phi, target_nclu = \
-            target[['pt', 'ptem', 'energy', 'eta', 'phi', 'nclu']].values[0]
+        target_line = target.iloc[0]
+        target_pt = target_line.pt
+        target_ptem = target_line.ptem
+        target_energy = target_line.energy
+        target_eta = target_line.eta
+        target_phi = target_line.phi
+        target_nclu = target_line.nclu
+
         reference_pt, reference_energy, reference_eta, reference_phi = \
-            reference[['pt', 'energy', 'eta', 'phi']].values
+            reference.pt, reference.energy, reference.eta, reference.phi
 
         self.h_ptRes.Fill((target_pt - reference_pt)/reference_pt)
         # self.h_energyRes.Fill(target_energy - reference.energy)
@@ -729,14 +735,14 @@ class ResoHistos(BaseResoHistos):
         # if 'energyCentral' in target:
         #     self.h_centralEnergyRes.Fill(target_energyCentral - reference.energy)
         if 'exeta' in reference:
-            self.h_etaRes.Fill(target.exeta - reference_eta)
-            self.h_phiRes.Fill(target.exphi - reference_phi)
+            self.h_etaRes.Fill(target_line.exeta - reference_eta)
+            self.h_phiRes.Fill(target_line.exphi - reference_phi)
             self.h_drRes.Fill(np.sqrt((reference.exphi-target_phi)**2+(reference.exeta-target_eta)**2))
 
         if 'n010' in target:
-            self.h_n010.Fill(target.n010)
+            self.h_n010.Fill(target_line.n010)
         if 'n025' in target:
-            self.h_n025.Fill(target.n025)
+            self.h_n025.Fill(target_line.n025)
 
 
 class Reso2DHistos(BaseHistos):
@@ -929,17 +935,18 @@ class TrackResoHistos(BaseResoHistos):
         BaseResoHistos.__init__(self, name, root_file, debug)
 
     def fill(self, reference, target):
-        target_pt, target_eta, target_phi = \
-            target[['pt', 'eta', 'phi']].values[0]
-        reference_pt, reference_eta, reference_phi = \
-            reference[['pt', 'eta', 'phi']].values
+        # target_pt, target_eta, target_phi = \
+        #     target[['pt', 'eta', 'phi']].values[0]
+        # reference_pt, reference_eta, reference_phi = \
+        #     reference[['pt', 'eta', 'phi']].values
+        target_line = target.iloc[0]
 
-        # target_pt = target.pt
-        # target_eta = target.eta
-        # target_phi = target.phi
-        # reference_pt = reference.pt
-        # reference_eta = reference.eta
-        # reference_phi = reference.phi
+        target_pt = target_line.pt
+        target_eta = target_line.eta
+        target_phi = target_line.phi
+        reference_pt = reference.pt
+        reference_eta = reference.eta
+        reference_phi = reference.phi
 
         self.h_ptResVpt.Fill(reference_pt, target_pt-reference_pt)
         self.h_ptResp.Fill(target_pt/reference_pt)
@@ -976,10 +983,18 @@ class EGResoHistos(BaseResoHistos):
         BaseResoHistos.__init__(self, name, root_file, debug)
 
     def fill(self, reference, target):
-        # NOTE: target is a dataframe while reference is a series
-        target_pt, target_eta, target_phi = target[['pt', 'eta', 'phi']].values[0]
-        reference_pt, reference_eta, reference_phi, reference_exeta, reference_exphi, reference_weight = \
-            reference[['pt', 'eta', 'phi', 'exeta', 'exphi', 'weight']].values
+        # FIXME: reference is a series while target is a DF -> moving to a series saves a lot of time
+        target_line = target.iloc[0]
+        target_pt = target_line.pt
+        target_eta = target_line.eta
+        target_phi = target_line.phi
+
+        reference_pt = reference.pt
+        reference_eta = reference.eta
+        reference_phi = reference.phi
+        reference_exeta = reference.exeta
+        reference_exphi = reference.exphi
+        reference_weight = reference.weight
 
         self.h_ptRes.Fill((target_pt-reference_pt)/reference_pt, reference_weight)
         self.h_ptResVpt.Fill(reference_pt, target_pt-reference_pt, reference_weight)
