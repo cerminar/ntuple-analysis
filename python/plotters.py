@@ -499,30 +499,14 @@ class GenericGenMatchPlotter(BasePlotter):
                 objects['pt'],
                 deltaR=0.1)
 
-        for idx, genParticle in genParticles.iterrows():
-            if idx in best_match_indexes.keys():
-                # print ('-----------------------')
-                #  print(genParticle)
-                # print (objects)
-                # print (best_match_indexes)
-                obj_matched = objects.loc[[best_match_indexes[idx]]]
-                h_object_matched.fill(obj_matched)
-                h_reso.fill(reference=genParticle, target=obj_matched)
+        for idx in list(best_match_indexes.keys()):
+            obj_matched = objects.loc[[best_match_indexes[idx]]]
+            h_object_matched.fill(obj_matched)
+            gen_matched = genParticles.loc[[idx]]
+            h_reso.fill(reference=gen_matched.iloc[0], target=obj_matched)
 
-                if h_gen_matched is not None:
-                    h_gen_matched.fill(genParticles.loc[[idx]])
-
-                if debug >= 4:
-                    print(('--- Dump match for algo {} ---------------'.format(algoname)))
-                    print(('GEN particle: idx: {}'.format(idx)))
-                    print (genParticle)
-                    print ('Matched to track object:')
-                    print (obj_matched)
-            else:
-                if debug >= 5:
-                    print(('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx)))
-                    print (genParticle)
-                    print (objects)
+            if h_gen_matched is not None:
+                h_gen_matched.fill(gen_matched)
 
     def book_histos(self):
         self.gen_set.activate()
