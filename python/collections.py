@@ -28,6 +28,7 @@ import python.clusterTools as clAlgo
 from python.mp_pool import POOL
 import python.classifiers as classifiers
 import python.calibrations as calib
+import python.pf_regions as pf_regions
 
 
 class WeightFile(object):
@@ -577,6 +578,25 @@ def gen_part_pt_weights(gen_parts, weight_file):
     return gen_parts
 
 
+def map2pfregions(objects):
+    for ieta in range(0, pf_regions.regionizer.n_eta_regions()):
+        objects['eta_reg_{}'.format(ieta)] = False
+    for iphi in range(0, pf_regions.regionizer.n_phi_regions()):
+        objects['phi_reg_{}'.format(iphi)] = False
+
+    for ieta, eta_range in enumerate(pf_regions.regionizer.eta_boundaries):
+        for iphi, phi_range in enumerate(pf_regions.regionizer.phi_boundaries):
+            query = '(caloeta > {}) & (caloeta <= {}) & (calophi > {}) & (calophi <= {})'.format(
+                eta_range[0],
+                eta_range[1],
+                phi_range[0],
+                phi_range[1])
+            region_objects = objects.query(query).index
+            objects.loc[region_objects, ['eta_reg_{}'.format(ieta)]] = True
+            objects.loc[region_objects, ['phi_reg_{}'.format(iphi)]] = True
+    return objects
+
+
 calib_mgr = calib.CalibManager()
 
 gen = DFCollection(
@@ -1048,6 +1068,11 @@ tkeles_EB_pf = DFCollection(
     fixture_function=fake_endcap_quality,
     debug=0)
 
+tk_pfinputs = DFCollection(
+    name='L1Trk', label='L1Track',
+    filler_function=lambda event: event.getDataFrame(prefix='l1Trk'),
+    fixture_function=map2pfregions,
+    debug=0)
 
 
 

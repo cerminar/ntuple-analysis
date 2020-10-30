@@ -1097,105 +1097,46 @@ class CalibrationHistos(BaseTuples):
         values_fill.append(reference.pt)
         self.t_values.Fill(array('f', values_fill))
 
+import python.pf_regions as pf_regions
+
 
 class CorrOccupancyHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
 
-            eta_boundaries_fiducial = [-5, -4, -3,-2.5 ,-1.5, -0.5, 0.5, 1.5, 2.5, 3, 4, 5]
-            eta_overlap = 0.25
-            phi_overlap = 0.25
-            phiSlices = 9
+            self.h_avgOcc = ROOT.TProfile2D(
+                name+'_avgOcc',
+                'region avg occ; #eta, #phi;',
+                len(pf_regions.regionizer.eta_boundaries_fiducial)-1,
+                array('d', pf_regions.regionizer.eta_boundaries_fiducial),
+                len(pf_regions.regionizer.phi_boundaries_fiducial)-1,
+                array('d', pf_regions.regionizer.phi_boundaries_fiducial))
 
-
-            self.eta_boundaries = []
-            phi_boundaries_fiducial = []
-            self.phi_boundaries = []
-            self.eta_centers = []
-            self.phi_centers = []
-            phiWidth = 2*math.pi/phiSlices
-
-            for ieta,eta_low_fiducial in enumerate(eta_boundaries_fiducial):
-                if ieta>=len(eta_boundaries_fiducial)-1:
-                    break
-                eta_high_fiducial = eta_boundaries_fiducial[ieta+1]
-                # print 'fiducial boundaries: {}, {}'.format(eta_low_fiducial, eta_high_fiducial)
-                eta_low = eta_low_fiducial - eta_overlap
-                eta_high = eta_high_fiducial + eta_overlap
-                self.eta_boundaries.append((eta_low, eta_high))
-                self.eta_centers.append(eta_low_fiducial+(eta_high_fiducial-eta_low_fiducial)/2.)
-
-
-            for iphi in range(0,9):
-                phiCenter = (iphi+0.5)*phiWidth-math.pi
-                self.phi_centers.append(phiCenter)
-                # print iphi,phiCenter
-                phi_low_fiducial = phiCenter - phiWidth/2.
-                phi_high_fiducial = phiCenter+phiWidth/2.
-
-                # print 'fiducial boundaries: {}, {}'.format(phi_low_fiducial, phi_high_fiducial)
-                phi_boundaries_fiducial.append(phi_low_fiducial)
-
-                phi_low = phi_low_fiducial - phi_overlap
-                if phi_low < -1*math.pi:
-                    phi_low = math.pi-phi_overlap
-                phi_high = phi_high_fiducial + phi_overlap
-                if phi_high > math.pi:
-                    phi_high = -1*math.pi+phi_overlap
-
-                self.phi_boundaries.append((phi_low, phi_high))
-                # print 'boundaries: {} {}'.format(phi_low, phi_high)
-
-
-            phi_boundaries_fiducial.append(math.pi)
-            # print "FIDUCIAL"
-            # print len(eta_boundaries_fiducial)
-            # print eta_boundaries_fiducial
-            # print self.eta_centers
-            # print len(phi_boundaries_fiducial)
-            # print phi_boundaries_fiducial
-            # print self.phi_centers
-
-            # print "ACTUAL"
-            # print self.phi_boundaries
-            # print self.eta_boundaries
-
-            self.h_averageOccupancy = ROOT.TProfile2D(name+'_averageOccupancy',
-                                                      'region avg occ; #eta, #phi;',
-                                                      len(eta_boundaries_fiducial)-1,
-                                                      array('d', eta_boundaries_fiducial),
-                                                      len(phi_boundaries_fiducial)-1,
-                                                      array('d', phi_boundaries_fiducial))
-
-            self.h_eventMaxOcc = ROOT.TH1F(name+'_eventMaxOcc', 'max occupancy;', 100, 0, 100)
+            self.h_maxOcc = ROOT.TH1F(name+'_maxOcc', 'max occupancy;', 100, 0, 100)
+            self.h_totOcc = ROOT.TH1F(name+'_totOcc', 'total occupancy;', 100, 0, 100)
+            self.h_regOcc = ROOT.TH1F(name+'_regOcc', 'reg occupancy;', 100, 0, 100)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, objects):
         max_count = 0
-        for ieta,eta_range in enumerate(self.eta_boundaries):
-            for iphi,phi_range in enumerate(self.phi_boundaries):
-                query = '(eta > {}) & (eta <= {}) & (phi > {}) & (phi <= {})'.format(eta_range[0],
-                                                                                     eta_range[1],
-                                                                                     phi_range[0],
-                                                                                     phi_range[1])
-                # print 'eta: {}'.format(eta_range)
-                # print "phi: {}".format(phi_range)
-                # print ieta,self.eta_centers[ieta]
-                # print iphi,self.phi_centers[iphi]
-                # print objects.query(query)
-                occupancy = len(objects.query(query).index)
-                # print occupancy
-                self.h_averageOccupancy.Fill(self.eta_centers[ieta],
-                                             self.phi_centers[iphi],
-                                             occupancy)
+        tot_count = 0
+        for ieta in range(0, pf_regions.regionizer.n_eta_regions()):
+            for iphi in range(0, pf_regions.regionizer.n_phi_regions()):
+                occupancy = len(objects[objects['eta_reg_{}'.format(ieta)] & objects['phi_reg_{}'.format(iphi)]].index)
 
+                # print occupancy
+                self.h_avgOcc.Fill(pf_regions.regionizer.eta_centers[ieta],
+                                   pf_regions.regionizer.phi_centers[iphi],
+                                   occupancy)
+                self.h_regOcc.Fill(occupancy)
                 if occupancy > max_count:
                     max_count = occupancy
-
+                tot_count+=occupancy
         # print objects[:10]
         # print max_count
-        self.h_eventMaxOcc.Fill(max_count)
+        self.h_maxOcc.Fill(max_count)
+        self.h_totOcc.Fill(tot_count)
 
 
 class TCClusterMatchHistos(BaseHistos):

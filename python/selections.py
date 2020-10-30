@@ -483,6 +483,22 @@ tracks_pt_sels = [Selection('all'),
 tracks_selections = []
 tracks_selections += add_selections(tracks_quality_sels, tracks_pt_sels)
 
+pftkinput_selections = []
+pftkinput_regions = [
+    Selection('all'),
+    Selection('BRL', 'Barrel', 'eta_reg_4 | eta_reg_5 | eta_reg_6'),  # 4 5 6
+    Selection('HGC', 'HgCal', 'eta_reg_3 | eta_reg_7'),  # 3 7
+    Selection('HGCNoTk', 'HgCalNoTk', 'eta_reg_2 | eta_reg_8'),  # 2 8
+    Selection('HF', 'HF', 'eta_reg_0 | eta_reg_1 | eta_reg_9 | eta_reg_10'),  # 0 1 9 10
+    ]
+pftkinput_quality = [
+    Selection('all'),
+    Selection('Pt2Chi2', 'p_{T}^{Tk} > 2GeV & #Chi^{2}_{norm} < 15', '(pt > 2) & (chi2Red < 15) & (nStubs >= 4)'),
+    Selection('Pt2', 'p_{T}^{Tk} > 2GeV', '(pt > 2) & (nStubs >= 4)'),
+    Selection('Pt2Chi2Pt5', '(p_{T}^{Tk} > 2GeV & #Chi^{2}_{norm} < 15) | p_{T}^{Tk} > 5GeV ', '((pt > 2) & (chi2Red < 15) | (pt > 5))  & (nStubs >= 4)'),
+    Selection('Pt2Chi2Pt10', '(p_{T}^{Tk} > 2GeV & #Chi^{2}_{norm} < 15) | p_{T}^{Tk} > 10GeV ', '((pt > 2) & (chi2Red < 15) | (pt > 10)) & (nStubs >= 4)'),
+    ]
+pftkinput_selections += add_selections(pftkinput_regions, pftkinput_quality)
 
 if __name__ == "__main__":
     for sel in gen_part_tkee_selections:

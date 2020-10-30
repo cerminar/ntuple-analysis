@@ -275,10 +275,12 @@ ttower_genmatched_plotters = [
 ]
 
 correlator_occupancy_plotters = [
-    plotters.CorrOccupancyPlotter(collections.tracks, selections.tracks_selections),
-    plotters.CorrOccupancyPlotter(collections.tracks_emu, selections.tracks_selections),
-    plotters.CorrOccupancyPlotter(collections.egs_all, selections.tp_pt_selections_occ),
+    plotters.CorrOccupancyPlotter(collections.tk_pfinputs, selections.pftkinput_selections),
 ]
+
+pftrack_plotters = [
+    plotters.TrackPlotter(collections.tk_pfinputs, selections.pftkinput_selections)]
+
 
 tp_cluster_tc_match_plotters = [
     plotters.ClusterTCGenMatchPlotter(

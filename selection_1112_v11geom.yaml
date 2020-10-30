@@ -204,19 +204,22 @@ collections:
       pion_flat2to100_PU0: 0
       pion_flat2to100_PU200: 0
 
-  # correlator_occupancy:
-  #   file_label:
-  #     pf
-  #   samples:
-  #     - ttbar_PU200
-  #     - dyll_PU200
-  #   plotters:
-  #     - correlator_occupancy_plotters
-  #   htc_jobflavor:
-  #       workday
-  #   priorities:
-  #     ttbar_PU200: 2
-  #     dyll_PU200: 1
+  correlator_occupancy:
+    file_label:
+      pf
+    samples:
+      - ttbar_PU200
+      # - dyll_PU200
+    plotters:
+      - correlator_occupancy_plotters
+      - pftrack_plotters
+    htc_jobflavor:
+      longlunch
+    priorities:
+      ttbar_PU200: 2
+      # dyll_PU200: 1
+    events_per_job:
+      ttbar_PU200: 3500
 
   nugun_rate:
     file_label:
@@ -319,6 +322,7 @@ plotters:
   tkeg_plotters: !!python/name:python.plotters_config.tkeg_plotters
   tp_calib_plotters: !!python/name:python.plotters_config.tp_calib_plotters
   correlator_occupancy_plotters: !!python/name:python.plotters_config.correlator_occupancy_plotters
+  pftrack_plotters: !!python/name:python.plotters_config.pftrack_plotters
   eg_resotuples_plotters: !!python/name:python.plotters_config.eg_resotuples_plotters
   tp_resotuples_plotters: !!python/name:python.plotters_config.tp_resotuples_plotters
   tp_cluster_tc_match_plotters: !!python/name:python.plotters_config.tp_cluster_tc_match_plotters
@@ -333,7 +337,8 @@ plotters:
 #test: !!python/name:python.selections.gen_part_selections
 samples:
   # tree_name: hgcalTriggerNtuplizer/HGCalTriggerNtuple
-  tree_name: l1CaloTriggerNtuplizer_egOnly/HGCalTriggerNtuple
+  # tree_name: l1CaloTriggerNtuplizer_egOnly/HGCalTriggerNtuple
+  tree_name: l1CaloTriggerNtuplizer/HGCalTriggerNtuple
 
   doubleele_flat1to100_PU0:
     input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU0_v63A/
@@ -378,9 +383,9 @@ samples:
     # input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v47/191105_135050/0000/
     events_per_job: 300
 
-  # ttbar_PU200:
-  #   input_sample_dir: TTbar_14TeV_TuneCP5_Pythia8/TTBar_PU200_v45/191105_102500/0000/
-  #   events_per_job: 200
+  ttbar_PU200:
+    input_sample_dir: TT_TuneCP5_14TeV-powheg-pythia8/TT_PU200_v61A/
+    events_per_job: 200
   #
   # dyll_PU200:
   #   input_sample_dir: DYToLL_M-50_14TeV_TuneCP5_pythia8/DYToLL_PU200_v48/200210_133300/0000/

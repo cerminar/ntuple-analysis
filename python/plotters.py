@@ -846,7 +846,8 @@ class CorrOccupancyPlotter(BasePlotter):
         self.tp_set.activate()
         tp_name = self.tp_set.name
         for selection in self.tp_selections:
-            self.h_occ[selection.name] = histos.CorrOccupancyHistos(name='{}_{}'.format(
+            self.h_occ[selection.name] = histos.CorrOccupancyHistos(
+                name='{}_{}'.format(
                 tp_name,
                 selection.name))
 
