@@ -106,3 +106,5 @@ ENV/
 *.pdf
 *.out
 
+batch*/
+plots*s
