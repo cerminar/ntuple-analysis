@@ -219,7 +219,7 @@ collections:
       ttbar_PU200: 2
       # dyll_PU200: 1
     events_per_job:
-      ttbar_PU200: 3500
+      ttbar_PU200: 2000
 
   nugun_rate:
     file_label:
