@@ -398,7 +398,7 @@ class EGHistos(BaseHistos):
             self.h_eta = ROOT.TH1F(name+'_eta', 'EG eta; #eta;', 100, -4, 4)
             self.h_energy = ROOT.TH1F(name+'_energy', 'EG energy (GeV); E [GeV]', 1000, 0, 1000)
             self.h_hwQual = ROOT.TH1F(name+'_hwQual', 'EG energy (GeV); hwQual', 5, 0, 5)
-            self.h_tkIso = ROOT.TH1F(name+'_tkIso', 'EG energy (GeV); hwQual', 100, 0, 2)
+            self.h_tkIso = ROOT.TH1F(name+'_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
@@ -428,6 +428,10 @@ class TkEleHistos(BaseHistos):
             self.h_dpt = ROOT.TH1F(name+'_dpt', 'Delta Tk Pt (GeV); #Delta p_{T}^{L1Tk-Calo} [GeV]', 100, -50, 50)
             self.h_tkchi2 = ROOT.TH1F(name+'_tkchi2', 'Tk chi2; #Chi^{2}', 1000, 0, 1000)
             self.h_ptVtkpt = ROOT.TH2F(name+'_ptVtkpt', 'TkEG Pt (GeV) vs TkPt; p_{T}^{Tk} [GeV]; p_{T}^{EG} [GeV]', 100, 0, 100, 100, 0, 100)
+            self.h_tkIso = ROOT.TH1F(name+'_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2)
+            self.h_pfIso = ROOT.TH1F(name+'_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
+
+
 
         BaseHistos.__init__(self, name, root_file, debug)
 
@@ -440,6 +444,9 @@ class TkEleHistos(BaseHistos):
         rnp.fill_hist(self.h_dpt, tkegs.tkPt-tkegs.pt)
         rnp.fill_hist(self.h_tkchi2, tkegs.tkChi2)
         rnp.fill_hist(self.h_ptVtkpt, tkegs[['tkPt', 'pt']])
+        if 'tkIso' in tkegs.columns:
+            rnp.fill_hist(self.h_tkIso, tkegs.tkIso)
+            rnp.fill_hist(self.h_pfIso, tkegs.pfIso)
 
 
 class TkEGHistos(BaseHistos):
