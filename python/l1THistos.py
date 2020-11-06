@@ -449,6 +449,33 @@ class TkEleHistos(BaseHistos):
             rnp.fill_hist(self.h_pfIso, tkegs.pfIso)
 
 
+class TkEmHistos(BaseHistos):
+    def __init__(self, name, root_file=None, debug=False):
+        if not root_file:
+            self.h_pt = ROOT.TH1F(name+'_pt', 'Pt (GeV); p_{T} [GeV]', 100, 0, 100)
+            self.h_eta = ROOT.TH1F(name+'_eta', 'eta; #eta;', 100, -2.5, 2.5)
+            self.h_energy = ROOT.TH1F(name+'_energy', 'energy (GeV); E [GeV]', 1000, 0, 1000)
+            self.h_hwQual = ROOT.TH1F(name+'_hwQual', 'quality; hwQual', 10, 0, 10)
+            self.h_tkIso = ROOT.TH1F(name+'_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2)
+            self.h_pfIso = ROOT.TH1F(name+'_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
+            self.h_tkIsoPV = ROOT.TH1F(name+'_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2)
+            self.h_pfIsoPV = ROOT.TH1F(name+'_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
+
+
+
+        BaseHistos.__init__(self, name, root_file, debug)
+
+    def fill(self, tkegs):
+        rnp.fill_hist(self.h_pt, tkegs.pt)
+        rnp.fill_hist(self.h_eta, tkegs.eta)
+        rnp.fill_hist(self.h_energy, tkegs.energy)
+        rnp.fill_hist(self.h_hwQual, tkegs.hwQual)
+        rnp.fill_hist(self.h_tkIso, tkegs.tkIso)
+        rnp.fill_hist(self.h_pfIso, tkegs.pfIso)
+        rnp.fill_hist(self.h_tkIsoPV, tkegs.tkIsoPV)
+        rnp.fill_hist(self.h_pfIsoPV, tkegs.pfIsoPV)
+
+
 class TkEGHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:

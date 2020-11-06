@@ -1069,6 +1069,32 @@ tkeles_EB_pf = DFCollection(
     fixture_function=fake_endcap_quality,
     debug=0)
 
+# --------
+
+tkem_EE = DFCollection(
+    name='tkEmEE', label='TkEm EE',
+    filler_function=lambda event: event.getDataFrame(prefix='tkEmEE'),
+    fixture_function=fake_endcap_quality,
+    debug=0)
+
+tkem_EB = DFCollection(
+    name='tkEmEB', label='TkEm EB',
+    filler_function=lambda event: event.getDataFrame(prefix='tkEmEB'),
+    fixture_function=fake_endcap_quality,
+    debug=0)
+
+tkem_EE_pf = DFCollection(
+    name='PFtkEmEE', label='TkEm EE Corr.',
+    filler_function=lambda event: event.getDataFrame(prefix='PFtkEmEE'),
+    fixture_function=fake_endcap_quality,
+    debug=0)
+
+tkem_EB_pf = DFCollection(
+    name='PFtkEmEB', label='TkEm EB Corr',
+    filler_function=lambda event: event.getDataFrame(prefix='PFtkEmEB'),
+    fixture_function=fake_endcap_quality,
+    debug=0)
+
 tk_pfinputs = DFCollection(
     name='L1Trk', label='L1Track',
     filler_function=lambda event: event.getDataFrame(prefix='l1Trk'),

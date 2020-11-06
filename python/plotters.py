@@ -133,6 +133,11 @@ class TkElePlotter(GenericDataFramePlotter):
         super(TkElePlotter, self).__init__(histos.TkEleHistos, tkeg_set, tkeg_selections)
 
 
+class TkEmPlotter(GenericDataFramePlotter):
+    def __init__(self, tkeg_set, tkeg_selections=[selections.Selection('all')]):
+        super(TkEmPlotter, self).__init__(histos.TkEmHistos, tkeg_set, tkeg_selections)
+
+
 class TkEGPlotter(GenericDataFramePlotter):
     def __init__(self, tkeg_set, tkeg_selections=[selections.Selection('all')]):
         super(TkEGPlotter, self).__init__(histos.TkEGHistos, tkeg_set, tkeg_selections)
