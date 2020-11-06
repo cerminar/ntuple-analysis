@@ -20,6 +20,7 @@ import pandas as pd
 import numpy as np
 import ROOT
 import math
+import sys
 
 import root_numpy.tmva as rnptmva
 
@@ -170,11 +171,11 @@ class DFCollection(object):
         self.n_queries += 1
         if selection.all or self.df.empty:
             return self.df
-        if selection.name not in self.cached_queries:
+        if selection.selection not in self.cached_queries:
             ret = self.df.query(selection.selection)
-            self.cached_queries[selection.name] = ret
+            self.cached_queries[sys.intern(selection.selection)] = ret
             return ret
-        return self.cached_queries[selection.name]
+        return self.cached_queries[selection.selection]
 
     def clear_query_cache(self, debug=0):
         if (debug > 5):
