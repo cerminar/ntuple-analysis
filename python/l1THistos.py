@@ -7,6 +7,8 @@ from array import array
 import uuid
 import math
 
+import python.pf_regions as pf_regions
+
 stuff = []
 
 
@@ -125,7 +127,6 @@ class GraphBuilder:
 
     def Write(self):
         return
-
 
 
 class BaseResoHistos(BaseHistos):
@@ -1097,8 +1098,6 @@ class CalibrationHistos(BaseTuples):
         values_fill.append(reference.pt)
         self.t_values.Fill(array('f', values_fill))
 
-import python.pf_regions as pf_regions
-
 
 class CorrOccupancyHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
@@ -1113,7 +1112,7 @@ class CorrOccupancyHistos(BaseHistos):
                 array('d', pf_regions.regionizer.phi_boundaries_fiducial))
 
             self.h_maxOcc = ROOT.TH1F(name+'_maxOcc', 'max occupancy;', 100, 0, 100)
-            self.h_totOcc = ROOT.TH1F(name+'_totOcc', 'total occupancy;', 100, 0, 100)
+            self.h_totOcc = ROOT.TH1F(name+'_totOcc', 'total occupancy;', 500, 0, 500)
             self.h_regOcc = ROOT.TH1F(name+'_regOcc', 'reg occupancy;', 100, 0, 100)
 
         BaseHistos.__init__(self, name, root_file, debug)
