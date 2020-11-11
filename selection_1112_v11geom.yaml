@@ -23,7 +23,7 @@ collections:
       - nugun_alleta_pu200
     plotters:
       - track_plotters
-      - tkeg_plotters
+      # - tkeg_plotters
       - eg_rate_plotters
     htc_jobflavor:
       workday
@@ -321,7 +321,7 @@ plotters:
   eg_rate_plotters: !!python/name:python.plotters_config.eg_rate_plotters
   track_plotters: !!python/name:python.plotters_config.track_plotters
   track_genmatched_plotters: !!python/name:python.plotters_config.track_genmatched_plotters
-  tkeg_plotters: !!python/name:python.plotters_config.tkeg_plotters
+  # tkeg_plotters: !!python/name:python.plotters_config.tkeg_plotters
   tp_calib_plotters: !!python/name:python.plotters_config.tp_calib_plotters
   correlator_occupancy_plotters: !!python/name:python.plotters_config.correlator_occupancy_plotters
   pftrack_plotters: !!python/name:python.plotters_config.pftrack_plotters
