@@ -226,6 +226,7 @@ def analyze(params, batch_idx=0):
     ntuple.setCache(learn_events=1, entry_range=range_ev)
     output = ROOT.TFile(params.output_filename, "RECREATE")
     output.cd()
+    hm = histos.HistoManager()
 
     if False:
         hTCGeom = histos.GeomHistos('hTCGeom')
@@ -268,6 +269,9 @@ def analyze(params, batch_idx=0):
                 datetime.datetime.now()))
             print('    run: {}, lumi: {}, event: {}'.format(
                 event.run(), event.lumi(), event.event()))
+        if event.entry() != 0 and event.entry() % 1000 == 0:
+            print ("Writing histos to file")
+            hm.writeHistos()
 
         nev += 1
 
@@ -301,7 +305,6 @@ def analyze(params, batch_idx=0):
         ntuple.PrintCacheStats()
 
     output.cd()
-    hm = histos.HistoManager()
     hm.writeHistos()
 
     output.Close()

@@ -79,7 +79,8 @@ class BaseHistos():
         newdir = ROOT.gDirectory.GetDirectory(self.__class__.__name__)
         newdir.cd()
         for histo in [a for a in dir(self) if a.startswith('h_')]:
-            getattr(self, histo).Write()
+            # print ("Writing {}".format(histo))
+            getattr(self, histo).Write("", ROOT.TObject.kOverwrite)
         ROOT.gDirectory.cd('..')
 
     # def normalize(self, norm):
@@ -125,7 +126,7 @@ class GraphBuilder:
         setattr(self.h_obj, g_attr_name, graph)
         return graph
 
-    def Write(self):
+    def Write(self, name='', options=None):
         return
 
 
