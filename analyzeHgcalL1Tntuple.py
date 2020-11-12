@@ -47,6 +47,7 @@ import python.collections as collections
 from python.utils import debugPrintOut
 import python.calibrations as calibs
 import python.plotters_config
+import python.timecounter as timecounter
 
 # from pandas.core.common import SettingWithCopyError, SettingWithCopyWarning
 # import warnings
@@ -159,7 +160,7 @@ def dumpFrame2JSON(filename, frame):
 
 
 # @profile
-def analyze(params, batch_idx=0):
+def analyze(params, batch_idx=-1):
     print (params)
     debug = int(params.debug)
 
@@ -269,6 +270,17 @@ def analyze(params, batch_idx=0):
                 datetime.datetime.now()))
             print('    run: {}, lumi: {}, event: {}'.format(
                 event.run(), event.lumi(), event.event()))
+
+        if batch_idx != -1 and timecounter.counter.started() and event.entry() % 10 == 0:
+            # when in batch mode, if < 5min are left we stop the event loop
+            if timecounter.counter.job_flavor_time_left(params.htc_jobflavor) < 5*60:
+                print("+++ Event {}, @ {}".format(
+                    event.entry(),
+                    datetime.datetime.now()))
+                print ('    less than 5 min left for batch slot: exit event loop!')
+                timecounter.counter.job_flavor_time_perc(params.htc_jobflavor)
+                break
+
         if event.entry() != 0 and event.entry() % 1000 == 0:
             print ("Writing histos to file")
             hm.writeHistos()
@@ -474,7 +486,7 @@ def main(analyze):
             for jid in range(0, n_jobs):
                 dagman_spl += 'JOB Job_{} batch.sub\n'.format(jid)
                 dagman_spl += 'VARS Job_{} JOB_ID="{}"\n'.format(jid, jid)
-                dagman_spl_retry += 'Retry Job_{} 3\n'.format(jid)
+                # dagman_spl_retry += 'Retry Job_{} 3\n'.format(jid)
                 dagman_spl_retry += 'PRIORITY Job_{} {}\n'.format(jid, sample.htc_priority)
 
             dagman_sub += 'SPLICE {} {}.spl DIR {}\n'.format(
@@ -545,7 +557,8 @@ if __name__ == "__main__":
 
     tic = 0
     if '3.8' in platform.python_version():
-        tic = time.perf_counter()
+        timecounter.counter.start()
+
     nevents = 0
     try:
         nevents += main(analyze=analyze)
@@ -555,20 +568,8 @@ if __name__ == "__main__":
         traceback.print_exc()
         sys.exit(100)
 
-    if tic != 0:
-        toc = time.perf_counter()
-        analysis_time = toc - tic
-        time_per_event = analysis_time/nevents
+    if timecounter.counter.started():
+        analysis_time, time_per_event = timecounter.counter.time_per_event(nevents)
         print('Analyzed {} events in {:.2f} s ({:.2f} s/ev)'.format(
             nevents, analysis_time, time_per_event))
-        job_flavors = {
-            'espresso (20 minutes)': 20*60,        # 20 minutes
-            'microcentury (1 hour)': 1*60*60,  # 1 hour
-            'longlunch (2 hours)': 2*60*60,     # 2 hour
-            'workday (8 hours)': 8*60*60,       # 8 hour
-            'tomorrow (1 days)': 24*60*60,     # 1 days
-            'testmatch (3 days)': 3*24*60*60,  # 3 days
-            'nextweek (1 week)': 7*24*60*60,   # 1 week
-            }
-        for job_flavor, job_time in job_flavors.items():
-            print ("{}: # ev: {}".format(job_flavor, int(job_time/(1.1*time_per_event))))
+        timecounter.counter.print_nevent_per_jobflavor(time_per_event)
