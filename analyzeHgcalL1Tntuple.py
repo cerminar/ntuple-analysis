@@ -526,7 +526,7 @@ def main(analyze):
         print('condor_submit_dag {}'.format(dagman_file_name))
         sys.exit(0)
 
-    batch_idx = 0
+    batch_idx = -1
     if opt.BATCH and opt.RUN:
         batch_idx = int(opt.RUN)
 
