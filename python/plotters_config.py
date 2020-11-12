@@ -40,21 +40,18 @@ rate_plotters = [
 eg_rate_plotters = [
     plotters.RatePlotter(
         collections.egs_EE, selections.eg_id_eta_ee_selections),
-
-
-
     plotters.RatePlotter(
-        collections.egs, selections.eg_id_eta_ee_selections),
+        collections.egs_EE_pf, selections.eg_id_eta_ee_selections),
     plotters.RatePlotter(
-        collections.egs_brl, selections.eg_barrel_rate_selections),
+        collections.egs_EB, selections.eg_barrel_rate_selections),
     plotters.RatePlotter(
-        collections.egs_all, selections.eg_all_rate_selections),
+        collections.tkeles_EE, selections.eg_id_iso_eta_ee_selections),
     plotters.RatePlotter(
-        collections.tkelesEL, selections.eg_id_iso_eta_ee_selections),
+        collections.tkeles_EB, selections.barrel_rate_selections),
     plotters.RatePlotter(
-        collections.tkelesEL_brl, selections.barrel_rate_selections),
+        collections.tkeles_EE_pf, selections.eg_id_iso_eta_ee_selections),
     plotters.RatePlotter(
-        collections.tkelesEL_all, selections.all_rate_selections),
+        collections.tkeles_EB_pf, selections.barrel_rate_selections),
 ]
 
 tp_calib_plotters = [

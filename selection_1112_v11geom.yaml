@@ -234,9 +234,11 @@ collections:
       # - tp_egm_plotters
       - eg_rate_plotters
     htc_jobflavor:
-      longlunch
+      microcentury
     priorities:
       nugun_alleta_pu200: 6
+    events_per_job:
+      nugun_alleta_pu200: 5000
 
   noise_samples:
     file_label:
