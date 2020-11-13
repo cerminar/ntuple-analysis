@@ -293,7 +293,18 @@ ttower_genmatched_plotters = [
 ]
 
 correlator_occupancy_plotters = [
-    plotters.CorrOccupancyPlotter(collections.tk_pfinputs, selections.pftkinput_selections),
+    plotters.CorrOccupancyPlotter(
+        collections.tk_pfinputs, selections.pftkinput_selections),
+    plotters.CorrOccupancyPlotter(
+        collections.egs_EE_pf_reg, selections.pfinput_regions),
+    plotters.CorrOccupancyPlotter(
+        collections.tkeles_EE_pf_reg, selections.pfinput_regions),
+    plotters.CorrOccupancyPlotter(
+        collections.tkeles_EB_pf_reg, selections.pfinput_regions),
+    plotters.CorrOccupancyPlotter(
+        collections.tkem_EE_pf_reg, selections.pfinput_regions),
+    plotters.CorrOccupancyPlotter(
+        collections.tkem_EB_pf_reg, selections.pfinput_regions),
 ]
 
 pftrack_plotters = [

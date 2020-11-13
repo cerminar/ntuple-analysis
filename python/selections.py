@@ -381,7 +381,6 @@ tracks_pt_sels = [Selection('all'),
 tracks_selections = []
 tracks_selections += add_selections(tracks_quality_sels, tracks_pt_sels)
 
-pftkinput_selections = []
 
 pfinput_regions = [
     Selection('all'),
@@ -398,6 +397,8 @@ pftkinput_quality = [
     Selection('Pt2Chi2Pt5', '(p_{T}^{Tk} > 2GeV & #Chi^{2}_{norm} < 15) | p_{T}^{Tk} > 5GeV ', '((pt > 2) & (chi2Red < 15) | (pt > 5))  & (nStubs >= 4)'),
     Selection('Pt2Chi2Pt10', '(p_{T}^{Tk} > 2GeV & #Chi^{2}_{norm} < 15) | p_{T}^{Tk} > 10GeV ', '((pt > 2) & (chi2Red < 15) | (pt > 10)) & (nStubs >= 4)'),
     ]
+
+pftkinput_selections = []
 pftkinput_selections += add_selections(pfinput_regions, pftkinput_quality)
 
 

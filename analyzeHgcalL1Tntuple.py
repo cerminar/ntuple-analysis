@@ -572,4 +572,5 @@ if __name__ == "__main__":
         analysis_time, time_per_event = timecounter.counter.time_per_event(nevents)
         print('Analyzed {} events in {:.2f} s ({:.2f} s/ev)'.format(
             nevents, analysis_time, time_per_event))
+        # print (' real time: {:.2f} s'.format(timecounter.counter.real_time()))
         timecounter.counter.print_nevent_per_jobflavor(time_per_event)

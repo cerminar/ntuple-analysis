@@ -4,6 +4,7 @@ import time
 class TimeCounter(object):
     def __init__(self):
         self.start_tic = 0
+        self.start_real = 0
         self.job_flavors = {
             'test': 6*60-30,        # 1 minutes
             'espresso': 20*60,        # 20 minutes
@@ -29,6 +30,10 @@ class TimeCounter(object):
 
     def start(self):
         self.start_tic = time.perf_counter()
+        self.start_real = time.time()
+
+    def real_time(self):
+        return time.time() - self.start_real
 
     def time(self):
         return time.perf_counter() - self.start_tic
@@ -57,8 +62,6 @@ class TimeCounter(object):
             time = self.time()
             flavor_time = self.job_flavor_time(flavor)
             return flavor_time - time
-
-
 
     def started(self):
         return self.start_tic != 0
