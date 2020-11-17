@@ -216,12 +216,12 @@ collections:
       - correlator_occupancy_plotters
       - pftrack_plotters
     htc_jobflavor:
-      longlunch
+      microcentury
     priorities:
       ttbar_PU200: 8
       # dyll_PU200: 1
     events_per_job:
-      ttbar_PU200: 500
+      ttbar_PU200: 700
 
   nugun_rate:
     file_label:
