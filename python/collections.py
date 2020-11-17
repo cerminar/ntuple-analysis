@@ -579,13 +579,13 @@ def gen_part_pt_weights(gen_parts, weight_file):
     return gen_parts
 
 
-def map2pfregions(objects, eta_var, phi_var):
+def map2pfregions(objects, eta_var, phi_var, fiducial=False):
     for ieta in range(0, pf_regions.regionizer.n_eta_regions()):
         objects['eta_reg_{}'.format(ieta)] = False
     for iphi in range(0, pf_regions.regionizer.n_phi_regions()):
         objects['phi_reg_{}'.format(iphi)] = False
 
-    for ieta, eta_range in enumerate(pf_regions.regionizer.eta_boundaries):
+    for ieta, eta_range in enumerate(pf_regions.regionizer.get_eta_boundaries(fiducial)):
         query = '({} > {}) & ({} <= {})'.format(
             eta_var,
             eta_range[0],
@@ -595,7 +595,7 @@ def map2pfregions(objects, eta_var, phi_var):
         region_objects = objects.query(query).index
         objects.loc[region_objects, ['eta_reg_{}'.format(ieta)]] = True
 
-    for iphi, phi_range in enumerate(pf_regions.regionizer.phi_boundaries):
+    for iphi, phi_range in enumerate(pf_regions.regionizer.get_phi_boundaries(fiducial)):
         query = '({} > {}) & ({} <= {})'.format(
             phi_var,
             phi_range[0],
@@ -607,14 +607,14 @@ def map2pfregions(objects, eta_var, phi_var):
     return objects
 
 
+def maptk2pfregions_in(objects):
+    return map2pfregions(objects, 'caloeta', 'calophi', fiducial=False)
 
-def maptk2pfregions(objects):
-    return map2pfregions(objects, 'caloeta', 'calophi')
+def mapcalo2pfregions_in(objects):
+    return map2pfregions(objects, 'eta', 'phi', fiducial=False)
 
-
-def mapcalo2pfregions(objects):
-    return map2pfregions(objects, 'eta', 'phi')
-
+def mapcalo2pfregions_out(objects):
+    return map2pfregions(objects, 'eta', 'phi', fiducial=True)
 
 
 calib_mgr = calib.CalibManager()
@@ -1124,43 +1124,47 @@ tkem_EB_pf = DFCollection(
 egs_EE_pf_reg = DFCollection(
     name='PFOutEgEE', label='EG EE Corr.',
     filler_function=lambda event: egs_EE_pf.df,
-    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
-    fixture_function=mapcalo2pfregions,
+    print_function=lambda df: df[[
+        'pt', 'eta', 'hwQual',
+        'eta_reg_0', 'eta_reg_1', 'eta_reg_2', 'eta_reg_3',
+        'eta_reg_4', 'eta_reg_5', 'eta_reg_6', 'eta_reg_7',
+        'eta_reg_8', 'eta_reg_9', 'eta_reg_10']].sort_values(by='eta', ascending=False)[:10],
+    fixture_function=mapcalo2pfregions_out,
     depends_on=[egs_EE_pf],
     debug=0)
 
 tkeles_EE_pf_reg = DFCollection(
     name='PFOuttkEleEE', label='TkEle EE Corr.',
     filler_function=lambda event: tkeles_EE_pf.df,
-    fixture_function=mapcalo2pfregions,
+    fixture_function=mapcalo2pfregions_out,
     depends_on=[tkeles_EE_pf],
     debug=0)
 
 tkeles_EB_pf_reg = DFCollection(
     name='PFOuttkEleEB', label='TkEle EB Corr',
     filler_function=lambda event: tkeles_EB_pf.df,
-    fixture_function=mapcalo2pfregions,
+    fixture_function=mapcalo2pfregions_out,
     depends_on=[tkeles_EB_pf],
     debug=0)
 
 tkem_EE_pf_reg = DFCollection(
     name='PFOuttkEmEE', label='TkEm EE Corr.',
     filler_function=lambda event: tkem_EE_pf.df,
-    fixture_function=mapcalo2pfregions,
+    fixture_function=mapcalo2pfregions_out,
     depends_on=[tkem_EE_pf],
     debug=0)
 
 tkem_EB_pf_reg = DFCollection(
     name='PFOuttkEmEB', label='TkEm EB Corr',
     filler_function=lambda event: tkem_EB_pf.df,
-    fixture_function=mapcalo2pfregions,
+    fixture_function=mapcalo2pfregions_out,
     depends_on=[tkem_EB_pf],
     debug=0)
 
 tk_pfinputs = DFCollection(
     name='L1Trk', label='L1Track',
     filler_function=lambda event: event.getDataFrame(prefix='l1Trk'),
-    fixture_function=maptk2pfregions,
+    fixture_function=maptk2pfregions_in,
     debug=0)
 
 

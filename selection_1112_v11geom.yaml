@@ -7,7 +7,7 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v145L
+  plot_version: v145M
   run_clustering: False
   run_density_computation: False
   calib_version: calib-v134C
@@ -218,7 +218,7 @@ collections:
     htc_jobflavor:
       longlunch
     priorities:
-      ttbar_PU200: 2
+      ttbar_PU200: 8
       # dyll_PU200: 1
     events_per_job:
       ttbar_PU200: 500

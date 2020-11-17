@@ -1143,21 +1143,26 @@ class CorrOccupancyHistos(BaseHistos):
             self.h_avgOcc = ROOT.TProfile2D(
                 name+'_avgOcc',
                 'region avg occ; #eta, #phi;',
-                len(pf_regions.regionizer.eta_boundaries_fiducial)-1,
-                array('d', pf_regions.regionizer.eta_boundaries_fiducial),
-                len(pf_regions.regionizer.phi_boundaries_fiducial)-1,
-                array('d', pf_regions.regionizer.phi_boundaries_fiducial))
+                pf_regions.regionizer.n_eta_regions(),
+                array('d', pf_regions.regionizer.eta_boundaries_fiducial_),
+                pf_regions.regionizer.n_phi_regions(),
+                array('d', pf_regions.regionizer.phi_boundaries_fiducial_))
 
             self.h_maxOcc = ROOT.TH1F(name+'_maxOcc', 'max occupancy;', 100, 0, 100)
             self.h_totOcc = ROOT.TH1F(name+'_totOcc', 'total occupancy;', 500, 0, 500)
             self.h_regOcc = ROOT.TH1F(name+'_regOcc', 'reg occupancy;', 100, 0, 100)
+
+            self.eta_regions_idx = range(0, pf_regions.regionizer.n_eta_regions())
+            for key in ['all', 'BRL', 'HGCNoTk', 'HGC', 'HF']:
+                if key in name:
+                    self.eta_regions_idx = pf_regions.regions[key]
 
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, objects):
         max_count = 0
         tot_count = 0
-        for ieta in range(0, pf_regions.regionizer.n_eta_regions()):
+        for ieta in self.eta_regions_idx:
             for iphi in range(0, pf_regions.regionizer.n_phi_regions()):
                 occupancy = len(objects[objects['eta_reg_{}'.format(ieta)] & objects['phi_reg_{}'.format(iphi)]].index)
 
@@ -1168,7 +1173,7 @@ class CorrOccupancyHistos(BaseHistos):
                 self.h_regOcc.Fill(occupancy)
                 if occupancy > max_count:
                     max_count = occupancy
-                tot_count+=occupancy
+                tot_count += occupancy
         # print objects[:10]
         # print max_count
         self.h_maxOcc.Fill(max_count)
