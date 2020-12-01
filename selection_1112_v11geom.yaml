@@ -7,7 +7,7 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v145M
+  plot_version: v145N
   run_clustering: False
   run_density_computation: False
   calib_version: calib-v134C
@@ -350,11 +350,11 @@ samples:
     # gen_selections: !!python/name:python.selections.genpart_photon_selections
 
   doubleele_flat1to100_PU200:
-    input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU200_v63D/
+    input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU200_v63F/
     events_per_job : 200
 
   doublephoton_flat1to100_PU200:
-    input_sample_dir: DoublePhoton_FlatPt-1To100/DoublePhoton_FlatPt-1To100_PU200_v63D/
+    input_sample_dir: DoublePhoton_FlatPt-1To100/DoublePhoton_FlatPt-1To100_PU200_v63F/
     events_per_job : 200
 
   ele_flat2to100_PU0:
@@ -387,7 +387,7 @@ samples:
     events_per_job: 500
 
   nugun_alleta_pu200:
-    input_sample_dir: MinBias_TuneCP5_14TeV-pythia8/NuGunAllEta_PU200_v63E/
+    input_sample_dir: MinBias_TuneCP5_14TeV-pythia8/NuGunAllEta_PU200_v63F/
     # input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v47/191105_135050/0000/
     events_per_job: 300
 
