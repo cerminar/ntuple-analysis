@@ -1167,6 +1167,19 @@ tk_pfinputs = DFCollection(
     fixture_function=maptk2pfregions_in,
     debug=0)
 
+eg_EE_pfinputs = DFCollection(
+    name='egEEPFin', label='EG EE Input',
+    filler_function=lambda event: egs_EE.df,
+    fixture_function=mapcalo2pfregions_in,
+    depends_on=[egs_EE],
+    debug=0)
+
+eg_EB_pfinputs = DFCollection(
+    name='egEBPFin', label='EG EB Input',
+    filler_function=lambda event: egs_EB.df,
+    fixture_function=mapcalo2pfregions_in,
+    depends_on=[egs_EB],
+    debug=0)
 
 
 class TPSet:

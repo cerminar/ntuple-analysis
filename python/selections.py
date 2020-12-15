@@ -398,12 +398,35 @@ pftkinput_quality = [
     Selection('Pt2Chi2Pt10', '(p_{T}^{Tk} > 2GeV & #Chi^{2}_{norm} < 15) | p_{T}^{Tk} > 10GeV ', '((pt > 2) & (chi2Red < 15) | (pt > 10)) & (nStubs >= 4)'),
     ]
 
+pfeginput_pt = [
+    Selection('all'),
+    Selection('Pt1', 'p_{T}^{Tk} > 1GeV', '(pt > 1)'),
+    Selection('Pt2', 'p_{T}^{Tk} > 2GeV', '(pt > 2)'),
+]
+
+pfeg_ee_input_qual = [
+    Selection('EGq1', 'hwQual 1', 'hwQual == 1'),
+]
+
+pfeg_ee_input_selections = add_selections(
+    pfinput_regions,
+    add_selections(
+        pfeginput_pt,
+        pfeg_ee_input_qual)
+)
+
+pfeg_eb_input_selections = add_selections(
+    pfinput_regions,
+    pfeginput_pt
+)
+
+
 pftkinput_selections = []
 pftkinput_selections += add_selections(pfinput_regions, pftkinput_quality)
 
 
 if __name__ == "__main__":
-    for sel in eg_rate_selections:
+    for sel in pfeginput_selections:
         print(sel)
     # for sel in eg_pt_selections:
     #     print sel.name

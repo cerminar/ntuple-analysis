@@ -305,6 +305,11 @@ correlator_occupancy_plotters = [
         collections.tkem_EE_pf_reg, selections.pfinput_regions),
     plotters.CorrOccupancyPlotter(
         collections.tkem_EB_pf_reg, selections.pfinput_regions),
+    plotters.CorrOccupancyPlotter(
+        collections.eg_EE_pfinputs, selections.pfeg_ee_input_selections),
+    plotters.CorrOccupancyPlotter(
+        collections.eg_EB_pfinputs, selections.pfeg_eb_input_selections),
+
 ]
 
 pftrack_plotters = [
