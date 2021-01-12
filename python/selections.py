@@ -396,12 +396,15 @@ pftkinput_quality = [
     Selection('Pt2', 'p_{T}^{Tk} > 2GeV', '(pt > 2) & (nStubs >= 4)'),
     Selection('Pt2Chi2Pt5', '(p_{T}^{Tk} > 2GeV & #Chi^{2}_{norm} < 15) | p_{T}^{Tk} > 5GeV ', '((pt > 2) & (chi2Red < 15) | (pt > 5))  & (nStubs >= 4)'),
     Selection('Pt2Chi2Pt10', '(p_{T}^{Tk} > 2GeV & #Chi^{2}_{norm} < 15) | p_{T}^{Tk} > 10GeV ', '((pt > 2) & (chi2Red < 15) | (pt > 10)) & (nStubs >= 4)'),
+    Selection('Pt5', 'p_{T}^{Tk} > 5GeV', '(pt > 5)'),
+    Selection('Pt10', 'p_{T}^{Tk} > 10GeV', '(pt > 10)'),
     ]
 
 pfeginput_pt = [
     Selection('all'),
     Selection('Pt1', 'p_{T}^{Tk} > 1GeV', '(pt > 1)'),
     Selection('Pt2', 'p_{T}^{Tk} > 2GeV', '(pt > 2)'),
+    Selection('Pt5', 'p_{T}^{Tk} > 5GeV', '(pt > 5)'),
 ]
 
 pfeg_ee_input_qual = [
