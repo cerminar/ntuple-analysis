@@ -204,17 +204,17 @@ collections:
     samples:
       - zprime_ee_PU200
     plotters:
-      - tp_plotters
+      # - tp_plotters
       - tp_genmatched_extrange_plotters
-      - genpart_plotters
+      # - genpart_plotters
       # - ttower_plotters
       # - ttower_genmatched_plotters
     htc_jobflavor:
-      tomorrow
+      workday
     priorities:
       zprime_ee_PU200: 5
     events_per_job:
-      zprime_ee_PU200: 1
+      zprime_ee_PU200: 2000
 
   single_had_guns_tps:
     file_label:
