@@ -191,11 +191,21 @@ class GenPartHistos(BaseHistos):
 
 
 class GenParticleHistos(BaseHistos):
-    def __init__(self, name, root_file=None, debug=False):
+    def __init__(self, name, root_file=None, extended_range=False, debug=False):
         if not root_file:
+            pt_bins = [y for y in range(0, 102, 2)]
+            if(extended_range):
+                # print ('Booking: {} with extended range'.format(name))
+                pt_bins = [y for y in range(0, 200, 2)] + \
+                          [y for y in range(200, 400, 50)] + \
+                          [y for y in range(400, 1100, 100)]
+            n_pt_bins = len(pt_bins) - 1
+            # print ('bins: {}'.format(pt_bins))
+            # print ("# bins: {}".format(n_pt_bins))
+
             self.h_eta = ROOT.TH1F(name+'_eta', 'Gen Part eta; #eta^{GEN};', 50, -3, 3)
             self.h_abseta = ROOT.TH1F(name+'_abseta', 'Gen Part |eta|; |#eta^{GEN}|;', 40, 0, 4)
-            self.h_pt = ROOT.TH1F(name+'_pt', 'Gen Part P_{T} (GeV); p_{T}^{GEN} [GeV];', 50, 0, 100)
+            self.h_pt = ROOT.TH1F(name+'_pt', 'Gen Part P_{T} (GeV); p_{T}^{GEN} [GeV];', n_pt_bins, array('d', pt_bins))
             self.h_energy = ROOT.TH1F(name+'_energy', 'Gen Part Energy (GeV); E [GeV];', 100, 0, 1000)
             self.h_reachedEE = ROOT.TH1F(name+'_reachedEE', 'Gen Part reachedEE', 4, 0, 4)
             self.h_fBrem = ROOT.TH1F(name+'_fBrem', 'Brem. p_{T} fraction', 30, 0, 1)
@@ -773,8 +783,8 @@ class ResoHistos(BaseResoHistos):
         # if 'energyCentral' in target:
         #     self.h_centralEnergyRes.Fill(target_energyCentral - reference.energy)
         if 'exeta' in reference:
-            self.h_etaRes.Fill(target_line.exeta - reference_eta)
-            self.h_phiRes.Fill(target_line.exphi - reference_phi)
+            self.h_etaRes.Fill(target_eta - reference.exeta)
+            self.h_phiRes.Fill(target_phi - reference.exphi)
             self.h_drRes.Fill(np.sqrt((reference.exphi-target_phi)**2+(reference.exeta-target_eta)**2))
 
         if 'n010' in target:
@@ -904,10 +914,10 @@ class HistoEff():
 
 
 class HistoSetEff():
-    def __init__(self, name, root_file=None, debug=False):
+    def __init__(self, name, root_file=None, extended_range=False, debug=False):
         self.name = name
-        self.h_num = GenParticleHistos('h_effNum_'+name, root_file, debug)
-        self.h_den = GenParticleHistos('h_effDen_'+name, root_file, debug)
+        self.h_num = GenParticleHistos('h_effNum_'+name, root_file, extended_range, debug)
+        self.h_den = GenParticleHistos('h_effDen_'+name, root_file, extended_range, debug)
         self.h_eff = None
         self.h_ton = None
 

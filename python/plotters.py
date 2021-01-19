@@ -208,7 +208,9 @@ class GenPlotter:
 
 class TPGenMatchPlotter(BasePlotter):
     def __init__(self, tp_set, gen_set,
-                 tp_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
+                 tp_selections=[selections.Selection('all')], 
+                 gen_selections=[selections.Selection('all')],
+                 extended_range=False):
         # self.tp_set = tp_set
         # self.tp_selections = tp_selections
         # self.gen_set = gen_set
@@ -217,7 +219,14 @@ class TPGenMatchPlotter(BasePlotter):
         self.h_resoset = {}
         self.h_effset = {}
         self.h_conecluster = {}
-        super(TPGenMatchPlotter, self).__init__(tp_set, tp_selections, gen_set, gen_selections)
+        self.extended_range=extended_range
+        super(TPGenMatchPlotter, self).__init__(
+            tp_set, 
+            tp_selections, 
+            gen_set, 
+            selections.add_selections(
+                gen_selections,
+                [selections.Selection('', '', 'gen > 0')]))
 
     def plot3DClusterMatch(self,
                            genParticles,
@@ -296,15 +305,17 @@ class TPGenMatchPlotter(BasePlotter):
                 matchedTriggerCells = triggerCells[triggerCells.id.isin(np.concatenate(matchedClusters.cells.values))]
                 # allmatched2Dclusters. append(matchedClusters)
 
-                if 'energyCentral' not in matched3DCluster.columns:
-                    calib_factor = 1.084
-                    matched3DCluster['energyCentral'] = [matchedClusters[(matchedClusters.layer > 9) & (matchedClusters.layer < 21)].energy.sum()*calib_factor]
+                if False:
+                    if 'energyCentral' not in matched3DCluster.columns:
+                        calib_factor = 1.084
+                        matched3DCluster['energyCentral'] = [matchedClusters[(matchedClusters.layer > 9) & (matchedClusters.layer < 21)].energy.sum()*calib_factor]
 
-                iso_df = computeIsolation(trigger3DClusters,
-                                          idx_best_match=best_match_indexes[idx],
-                                          idx_incone=allmatches[idx], dr=0.2)
-                matched3DCluster['iso0p2'] = iso_df.energy
-                matched3DCluster['isoRel0p2'] = iso_df.pt/matched3DCluster.pt
+                if False:
+                    iso_df = computeIsolation(trigger3DClusters,
+                                              idx_best_match=best_match_indexes[idx],
+                                              idx_incone=allmatches[idx], dr=0.2)
+                    matched3DCluster['iso0p2'] = iso_df.energy
+                    matched3DCluster['isoRel0p2'] = iso_df.pt/matched3DCluster.pt
 
                 # fill the plots
                 histoTCMatch.fill(matchedTriggerCells)
@@ -320,9 +331,9 @@ class TPGenMatchPlotter(BasePlotter):
 
                 if False:
                     histoReso2D.fill(reference=genParticle, target=matchedClusters)
-                histoReso.fill(reference=genParticle, target=matched3DCluster.iloc[0])
+                histoReso.fill(reference=genParticle, target=matched3DCluster)
 
-                if True:
+                if False:
                     # now we fill the reso plot for all the clusters in the cone
                     clustersInCone = sumClustersInCone(trigger3DClusters, allmatches[idx])
 
@@ -400,28 +411,16 @@ class TPGenMatchPlotter(BasePlotter):
                                                gen_sel.name)
                 self.h_tpset[histo_name] = histos.HistoSetClusters(histo_name)
                 self.h_resoset[histo_name] = histos.HistoSetReso(histo_name)
-                self.h_effset[histo_name] = histos.HistoSetEff(histo_name)
+                self.h_effset[histo_name] = histos.HistoSetEff(histo_name, extended_range=self.extended_range)
                 self.h_conecluster[histo_name] = histos.ClusterConeHistos(histo_name)
 
     def fill_histos(self, debug=False):
-        data_sets = []
-        gen_sets = []
         for tp_sel in self.data_selections:
             tcs = self.tp_set.tc_df
             cl2Ds = self.tp_set.cl2d_df
-            cl3Ds = self.tp_set.cl3d_df
-            if not tp_sel.all:
-                cl3Ds = self.tp_set.cl3d_df.query(tp_sel.selection)
-            data_sets.append((tcs, cl2Ds, cl3Ds, tp_sel.name))
-        for gen_sel in self.gen_selections:
-            genReference = self.gen_set.df[(self.gen_set.df.gen > 0)]
-            if not gen_sel.all:
-                genReference = self.gen_set.df[(self.gen_set.df.gen > 0)].query(gen_sel.selection)
-            gen_sets.append((genReference, gen_sel.name))
-
-        for tcs, cl2Ds, cl3D, tp_sel_name in data_sets:
-            for genReference, gen_sel_name in gen_sets:
-
+            cl3Ds = self.tp_set.cl3ds.query(tp_sel)
+            for gen_sel in self.gen_selections:
+                genReference = self.gen_set.query(gen_sel)
                 histo_name = '{}_{}_{}'.format(self.tp_set.name, tp_sel.name, gen_sel.name)
 
                 h_tpset_match = self.h_tpset[histo_name]

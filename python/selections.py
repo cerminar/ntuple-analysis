@@ -224,10 +224,14 @@ gen_pt_sel_red = [
     Selection('all'),
     Selection('Pt15', 'p_{T}^{GEN}>=15GeV', 'pt >= 15')
 ]
-# FIXME: add fabs to firstmother_if
+
+gen_pt_upper = [
+    Selection('', '', 'pt <= 100')
+]
+
 gen_pid_sel = [
     Selection('GEN', '', '(((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})) | \
-                           ((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {}))) & (pt <= 100)'.format(
+                           ((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})))'.format(
         PID.electron, PID.electron,
         PID.photon, PID.photon))
 ]
@@ -256,6 +260,11 @@ gen_ee_selections = []
 gen_ee_selections += gen_pid_ee_sel
 gen_ee_selections += gen_pid_pt_ee_sel
 gen_ee_selections += gen_pid_eta_ee_sel
+gen_ee_extrange_selections = gen_ee_selections
+gen_ee_selections = add_selections(gen_ee_selections, gen_pt_upper)
+
+
+
 # gen_ee_selections += add_selections(gen_pid_eta_ee_sel, gen_pt_sel_red)
 
 gen_ee_tk_selections = [gen_sel for gen_sel in gen_ee_selections if 'EtaD' not in gen_sel.name and 'EtaBCD' not in gen_sel.name]
@@ -429,16 +438,18 @@ pftkinput_selections += add_selections(pfinput_regions, pftkinput_quality)
 
 
 if __name__ == "__main__":
-    for sel in pfeginput_selections:
-        print(sel)
+    # for sel in pfeginput_selections:
+    #     print(sel)
     # for sel in eg_pt_selections:
     #     print sel.name
     # for sel in tkisoeg_pt_selections:
     #     print sel
     # for sel in gen_ee_selections_tketa:
     #     print sel
-    # for sel in gen_ee_selections:
-    #     print sel
+    for sel in gen_ee_selections:
+        print (sel)
+    for sel in gen_ee_extrange_selections:
+        print (sel)
     # for sel in eg_pt_selections_barrel:
     #     print sel
     # for sel in gen_part_barrel_selections:
