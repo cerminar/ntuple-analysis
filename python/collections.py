@@ -1181,6 +1181,13 @@ eg_EB_pfinputs = DFCollection(
     depends_on=[egs_EB],
     debug=0)
 
+cl3d_hm_pfinputs = DFCollection(
+    name='HMvDRPFin', label='HMvDR Input',
+    filler_function=lambda event: cl3d_hm.df,
+    fixture_function=mapcalo2pfregions_in,
+    depends_on=[cl3d_hm],
+    debug=0)
+
 
 class TPSet:
     """

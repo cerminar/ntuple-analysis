@@ -420,6 +420,14 @@ pfeg_ee_input_qual = [
     Selection('EGq1', 'hwQual 1', 'hwQual == 1'),
 ]
 
+
+pfeg_tp_input_selections = add_selections(
+    pfinput_regions,
+    add_selections(
+        pfeginput_pt,
+        tp_id_sel)
+)
+
 pfeg_ee_input_selections = add_selections(
     pfinput_regions,
     add_selections(
@@ -446,9 +454,7 @@ if __name__ == "__main__":
     #     print sel
     # for sel in gen_ee_selections_tketa:
     #     print sel
-    for sel in gen_ee_selections:
-        print (sel)
-    for sel in gen_ee_extrange_selections:
+    for sel in pfeg_tp_input_selections:
         print (sel)
     # for sel in eg_pt_selections_barrel:
     #     print sel
