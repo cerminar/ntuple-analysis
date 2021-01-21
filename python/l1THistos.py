@@ -411,6 +411,8 @@ class EGHistos(BaseHistos):
             self.h_hwQual = ROOT.TH1F(name+'_hwQual', 'EG energy (GeV); hwQual', 5, 0, 5)
             self.h_tkIso = ROOT.TH1F(name+'_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2)
             self.h_pfIso = ROOT.TH1F(name+'_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
+            self.h_tkIsoPV = ROOT.TH1F(name+'_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2)
+            self.h_pfIsoPV = ROOT.TH1F(name+'_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
@@ -428,8 +430,11 @@ class EGHistos(BaseHistos):
         if 'tkIso' in egs.columns:
             rnp.fill_hist(hist=self.h_tkIso, array=egs.tkIso, weights=weight)
             rnp.fill_hist(hist=self.h_pfIso, array=egs.pfIso, weights=weight)
-
-
+        if 'tkIsoPV' in egs.columns:
+            rnp.fill_hist(hist=self.h_tkIsoPV, array=egs.tkIsoPV, weights=weight)
+            rnp.fill_hist(hist=self.h_pfIsoPV, array=egs.pfIsoPV, weights=weight)
+            
+            
 class TkEleHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
