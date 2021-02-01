@@ -1027,11 +1027,11 @@ class EGResoHistos(BaseResoHistos):
             self.h_ptRespVpt = ROOT.TH2F(name+'_ptRespVpt', 'EG Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
             self.h_ptRespVeta = ROOT.TH2F(name+'_ptRespVeta', 'EG Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};', 50, -4, 4, 100, 0, 3)
 
-            self.h_etaRes = ROOT.TH1F(name+'_etaRes', 'EG eta reso; #eta^{L1}-#eta^{GEN}', 100, -0.4, 0.4)
-            self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'EG phi reso; #phi^{L1}-#phi^{GEN}', 100, -0.4, 0.4)
+            self.h_etaRes = ROOT.TH1F(name+'_etaRes', 'EG eta reso; #eta^{L1}-#eta^{GEN}', 100, -0.1, 0.1)
+            self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'EG phi reso; #phi^{L1}-#phi^{GEN}', 100, -0.1, 0.1)
 
-            self.h_exetaRes = ROOT.TH1F(name+'_exetaRes', 'EG eta reso; #eta^{L1}-#eta^{GEN}_{calo}', 100, -0.4, 0.4)
-            self.h_exphiRes = ROOT.TH1F(name+'_exphiRes', 'EG phi reso; #phi^{L1}-#phi^{GEN}_{calo}', 100, -0.4, 0.4)
+            self.h_exetaRes = ROOT.TH1F(name+'_exetaRes', 'EG eta reso; #eta^{L1}-#eta^{GEN}_{calo}', 100, -0.1, 0.1)
+            self.h_exphiRes = ROOT.TH1F(name+'_exphiRes', 'EG phi reso; #phi^{L1}-#phi^{GEN}_{calo}', 100, -0.1, 0.1)
 
         BaseResoHistos.__init__(self, name, root_file, debug)
 
