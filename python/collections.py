@@ -191,6 +191,9 @@ def tkeg_fromcluster_fixture(tkegs):
     return tkegs
 
 
+# FIXME: scorporate the part wich computes the layer_weights 
+# (needed only by rthe calib plotters) from the rest (creating ad-hoc collections)
+# this should also allow for removing the tc dependency -> huge speedup in filling
 def cl3d_fixtures(clusters, tcs):
     # print clusters.columns
     # for backward compatibility
@@ -955,7 +958,9 @@ egs_all = DFCollection(
 
 tracks = DFCollection(
     name='L1Trk', label='L1Track',
-    filler_function=lambda event: event.getDataFrame(prefix='l1track'), debug=0)
+    filler_function=lambda event: event.getDataFrame(prefix='l1Trk'), 
+    print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    debug=4)
 
 tracks_emu = DFCollection(
     name='L1TrkEmu', label='L1Track EMU',
