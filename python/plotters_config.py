@@ -284,10 +284,7 @@ track_genmatched_plotters = [
         collections.tracks, collections.gen_parts,
         selections.tracks_selections,
         selections.gen_ee_selections),
-    plotters.TrackGenMatchPlotter(
-        collections.tracks_emu, collections.gen_parts,
-        selections.tracks_selections,
-        selections.gen_ee_selections)]
+        ]
 
 genpart_plotters = [
     plotters.GenPlotter(
