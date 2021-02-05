@@ -36,18 +36,31 @@ collections:
     file_label:
       eg
     samples:
-      - ele_flat2to100_PU0
-      - ele_flat2to100_PU200
+      - doubleele_flat1to100_PU0
+      - doubleele_flat1to100_PU200
+      # - ele_flat2to100_PU0
+      # - ele_flat2to100_PU200
     plotters:
       # - track_plotters
       - track_genmatched_plotters
       # - tkeg_plotters
-      - eg_genmatched_plotters
+      # - eg_genmatched_plotters
     htc_jobflavor:
       workday
     priorities:
       ele_flat2to100_PU0: 1
       ele_flat2to100_PU200: 5
+      doubleele_flat1to100_PU0: 1
+      doubleele_flat1to100_PU200: 5
+    events_per_job:
+      # ele_flat2to100_PU0: 1
+      # ele_flat2to100_PU200: 5
+      # photon_flat8to150_PU0: 0
+      # photon_flat8to150_PU200: 0
+      doubleele_flat1to100_PU0: 2100
+      doubleele_flat1to100_PU200: 800
+      doublephoton_flat1to100_PU200: 800
+
 
   single_part_tt:
     file_label:
