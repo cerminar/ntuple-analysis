@@ -92,7 +92,7 @@ class RatePlotter(BasePlotter):
             self.h_rate[selection.name] = histos.RateHistos(name='{}_{}'.format(tp_name,
                                                                                 selection.name))
 
-    def fill_histos(self, debug=False):
+    def fill_histos(self, debug=0):
         # print '------------------'
         # print self.tp_set.name
         for selection in self.tp_selections:
@@ -122,7 +122,7 @@ class GenericDataFramePlotter(BasePlotter):
             self.h_set[selection.name] = self.HistoClass(name='{}_{}_nomatch'.format(data_name,
                                                                                      selection.name))
 
-    def fill_histos(self, debug=False):
+    def fill_histos(self, debug=0):
         for data_sel in self.data_selections:
             data = self.data_set.query(data_sel)
             self.h_set[data_sel.name].fill(data)
@@ -171,7 +171,7 @@ class TPPlotter(BasePlotter):
         for selection in self.tp_selections:
             self.h_tpset[selection.name] = histos.HistoSetClusters(name='{}_{}_nomatch'.format(tp_name, selection.name))
 
-    def fill_histos(self, debug=False):
+    def fill_histos(self, debug=0):
         # FIXME: migrate to the new query caching system
         for tp_sel in self.tp_selections:
             tcs = self.tp_set.tc_df
@@ -200,7 +200,7 @@ class GenPlotter:
         for selection in self.gen_selections:
             self.h_gen[selection.name] = histos.GenParticleHistos(name='h_genParts_{}'.format(selection.name))
 
-    def fill_histos(self, debug=False):
+    def fill_histos(self, debug=0):
         for gen_sel in self.gen_selections:
             gen_parts = self.gen_set.query(gen_sel)
             self.h_gen[gen_sel.name].fill(gen_parts)
@@ -414,7 +414,7 @@ class TPGenMatchPlotter(BasePlotter):
                 self.h_effset[histo_name] = histos.HistoSetEff(histo_name, extended_range=self.extended_range)
                 self.h_conecluster[histo_name] = histos.ClusterConeHistos(histo_name)
 
-    def fill_histos(self, debug=False):
+    def fill_histos(self, debug=0):
         for tp_sel in self.data_selections:
             tcs = self.tp_set.tc_df
             cl2Ds = self.tp_set.cl2d_df
@@ -508,6 +508,10 @@ class GenericGenMatchPlotter(BasePlotter):
             h_object_matched.fill(obj_matched)
             gen_matched = genParticles.loc[[idx]]
             h_reso.fill(reference=gen_matched.iloc[0], target=obj_matched)
+            # print('GEN')
+            # print(gen_matched)
+            # print('ALL matches: {}'.format(len(allmatches[idx])))
+            # print (objects.loc[allmatches[idx]])
 
             if h_gen_matched is not None:
                 h_gen_matched.fill(gen_matched)
@@ -522,7 +526,7 @@ class GenericGenMatchPlotter(BasePlotter):
                 self.h_resoset[histo_name] = self.ResoHistoClass(histo_name)
                 self.h_effset[histo_name] = histos.HistoSetEff(histo_name)
 
-    def fill_histos(self, debug=False):
+    def fill_histos(self, debug=0):
         for tp_sel in self.data_selections:
             objects = self.data_set.query(tp_sel)
             for gen_sel in self.gen_selections:
@@ -532,7 +536,7 @@ class GenericGenMatchPlotter(BasePlotter):
                 h_obj_match = self.h_dataset[histo_name]
                 h_resoset = self.h_resoset[histo_name]
                 h_genseleff = self.h_effset[histo_name]
-                # print 'TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name)
+                # print ('TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name))
                 self.plotObjectMatch(genReference,
                                      objects,
                                      h_genseleff.h_den,
@@ -632,7 +636,7 @@ class ResoNtupleMatchPlotter(BasePlotter):
                 histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
                 self.h_calibration[histo_name] = histos.ResoTuples(histo_name)
 
-    def fill_histos(self, debug=False):
+    def fill_histos(self, debug=0):
         for tp_sel in self.data_selections:
             objects = self.data_set.query(tp_sel)
             for gen_sel in self.gen_selections:
@@ -718,7 +722,7 @@ class CalibrationPlotter(BasePlotter):
                 histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
                 self.h_calibration[histo_name] = histos.CalibrationHistos(histo_name)
 
-    def fill_histos(self, debug=False):
+    def fill_histos(self, debug=0):
         for tp_sel in self.data_selections:
             objects = self.data_set.query(tp_sel)
             for gen_sel in self.gen_selections:
@@ -756,7 +760,7 @@ class TTGenMatchPlotter:
                 self.h_reso_tt[histo_name] = histos.TriggerTowerResoHistos('{}_{}'.format(self.tt_set.name, histo_name))
                 self.h_reso_ttcl[histo_name] = histos.TriggerTowerResoHistos('{}Cl_{}'.format(self.tt_set.name, histo_name))
 
-    def fill_histos(self, debug=False):
+    def fill_histos(self, debug=0):
         triggerTowers_all = self.tt_set.df
         genParts_all = self.gen_set.df[(self.gen_set.df.gen > 0)]
         for tp_sel in self.tt_selections:
@@ -855,7 +859,7 @@ class CorrOccupancyPlotter(BasePlotter):
                 tp_name,
                 selection.name))
 
-    def fill_histos(self, debug=False):
+    def fill_histos(self, debug=0):
         # print '------------------'
         # print self.tp_set.name
         for selection in self.tp_selections:
@@ -928,7 +932,7 @@ class ClusterTCGenMatchPlotter(BasePlotter):
                 histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
                 self.h_tcmatching[histo_name] = histos.TCClusterMatchHistos(histo_name)
 
-    def fill_histos(self, debug=False):
+    def fill_histos(self, debug=0):
         for tp_sel in self.data_selections:
             objects = self.data_set.query(tp_sel)
             for gen_sel in self.gen_selections:
@@ -1007,7 +1011,7 @@ class IsoTuplePlotter(BasePlotter):
                 histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
                 self.h_resoset[histo_name] = histos.IsoTuples(histo_name)
 
-    def fill_histos(self, debug=False):
+    def fill_histos(self, debug=0):
         for tp_sel in self.data_selections:
             objects = self.data_set.query(tp_sel)
             for gen_sel in self.gen_selections:
