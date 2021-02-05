@@ -4,9 +4,16 @@ import numpy as np
 from scipy.spatial import cKDTree
 
 
-def match_etaphi(ref_etaphi, trigger_etaphi, trigger_pt, deltaR=0.2):
-    '''Match objects within a given DeltaR. Returns the panda index of the best match (highest-pt)
-       and of all the matches'''
+def match_etaphi(ref_etaphi, trigger_etaphi, trigger_pt, deltaR=0.2, return_positional=False):
+    '''Match objects within a given DeltaR.
+    
+    If return_positional = False
+     Returns the panda index of the best match (highest-pt)
+       and of all the matches
+    If return_positional = True 
+     Returns the position of the best match (highest-pt)
+       and of all the matches in the input trigger_etaphi and trigger_pt arrays.
+       '''
     # print ("INPUT ref_etaphi")
     # print (ref_etaphi)
     # print ("INPUT trigger_etaphi")
@@ -16,6 +23,7 @@ def match_etaphi(ref_etaphi, trigger_etaphi, trigger_pt, deltaR=0.2):
     kdtree = cKDTree(trigger_etaphi)
     best_match_indices = {}
     all_matches_indices = {}
+    
     # for iref,(eta,phi) in enumerate(ref_etaphi):
     for index, row in ref_etaphi.iterrows():
         gen_eta, gen_phi = row.values
@@ -32,11 +40,21 @@ def match_etaphi(ref_etaphi, trigger_etaphi, trigger_pt, deltaR=0.2):
         # Choose the match with highest pT
         if (len(matched) != 0):
             # print (trigger_pt.iloc[matched])
-            best_match = trigger_pt.iloc[matched].idxmax()
+            # print (trigger_pt.iloc[matched].idxmax())
+            # print (np.argmax(trigger_pt.iloc[matched]))
+
+            if return_positional:
+                best_match_indices[index] = matched[np.argmax(trigger_pt.iloc[matched])]
+                all_matches_indices[index] = matched
+            else:
+                best_match = trigger_pt.iloc[matched].idxmax()
+                best_match_indices[index] = best_match
+                all_matches_indices[index] = trigger_pt.iloc[matched].index.values
+                
             # print ('best match:')
             # print (best_match)
-            best_match_indices[index] = best_match
-            all_matches_indices[index] = trigger_pt.iloc[matched].index.values
+            # best_match_indices[index] = best_match
+            # all_matches_indices[index] = trigger_pt.iloc[matched].index.values
             # print (trigger_pt.iloc[matched].index.values)
 
     # print best_match_indices

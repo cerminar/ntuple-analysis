@@ -496,25 +496,40 @@ class GenericGenMatchPlotter(BasePlotter):
             h_gen.fill(genParticles)
 
         best_match_indexes = {}
+        positional = True
         if not objects.empty:
             best_match_indexes, allmatches = utils.match_etaphi(
                 genParticles[self.gen_eta_phi_columns],
                 objects[['eta', 'phi']],
                 objects['pt'],
-                deltaR=0.1)
+                deltaR=0.1,
+                return_positional=positional)
+                
+            # print (objects)
+            # print (best_match_indexes)
+            # print (best_match_iloc)
+            for idx in list(best_match_indexes.keys()):
+                if positional:
+                    obj_matched = objects.iloc[[best_match_indexes[idx]]]
+                else: 
+                    obj_matched = objects.loc[[best_match_indexes[idx]]]
+                
+                h_object_matched.fill(obj_matched)
+                gen_matched = genParticles.loc[[idx]]
+                h_reso.fill(reference=gen_matched.iloc[0], target=obj_matched)
+                # print('GEN')
+                # print(gen_matched)
+                # print('ALL matches: {}'.format(len(allmatches[idx])))
+                # print (objects.loc[allmatches[idx]])
+                # print('--------')
+                # print('best match index: {}'.format(best_match_indexes[idx]))
+                # print(obj_matched)
+                # print('best match iloc: {}'.format(best_match_iloc[idx]))
+                # print(objects.iloc[[best_match_iloc[idx]]])
+                # print ("--")
 
-        for idx in list(best_match_indexes.keys()):
-            obj_matched = objects.loc[[best_match_indexes[idx]]]
-            h_object_matched.fill(obj_matched)
-            gen_matched = genParticles.loc[[idx]]
-            h_reso.fill(reference=gen_matched.iloc[0], target=obj_matched)
-            # print('GEN')
-            # print(gen_matched)
-            # print('ALL matches: {}'.format(len(allmatches[idx])))
-            # print (objects.loc[allmatches[idx]])
-
-            if h_gen_matched is not None:
-                h_gen_matched.fill(gen_matched)
+                if h_gen_matched is not None:
+                    h_gen_matched.fill(gen_matched)
 
     def book_histos(self):
         self.gen_set.activate()
