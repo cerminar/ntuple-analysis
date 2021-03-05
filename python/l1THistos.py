@@ -975,6 +975,11 @@ class TrackResoHistos(BaseResoHistos):
                 name+'_drRes',
                 'Track DR reso',
                 100, 0, 0.4)
+            self.h_nMatch = ROOT.TH1F(
+                name+'_nMatch',
+                '# matches',
+                100, 0, 100)
+
             # self.h_pt2stResVpt = ROOT.TH2F(name+'_pt2stResVpt', 'EG Pt 2stubs reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];',
             #                                50, 0, 100, 100, -20, 20)
             #
@@ -1014,6 +1019,9 @@ class TrackResoHistos(BaseResoHistos):
         self.h_etaRes.Fill(target_eta - reference_eta)
         self.h_phiRes.Fill(target_phi - reference_phi)
         self.h_drRes.Fill(np.sqrt((reference_phi-target_phi)**2+(reference_eta-target_eta)**2))
+
+    def fill_nMatch(self, n_matches):
+        self.h_nMatch.Fill(n_matches)
 
 
 class EGResoHistos(BaseResoHistos):

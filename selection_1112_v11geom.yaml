@@ -7,7 +7,7 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v145R
+  plot_version: v146A
   run_clustering: False
   run_density_computation: False
   calib_version: calib-v134C
@@ -383,20 +383,20 @@ plotters:
 #test: !!python/name:python.selections.gen_part_selections
 samples:
   # tree_name: hgcalTriggerNtuplizer/HGCalTriggerNtuple
-  # tree_name: l1CaloTriggerNtuplizer_egOnly/HGCalTriggerNtuple
-  tree_name: l1CaloTriggerNtuplizer/HGCalTriggerNtuple
+  tree_name: l1CaloTriggerNtuplizer_egOnly/HGCalTriggerNtuple
+  # tree_name: l1CaloTriggerNtuplizer/HGCalTriggerNtuple
 
   doubleele_flat1to100_PU0:
-    input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU0_v63H/
+    input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU0_v64C/
     events_per_job : 500
     # gen_selections: !!python/name:python.selections.genpart_photon_selections
 
   doubleele_flat1to100_PU200:
-    input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU200_v63H/
+    input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU200_v64C/
     events_per_job : 200
 
   doublephoton_flat1to100_PU200:
-    input_sample_dir: DoublePhoton_FlatPt-1To100/DoublePhoton_FlatPt-1To100_PU200_v63H/
+    input_sample_dir: DoublePhoton_FlatPt-1To100/DoublePhoton_FlatPt-1To100_PU200_v64C/
     events_per_job : 200
 
   ele_flat2to100_PU0:
@@ -429,16 +429,16 @@ samples:
     events_per_job: 500
 
   nugun_alleta_pu200:
-    input_sample_dir: MinBias_TuneCP5_14TeV-pythia8/NuGunAllEta_PU200_v63H/
+    input_sample_dir: MinBias_TuneCP5_14TeV-pythia8/NuGunAllEta_PU200_v64C/
     # input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v47/191105_135050/0000/
     events_per_job: 300
 
   ttbar_PU200:
-    input_sample_dir: TT_TuneCP5_14TeV-powheg-pythia8/TT_PU200_v63H/
+    input_sample_dir: TT_TuneCP5_14TeV-powheg-pythia8/TT_PU200_v64C/
     events_per_job: 200
     
   zprime_ee_PU200:
-    input_sample_dir: ZprimeToEE_M-6000_TuneCP5_14TeV-pythia8/ZPrimeEE_PU200_v63H/
+    input_sample_dir: ZprimeToEE_M-6000_TuneCP5_14TeV-pythia8/ZPrimeEE_PU200_v64C/
     events_per_job: 200
   #
   # dyll_PU200:

@@ -517,6 +517,10 @@ class GenericGenMatchPlotter(BasePlotter):
                 h_object_matched.fill(obj_matched)
                 gen_matched = genParticles.loc[[idx]]
                 h_reso.fill(reference=gen_matched.iloc[0], target=obj_matched)
+                
+                if hasattr(h_reso, 'fill_nMatch'):
+                    h_reso.fill_nMatch(len(allmatches[idx]))
+
                 # print('GEN')
                 # print(gen_matched)
                 # print('ALL matches: {}'.format(len(allmatches[idx])))

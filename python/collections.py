@@ -960,7 +960,7 @@ tracks = DFCollection(
     name='L1Trk', label='L1Track',
     filler_function=lambda event: event.getDataFrame(prefix='l1Trk'), 
     print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
-    debug=4)
+    debug=0)
 
 tracks_emu = DFCollection(
     name='L1TrkEmu', label='L1Track EMU',
