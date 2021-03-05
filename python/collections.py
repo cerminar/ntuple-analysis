@@ -1046,34 +1046,50 @@ egs_EB = DFCollection(
     fixture_function=barrel_quality,
     debug=0)
 
-egs_EE_pf_r1 = DFCollection(
-    name='PFEgEEr1', label='EG EE Corr. (r1)',
-    filler_function=lambda event: event.getDataFrame(prefix='PFegammaEE'),
-    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
-    fixture_function=fake_endcap_quality,
-    debug=0)
+# egs_EE_pf_r1 = DFCollection(
+#     name='PFEgEEr1', label='EG EE Corr. (r1)',
+#     filler_function=lambda event: event.getDataFrame(prefix='PFegammaEE'),
+#     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
+#     fixture_function=fake_endcap_quality,
+#     debug=0)
+# 
+# egs_EE_pf_r2 = DFCollection(
+#     name='PFEgEEr2', label='EG EE Corr. (r2)',
+#     filler_function=lambda event: event.getDataFrame(prefix='PFegammaEENoTk'),
+#     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
+#     fixture_function=fake_endcap_quality,
+#     debug=0)
+# 
+# egs_EE_pf_r3 = DFCollection(
+#     name='PFEgEEr3', label='EG EE Corr. (r3)',
+#     filler_function=lambda event: event.getDataFrame(prefix='PFegammaEEHF'),
+#     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
+#     fixture_function=fake_endcap_quality,
+#     debug=0)
 
-egs_EE_pf_r2 = DFCollection(
-    name='PFEgEEr2', label='EG EE Corr. (r2)',
-    filler_function=lambda event: event.getDataFrame(prefix='PFegammaEENoTk'),
-    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
-    fixture_function=fake_endcap_quality,
-    debug=0)
 
-egs_EE_pf_r3 = DFCollection(
-    name='PFEgEEr3', label='EG EE Corr. (r3)',
-    filler_function=lambda event: event.getDataFrame(prefix='PFegammaEEHF'),
-    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
-    fixture_function=fake_endcap_quality,
-    debug=0)
-
+# egs_EE_pf = DFCollection(
+#     name='PFEgEE', label='EG EE Corr.',
+#     filler_function=lambda event: pd.concat([egs_EE_pf_r2.df, egs_EE_pf_r1.df, egs_EE_pf_r3.df], ignore_index=True),
+#     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
+#     # fixture_function=mapcalo2pfregions,
+#     depends_on=[egs_EE_pf_r1, egs_EE_pf_r2, egs_EE_pf_r3],
+#     debug=0)
 
 egs_EE_pf = DFCollection(
     name='PFEgEE', label='EG EE Corr.',
-    filler_function=lambda event: pd.concat([egs_EE_pf_r2.df, egs_EE_pf_r1.df, egs_EE_pf_r3.df], ignore_index=True),
+    filler_function=lambda event: event.getDataFrame(prefix='PFegammaEE'),
     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
     # fixture_function=mapcalo2pfregions,
-    depends_on=[egs_EE_pf_r1, egs_EE_pf_r2, egs_EE_pf_r3],
+    fixture_function=fake_endcap_quality,
+    debug=0)
+
+egs_EE_pfnf = DFCollection(
+    name='PFNFEgEE', label='EG EE Corr. New',
+    filler_function=lambda event: event.getDataFrame(prefix='PFNFegammaEE'),
+    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
+    # fixture_function=mapcalo2pfregions,
+    fixture_function=fake_endcap_quality,
     debug=0)
 
 tkeles_EE = DFCollection(
@@ -1100,6 +1116,18 @@ tkeles_EB_pf = DFCollection(
     fixture_function=barrel_quality,
     debug=0)
 
+tkeles_EE_pfnf = DFCollection(
+    name='PFNFtkEleEE', label='TkEle EE Corr. New',
+    filler_function=lambda event: event.getDataFrame(prefix='PFNFtkEleEE'),
+    fixture_function=fake_endcap_quality,
+    debug=0)
+
+tkeles_EB_pfnf = DFCollection(
+    name='PFNFtkEleEB', label='TkEle EB Corr. New',
+    filler_function=lambda event: event.getDataFrame(prefix='PFNFtkEleEB'),
+    fixture_function=barrel_quality,
+    debug=0)
+
 # --------
 
 tkem_EE = DFCollection(
@@ -1123,6 +1151,18 @@ tkem_EE_pf = DFCollection(
 tkem_EB_pf = DFCollection(
     name='PFtkEmEB', label='TkEm EB Corr',
     filler_function=lambda event: event.getDataFrame(prefix='PFtkEmEB'),
+    fixture_function=barrel_quality,
+    debug=0)
+
+tkem_EE_pfnf = DFCollection(
+    name='PFNFtkEmEE', label='TkEm EE Corr. New',
+    filler_function=lambda event: event.getDataFrame(prefix='PFNFtkEmEE'),
+    fixture_function=fake_endcap_quality,
+    debug=0)
+
+tkem_EB_pfnf = DFCollection(
+    name='PFNFtkEmEB', label='TkEm EB Corr. New',
+    filler_function=lambda event: event.getDataFrame(prefix='PFNFtkEmEB'),
     fixture_function=barrel_quality,
     debug=0)
 
