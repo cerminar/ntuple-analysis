@@ -29,7 +29,7 @@ from . import utils as utils
 from . import clusterTools as clAlgo
 from . import selections as selections
 # import collections as collections
-
+ROOT.gROOT.ProcessLine('#include "src/fastfilling.h"');
 
 class BasePlotter(object):
     def __init__(self, data_set, data_selections, gen_set=None, gen_selections=None):
@@ -109,6 +109,32 @@ class RatePlotter(BasePlotter):
             self.h_rate[selection.name].fill_norm()
 
 
+
+class GenericDataFrameLazyPlotter(BasePlotter):
+    def __init__(self, HistoClass, data_set, selections=[selections.Selection('all')]):
+        self.HistoClass = HistoClass
+        self.h_set = {}
+        super(GenericDataFramePlotter, self).__init__(data_set, selections)
+
+    def book_histos(self):
+        self.data_set.activate()
+        data_name = self.data_set.name
+        for selection in self.data_selections:
+            self.h_set[selection.name] = self.HistoClass(name='{}_{}_nomatch'.format(data_name,
+                                                                                     selection.name))
+
+    def run_manager(self, manager):
+        manager.fill()
+
+    def fill_histos(self, debug=0):
+        manager = ROOT.FillerManager()
+        
+        for data_sel in self.data_selections:
+            manager.addFilter(data_sel.name, self.data_set.df.eval(data_sel.selection).values)
+            self.h_set[data_sel.name].fill_lazy(self.data_set.df, manager, data_sel.name)
+        self.run_manager(manager)
+        
+
 class GenericDataFramePlotter(BasePlotter):
     def __init__(self, HistoClass, data_set, selections=[selections.Selection('all')]):
         self.HistoClass = HistoClass
@@ -126,9 +152,9 @@ class GenericDataFramePlotter(BasePlotter):
         for data_sel in self.data_selections:
             data = self.data_set.query(data_sel)
             self.h_set[data_sel.name].fill(data)
+            
 
-
-class TkElePlotter(GenericDataFramePlotter):
+class TkElePlotter(GenericDataFrameLazyPlotter):
     def __init__(self, tkeg_set, tkeg_selections=[selections.Selection('all')]):
         super(TkElePlotter, self).__init__(histos.TkEleHistos, tkeg_set, tkeg_selections)
 
@@ -148,7 +174,7 @@ class TrackPlotter(GenericDataFramePlotter):
         super(TrackPlotter, self).__init__(histos.TrackHistos, trk_set, track_selections)
 
 
-class EGPlotter(GenericDataFramePlotter):
+class EGPlotter(GenericDataFrameLazyPlotter):
     def __init__(self, eg_set, eg_selections=[selections.Selection('all')]):
         super(EGPlotter, self).__init__(histos.EGHistos, eg_set, eg_selections)
 

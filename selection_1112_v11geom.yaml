@@ -98,7 +98,7 @@ collections:
       # - dyll_PU200
     plotters:
       - eg_plotters
-      - eg_genmatched_plotters
+      # - eg_genmatched_plotters
     htc_jobflavor:
       microcentury
     priorities:

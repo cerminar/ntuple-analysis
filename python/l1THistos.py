@@ -433,7 +433,33 @@ class EGHistos(BaseHistos):
         if 'tkIsoPV' in egs.columns:
             rnp.fill_hist(hist=self.h_tkIsoPV, array=egs.tkIsoPV, weights=weight)
             rnp.fill_hist(hist=self.h_pfIsoPV, array=egs.pfIsoPV, weights=weight)
-            
+    
+    def fill_lazy(self, dataframe, manager, selection):
+        for col in ['pt', 'eta', 'energy', 'hwQual']:
+            manager.addVariable(col, dataframe[col].values)
+
+        manager.add_1Dhisto(self.h_pt, 'pt', selection)
+        manager.add_1Dhisto(self.h_eta, 'eta', selection)
+        manager.add_1Dhisto(self.h_energy, 'energy', selection)
+        manager.add_1Dhisto(self.h_hwQual, 'hwQual', selection)
+        
+        # if 'tkIso' in rdf.GetColumns():
+        #     self.h_tkIso_temp = rdf.Filter(selection).Histo1D(ROOT.RDF.TH1DModel(self.name_+'_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2), 'tkIso')
+        #     self.h_pfIso_temp = rdf.Filter(selection).Histo1D(ROOT.RDF.TH1DModel(self.name_+'_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2), 'pfIso')
+        # if 'tkIsoPV' in rdf.GetColumns():
+        #     self.h_tkIsoPV_temp = rdf.Filter(selection).Histo1D(ROOT.RDF.TH1DModel(self.name_+'_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2), 'tkIsoPV')
+        #     self.h_pfIsoPV_temp = rdf.Filter(selection).Histo1D(ROOT.RDF.TH1DModel(self.name_+'_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2), 'pfIsoPV')
+    
+    def add_histos(self):
+        self.h_pt.Add(self.h_pt_temp.GetValue())
+        self.h_eta.Add(self.h_eta_temp.GetValue())
+        self.h_energy.Add(self.h_energy_temp.GetValue())
+        self.h_hwQual.Add(self.h_hwQual_temp.GetValue())
+        # self.h_tkIso = ROOT.TH1F(name+'_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2)
+        # self.h_pfIso = ROOT.TH1F(name+'_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
+        # self.h_tkIsoPV = ROOT.TH1F(name+'_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2)
+        # self.h_pfIsoPV = ROOT.TH1F(name+'_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
+
             
 class TkEleHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
@@ -459,12 +485,28 @@ class TkEleHistos(BaseHistos):
         rnp.fill_hist(self.h_energy, tkegs.energy)
         rnp.fill_hist(self.h_hwQual, tkegs.hwQual)
         rnp.fill_hist(self.h_tkpt, tkegs.tkPt)
-        rnp.fill_hist(self.h_dpt, tkegs.tkPt-tkegs.pt)
+        rnp.fill_hist(self.h_dpt, tkegs.dpt)
         rnp.fill_hist(self.h_tkchi2, tkegs.tkChi2)
         rnp.fill_hist(self.h_ptVtkpt, tkegs[['tkPt', 'pt']])
         if 'tkIso' in tkegs.columns:
             rnp.fill_hist(self.h_tkIso, tkegs.tkIso)
             rnp.fill_hist(self.h_pfIso, tkegs.pfIso)
+
+    def fill_lazy(self, dataframe, manager, selection):
+        for col in ['pt', 'eta', 'energy', 'hwQual', 'tkPt', 'dpt', 'tkChi2', 'tkIso', 'pfIso']:
+            manager.addVariable(col, dataframe[col].values)
+
+        manager.add_1Dhisto(self.h_pt, 'pt', selection)
+        manager.add_1Dhisto(self.h_eta, 'eta', selection)
+        manager.add_1Dhisto(self.h_energy, 'energy', selection)
+        manager.add_1Dhisto(self.h_hwQual, 'hwQual', selection)
+        manager.add_1Dhisto(self.h_tkpt, 'tkPt', selection)
+        manager.add_1Dhisto(self.h_dpt, 'dpt', selection)
+        manager.add_1Dhisto(self.h_tkchi2, 'tkChi2', selection)
+        manager.add_1Dhisto(self.h_tkIso, 'tkIso', selection)
+        manager.add_1Dhisto(self.h_pfIso, 'pfIso', selection)
+
+
 
 
 class TkEmHistos(BaseHistos):

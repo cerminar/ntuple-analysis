@@ -138,6 +138,7 @@ class DFCollection(object):
         self.weight_function = weight_function
         self.n_queries = 0
         self.cached_queries = dict()
+        self.rdf_ = None
         self.register()
 
     def register(self):
@@ -162,7 +163,7 @@ class DFCollection(object):
             self.df = self.fixture_function(self.df)
         if self.weight_function is not None:
             self.df = self.weight_function(self.df, weight_file)
-
+        self.rdf_ = None
         debugPrintOut(max(debug, self.debug), self.label,
                       toCount=self.df,
                       toPrint=self.print_function(self.df))
@@ -183,6 +184,18 @@ class DFCollection(object):
                 self.name, self.n_queries, len(self.cached_queries.keys())))
         self.n_queries = 0
         self.cached_queries.clear()
+
+    @property 
+    def rdf(self):
+        if self.rdf_ is None:
+            datadict = {}
+            for col in self.df.columns:
+                if col in ['looseTkID', 'photonID']:
+                    continue
+                datadict[col] = self.df[col].values
+                self.rdf_ = ROOT.RDF.MakeNumpyDataFrame(datadict)
+        return self.rdf_
+            
 
 
 def tkeg_fromcluster_fixture(tkegs):
@@ -555,6 +568,7 @@ def barrel_quality(electrons):
     hwqual = pd.to_numeric(electrons['hwQual'], downcast='integer')
     electrons['looseTkID'] = ((hwqual.values >> 1) & 1) > 0
     electrons['photonID'] = ((hwqual.values >> 2) & 1) > 0
+    electrons['dpt'] = electrons.tkPt - electrons.pt
 
     return electrons
 
@@ -563,6 +577,7 @@ def fake_endcap_quality(electrons):
     # just added for compatibility with barrel
     electrons['looseTkID'] = True
     electrons['photonID'] = True
+    electrons['dpt'] = electrons.tkPt - electrons.pt
     return electrons
 
 

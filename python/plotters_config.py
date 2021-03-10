@@ -134,12 +134,12 @@ eg_plotters = [
     plotters.TkElePlotter(collections.tkeles_EB_pf, selections.eg_id_pt_eb_selections),
     plotters.TkElePlotter(collections.tkeles_EE_pfnf, selections.eg_id_pt_ee_selections),
     plotters.TkElePlotter(collections.tkeles_EB_pfnf, selections.eg_id_pt_eb_selections),
-    plotters.TkEmPlotter(collections.tkem_EE, selections.eg_id_pt_ee_selections),
-    plotters.TkEmPlotter(collections.tkem_EB, selections.eg_id_pt_eb_selections),
-    plotters.TkEmPlotter(collections.tkem_EE_pf, selections.eg_id_pt_ee_selections),
-    plotters.TkEmPlotter(collections.tkem_EB_pf, selections.eg_id_pt_eb_selections),
-    plotters.TkEmPlotter(collections.tkem_EE_pfnf, selections.eg_id_pt_ee_selections),
-    plotters.TkEmPlotter(collections.tkem_EB_pfnf, selections.eg_id_pt_eb_selections)
+    # plotters.TkEmPlotter(collections.tkem_EE, selections.eg_id_pt_ee_selections),
+    # plotters.TkEmPlotter(collections.tkem_EB, selections.eg_id_pt_eb_selections),
+    # plotters.TkEmPlotter(collections.tkem_EE_pf, selections.eg_id_pt_ee_selections),
+    # plotters.TkEmPlotter(collections.tkem_EB_pf, selections.eg_id_pt_eb_selections),
+    # plotters.TkEmPlotter(collections.tkem_EE_pfnf, selections.eg_id_pt_ee_selections),
+    # plotters.TkEmPlotter(collections.tkem_EB_pfnf, selections.eg_id_pt_eb_selections)
     ]
 
 
