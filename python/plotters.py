@@ -114,7 +114,7 @@ class GenericDataFrameLazyPlotter(BasePlotter):
     def __init__(self, HistoClass, data_set, selections=[selections.Selection('all')]):
         self.HistoClass = HistoClass
         self.h_set = {}
-        super(GenericDataFramePlotter, self).__init__(data_set, selections)
+        super(GenericDataFrameLazyPlotter, self).__init__(data_set, selections)
 
     def book_histos(self):
         self.data_set.activate()
@@ -127,10 +127,17 @@ class GenericDataFrameLazyPlotter(BasePlotter):
         manager.fill()
 
     def fill_histos(self, debug=0):
+        if self.data_set.df.empty:
+            return
         manager = ROOT.FillerManager()
+        # print (self.data_set.name)
+        # print (self.data_set.df.columns)
         
         for data_sel in self.data_selections:
-            manager.addFilter(data_sel.name, self.data_set.df.eval(data_sel.selection).values)
+            if data_sel.all:
+                manager.addFilter(data_sel.name, np.full(self.data_set.df.shape[0], True, dtype=bool))
+            else:
+                manager.addFilter(data_sel.name, self.data_set.df.eval(data_sel.selection).values)
             self.h_set[data_sel.name].fill_lazy(self.data_set.df, manager, data_sel.name)
         self.run_manager(manager)
         
@@ -149,6 +156,8 @@ class GenericDataFramePlotter(BasePlotter):
                                                                                      selection.name))
 
     def fill_histos(self, debug=0):
+        if self.data_set.df.empty:
+            return
         for data_sel in self.data_selections:
             data = self.data_set.query(data_sel)
             self.h_set[data_sel.name].fill(data)
