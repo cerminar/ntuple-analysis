@@ -568,15 +568,27 @@ def barrel_quality(electrons):
     hwqual = pd.to_numeric(electrons['hwQual'], downcast='integer')
     electrons['looseTkID'] = ((hwqual.values >> 1) & 1) > 0
     electrons['photonID'] = ((hwqual.values >> 2) & 1) > 0
-    electrons['dpt'] = electrons.tkPt - electrons.pt
-
     return electrons
-
 
 def fake_endcap_quality(electrons):
     # just added for compatibility with barrel
     electrons['looseTkID'] = True
     electrons['photonID'] = True
+    return electrons
+
+def tkele_fixture_ee(electrons):
+    electrons['looseTkID'] = True
+    electrons['photonID'] = True
+    electrons['dpt'] = electrons.tkPt - electrons.pt
+    return electrons
+
+def tkele_fixture_eb(electrons):
+    # if electrons.empty:
+    #     # electrons.columns = ['pt', 'energy', 'eta', 'phi', 'hwQual']
+    #     return electrons
+    hwqual = pd.to_numeric(electrons['hwQual'], downcast='integer')
+    electrons['looseTkID'] = ((hwqual.values >> 1) & 1) > 0
+    electrons['photonID'] = ((hwqual.values >> 2) & 1) > 0
     electrons['dpt'] = electrons.tkPt - electrons.pt
     return electrons
 
@@ -1026,7 +1038,7 @@ tkeles_brl = DFCollection(
 tkelesEL_brl = DFCollection(
     name='tkEleEB', label='TkEle (Ell.) EB',
     filler_function=lambda event: event.getDataFrame(prefix='tkEleEB'),
-    fixture_function=barrel_quality,
+    fixture_function=tkele_fixture_eb,
     debug=0)
 
 tkelesEL_all = DFCollection(
@@ -1110,37 +1122,37 @@ egs_EE_pfnf = DFCollection(
 tkeles_EE = DFCollection(
     name='tkEleEE', label='TkEle EE',
     filler_function=lambda event: event.getDataFrame(prefix='tkEleEE'),
-    fixture_function=fake_endcap_quality,
+    fixture_function=tkele_fixture_ee,
     debug=0)
 
 tkeles_EB = DFCollection(
     name='tkEleEB', label='TkEle EB',
     filler_function=lambda event: event.getDataFrame(prefix='tkEleEB'),
-    fixture_function=barrel_quality,
+    fixture_function=tkele_fixture_eb,
     debug=0)
 
 tkeles_EE_pf = DFCollection(
     name='PFtkEleEE', label='TkEle EE Corr.',
     filler_function=lambda event: event.getDataFrame(prefix='PFtkEleEE'),
-    fixture_function=fake_endcap_quality,
+    fixture_function=tkele_fixture_ee,
     debug=0)
 
 tkeles_EB_pf = DFCollection(
     name='PFtkEleEB', label='TkEle EB Corr',
     filler_function=lambda event: event.getDataFrame(prefix='PFtkEleEB'),
-    fixture_function=barrel_quality,
+    fixture_function=tkele_fixture_eb,
     debug=0)
 
 tkeles_EE_pfnf = DFCollection(
     name='PFNFtkEleEE', label='TkEle EE Corr. New',
     filler_function=lambda event: event.getDataFrame(prefix='PFNFtkEleEE'),
-    fixture_function=fake_endcap_quality,
+    fixture_function=tkele_fixture_ee,
     debug=0)
 
 tkeles_EB_pfnf = DFCollection(
     name='PFNFtkEleEB', label='TkEle EB Corr. New',
     filler_function=lambda event: event.getDataFrame(prefix='PFNFtkEleEB'),
-    fixture_function=barrel_quality,
+    fixture_function=tkele_fixture_eb,
     debug=0)
 
 # --------
