@@ -12,6 +12,30 @@ import python.pf_regions as pf_regions
 stuff = []
 
 
+class HistoLazyFiller(object):
+    def __init__(self, dataframe):
+        self.df = dataframe
+        self.manager = ROOT.FillerManager()
+        self.columns = dataframe.columns
+        
+    def fill1d_lazy(self, histo, col_name, sel_name):
+        if not self.manager.knowsVariable(col_name):
+            # print (" - add variable {}".format(col_name))
+            self.manager.addVariable(col_name, self.df[col_name].values)
+    
+        if not self.manager.knowsSelection(sel_name):
+            print ("*** [HistoLazyFiller] ERROR: selection: {} not known!".format(sel_name))
+            raise ValueError('[HistoLazyFiller] selection {} nott known'.format(sel_name))
+
+        self.manager.add_1Dhisto(histo, col_name, sel_name)
+    
+    def add_selection(self, sel_name, sel_values):
+        self.manager.addFilter(sel_name, sel_values)
+
+    def fill(self):
+        self.manager.fill()
+    
+
 class HistoManager(object):
     class __TheManager:
         def __init__(self):
@@ -232,6 +256,14 @@ class GenParticleHistos(BaseHistos):
                       array=particles.fbrem,
                       weights=particles_weight)
 
+    def fill_lazy(self, filler, sel_name):
+        filler.fill1d_lazy(self.h_eta, 'eta', sel_name)
+        filler.fill1d_lazy(self.h_abseta, 'abseta', sel_name)
+        filler.fill1d_lazy(self.h_pt, 'pt', sel_name)
+        filler.fill1d_lazy(self.h_energy, 'energy', sel_name)
+        filler.fill1d_lazy(self.h_reachedEE, 'reachedEE', sel_name)
+        filler.fill1d_lazy(self.h_fBrem, 'fbrem', sel_name)
+
 
 class DigiHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
@@ -434,21 +466,17 @@ class EGHistos(BaseHistos):
             rnp.fill_hist(hist=self.h_tkIsoPV, array=egs.tkIsoPV, weights=weight)
             rnp.fill_hist(hist=self.h_pfIsoPV, array=egs.pfIsoPV, weights=weight)
     
-    def fill_lazy(self, dataframe, manager, selection):
-        for col in ['pt', 'eta', 'energy', 'hwQual']:
-            manager.addVariable(col, dataframe[col].values)
-
-        manager.add_1Dhisto(self.h_pt, 'pt', selection)
-        manager.add_1Dhisto(self.h_eta, 'eta', selection)
-        manager.add_1Dhisto(self.h_energy, 'energy', selection)
-        manager.add_1Dhisto(self.h_hwQual, 'hwQual', selection)
-        
-        # if 'tkIso' in rdf.GetColumns():
-        #     self.h_tkIso_temp = rdf.Filter(selection).Histo1D(ROOT.RDF.TH1DModel(self.name_+'_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2), 'tkIso')
-        #     self.h_pfIso_temp = rdf.Filter(selection).Histo1D(ROOT.RDF.TH1DModel(self.name_+'_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2), 'pfIso')
-        # if 'tkIsoPV' in rdf.GetColumns():
-        #     self.h_tkIsoPV_temp = rdf.Filter(selection).Histo1D(ROOT.RDF.TH1DModel(self.name_+'_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2), 'tkIsoPV')
-        #     self.h_pfIsoPV_temp = rdf.Filter(selection).Histo1D(ROOT.RDF.TH1DModel(self.name_+'_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2), 'pfIsoPV')
+    def fill_lazy(self, filler, sel_name):
+        filler.fill1d_lazy(self.h_pt, 'pt', sel_name)
+        filler.fill1d_lazy(self.h_eta, 'eta', sel_name)
+        filler.fill1d_lazy(self.h_energy, 'energy', sel_name)
+        filler.fill1d_lazy(self.h_hwQual, 'hwQual', sel_name)
+        if 'tkIso' in filler.columns:
+            filler.fill1d_lazy(self.h_tkIso, 'tkIso', sel_name)
+            filler.fill1d_lazy(self.h_pfIso, 'pfIso', sel_name)
+        if 'tkIsoPV' in filler.columns:
+            filler.fill1d_lazy(self.h_tkIsoPV, 'tkIsoPV', sel_name)
+            filler.fill1d_lazy(self.h_pfIsoPV, 'pfIsoPV', sel_name)
     
     def add_histos(self):
         self.h_pt.Add(self.h_pt_temp.GetValue())
@@ -487,24 +515,21 @@ class TkEleHistos(BaseHistos):
         rnp.fill_hist(self.h_tkpt, tkegs.tkPt)
         rnp.fill_hist(self.h_dpt, tkegs.dpt)
         rnp.fill_hist(self.h_tkchi2, tkegs.tkChi2)
-        rnp.fill_hist(self.h_ptVtkpt, tkegs[['tkPt', 'pt']])
+        # rnp.fill_hist(self.h_ptVtkpt, tkegs[['tkPt', 'pt']])
         if 'tkIso' in tkegs.columns:
             rnp.fill_hist(self.h_tkIso, tkegs.tkIso)
             rnp.fill_hist(self.h_pfIso, tkegs.pfIso)
 
-    def fill_lazy(self, dataframe, manager, selection):
-        for col in ['pt', 'eta', 'energy', 'hwQual', 'tkPt', 'dpt', 'tkChi2', 'tkIso', 'pfIso']:
-            manager.addVariable(col, dataframe[col].values)
-
-        manager.add_1Dhisto(self.h_pt, 'pt', selection)
-        manager.add_1Dhisto(self.h_eta, 'eta', selection)
-        manager.add_1Dhisto(self.h_energy, 'energy', selection)
-        manager.add_1Dhisto(self.h_hwQual, 'hwQual', selection)
-        manager.add_1Dhisto(self.h_tkpt, 'tkPt', selection)
-        manager.add_1Dhisto(self.h_dpt, 'dpt', selection)
-        manager.add_1Dhisto(self.h_tkchi2, 'tkChi2', selection)
-        manager.add_1Dhisto(self.h_tkIso, 'tkIso', selection)
-        manager.add_1Dhisto(self.h_pfIso, 'pfIso', selection)
+    def fill_lazy(self, filler, sel_name):
+        filler.fill1d_lazy(self.h_pt, 'pt', sel_name)
+        filler.fill1d_lazy(self.h_eta, 'eta', sel_name)
+        filler.fill1d_lazy(self.h_energy, 'energy', sel_name)
+        filler.fill1d_lazy(self.h_hwQual, 'hwQual', sel_name)
+        filler.fill1d_lazy(self.h_tkpt, 'tkPt', sel_name)
+        filler.fill1d_lazy(self.h_dpt, 'dpt', sel_name)
+        filler.fill1d_lazy(self.h_tkchi2, 'tkChi2', sel_name)
+        filler.fill1d_lazy(self.h_tkIso, 'tkIso', sel_name)
+        filler.fill1d_lazy(self.h_pfIso, 'pfIso', sel_name)
 
 
 
