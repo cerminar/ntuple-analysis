@@ -122,6 +122,7 @@ class DFCollection(object):
     def __init__(self, name, label,
                  filler_function,
                  fixture_function=None,
+                 read_entry_block=100,
                  depends_on=[],
                  debug=0,
                  print_function=lambda df: df,
@@ -138,7 +139,25 @@ class DFCollection(object):
         self.weight_function = weight_function
         self.n_queries = 0
         self.cached_queries = dict()
-        self.rdf_ = None
+        self.cached_entries = dict()
+        self.entries = None
+        self.empty_df = None
+        self.next_entry_read = 0
+        self.read_entry_block = read_entry_block
+        # print (f'Create collection: {self.name} with read_entry_block: {read_entry_block}')
+        if len(depends_on) > 0:
+            common_block_size = -1
+            for coll in depends_on:
+                if common_block_size == -1:
+                    common_block_size = coll.read_entry_block
+                else:
+                    if coll.read_entry_block != common_block_size:
+                        raise ValueError(f'Collection {self.name} depends on collections with different common_block_size!')
+            if common_block_size != self.read_entry_block:
+                print(f'Collection {self.name}: common_block_size set to dependent value: {common_block_size}')
+                self.read_entry_block = common_block_size
+                
+        self.new_read = False
         self.register()
 
     def register(self):
@@ -155,15 +174,32 @@ class DFCollection(object):
         return self.is_active
 
     def fill(self, event, weight_file=None, debug=0):
+        stride = self.read_entry_block
+        # print (f'Coll: {self.name} fill for entry: {event.file_entry}')
+        if event.file_entry == 0 or event.file_entry == self.next_entry_read or event.global_entry == event.entry_range[0]:
+            stride = min(self.read_entry_block, (event.entry_range[1]-event.global_entry))
+            if stride == 0:
+                print ('ERROR Last event????')
+                self.new_read = False
+            else:
+                self.new_read = True
+                self.next_entry_read = event.file_entry + stride
+                self.fill_real(event, stride, weight_file, debug)
+        else:
+            self.new_read = False
+
+    def fill_real(self, event, stride, weight_file=None, debug=0):
+        print(f'read coll. {self.name} from entry: {event.file_entry} to entry: {event.file_entry+stride}')
         self.clear_query_cache(debug)
-        self.df = self.filler_function(event)
+        self.df = self.filler_function(event, stride)
         if self.fixture_function is not None:
             # FIXME: wouldn't this be more efficient
             # self.fixture_function(self.df)
             self.df = self.fixture_function(self.df)
         if self.weight_function is not None:
             self.df = self.weight_function(self.df, weight_file)
-        self.rdf_ = None
+        self.empty_df = pd.DataFrame(columns=self.df.columns)
+        self.entries = self.df.index.get_level_values('entry').unique()
         debugPrintOut(max(debug, self.debug), self.label,
                       toCount=self.df,
                       toPrint=self.print_function(self.df))
@@ -175,26 +211,46 @@ class DFCollection(object):
         if selection.selection not in self.cached_queries:
             ret = self.df.query(selection.selection)
             self.cached_queries[sys.intern(selection.selection)] = ret
+            entries = ret.index.get_level_values('entry').unique()
+            self.cached_entries[selection.hash] = entries
             return ret
         return self.cached_queries[selection.selection]
+
+    def query_event(self, selection, idx):
+        self.n_queries += 1
+        # print (f'coll: {self.name}, query selection: {selection.selection} for entry: {idx}')
+        if idx not in self.entries:
+            # print ('  enrty not in frame!')
+            return self.empty_df
+        if selection.all or self.df.empty:
+            # print ('  frame is empty')
+            return self.df.loc[idx]
+        if selection.selection not in self.cached_queries:
+            # print ('   query already cached')
+            ret = self.df.query(selection.selection)
+            self.cached_queries[sys.intern(selection.selection)] = ret
+            entries = ret.index.get_level_values('entry').unique()
+            self.cached_entries[selection.hash] = entries
+            if not idx in entries:
+                return self.empty_df
+            return ret.loc[idx]
+        # print ('    query not cached')
+        # print (f'     {self.cached_queries.keys()}')
+        entries = self.cached_entries[selection.hash]
+        if not idx in entries:
+            return self.empty_df
+        return self.cached_queries[selection.selection].loc[idx]
+
+
 
     def clear_query_cache(self, debug=0):
         if (debug > 5):
             print ('Coll: {} # queries: {} # unique queries: {}'.format(
                 self.name, self.n_queries, len(self.cached_queries.keys())))
         self.n_queries = 0
+        self.cached_entries.clear()
         self.cached_queries.clear()
 
-    @property 
-    def rdf(self):
-        if self.rdf_ is None:
-            datadict = {}
-            for col in self.df.columns:
-                if col in ['looseTkID', 'photonID']:
-                    continue
-                datadict[col] = self.df[col].values
-                self.rdf_ = ROOT.RDF.MakeNumpyDataFrame(datadict)
-        return self.rdf_
             
 
 
@@ -291,7 +347,7 @@ def gen_fixtures(particles, mc_particles):
     def get_mother_pdgid(particle, mc_particles):
         if particle.gen == -1:
             return -1
-        return mc_particles.df.loc[particle.gen-1].firstmother_pdgid
+        return mc_particles.df.loc[(particle.name[0], particle.gen-1)].firstmother_pdgid
     particles['firstmother_pdgid'] = particles.apply(func=lambda x: get_mother_pdgid(x, mc_particles), axis=1)
     return particles
 
@@ -299,12 +355,16 @@ def gen_fixtures(particles, mc_particles):
 def mc_fixtures(particles):
     particles['firstmother'] = particles.index
     particles['firstmother_pdgid'] = particles.pdgid
+    return particles
+    # FIXME: this is broken
+    print (particles)
 
     for particle in particles.itertuples():
-        # print particle.Index
+        print( particle.daughters)
+        if particle.daughters == [[], []]:
+            continue
         particles.loc[particle.daughters, 'firstmother'] = particle.Index
         particles.loc[particle.daughters, 'firstmother_pdgid'] = particle.pdgid
-        # print particles.loc[particle.daughters]['firstmother']
     return particles
 
 
@@ -651,14 +711,17 @@ calib_mgr = calib.CalibManager()
 
 gen = DFCollection(
     name='MC', label='MC particles',
-    filler_function=lambda event: event.getDataFrame(prefix='gen'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='gen', entry_block=entry_block),
     fixture_function=mc_fixtures,
     debug=0)
 
 gen_parts = DFCollection(
     name='GEN', label='GEN particles',
-    filler_function=lambda event: event.getDataFrame(prefix='genpart'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='genpart', entry_block=entry_block),
     fixture_function=lambda gen_parts: gen_fixtures(gen_parts, gen),
+    # read_entry_block=10,
     depends_on=[gen],
     debug=0,
     # print_function=lambda df: df[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'ovz', 'pid', 'gen', 'reachedEE', 'firstmother_pdgid']],
@@ -667,45 +730,53 @@ gen_parts = DFCollection(
 
 tcs = DFCollection(
     name='TC', label='Trigger Cells',
-    filler_function=lambda event: event.getDataFrame(prefix='tc'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='tc', entry_block=entry_block),
     fixture_function=tc_fixtures, debug=0)
 
 tcs_truth = DFCollection(
     name='TCTrue', label='Trigger Cells True',
-    filler_function=lambda event: event.getDataFrame(prefix='tctruth'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='tctruth', entry_block=entry_block),
     fixture_function=tc_fixtures)
 
 cl2d_def = DFCollection(
     name='DEF2D', label='dRC2d',
-    filler_function=lambda event: event.getDataFrame(prefix='cl'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='cl', entry_block=entry_block),
     fixture_function=cl2d_fixtures)
 
 cl2d_truth = DFCollection(
     name='DEF2DTrue', label='dRC2d True',
-    filler_function=lambda event: event.getDataFrame(prefix='cltruth'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='cltruth', entry_block=entry_block),
     fixture_function=cl2d_fixtures)
 
 cl3d_truth = DFCollection(
     name='HMvDRTrue', label='HM+dR(layer) True Cl3d',
-    filler_function=lambda event: event.getDataFrame(prefix='cl3dtruth'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='cl3dtruth', entry_block=entry_block),
     fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
     depends_on=[tcs], debug=0)
 
 cl3d_def = DFCollection(
     name='DEF', label='dRC3d',
-    filler_function=lambda event: event.getDataFrame(prefix='cl3d'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='cl3d', entry_block=entry_block),
     fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
     depends_on=[tcs])
 
 cl3d_def_nc = DFCollection(
     name='DEFNC', label='dRC3d NewTh',
-    filler_function=lambda event: event.getDataFrame(prefix='cl3dNC'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='cl3dNC', entry_block=entry_block),
     fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
     depends_on=[tcs])
 
 cl3d_hm = DFCollection(
     name='HMvDR', label='HM+dR(layer) Cl3d',
-    filler_function=lambda event: event.getDataFrame(prefix='HMvDR', fallback='hmVRcl3d'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='HMvDR', entry_block=entry_block, fallback='hmVRcl3d'),
     fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
     depends_on=[tcs],
     debug=0,
@@ -714,7 +785,7 @@ cl3d_hm = DFCollection(
 
 cl3d_hm_emint = DFCollection(
     name='HMvDREmInt', label='HM+dR(layer) Cl3d EM Int',
-    filler_function=lambda event: get_emint_clusters(cl3d_hm.df[cl3d_hm.df.quality > 0]),
+    filler_function=lambda event, entry_block: get_emint_clusters(cl3d_hm.df[cl3d_hm.df.quality > 0]),
     # fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
     depends_on=[cl3d_hm],
     debug=0,
@@ -723,7 +794,7 @@ cl3d_hm_emint = DFCollection(
 
 cl3d_hm_emint_merged = DFCollection(
     name='HMvDREmIntMerged', label='HM+dR(layer) Cl3d EM Int Merged',
-    filler_function=lambda event: get_merged_cl3d(cl3d_hm_emint.df[cl3d_hm.df.quality >= 0], POOL),
+    filler_function=lambda event, entry_block: get_merged_cl3d(cl3d_hm_emint.df[cl3d_hm.df.quality >= 0], POOL),
     # fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
     depends_on=[cl3d_hm_emint],
     debug=0,
@@ -732,67 +803,71 @@ cl3d_hm_emint_merged = DFCollection(
 
 cl3d_hm_rebin = DFCollection(
     name='HMvDRRebin', label='HM+dR(layer) rebin Cl3d ',
-    filler_function=lambda event: event.getDataFrame(prefix='hmVRcl3dRebin'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='hmVRcl3dRebin', entry_block=entry_block),
     fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
     depends_on=[tcs])
 
 cl3d_hm_stc = DFCollection(
     name='HMvDRsTC', label='HM+dR(layer) SuperTC Cl3d ',
-    filler_function=lambda event: event.getDataFrame(prefix='hmVRcl3dSTC'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='hmVRcl3dSTC', entry_block=entry_block),
     fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
     depends_on=[tcs])
 
 cl3d_hm_nc0 = DFCollection(
     name='HMvDRNC0', label='HM+dR(layer) Cl3d + NewTh0',
-    filler_function=lambda event: event.getDataFrame(prefix='hmVRcl3dNC0'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='hmVRcl3dNC0', entry_block=entry_block),
     fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
     depends_on=[tcs])
 
 cl3d_hm_nc1 = DFCollection(
     name='HMvDRNC1', label='HM+dR(layer) Cl3d + NewTh1',
-    filler_function=lambda event: event.getDataFrame(prefix='hmVRcl3dNC1'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='hmVRcl3dNC1', entry_block=entry_block),
     fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
     depends_on=[tcs])
 
 cl3d_def_merged = DFCollection(
     name='DEFMerged', label='dRC3d merged',
-    filler_function=lambda event: get_merged_cl3d(cl3d_def.df[cl3d_def.df.quality > 0], POOL),
+    filler_function=lambda event, entry_block: get_merged_cl3d(cl3d_def.df[cl3d_def.df.quality > 0], POOL),
     depends_on=[cl3d_def])
 
 cl3d_def_calib = DFCollection(
     name='DEFCalib', label='dRC3d calib.',
-    filler_function=lambda event: get_calibrated_clusters(calib.get_calib_factors(), cl3d_def.df),
+    filler_function=lambda event, entry_block: get_calibrated_clusters(calib.get_calib_factors(), cl3d_def.df),
     depends_on=[cl3d_def])
 
 cl3d_hm_merged = DFCollection(
     name='HMvDRMerged', label='HM+dR(layer) merged',
-    filler_function=lambda event: get_merged_cl3d(cl3d_hm.df[cl3d_hm.df.quality >= 0], POOL),
+    filler_function=lambda event, entry_block: get_merged_cl3d(cl3d_hm.df[cl3d_hm.df.quality >= 0], POOL),
     depends_on=[cl3d_hm])
 
 cl3d_hm_fixed = DFCollection(
     name='HMvDRfixed', label='HM fixed',
-    filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [999.]*52, POOL),
+    filler_function=lambda event, entry_block: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [999.]*52, POOL),
     depends_on=[cl3d_hm, tcs], debug=0)
 
 cl3d_hm_cylind10 = DFCollection(
     name='HMvDRcylind10', label='HM Cylinder 10cm',
-    filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [10.]*52, POOL),
+    filler_function=lambda event, entry_block: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [10.]*52, POOL),
     depends_on=[cl3d_hm, tcs], debug=0)
 
 cl3d_hm_cylind5 = DFCollection(
     name='HMvDRcylind5', label='HM Cylinder 5cm',
-    filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [5.]*52, POOL),
+    filler_function=lambda event, entry_block: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [5.]*52, POOL),
     depends_on=[cl3d_hm, tcs], debug=0)
 
 cl3d_hm_cylind2p5 = DFCollection(
     name='HMvDRcylind2p5', label='HM Cylinder 2.5cm',
-    filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [2.5]*52, POOL),
+    filler_function=lambda event, entry_block: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [2.5]*52, POOL),
     depends_on=[cl3d_hm, tcs],
     debug=0)
 
 cl3d_hm_shape = DFCollection(
     name='HMvDRshape', label='HM shape',
-    filler_function=lambda event: get_cylind_clusters_mp(cl3d_hm.df, tcs.df,
+    filler_function=lambda event, entry_block: get_cylind_clusters_mp(cl3d_hm.df, tcs.df,
                                                          [1.]*2+[1.6]*2+[2.5]*2+[5.0]*2+[5.0]*2+[5.0]*2+[5.0]*2+[5.]*2+[6.]*2+[7.]*2+[7.2]*2+[7.4]*2+[7.2]*2+[7.]*2+[2.5]*25,
                                                          POOL),
     depends_on=[cl3d_hm, tcs], debug=0)
@@ -800,7 +875,7 @@ cl3d_hm_shape = DFCollection(
 
 cl3d_hm_shapeDr = DFCollection(
     name='HMvDRshapeDr', label='HM #Delta#rho < 0.015',
-    filler_function=lambda event: get_dr_clusters_mp(cl3d_hm.df[cl3d_hm.df.quality > 0],
+    filler_function=lambda event, entry_block: get_dr_clusters_mp(cl3d_hm.df[cl3d_hm.df.quality > 0],
                                                      tcs.df,
                                                      0.015,
                                                      POOL),
@@ -811,7 +886,7 @@ cl3d_hm_shapeDr = DFCollection(
 
 cl3d_hm_shapeDtDu = DFCollection(
     name='HMvDRshapeDtDu', label='HM #Deltau #Deltat',
-    filler_function=lambda event: get_dtdu_clusters_mp(cl3d_hm.df[cl3d_hm.df.quality > 0],
+    filler_function=lambda event, entry_block: get_dtdu_clusters_mp(cl3d_hm.df[cl3d_hm.df.quality > 0],
                                                        tcs.df,
                                                        (0.015, 0.007),
                                                        POOL),
@@ -822,7 +897,7 @@ cl3d_hm_shapeDtDu = DFCollection(
 
 cl3d_hm_calib = DFCollection(
     name='HMvDRCalib', label='HM calib.',
-    filler_function=lambda event: get_layer_calib_clusters(
+    filler_function=lambda event, entry_block: get_layer_calib_clusters(
         cl3d_hm.df,
         calib_mgr.get_calibration('HMvDRCalib', 'layer_calibs')),
     depends_on=[cl3d_hm, tcs],
@@ -830,35 +905,35 @@ cl3d_hm_calib = DFCollection(
 
 cl3d_hm_cylind10_calib = DFCollection(
     name='HMvDRcylind10Calib', label='HM Cylinder 10cm calib.',
-    filler_function=lambda event: get_layer_calib_clusters(
+    filler_function=lambda event, entry_block: get_layer_calib_clusters(
         cl3d_hm_cylind10.df,
         calib_mgr.get_calibration('HMvDRcylind10Calib', 'layer_calibs')),
     depends_on=[cl3d_hm_cylind10, tcs], debug=0)
 
 cl3d_hm_cylind5_calib = DFCollection(
     name='HMvDRcylind5Calib', label='HM Cylinder 5cm calib.',
-    filler_function=lambda event: get_layer_calib_clusters(
+    filler_function=lambda event, entry_block: get_layer_calib_clusters(
         cl3d_hm_cylind5.df,
         calib_mgr.get_calibration('HMvDRcylind5Calib', 'layer_calibs')),
     depends_on=[cl3d_hm_cylind5, tcs])
 
 cl3d_hm_cylind2p5_calib = DFCollection(
     name='HMvDRcylind2p5Calib', label='HM Cylinder 2.5cm calib.',
-    filler_function=lambda event: get_layer_calib_clusters(
+    filler_function=lambda event, entry_block: get_layer_calib_clusters(
         cl3d_hm_cylind2p5.df,
         calib_mgr.get_calibration('HMvDRcylind2p5Calib', 'layer_calibs')),
     depends_on=[cl3d_hm_cylind2p5, tcs], debug=0)
 
 cl3d_hm_fixed_calib = DFCollection(
     name='HMvDRfixedCalib', label='HM fixed calib.',
-    filler_function=lambda event: get_layer_calib_clusters(
+    filler_function=lambda event, entry_block: get_layer_calib_clusters(
         cl3d_hm_fixed.df,
         calib_mgr.get_calibration('HMvDRfixedCalib', 'layer_calibs')),
     depends_on=[cl3d_hm_fixed, tcs], debug=0)
 
 cl3d_hm_shape_calib = DFCollection(
     name='HMvDRshapeCalib', label='HM shape calib.',
-    filler_function=lambda event: get_layer_calib_clusters(
+    filler_function=lambda event, entry_block: get_layer_calib_clusters(
         cl3d_hm_shape.df,
         calib_mgr.get_calibration('HMvDRshapeCalib', 'layer_calibs')),
     depends_on=[cl3d_hm_shape, tcs],
@@ -867,7 +942,7 @@ cl3d_hm_shape_calib = DFCollection(
 
 cl3d_hm_shapeDr_calib = DFCollection(
     name='HMvDRshapeDrCalib', label='HM #Delta#rho < 0.015 calib.',
-    filler_function=lambda event: get_layer_calib_clusters(
+    filler_function=lambda event, entry_block: get_layer_calib_clusters(
         cl3d_hm_shapeDr.df,
         calib_mgr.get_calibration('HMvDRshapeDrCalib', 'layer_calibs'),
         calib_mgr.get_calibration('HMvDRshapeDrCalib', 'eta_calibs'),
@@ -878,7 +953,7 @@ cl3d_hm_shapeDr_calib = DFCollection(
 
 cl3d_hm_shapeDr_calib_new = DFCollection(
     name='HMvDRshapeDrCalibNew', label='HM #Delta#rho < 0.015 calib.',
-    filler_function=lambda event: get_layer_calib_clusters(
+    filler_function=lambda event, entry_block: get_layer_calib_clusters(
         cl3d_hm_shapeDr.df,
         calib_mgr.get_calibration('HMvDRshapeDrCalibNew', 'layer_calibs'),
         calib_mgr.get_calibration('HMvDRshapeDrCalibNew', 'eta_calibs'),
@@ -889,7 +964,7 @@ cl3d_hm_shapeDr_calib_new = DFCollection(
 
 cl3d_hm_shapeDtDu_calib = DFCollection(
     name='HMvDRshapeDtDuCalib', label='HM #Deltat#Deltau calib.',
-    filler_function=lambda event: get_layer_calib_clusters(
+    filler_function=lambda event, entry_block: get_layer_calib_clusters(
         cl3d_hm_shapeDr.df,
         calib_mgr.get_calibration('HMvDRshapeDtDuCalib', 'layer_calibs'),
         calib_mgr.get_calibration('HMvDRshapeDtDuCalib', 'eta_calibs'),
@@ -901,81 +976,87 @@ cl3d_hm_shapeDtDu_calib = DFCollection(
 
 cl3d_hm_calib_merged = DFCollection(
     name='HMvDRCalibMerged', label='HM calib. merged',
-    filler_function=lambda event: get_merged_cl3d(cl3d_hm_calib.df[cl3d_hm_calib.df.quality > 0], POOL),
+    filler_function=lambda event, entry_block: get_merged_cl3d(cl3d_hm_calib.df[cl3d_hm_calib.df.quality > 0], POOL),
     depends_on=[cl3d_hm_calib])
 
 cl3d_hm_shape_calib_merged = DFCollection(
     name='HMvDRshapeCalibMerged', label='HM shape calib. merged',
-    filler_function=lambda event: get_merged_cl3d(cl3d_hm_shape_calib.df[cl3d_hm_shape_calib.df.quality > 0], POOL),
+    filler_function=lambda event, entry_block: get_merged_cl3d(cl3d_hm_shape_calib.df[cl3d_hm_shape_calib.df.quality > 0], POOL),
     depends_on=[cl3d_hm_shape_calib])
 
 cl3d_hm_cylind2p5_calib_merged = DFCollection(
     name='HMvDRcylind2p5CalibMerged', label='HM cyl. 2.5cms calib. merged',
-    filler_function=lambda event: get_merged_cl3d(cl3d_hm_cylind2p5_calib.df[cl3d_hm_cylind2p5_calib.df.quality > 0], POOL),
+    filler_function=lambda event, entry_block: get_merged_cl3d(cl3d_hm_cylind2p5_calib.df[cl3d_hm_cylind2p5_calib.df.quality > 0], POOL),
     depends_on=[cl3d_hm_cylind2p5_calib])
 
 cl3d_hm_shape_calib1 = DFCollection(
     name='HMvDRshapeCalib1', label='HM shape calib. dedx',
-    filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_shape.df, [1.527]+[1.]*12+[1.98]),
+    filler_function=lambda event, entry_block: get_layer_calib_clusters(cl3d_hm_shape.df, [1.527]+[1.]*12+[1.98]),
     depends_on=[cl3d_hm_shape, tcs], debug=0)
 
 cl3d_hm_fixed_calib1 = DFCollection(
     name='HMvDRfixedCalib1', label='HM fixed calib. dedx',
-    filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_fixed.df, [1.527]+[1.]*12+[1.98]),
+    filler_function=lambda event, entry_block: get_layer_calib_clusters(cl3d_hm_fixed.df, [1.527]+[1.]*12+[1.98]),
     depends_on=[cl3d_hm_fixed, tcs], debug=0)
 
 cl3d_hm_cylind10_calib1 = DFCollection(
     name='HMvDRcylind10Calib1', label='HM Cylinder 10cm calib. dedx',
-    filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_cylind10.df, [1.527]+[1.]*12+[1.98]),
+    filler_function=lambda event, entry_block: get_layer_calib_clusters(cl3d_hm_cylind10.df, [1.527]+[1.]*12+[1.98]),
     depends_on=[cl3d_hm_cylind10, tcs], debug=0)
 
 cl3d_hm_cylind5_calib1 = DFCollection(
     name='HMvDRcylind5Calib1', label='HM Cylinder 5cm calib. dedx',
-    filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_cylind5.df, [1.527]+[1.]*12+[1.98]),
+    filler_function=lambda event, entry_block: get_layer_calib_clusters(cl3d_hm_cylind5.df, [1.527]+[1.]*12+[1.98]),
     depends_on=[cl3d_hm_cylind5, tcs])
 
 cl3d_hm_cylind2p5_calib1 = DFCollection(
     name='HMvDRcylind2p5Calib1', label='HM Cylinder 2.5cm calib. dedx',
-    filler_function=lambda event: get_layer_calib_clusters(cl3d_hm_cylind2p5.df, [1.527]+[1.]*12+[1.98]),
+    filler_function=lambda event, entry_block: get_layer_calib_clusters(cl3d_hm_cylind2p5.df, [1.527]+[1.]*12+[1.98]),
     depends_on=[cl3d_hm_cylind2p5, tcs], debug=0)
 
 towers_tcs = DFCollection(
     name='TT', label='TT (TC)',
-    filler_function=lambda event: event.getDataFrame(prefix='tower'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='tower', entry_block=entry_block),
     fixture_function=tower_fixtures)
 
 towers_sim = DFCollection(
     name='SimTT', label='TT (sim)',
-    filler_function=lambda event: event.getDataFrame(prefix='simTower'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='simTower', entry_block=entry_block),
     fixture_function=tower_fixtures)
 
 towers_hgcroc = DFCollection(
     name='HgcrocTT', label='TT (HGCROC)',
-    filler_function=lambda event: event.getDataFrame(prefix='hgcrocTower'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='hgcrocTower', entry_block=entry_block),
     fixture_function=tower_fixtures)
 
 towers_wafer = DFCollection(
     name='WaferTT', label='TT (Wafer)',
-    filler_function=lambda event: event.getDataFrame(prefix='waferTower'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='waferTower', entry_block=entry_block),
     fixture_function=tower_fixtures)
 
 egs = DFCollection(
     name='EG', label='EG',
-    filler_function=lambda event: event.getDataFrame(prefix='egammaEE'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='egammaEE', entry_block=entry_block),
     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
     fixture_function=fake_endcap_quality,
     debug=0)
 
 egs_brl = DFCollection(
     name='EGBRL', label='EG barrel',
-    filler_function=lambda event: event.getDataFrame(prefix='egammaEB'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='egammaEB', entry_block=entry_block),
     fixture_function=barrel_quality,
     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
     debug=0)
 
 egs_all = DFCollection(
     name='EGALL', label='EG all',
-    filler_function=lambda event: select_and_merge_collections(
+    filler_function=lambda event, entry_block: select_and_merge_collections(
         barrel=egs_brl.df,
         endcap=egs.df),
     print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(
@@ -985,40 +1066,46 @@ egs_all = DFCollection(
 
 tracks = DFCollection(
     name='L1Trk', label='L1Track',
-    filler_function=lambda event: event.getDataFrame(prefix='l1Trk'), 
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='l1Trk', entry_block=entry_block), 
     print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
     debug=0)
 
 tracks_emu = DFCollection(
     name='L1TrkEmu', label='L1Track EMU',
-    filler_function=lambda event: event.getDataFrame(prefix='l1trackemu'), debug=0)
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='l1trackemu', entry_block=entry_block), 
+    debug=0)
 
 
 tkeles = DFCollection(
     name='TkEle', label='TkEle',
-    filler_function=lambda event: event.getDataFrame(prefix='tkEle'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='tkEle', entry_block=entry_block),
     fixture_function=fake_endcap_quality,
     debug=0)
 
 tkelesEL = DFCollection(
     name='tkEleEE', label='TkEle (Ell.) EE',
-    filler_function=lambda event: event.getDataFrame(prefix='tkEleEE'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='tkEleEE', entry_block=entry_block),
     fixture_function=fake_endcap_quality,
     debug=0)
 
 tkisoeles = DFCollection(
     name='TkIsoEle', label='TkIsoEle',
-    filler_function=lambda event: event.getDataFrame(prefix='tkIsoEle'))
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='tkIsoEle', entry_block=entry_block))
 
 tkegs = DFCollection(
     name='TkEG', label='TkEG',
-    filler_function=lambda event: get_trackmatched_egs(egs=egs.df, tracks=tracks.df),
+    filler_function=lambda event, entry_block: get_trackmatched_egs(egs=egs.df, tracks=tracks.df),
     depends_on=[egs, tracks],
     debug=0)
 
 tkegs_shape_calib = DFCollection(
     name='TkEGshapeCalib', label='TkEGshapecalib',
-    filler_function=lambda event: get_trackmatched_egs(egs=cl3d_hm_shape_calib.df, tracks=tracks.df),
+    filler_function=lambda event, entry_block: get_trackmatched_egs(egs=cl3d_hm_shape_calib.df, tracks=tracks.df),
     fixture_function=tkeg_fromcluster_fixture,
     depends_on=[cl3d_hm_shape_calib, tracks],
     debug=0)
@@ -1026,24 +1113,26 @@ tkegs_shape_calib = DFCollection(
 
 tkegs_emu = DFCollection(
     name='TkEGEmu', label='TkEG Emu',
-    filler_function=lambda event: get_trackmatched_egs(egs=egs.df, tracks=tracks_emu.df),
+    filler_function=lambda event, entry_block: get_trackmatched_egs(egs=egs.df, tracks=tracks_emu.df),
     depends_on=[egs, tracks_emu])
 
 tkeles_brl = DFCollection(
     name='TkEleBRL', label='TkEle barrel',
-    filler_function=lambda event: event.getDataFrame(prefix='tkEleBARREL'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='tkEleBARREL', entry_block=entry_block),
     fixture_function=barrel_quality,
     debug=0)
 
 tkelesEL_brl = DFCollection(
     name='tkEleEB', label='TkEle (Ell.) EB',
-    filler_function=lambda event: event.getDataFrame(prefix='tkEleEB'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='tkEleEB', entry_block=entry_block),
     fixture_function=tkele_fixture_eb,
     debug=0)
 
 tkelesEL_all = DFCollection(
     name='tkEleEllAll', label='TkEle Ell. match all',
-    filler_function=lambda event: select_and_merge_collections(
+    filler_function=lambda event, entry_block: select_and_merge_collections(
         barrel=tkelesEL_brl.df,
         endcap=tkelesEL.df),
     debug=0,
@@ -1051,7 +1140,7 @@ tkelesEL_all = DFCollection(
 
 tkeles_all = DFCollection(
     name='TkEleALL', label='TkEle all',
-    filler_function=lambda event: merge_collections(
+    filler_function=lambda event, entry_block: merge_collections(
         barrel=tkeles_brl.df,
         endcap=tkeles.df[tkeles.df.hwQual == 5]),
     debug=0,
@@ -1061,35 +1150,37 @@ tkeles_all = DFCollection(
 
 egs_EE = DFCollection(
     name='EgEE', label='EG EE',
-    filler_function=lambda event: event.getDataFrame(prefix='egammaEE'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='egammaEE', entry_block=entry_block),
     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
     fixture_function=fake_endcap_quality,
     debug=0)
 
 egs_EB = DFCollection(
     name='EgEB', label='EG EB',
-    filler_function=lambda event: event.getDataFrame(prefix='egammaEB'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='egammaEB', entry_block=entry_block),
     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
     fixture_function=barrel_quality,
     debug=0)
 
 # egs_EE_pf_r1 = DFCollection(
 #     name='PFEgEEr1', label='EG EE Corr. (r1)',
-#     filler_function=lambda event: event.getDataFrame(prefix='PFegammaEE'),
+#     filler_function=lambda event, entry_block: event.getDataFrame(prefix='PFegammaEE'),
 #     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
 #     fixture_function=fake_endcap_quality,
 #     debug=0)
 # 
 # egs_EE_pf_r2 = DFCollection(
 #     name='PFEgEEr2', label='EG EE Corr. (r2)',
-#     filler_function=lambda event: event.getDataFrame(prefix='PFegammaEENoTk'),
+#     filler_function=lambda event, entry_block: event.getDataFrame(prefix='PFegammaEENoTk'),
 #     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
 #     fixture_function=fake_endcap_quality,
 #     debug=0)
 # 
 # egs_EE_pf_r3 = DFCollection(
 #     name='PFEgEEr3', label='EG EE Corr. (r3)',
-#     filler_function=lambda event: event.getDataFrame(prefix='PFegammaEEHF'),
+#     filler_function=lambda event, entry_block: event.getDataFrame(prefix='PFegammaEEHF'),
 #     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
 #     fixture_function=fake_endcap_quality,
 #     debug=0)
@@ -1097,7 +1188,7 @@ egs_EB = DFCollection(
 
 # egs_EE_pf = DFCollection(
 #     name='PFEgEE', label='EG EE Corr.',
-#     filler_function=lambda event: pd.concat([egs_EE_pf_r2.df, egs_EE_pf_r1.df, egs_EE_pf_r3.df], ignore_index=True),
+#     filler_function=lambda event, entry_block: pd.concat([egs_EE_pf_r2.df, egs_EE_pf_r1.df, egs_EE_pf_r3.df], ignore_index=True),
 #     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
 #     # fixture_function=mapcalo2pfregions,
 #     depends_on=[egs_EE_pf_r1, egs_EE_pf_r2, egs_EE_pf_r3],
@@ -1105,7 +1196,8 @@ egs_EB = DFCollection(
 
 egs_EE_pf = DFCollection(
     name='PFEgEE', label='EG EE Corr.',
-    filler_function=lambda event: event.getDataFrame(prefix='PFegammaEE'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='PFegammaEE', entry_block=entry_block),
     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
     # fixture_function=mapcalo2pfregions,
     fixture_function=fake_endcap_quality,
@@ -1113,7 +1205,8 @@ egs_EE_pf = DFCollection(
 
 egs_EE_pfnf = DFCollection(
     name='PFNFEgEE', label='EG EE Corr. New',
-    filler_function=lambda event: event.getDataFrame(prefix='PFNFegammaEE'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='PFNFegammaEE', entry_block=entry_block),
     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
     # fixture_function=mapcalo2pfregions,
     fixture_function=fake_endcap_quality,
@@ -1121,37 +1214,43 @@ egs_EE_pfnf = DFCollection(
 
 tkeles_EE = DFCollection(
     name='tkEleEE', label='TkEle EE',
-    filler_function=lambda event: event.getDataFrame(prefix='tkEleEE'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='tkEleEE', entry_block=entry_block),
     fixture_function=tkele_fixture_ee,
     debug=0)
 
 tkeles_EB = DFCollection(
     name='tkEleEB', label='TkEle EB',
-    filler_function=lambda event: event.getDataFrame(prefix='tkEleEB'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='tkEleEB', entry_block=entry_block),
     fixture_function=tkele_fixture_eb,
     debug=0)
 
 tkeles_EE_pf = DFCollection(
     name='PFtkEleEE', label='TkEle EE Corr.',
-    filler_function=lambda event: event.getDataFrame(prefix='PFtkEleEE'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='PFtkEleEE', entry_block=entry_block),
     fixture_function=tkele_fixture_ee,
     debug=0)
 
 tkeles_EB_pf = DFCollection(
     name='PFtkEleEB', label='TkEle EB Corr',
-    filler_function=lambda event: event.getDataFrame(prefix='PFtkEleEB'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='PFtkEleEB', entry_block=entry_block),
     fixture_function=tkele_fixture_eb,
     debug=0)
 
 tkeles_EE_pfnf = DFCollection(
     name='PFNFtkEleEE', label='TkEle EE Corr. New',
-    filler_function=lambda event: event.getDataFrame(prefix='PFNFtkEleEE'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='PFNFtkEleEE', entry_block=entry_block),
     fixture_function=tkele_fixture_ee,
     debug=0)
 
 tkeles_EB_pfnf = DFCollection(
     name='PFNFtkEleEB', label='TkEle EB Corr. New',
-    filler_function=lambda event: event.getDataFrame(prefix='PFNFtkEleEB'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='PFNFtkEleEB', entry_block=entry_block),
     fixture_function=tkele_fixture_eb,
     debug=0)
 
@@ -1159,43 +1258,49 @@ tkeles_EB_pfnf = DFCollection(
 
 tkem_EE = DFCollection(
     name='tkEmEE', label='TkEm EE',
-    filler_function=lambda event: event.getDataFrame(prefix='tkEmEE'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='tkEmEE', entry_block=entry_block),
     fixture_function=fake_endcap_quality,
     debug=0)
 
 tkem_EB = DFCollection(
     name='tkEmEB', label='TkEm EB',
-    filler_function=lambda event: event.getDataFrame(prefix='tkEmEB'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='tkEmEB', entry_block=entry_block),
     fixture_function=barrel_quality,
     debug=0)
 
 tkem_EE_pf = DFCollection(
     name='PFtkEmEE', label='TkEm EE Corr.',
-    filler_function=lambda event: event.getDataFrame(prefix='PFtkEmEE'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='PFtkEmEE', entry_block=entry_block),
     fixture_function=fake_endcap_quality,
     debug=0)
 
 tkem_EB_pf = DFCollection(
     name='PFtkEmEB', label='TkEm EB Corr',
-    filler_function=lambda event: event.getDataFrame(prefix='PFtkEmEB'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='PFtkEmEB', entry_block=entry_block),
     fixture_function=barrel_quality,
     debug=0)
 
 tkem_EE_pfnf = DFCollection(
     name='PFNFtkEmEE', label='TkEm EE Corr. New',
-    filler_function=lambda event: event.getDataFrame(prefix='PFNFtkEmEE'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='PFNFtkEmEE', entry_block=entry_block),
     fixture_function=fake_endcap_quality,
     debug=0)
 
 tkem_EB_pfnf = DFCollection(
     name='PFNFtkEmEB', label='TkEm EB Corr. New',
-    filler_function=lambda event: event.getDataFrame(prefix='PFNFtkEmEB'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='PFNFtkEmEB', entry_block=entry_block),
     fixture_function=barrel_quality,
     debug=0)
 
 egs_EE_pf_reg = DFCollection(
     name='PFOutEgEE', label='EG EE Corr.',
-    filler_function=lambda event: egs_EE_pf.df,
+    filler_function=lambda event, entry_block: egs_EE_pf.df,
     print_function=lambda df: df[[
         'pt', 'eta', 'hwQual',
         'eta_reg_0', 'eta_reg_1', 'eta_reg_2', 'eta_reg_3',
@@ -1207,55 +1312,56 @@ egs_EE_pf_reg = DFCollection(
 
 tkeles_EE_pf_reg = DFCollection(
     name='PFOuttkEleEE', label='TkEle EE Corr.',
-    filler_function=lambda event: tkeles_EE_pf.df,
+    filler_function=lambda event, entry_block: tkeles_EE_pf.df,
     fixture_function=mapcalo2pfregions_out,
     depends_on=[tkeles_EE_pf],
     debug=0)
 
 tkeles_EB_pf_reg = DFCollection(
     name='PFOuttkEleEB', label='TkEle EB Corr',
-    filler_function=lambda event: tkeles_EB_pf.df,
+    filler_function=lambda event, entry_block: tkeles_EB_pf.df,
     fixture_function=mapcalo2pfregions_out,
     depends_on=[tkeles_EB_pf],
     debug=0)
 
 tkem_EE_pf_reg = DFCollection(
     name='PFOuttkEmEE', label='TkEm EE Corr.',
-    filler_function=lambda event: tkem_EE_pf.df,
+    filler_function=lambda event, entry_block: tkem_EE_pf.df,
     fixture_function=mapcalo2pfregions_out,
     depends_on=[tkem_EE_pf],
     debug=0)
 
 tkem_EB_pf_reg = DFCollection(
     name='PFOuttkEmEB', label='TkEm EB Corr',
-    filler_function=lambda event: tkem_EB_pf.df,
+    filler_function=lambda event, entry_block: tkem_EB_pf.df,
     fixture_function=mapcalo2pfregions_out,
     depends_on=[tkem_EB_pf],
     debug=0)
 
 tk_pfinputs = DFCollection(
     name='L1Trk', label='L1Track',
-    filler_function=lambda event: event.getDataFrame(prefix='l1Trk'),
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='l1Trk', entry_block=entry_block),
     fixture_function=maptk2pfregions_in,
     debug=0)
 
 eg_EE_pfinputs = DFCollection(
     name='egEEPFin', label='EG EE Input',
-    filler_function=lambda event: egs_EE.df,
+    filler_function=lambda event, entry_block: egs_EE.df,
     fixture_function=mapcalo2pfregions_in,
     depends_on=[egs_EE],
     debug=0)
 
 eg_EB_pfinputs = DFCollection(
     name='egEBPFin', label='EG EB Input',
-    filler_function=lambda event: egs_EB.df,
+    filler_function=lambda event, entry_block: egs_EB.df,
     fixture_function=mapcalo2pfregions_in,
     depends_on=[egs_EB],
     debug=0)
 
 cl3d_hm_pfinputs = DFCollection(
     name='HMvDRPFin', label='HMvDR Input',
-    filler_function=lambda event: cl3d_hm.df,
+    filler_function=lambda event, entry_block: cl3d_hm.df,
     fixture_function=mapcalo2pfregions_in,
     depends_on=[cl3d_hm],
     debug=0)
