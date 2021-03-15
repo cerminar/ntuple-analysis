@@ -60,6 +60,15 @@ public:
     filters[name] = values;
   }
 
+  bool knowsVariable(const std::string& name) const {
+    if(branches.find(name) == branches.end()) return false;
+    return true;
+  }
+
+  bool knowsSelection(const std::string& name) const {
+    if(filters.find(name) == filters.end()) return false;
+    return true;    
+  }
   
   std::map<std::string, std::vector<float>> branches;
   std::map<std::string, std::vector<bool>> filters;
@@ -85,12 +94,23 @@ public:
     fillers.emplace_back(HistoFiller(histo, frame.branches[source], frame.filters[filter]));
   }
   
+  bool knowsVariable(const std::string& name) const {
+    return frame.knowsVariable(name);
+  }
+  
+  bool knowsSelection(const std::string& name) const {
+    return frame.knowsSelection(name);
+  }
+  
   void fill() {
     for(unsigned int id = 0; id < fillers[0].nevents(); id++) {
       for(auto & filler: fillers) {
         filler.fill(id);
       }
     }
+    // for(auto & filler: fillers) {
+    //   std::cout << filler.histo->GetName() << " has # entries: " << filler.histo->GetEntries() << std::endl;
+    // }
   }
   
 private:
