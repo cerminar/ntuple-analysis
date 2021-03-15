@@ -123,24 +123,28 @@ class GenericDataFrameLazyPlotter(BasePlotter):
             self.h_set[selection.name] = self.HistoClass(name='{}_{}_nomatch'.format(data_name,
                                                                                      selection.name))
 
-    def run_manager(self, manager):
-        manager.fill()
-
     def fill_histos(self, debug=0):
-        if self.data_set.df.empty:
+        # if not (idx, 0) in self.data_set.df.index:
+        #     return
+        dataframe = self.data_set.df
+        if dataframe.empty:
             return
-        manager = ROOT.FillerManager()
+        filler = histos.HistoLazyFiller(dataframe)
         # print (self.data_set.name)
         # print (self.data_set.df.columns)
         
         for data_sel in self.data_selections:
             if data_sel.all:
-                manager.addFilter(data_sel.name, np.full(self.data_set.df.shape[0], True, dtype=bool))
+                filler.add_selection(data_sel.name, np.full(dataframe.shape[0], True, dtype=bool))
             else:
-                manager.addFilter(data_sel.name, self.data_set.df.eval(data_sel.selection).values)
-            self.h_set[data_sel.name].fill_lazy(self.data_set.df, manager, data_sel.name)
-        self.run_manager(manager)
-        
+                filler.add_selection(data_sel.name, dataframe.eval(data_sel.selection).values)
+            self.h_set[data_sel.name].fill_lazy(filler, data_sel.name)
+        filler.fill()
+    
+    def fill_histos_event(self, idx, debug=0):
+        if self.data_set.new_read:
+            self.fill_histos(debug)
+
 
 class GenericDataFramePlotter(BasePlotter):
     def __init__(self, HistoClass, data_set, selections=[selections.Selection('all')]):
@@ -161,7 +165,11 @@ class GenericDataFramePlotter(BasePlotter):
         for data_sel in self.data_selections:
             data = self.data_set.query(data_sel)
             self.h_set[data_sel.name].fill(data)
-            
+
+    def fill_histos_event(self, idx, debug=0):
+        if self.data_set.new_read:
+            self.fill_histos(debug)
+
 
 class TkElePlotter(GenericDataFrameLazyPlotter):
     def __init__(self, tkeg_set, tkeg_selections=[selections.Selection('all')]):
@@ -526,13 +534,24 @@ class GenericGenMatchPlotter(BasePlotter):
                         h_reso,
                         algoname,
                         debug):
+                        
+
+
+        gen_filler = histos.HistoLazyFiller(genParticles)
+        den_sel = np.full(genParticles.shape[0], True, dtype=bool)
+        num_sel = np.full(genParticles.shape[0], False, dtype=bool)
+        
         # fill histo with all selected GEN particles before any match
+        gen_filler.add_selection('den', den_sel)
         if h_gen:
-            h_gen.fill(genParticles)
+            h_gen.fill_lazy(gen_filler, 'den')
 
         best_match_indexes = {}
         positional = True
         if not objects.empty:
+            obj_filler = histos.HistoLazyFiller(objects)
+            obj_ismatch = np.full(objects.shape[0], False, dtype=bool)
+
             best_match_indexes, allmatches = utils.match_etaphi(
                 genParticles[self.gen_eta_phi_columns],
                 objects[['eta', 'phi']],
@@ -546,12 +565,14 @@ class GenericGenMatchPlotter(BasePlotter):
             for idx in list(best_match_indexes.keys()):
                 if positional:
                     obj_matched = objects.iloc[[best_match_indexes[idx]]]
+                    obj_ismatch[best_match_indexes[idx]] = True
                 else: 
                     obj_matched = objects.loc[[best_match_indexes[idx]]]
-                
-                h_object_matched.fill(obj_matched)
-                gen_matched = genParticles.loc[[idx]]
-                h_reso.fill(reference=gen_matched.iloc[0], target=obj_matched)
+                    obj_ismatch[objects.index.get_loc(best_match_indexes[idx])] = True
+
+                # h_object_matched.fill(obj_matched)
+                num_sel[genParticles.index.get_loc(idx)] = True
+                h_reso.fill(reference=genParticles.loc[idx], target=obj_matched)
                 
                 if hasattr(h_reso, 'fill_nMatch'):
                     h_reso.fill_nMatch(len(allmatches[idx]))
@@ -567,9 +588,18 @@ class GenericGenMatchPlotter(BasePlotter):
                 # print(objects.iloc[[best_match_iloc[idx]]])
                 # print ("--")
 
-                if h_gen_matched is not None:
-                    h_gen_matched.fill(gen_matched)
+                # if h_gen_matched is not None:
+                #     h_gen_matched.fill(gen_matched)
+            obj_filler.add_selection('match', obj_ismatch)
+            h_object_matched.fill_lazy(obj_filler, 'match')
+            obj_filler.fill()
+        
+        if h_gen_matched is not None:
+            gen_filler.add_selection('num', num_sel)
+            h_gen_matched.fill_lazy(gen_filler, 'num')
 
+        gen_filler.fill()
+        
     def book_histos(self):
         self.gen_set.activate()
         self.data_set.activate()
@@ -581,12 +611,20 @@ class GenericGenMatchPlotter(BasePlotter):
                 self.h_effset[histo_name] = histos.HistoSetEff(histo_name)
 
     def fill_histos(self, debug=0):
-        for tp_sel in self.data_selections:
-            objects = self.data_set.query(tp_sel)
-            for gen_sel in self.gen_selections:
-                genReference = self.gen_set.query(gen_sel)
-                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+        pass
 
+    def fill_histos_event(self, idx, debug=0):
+        for tp_sel in self.data_selections:
+            objects = self.data_set.query_event(tp_sel, idx)
+            for gen_sel in self.gen_selections:
+                genReference = self.gen_set.query_event(gen_sel, idx)
+                if genReference.empty:
+                    continue
+                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                # print (histo_name)
+                # print (f'# data: {objects.shape[0]}')
+                # print (f'# gen: {genReference.shape[0]}')
+                # print (genReference)
                 h_obj_match = self.h_dataset[histo_name]
                 h_resoset = self.h_resoset[histo_name]
                 h_genseleff = self.h_effset[histo_name]
