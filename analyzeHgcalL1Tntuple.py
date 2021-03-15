@@ -38,6 +38,7 @@ from shutil import copyfile
 import root_numpy as rnp
 import pandas as pd
 import numpy as np
+import uproot4 as up
 
 from NtupleDataFormat import HGCalNtuple
 import python.l1THistos as histos
@@ -48,11 +49,12 @@ from python.utils import debugPrintOut
 import python.calibrations as calibs
 import python.plotters_config
 import python.timecounter as timecounter
-
+import python.tree_reader as treereader
 # from pandas.core.common import SettingWithCopyError, SettingWithCopyWarning
 # import warnings
 # warnings.filterwarnings('error', category=SettingWithCopyWarning)
 ROOT.ROOT.EnableImplicitMT()
+
 
 
 class Parameters(dict):
@@ -164,32 +166,6 @@ def analyze(params, batch_idx=-1):
     print (params)
     debug = int(params.debug)
 
-    tc_geom_df = pd.DataFrame()
-    tc_rod_bins = pd.DataFrame()
-    if False:
-        # read the geometry dump
-        geom_file = os.path.join(params.input_base_dir, 'geom/test_triggergeom.root')
-        tc_geom_tree = HGCalNtuple([geom_file], tree='hgcaltriggergeomtester/TreeTriggerCells')
-        tc_geom_tree.setCache(learn_events=100)
-        print('read TC GEOM tree with # events: {}'.format(tc_geom_tree.nevents()))
-        tc_geom_df = convertGeomTreeToDF(tc_geom_tree._tree)
-        tc_geom_df['radius'] = np.sqrt(tc_geom_df['x']**2+tc_geom_df['y']**2)
-        tc_geom_df['eta'] = np.arcsinh(tc_geom_df.z/tc_geom_df.radius)
-
-        if False:
-            tc_rod_bins = pd.read_csv(filepath_or_buffer='data/TCmapping_v2.txt',
-                                      sep=' ',
-                                      names=['id', 'rod_x', 'rod_y'],
-                                      index_col=False)
-            tc_rod_bins['rod_bin'] = tc_rod_bins.apply(
-                func=lambda cell: (int(cell.rod_x), int(cell.rod_y)), axis=1)
-
-            tc_geom_df = pd.merge(tc_geom_df, tc_rod_bins, on='id')
-
-        if debug == -4:
-            tc_geom_tree.PrintCacheStats()
-        print ('...done')
-
     # tree_name = 'hgcalTriggerNtuplizer/HGCalTriggerNtuple'
     input_files = []
     range_ev = (0, params.maxEvents)
@@ -216,6 +192,67 @@ def analyze(params, batch_idx=-1):
     for file_name in input_files:
         print('        - {}'.format(file_name))
 
+    # FIXME: move this somewhereelse
+    files_with_protocol = []
+    for file_name in input_files:
+        protocol = ''
+        if '/eos/user/' in file_name:
+            protocol = 'root://eosuser.cern.ch/'
+        elif '/eos/cms/' in file_name:
+            protocol = 'root://eoscms.cern.ch/'
+        files_with_protocol.append(protocol+file_name)
+    
+
+
+    output = ROOT.TFile(params.output_filename, "RECREATE")
+    output.cd()
+    hm = histos.HistoManager()
+
+    # instantiate all the plotters
+    plotter_collection = []
+    plotter_collection.extend(params.plotters)
+    print(plotter_collection)
+
+    # -------------------------------------------------------
+    # book histos
+    for plotter in plotter_collection:
+        plotter.book_histos()
+
+    # -------------------------------------------------------
+    # event loop
+    ev_manager = collections.EventManager()
+
+    tree_reader = treereader.TreeReader(range_ev, params.maxEvents)
+    print ('events_per_job: {}'.format(params.events_per_job))
+    print ('maxEvents: {}'.format(params.maxEvents))
+    print ('range_ev: {}'.format(range_ev))
+
+    for tree_file_name in files_with_protocol:
+        tree_file = up.open(tree_file_name, num_workers=2)
+        ttree = tree_file[params.tree_name.split('/')[0]][params.tree_name.split('/')[1]]
+
+        print (ttree.num_entries)
+
+        
+        tree_reader.setTree(ttree)
+        
+        while tree_reader.next(debug):
+            ev_manager.read(tree_reader, debug)
+            for plotter in plotter_collection:
+                plotter.fill_histos_event(tree_reader.file_entry, debug=debug)
+
+        
+    # print("Processed {} events/{} TOT events".format(nev, ntuple.nevents()))
+
+    print("Writing histos to file {}".format(params.output_filename))
+
+    output.cd()
+    hm.writeHistos()
+
+    output.Close()
+
+
+    return tree_reader.global_entry
     ntuple = HGCalNtuple(input_files, tree=params.tree_name)
     if params.events_per_job == -1:
         if params.maxEvents == -1:
