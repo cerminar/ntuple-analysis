@@ -114,9 +114,9 @@ collections:
       # ele_flat2to100_PU200: 5
       # photon_flat8to150_PU0: 0
       # photon_flat8to150_PU200: 0
-      doubleele_flat1to100_PU0: 4000
-      doubleele_flat1to100_PU200: 1300
-      doublephoton_flat1to100_PU200: 1300
+      doubleele_flat1to100_PU0: 2000
+      doubleele_flat1to100_PU200: 1000
+      doublephoton_flat1to100_PU200: 1000
 
       # dyll_PU200: 5
 
@@ -279,7 +279,7 @@ collections:
     priorities:
       nugun_alleta_pu200: 6
     events_per_job:
-      nugun_alleta_pu200: 20000
+      nugun_alleta_pu200: 10000
 
   noise_samples:
     file_label:
