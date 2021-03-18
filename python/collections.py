@@ -202,7 +202,8 @@ class DFCollection(object):
             self.df = self.weight_function(self.df, weight_file)
         self.empty_df = pd.DataFrame(columns=self.df.columns)
         self.entries = self.df.index.get_level_values('entry').unique()
-        print(f'read coll. {self.name} from entry: {event.file_entry} to entry: {event.file_entry+stride} (stride: {stride}), # rows: {self.df.shape[0]}, # entries: {len(self.entries)}')
+        if debug > 2:
+            print(f'read coll. {self.name} from entry: {event.file_entry} to entry: {event.file_entry+stride} (stride: {stride}), # rows: {self.df.shape[0]}, # entries: {len(self.entries)}')
         debugPrintOut(max(debug, self.debug), self.label,
                       toCount=self.df,
                       toPrint=self.print_function(self.df))
