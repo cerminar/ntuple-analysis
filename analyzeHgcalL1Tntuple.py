@@ -273,7 +273,7 @@ def analyze(params, batch_idx=-1):
                     print ("Writing histos to file")
                     hm.writeHistos()
 
-                if batch_idx != -1 and timecounter.counter.started() and event.entry() % 100 == 0:
+                if batch_idx != -1 and timecounter.counter.started() and tree_reader.global_entry % 100 == 0:
                     # when in batch mode, if < 5min are left we stop the event loop
                     if timecounter.counter.job_flavor_time_left(params.htc_jobflavor) < 5*60:
                         tree_reader.printEntry()                        
