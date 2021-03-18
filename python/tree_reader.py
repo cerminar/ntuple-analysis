@@ -28,16 +28,11 @@ class TreeReader(object):
                             'gen_TrueNumInt']
         if len(self._branches) == 0:
             self._branches = [br for br in self.tree.keys() if br not in branch_blacklist]
+        print (f'open new tree file with # entries: {self.tree.num_entries}')
         self.file_entry = -1
 
 
     def next(self, debug=0):
-        if self.global_entry == -1:
-            self.global_entry = self.entry_range[0]
-            self.file_entry = self.entry_range[0]
-        else:
-            self.file_entry += 1
-            self.global_entry += 1
             
         if self.max_events != -1:
             if self.n_tot_entries == self.max_events:
@@ -48,17 +43,27 @@ class TreeReader(object):
             if self.global_entry > self.entry_range[1]:
                 print ('END loop for entry_range')
                 return False
-        if self.file_entry > self.tree.num_entries:
+        if self.file_entry == self.tree.num_entries-1:
             print ('END loop for end_of_file')
             return False
 
-        # entry is the cursor in the file: when we open a new one (not the first) needs to be set to 0 again
+        if self.global_entry == -1:
+            self.global_entry = self.entry_range[0]
+            self.file_entry = self.entry_range[0]
+        else:
+            self.file_entry += 1
+            self.global_entry += 1
         self.n_tot_entries += 1
+
+
+        # entry is the cursor in the file: when we open a new one (not the first) needs to be set to 0 again
         if debug >= 2 or self.global_entry % 100 == 0:
-            print ("--- File entry: {}, global entry: {}, tot # events: {} @ {}".format(
-                self.file_entry, self.global_entry, self.n_tot_entries, datetime.datetime.now()))
+            self.printEntry()
         return True
 
+    def printEntry(self):
+        print ("--- File entry: {}, global entry: {}, tot # events: {} @ {}".format(
+            self.file_entry, self.global_entry, self.n_tot_entries, datetime.datetime.now()))
         
     def getDataFrame(self, prefix, entry_block, fallback=None):
         branches = [br for br in self._branches
