@@ -205,18 +205,8 @@ def analyze(params, batch_idx=-1):
     for file_name in input_files:
         print('        - {}'.format(file_name))
 
-    # FIXME: move this somewhereelse
-    files_with_protocol = []
-    for file_name in input_files:
-        protocol = ''
-        if '/eos/user/' in file_name:
-            protocol = 'root://eosuser.cern.ch/'
-        elif '/eos/cms/' in file_name:
-            protocol = 'root://eoscms.cern.ch/'
-        files_with_protocol.append(protocol+file_name)
+    files_with_protocol = [fm.get_eos_protocol(file_name)+file_name for file_name in input_files]
     
-
-
     output = ROOT.TFile(params.output_filename, "RECREATE")
     output.cd()
     hm = histos.HistoManager()
@@ -247,8 +237,12 @@ def analyze(params, batch_idx=-1):
     print ('maxEvents: {}'.format(params.maxEvents))
     print ('range_ev: {}'.format(range_ev))
 
+    break_file_loop = False
     for tree_file_name in files_with_protocol:
+        if break_file_loop:
+            break
         tree_file = up.open(tree_file_name, num_workers=2)
+        print (f'opening file: {tree_file_name}')
         ttree = tree_file[params.tree_name.split('/')[0]][params.tree_name.split('/')[1]]
         
         tree_reader.setTree(ttree)
@@ -279,6 +273,7 @@ def analyze(params, batch_idx=-1):
                         tree_reader.printEntry()                        
                         print ('    less than 5 min left for batch slot: exit event loop!')
                         timecounter.counter.job_flavor_time_perc(params.htc_jobflavor)
+                        break_file_loop = True
                         break
 
 
