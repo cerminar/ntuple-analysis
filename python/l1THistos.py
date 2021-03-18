@@ -297,8 +297,9 @@ class RateHistos(BaseHistos):
             self.h_pt.Fill(ptf)
         self.h_ptVabseta.Fill(abs(eta), pt)
 
-    def fill_norm(self):
-        self.h_norm.Fill(1)
+    def fill_norm(self, many=1):
+        # print (f' fill rate norm: {many}')
+        self.h_norm.Fill(1, many)
 
     def normalize(self, norm):
         nev = self.h_norm.GetBinContent(1)
@@ -307,6 +308,9 @@ class RateHistos(BaseHistos):
             self.h_norm.Scale(norm/nev)
             self.h_pt.Scale(norm/nev)
             self.h_ptVabseta.Scale(norm/nev)
+
+    def fill_many(self, data):
+        ROOT.fill1D_rate(self.h_pt, data.pt.values)
 
 
 class TCHistos(BaseHistos):
