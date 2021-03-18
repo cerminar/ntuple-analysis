@@ -122,7 +122,7 @@ class DFCollection(object):
     def __init__(self, name, label,
                  filler_function,
                  fixture_function=None,
-                 read_entry_block=100,
+                 read_entry_block=1000,
                  depends_on=[],
                  debug=0,
                  print_function=lambda df: df,
@@ -158,6 +158,7 @@ class DFCollection(object):
                 self.read_entry_block = common_block_size
                 
         self.new_read = False
+        self.new_read_nentries = 0
         self.register()
 
     def register(self):
@@ -177,19 +178,20 @@ class DFCollection(object):
         stride = self.read_entry_block
         # print (f'Coll: {self.name} fill for entry: {event.file_entry}')
         if event.file_entry == 0 or event.file_entry == self.next_entry_read or event.global_entry == event.entry_range[0]:
-            stride = min(self.read_entry_block, (event.entry_range[1]-event.global_entry))
+            # print ([self.read_entry_block, (event.entry_range[1]-event.global_entry), (event.tree.num_entries - event.file_entry)])
+            stride = min([self.read_entry_block, (event.entry_range[1]-event.global_entry), (event.tree.num_entries - event.file_entry)])
             if stride == 0:
                 print ('ERROR Last event????')
                 self.new_read = False
             else:
                 self.new_read = True
                 self.next_entry_read = event.file_entry + stride
+                self.new_read_nentries = stride
                 self.fill_real(event, stride, weight_file, debug)
         else:
             self.new_read = False
 
     def fill_real(self, event, stride, weight_file=None, debug=0):
-        print(f'read coll. {self.name} from entry: {event.file_entry} to entry: {event.file_entry+stride}')
         self.clear_query_cache(debug)
         self.df = self.filler_function(event, stride)
         if self.fixture_function is not None:
@@ -200,6 +202,7 @@ class DFCollection(object):
             self.df = self.weight_function(self.df, weight_file)
         self.empty_df = pd.DataFrame(columns=self.df.columns)
         self.entries = self.df.index.get_level_values('entry').unique()
+        print(f'read coll. {self.name} from entry: {event.file_entry} to entry: {event.file_entry+stride} (stride: {stride}), # rows: {self.df.shape[0]}, # entries: {len(self.entries)}')
         debugPrintOut(max(debug, self.debug), self.label,
                       toCount=self.df,
                       toPrint=self.print_function(self.df))
@@ -1154,6 +1157,7 @@ egs_EE = DFCollection(
         prefix='egammaEE', entry_block=entry_block),
     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
     fixture_function=fake_endcap_quality,
+    read_entry_block=100,
     debug=0)
 
 egs_EB = DFCollection(
@@ -1162,6 +1166,7 @@ egs_EB = DFCollection(
         prefix='egammaEB', entry_block=entry_block),
     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
     fixture_function=barrel_quality,
+    read_entry_block=200,
     debug=0)
 
 # egs_EE_pf_r1 = DFCollection(
@@ -1261,6 +1266,7 @@ tkem_EE = DFCollection(
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='tkEmEE', entry_block=entry_block),
     fixture_function=fake_endcap_quality,
+    read_entry_block=100,
     debug=0)
 
 tkem_EB = DFCollection(
@@ -1268,6 +1274,7 @@ tkem_EB = DFCollection(
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='tkEmEB', entry_block=entry_block),
     fixture_function=barrel_quality,
+    read_entry_block=200,
     debug=0)
 
 tkem_EE_pf = DFCollection(
@@ -1282,6 +1289,7 @@ tkem_EB_pf = DFCollection(
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='PFtkEmEB', entry_block=entry_block),
     fixture_function=barrel_quality,
+    read_entry_block=200,
     debug=0)
 
 tkem_EE_pfnf = DFCollection(
@@ -1296,6 +1304,7 @@ tkem_EB_pfnf = DFCollection(
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='PFNFtkEmEB', entry_block=entry_block),
     fixture_function=barrel_quality,
+    read_entry_block=200,
     debug=0)
 
 egs_EE_pf_reg = DFCollection(
