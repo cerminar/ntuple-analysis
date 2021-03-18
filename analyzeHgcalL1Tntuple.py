@@ -57,6 +57,7 @@ ROOT.ROOT.EnableImplicitMT()
 
 
 
+    
 class Parameters(dict):
 
     def __getattr__(self, name):
@@ -161,6 +162,18 @@ def dumpFrame2JSON(filename, frame):
         f.write(frame.to_json())
 
 
+
+def executor(ipl_plotter_arg1_arg2):
+    ipl, entry, debug = ipl_plotter_arg1_arg2
+    plotter.fill_histos_event(entry, debug)
+    plotters_glb[ipl].fill_histos_event(entry, debug)
+    return ipl
+
+def pool_init(plotters):
+    global plotters_glb
+    plotters_glb = plotters
+
+
 # @profile
 def analyze(params, batch_idx=-1):
     print (params)
@@ -218,9 +231,16 @@ def analyze(params, batch_idx=-1):
     for plotter in plotter_collection:
         plotter.book_histos()
 
+    collection_manager = collections.EventManager()
+
+    if params.weight_file is not None:
+        collection_manager.read_weight_file(params.weight_file)
+
+    calib_manager = calibs.CalibManager()
+    calib_manager.set_calibration_version(params.calib_version)
+
     # -------------------------------------------------------
     # event loop
-    ev_manager = collections.EventManager()
 
     tree_reader = treereader.TreeReader(range_ev, params.maxEvents)
     print ('events_per_job: {}'.format(params.events_per_job))
@@ -230,18 +250,46 @@ def analyze(params, batch_idx=-1):
     for tree_file_name in files_with_protocol:
         tree_file = up.open(tree_file_name, num_workers=2)
         ttree = tree_file[params.tree_name.split('/')[0]][params.tree_name.split('/')[1]]
-
-        print (ttree.num_entries)
-
         
         tree_reader.setTree(ttree)
         
         while tree_reader.next(debug):
-            ev_manager.read(tree_reader, debug)
-            for plotter in plotter_collection:
-                plotter.fill_histos_event(tree_reader.file_entry, debug=debug)
+            
+            try:
+                collection_manager.read(tree_reader, debug)
+                # processes = []
+                for plotter in plotter_collection:
+                    plotter.fill_histos_event(tree_reader.file_entry, debug=debug)
+                
+                # pool = Pool(processes=2, initializer=pool_init, initargs=(plotter_collection,))
+                # 
+                # args = ((ipl, tree_reader.file_entry, debug) for ipl, plotter in enumerate(plotter_collection))
+                # pool.map(executor, args)
+                # # pool.apply_async(executor, (plotter.fill_histos_event, tree_reader.file_entry, debug))
+                # pool.close()
+                # pool.join()
 
-        
+                if tree_reader.global_entry != 0 and tree_reader.global_entry % 1000 == 0:
+                    print ("Writing histos to file")
+                    hm.writeHistos()
+
+                if batch_idx != -1 and timecounter.counter.started() and event.entry() % 100 == 0:
+                    # when in batch mode, if < 5min are left we stop the event loop
+                    if timecounter.counter.job_flavor_time_left(params.htc_jobflavor) < 5*60:
+                        tree_reader.printEntry()                        
+                        print ('    less than 5 min left for batch slot: exit event loop!')
+                        timecounter.counter.job_flavor_time_perc(params.htc_jobflavor)
+                        break
+
+
+            
+            except Exception as inst:
+                tree_reader.printEntry()
+                print(f"[EXCEPTION OCCURRED:] {str(inst)}")
+                print("Unexpected error:", sys.exc_info()[0])
+                traceback.print_exc()
+                sys.exit(200)
+
     # print("Processed {} events/{} TOT events".format(nev, ntuple.nevents()))
 
     print("Writing histos to file {}".format(params.output_filename))
@@ -252,113 +300,7 @@ def analyze(params, batch_idx=-1):
     output.Close()
 
 
-    return tree_reader.global_entry
-    ntuple = HGCalNtuple(input_files, tree=params.tree_name)
-    if params.events_per_job == -1:
-        if params.maxEvents == -1:
-            range_ev = (0, ntuple.nevents())
-
-    print('- created TChain containing {} events'.format(ntuple.nevents()))
-    print('- reading from event: {} to event {}'.format(range_ev[0], range_ev[1]))
-
-    ntuple.setCache(learn_events=1, entry_range=range_ev)
-    output = ROOT.TFile(params.output_filename, "RECREATE")
-    output.cd()
-    hm = histos.HistoManager()
-
-    if False:
-        hTCGeom = histos.GeomHistos('hTCGeom')
-        hTCGeom.fill(tc_geom_df[(np.abs(tc_geom_df.eta) > 1.65) & (np.abs(tc_geom_df.eta) < 2.85)])
-
-    # instantiate all the plotters
-    plotter_collection = []
-    plotter_collection.extend(params.plotters)
-    print(plotter_collection)
-
-    # -------------------------------------------------------
-    # book histos
-    for plotter in plotter_collection:
-        plotter.book_histos()
-
-    # -------------------------------------------------------
-    # event loop
-    ev_manager = collections.EventManager()
-
-    calib_manager = calibs.CalibManager()
-    calib_manager.set_calibration_version(params.calib_version)
-
-    if params.weight_file is not None:
-        ev_manager.read_weight_file(params.weight_file)
-
-    nev = 0
-    for evt_idx in range(range_ev[0], range_ev[1]+1):
-        # print(evt_idx)
-        event = ntuple.getEvent(evt_idx)
-        if (params.maxEvents != -1 and nev >= params.maxEvents):
-            break
-        if event is None:
-            # this prevents rare situation where, running in batch mode,
-            # the end of the range and the end of the file coincide
-            break
-
-        if debug >= 2 or event.entry() % 100 == 0:
-            print("--- Event {}, @ {}".format(
-                event.entry(),
-                datetime.datetime.now()))
-            print('    run: {}, lumi: {}, event: {}'.format(
-                event.run(), event.lumi(), event.event()))
-
-        if batch_idx != -1 and timecounter.counter.started() and event.entry() % 10 == 0:
-            # when in batch mode, if < 5min are left we stop the event loop
-            if timecounter.counter.job_flavor_time_left(params.htc_jobflavor) < 5*60:
-                print("+++ Event {}, @ {}".format(
-                    event.entry(),
-                    datetime.datetime.now()))
-                print ('    less than 5 min left for batch slot: exit event loop!')
-                timecounter.counter.job_flavor_time_perc(params.htc_jobflavor)
-                break
-
-        if event.entry() != 0 and event.entry() % 1000 == 0:
-            print ("Writing histos to file")
-            hm.writeHistos()
-
-        nev += 1
-
-        try:
-            ev_manager.read(event, debug)
-
-            puInfo = event.getPUInfo()
-            debugPrintOut(debug, 'PU', toCount=puInfo, toPrint=puInfo)
-
-            for plotter in plotter_collection:
-                # print plotter
-                plotter.fill_histos(debug=debug)
-
-        except Exception as inst:
-            print("[EXCEPTION OCCURRED:] --- Event {}, @ {}".format(
-                event.entry(), datetime.datetime.now()))
-            print('                       run: {}, lumi: {}, event: {}'.format(
-                event.run(), event.lumi(), event.event()))
-            print(str(inst))
-            print("Unexpected error:", sys.exc_info()[0])
-            traceback.print_exc()
-            sys.exit(200)
-
-    print("Processed {} events/{} TOT events".format(nev, ntuple.nevents()))
-    print("Writing histos to file {}".format(params.output_filename))
-
-    lastfile = ntuple.tree().GetFile()
-    print('Read bytes: {}, # of transaction: {}'.format(
-        lastfile.GetBytesRead(),  lastfile.GetReadCalls()))
-    if debug == -4:
-        ntuple.PrintCacheStats()
-
-    output.cd()
-    hm.writeHistos()
-
-    output.Close()
-
-    return nev
+    return tree_reader.n_tot_entries
 
 
 def editTemplate(infile, outfile, params):
