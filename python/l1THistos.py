@@ -564,6 +564,16 @@ class TkEmHistos(BaseHistos):
         rnp.fill_hist(self.h_tkIsoPV, tkegs.tkIsoPV)
         rnp.fill_hist(self.h_pfIsoPV, tkegs.pfIsoPV)
 
+    def fill_lazy(self, filler, sel_name):
+        filler.fill1d_lazy(self.h_pt, 'pt', sel_name)
+        filler.fill1d_lazy(self.h_eta, 'eta', sel_name)
+        filler.fill1d_lazy(self.h_energy, 'energy', sel_name)
+        filler.fill1d_lazy(self.h_hwQual, 'hwQual', sel_name)
+        filler.fill1d_lazy(self.h_tkIso, 'tkIso', sel_name)
+        filler.fill1d_lazy(self.h_pfIso, 'pfIso', sel_name)
+        filler.fill1d_lazy(self.h_tkIsoPV, 'tkIsoPV', sel_name)
+        filler.fill1d_lazy(self.h_pfIsoPV, 'pfIsoPV', sel_name)
+
 
 class TkEGHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
