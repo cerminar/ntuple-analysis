@@ -171,7 +171,7 @@ class TkElePlotter(GenericDataFrameLazyPlotter):
         super(TkElePlotter, self).__init__(histos.TkEleHistos, tkeg_set, tkeg_selections)
 
 
-class TkEmPlotter(GenericDataFramePlotter):
+class TkEmPlotter(GenericDataFrameLazyPlotter):
     def __init__(self, tkeg_set, tkeg_selections=[selections.Selection('all')]):
         super(TkEmPlotter, self).__init__(histos.TkEmHistos, tkeg_set, tkeg_selections)
 
