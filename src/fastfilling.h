@@ -117,3 +117,19 @@ private:
   DataFrame frame;
   std::vector<HistoFiller> fillers;
 };
+
+
+void fill1D_rate(TH1* histo, const std::vector<float>& values) {
+  for (auto value: values) {
+    for(int bin = 1; bin <= histo->FindBin(value); bin++) {
+      histo->Fill(histo->GetBinCenter(bin));
+    }
+  }
+}
+
+// def effForRate(rate):
+//      cut = 9999
+//      for ix in xrange(1,rateplot.GetNbinsX()+1):
+//          if rateplot.GetBinContent(ix) <= rate:
+//              cut = rateplot.GetXaxis().GetBinLowEdge(ix)
+//              break
