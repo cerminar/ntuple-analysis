@@ -40,7 +40,7 @@ class TreeReader(object):
                 # we processed the max # of events
                 return False
         if self.entry_range[1] != -1:
-            if self.global_entry > self.entry_range[1]:
+            if self.global_entry == self.entry_range[1]:
                 print ('END loop for entry_range')
                 return False
         if self.file_entry == self.tree.num_entries-1:

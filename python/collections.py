@@ -179,7 +179,7 @@ class DFCollection(object):
         # print (f'Coll: {self.name} fill for entry: {event.file_entry}')
         if event.file_entry == 0 or event.file_entry == self.next_entry_read or event.global_entry == event.entry_range[0]:
             # print ([self.read_entry_block, (event.entry_range[1]-event.global_entry), (event.tree.num_entries - event.file_entry)])
-            stride = min([self.read_entry_block, (event.entry_range[1]-event.global_entry), (event.tree.num_entries - event.file_entry)])
+            stride = min([self.read_entry_block, (1+event.entry_range[1]-event.global_entry), (event.tree.num_entries - event.file_entry)])
             if stride == 0:
                 print ('ERROR Last event????')
                 self.new_read = False
