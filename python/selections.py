@@ -135,6 +135,9 @@ tp_id_sel = [
 ]
 tp_pt_sel = [
     Selection('all', '', ''),
+    # Selection('Pt5to10', '5<=p_{T}^{L1}<10GeV', '(pt >= 5) & (pt < 10)'),
+    # Selection('Pt10to20', '10<=p_{T}^{L1}<20GeV', '(pt >= 10) & (pt < 20)'),
+    Selection('Pt10', 'p_{T}^{L1}>=10GeV', 'pt >= 10'),
     Selection('Pt10', 'p_{T}^{L1}>=10GeV', 'pt >= 10'),
     Selection('Pt20', 'p_{T}^{L1}>=20GeV', 'pt >= 20'),
     # Selection('Pt25', 'p_{T}^{L1}>=25GeV', 'pt >= 25'),
@@ -156,17 +159,17 @@ tp_tccluster_match_selections = [Selection('all', '', ''),
                                  ]
 tp_eta_ee_sel = [
     Selection('all', '', ''),
-    Selection('EtaA', '|#eta^{L1}| <= 1.52', 'abs(eta) <= 1.52'),
-    Selection('EtaB', '1.52 < |#eta^{L1}| <= 1.7', '1.52 < abs(eta) <= 1.7'),
-    Selection('EtaC', '1.7 < |#eta^{L1}| <= 2.4', '1.7 < abs(eta) <= 2.4'),
-    Selection('EtaD', '2.4 < |#eta^{L1}| <= 2.8', '2.4 < abs(eta) <= 2.8'),
-    Selection('EtaDE', '2.4 < |#eta^{L1}| <= 3.0', '2.4 < abs(eta) <= 3.0'),
+    # Selection('EtaA', '|#eta^{L1}| <= 1.52', 'abs(eta) <= 1.52'),
+    # Selection('EtaB', '1.52 < |#eta^{L1}| <= 1.7', '1.52 < abs(eta) <= 1.7'),
+    # Selection('EtaC', '1.7 < |#eta^{L1}| <= 2.4', '1.7 < abs(eta) <= 2.4'),
+    # Selection('EtaD', '2.4 < |#eta^{L1}| <= 2.8', '2.4 < abs(eta) <= 2.8'),
+    # Selection('EtaDE', '2.4 < |#eta^{L1}| <= 3.0', '2.4 < abs(eta) <= 3.0'),
     # Selection('EtaE', '|#eta^{L1}| > 2.8', 'abs(eta) > 2.8'),
     # Selection('EtaAB', '|#eta^{L1}| <= 1.7', 'abs(eta) <= 1.7'),
     Selection('EtaABC', '|#eta^{L1}| <= 2.4', 'abs(eta) <= 2.4'),
-    Selection('EtaBC', '1.52 < |#eta^{L1}| <= 2.4', '1.52 < abs(eta) <= 2.4'),
-    Selection('EtaBCD', '1.52 < |#eta^{L1}| <= 2.8', '1.52 < abs(eta) <= 2.8'),
-    Selection('EtaBCDE', '1.52 < |#eta^{L1}| < 3', '1.52 < abs(eta) < 3')
+    # Selection('EtaBC', '1.52 < |#eta^{L1}| <= 2.4', '1.52 < abs(eta) <= 2.4'),
+    # Selection('EtaBCD', '1.52 < |#eta^{L1}| <= 2.8', '1.52 < abs(eta) <= 2.8'),
+    # Selection('EtaBCDE', '1.52 < |#eta^{L1}| < 3', '1.52 < abs(eta) < 3')
                      ]
 
 
@@ -305,7 +308,8 @@ genpart_ele_genplotting += gen_ele_ee_sel
 
 eg_eta_eb_sel = [
     Selection('all'),
-    Selection('EtaF', '|#eta^{L1}| <= 1.479', 'abs(eta) <= 1.479')]
+    # Selection('EtaF', '|#eta^{L1}| <= 1.479', 'abs(eta) <= 1.479')
+    ]
 eg_eta_sel = [
     Selection('all'),
     Selection('EtaF', '|#eta^{L1}| <= 1.479', 'abs(eta) <= 1.479'),
@@ -315,8 +319,19 @@ eg_eta_sel = [
 eg_id_iso_sel = [
     Selection('all'),
     Selection('LooseTkID', 'LooseTkID', 'looseTkID'),
-    Selection('Iso0p1', 'Iso0p1', '((tkIso <= 0.1) & (abs(eta) <= 1.479)) | ((tkIso <= 0.125) & (abs(eta) > 1.479))'),
+    # Selection('Iso0p1', 'Iso0p1', '((tkIso <= 0.1) & (abs(eta) <= 1.479)) | ((tkIso <= 0.125) & (abs(eta) > 1.479))'),
     ]
+
+for iso_var in ['tkIso']:
+    for cut in [0.1, 0.2, 0.3, 0.4, 0.5]:
+        cut_str = str(cut).replace('.', 'p')
+        eg_id_iso_sel.append(Selection(f'{iso_var}{cut_str}', f'{iso_var}<={cut}', f'{iso_var}<={cut}'))
+
+for iso_var in ['tkIsoPV']:
+    for cut in [0.01, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3]:
+        cut_str = str(cut).replace('.', 'p')
+        eg_id_iso_sel.append(Selection(f'{iso_var}{cut_str}', f'{iso_var}<={cut}', f'{iso_var}<={cut}'))
+
 
 barrel_rate_selections = add_selections(eg_eta_eb_sel, eg_id_iso_sel)
 all_rate_selections = prune(eg_eta_sel+barrel_rate_selections)
@@ -329,7 +344,7 @@ eg_id_ee_selections = [
     # Selection('EGq1', 'q1', 'hwQual > 0'),
     # Selection('EGq2', 'hwQual 2', 'hwQual == 2'),
     # Selection('EGq3', 'hwQual 3', 'hwQual == 3'),
-    Selection('EGq4', 'hwQual 4', 'hwQual == 4'),
+    # Selection('EGq4', 'hwQual 4', 'hwQual == 4'),
     Selection('EGq5', 'hwQual 5', 'hwQual == 5')
 ]
 
@@ -349,9 +364,22 @@ eg_id_pt_eb_selections += add_selections(eg_id_eb_sel, tp_pt_sel)
 
 eg_iso_sel = [
     Selection('all'),
-    Selection('Iso0p2', 'Iso0p2', 'tkIso <= 0.2'),
-    Selection('Iso0p1', 'Iso0p1', 'tkIso <= 0.1'),
-    Selection('Iso0p3', 'Iso0p3', 'tkIso <= 0.3'), ]
+    # Selection('Iso0p2', 'Iso0p2', 'tkIso <= 0.2'),
+    # Selection('Iso0p1', 'Iso0p1', 'tkIso <= 0.1'),
+    # Selection('Iso0p3', 'Iso0p3', 'tkIso <= 0.3'), 
+    ]
+
+for iso_var in ['tkIso']:
+    for cut in [0.1, 0.2, 0.3, 0.4, 0.5]:
+        cut_str = str(cut).replace('.', 'p')
+        eg_iso_sel.append(Selection(f'{iso_var}{cut_str}', f'{iso_var}<={cut}', f'{iso_var}<={cut}'))
+
+for iso_var in ['tkIsoPV']:
+    for cut in [0.01, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3]:
+        cut_str = str(cut).replace('.', 'p')
+        eg_iso_sel.append(Selection(f'{iso_var}{cut_str}', f'{iso_var}<={cut}', f'{iso_var}<={cut}'))
+
+
 
 eg_id_iso_ee_sel = []
 eg_id_iso_ee_sel += add_selections(eg_id_ee_selections, eg_iso_sel)
@@ -455,7 +483,7 @@ if __name__ == "__main__":
     #     print sel
     # for sel in gen_ee_selections_tketa:
     #     print sel
-    for sel in pfeg_tp_input_selections:
+    for sel in barrel_rate_selections:
         print (sel)
     # for sel in eg_pt_selections_barrel:
     #     print sel
