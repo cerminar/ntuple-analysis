@@ -128,6 +128,20 @@ def prune(selection_list):
     return ret
 
 
+def fill_isowp_sel(sel_list, wps):
+    for iso_cut in wps.keys():
+        for pt_cut in wps[iso_cut]:
+            iso_var_name = iso_cut.split('0p')[0]
+            iso_cut_value = iso_cut.split('0p')[1]
+            sel_list.append(
+                Selection(
+                    f'{iso_cut}Pt{pt_cut}', 
+                    f'{iso_var_name}<=0.{iso_cut_value} & p_{{T}}>{pt_cut}GeV', 
+                    f'({iso_var_name}<=0.{iso_cut_value})&(pt>{pt_cut})')
+            )
+
+
+
 # TP selections
 tp_id_sel = [
     Selection('all', '', ''),
@@ -198,12 +212,12 @@ gen_eta_ee_sel = [
     # Selection('EtaB', '1.52 < |#eta^{GEN}| <= 1.7', '1.52 < abs(eta) <= 1.7'),
     # Selection('EtaC', '1.7 < |#eta^{GEN}| <= 2.4', '1.7 < abs(eta) <= 2.4'),
     # Selection('EtaD', '2.4 < |#eta^{GEN}| <= 2.8', '2.4 < abs(eta) <= 2.8'),
-    Selection('EtaDE', '2.4 < |#eta^{GEN}| <= 3.0', '2.4 < abs(eta) <= 3.0'),
+    # Selection('EtaDE', '2.4 < |#eta^{GEN}| <= 3.0', '2.4 < abs(eta) <= 3.0'),
     # Selection('EtaE', '|#eta^{GEN}| > 2.8', 'abs(eta) > 2.8'),
     # Selection('EtaAB', '|#eta^{GEN}| <= 1.7', 'abs(eta) <= 1.7'),
     # Selection('EtaABC', '|#eta^{GEN}| <= 2.4', 'abs(eta) <= 2.4'),
     Selection('EtaBC', '1.52 < |#eta^{GEN}| <= 2.4', '1.52 < abs(eta) <= 2.4'),
-    Selection('EtaBCD', '1.52 < |#eta^{GEN}| <= 2.8', '1.52 < abs(eta) <= 2.8'),
+    # Selection('EtaBCD', '1.52 < |#eta^{GEN}| <= 2.8', '1.52 < abs(eta) <= 2.8'),
     # Selection('EtaBCDE', '1.52 < |#eta^{GEN}|', '1.52 < abs(eta)')
     ]
 gen_eta_eb_sel = [
@@ -221,7 +235,7 @@ gen_pt_sel = [
     # Selection('Pt10to25', '10 #leq p_{T}^{GEN} < 25GeV', '(pt >= 10) & (pt < 25)'),
     # Selection('Pt20', 'p_{T}^{GEN}>=20GeV', 'pt >= 20'),
     Selection('Pt30', 'p_{T}^{GEN}>=30GeV', 'pt >= 30'),
-    Selection('Pt35', 'p_{T}^{GEN}>=35GeV', 'pt >= 35'),
+    # Selection('Pt35', 'p_{T}^{GEN}>=35GeV', 'pt >= 35'),
     # Selection('Pt40', 'p_{T}^{GEN}>=40GeV', 'pt >= 40')
 ]
 gen_pt_sel_red = [
@@ -296,7 +310,8 @@ gen_selections += add_selections(gen_pid_sel, gen_eta_sel)
 gen_ee_selections_calib = []
 gen_ee_selections_calib += gen_pid_ee_sel
 gen_ee_selections_calib += gen_pid_eta_ee_sel
-gen_ee_selections_calib += add_selections([gen_pid_eta_ee_sel[1]], gen_pt_sel)
+# print (gen_pid_eta_ee_sel)
+# gen_ee_selections_calib += add_selections([gen_pid_eta_ee_sel[1]], gen_pt_sel)
 # gen_ee_selections_calib += gen_pid_eta_ee_sel
 
 # genpart_ele_
@@ -351,7 +366,26 @@ eg_id_ee_selections = [
 eg_id_pt_ee_selections = []
 eg_id_pt_ee_selections += add_selections(eg_id_ee_selections, tp_pt_sel)
 
+
+eg_iso_ee_wp = {
+    'tkIso0p2': [27, 16, 8],
+    'tkIsoPV0p06': [27, 19, 11]
+}
+
+eg_iso_ee_wp_sel = [
+    # Selection('tkIso0p2Pt10', 'tkIso <= 0.2 & p_{T}>10GeV', '(tkIso<=0.2)&(pt>10)'),
+    # Selection('tkIsoPV0p06Pt10', 'tkIsoPV <= 0.06 & p_{T}>10GeV', '(tkIsoPV<=0.06)&(pt>10)')
+]
+
+fill_isowp_sel(eg_iso_ee_wp_sel, eg_iso_ee_wp)
+
+
+eg_iso_pt_ee_selections = []
+eg_iso_pt_ee_selections += add_selections(eg_id_ee_selections, eg_iso_ee_wp_sel)
+
+
 # EG selection quality and Pt EB
+
 
 eg_id_eb_sel = [
     Selection('all'),
@@ -361,6 +395,20 @@ eg_id_eb_sel = [
 eg_id_pt_eb_selections = []
 eg_id_pt_eb_selections += add_selections(eg_id_eb_sel, tp_pt_sel)
 
+eg_iso_eb_wp = {
+    'tkIso0p2': [10, 23, 40],
+    'tkIsoPV0p06': [13, 24, 35]
+}
+
+eg_iso_eb_wp_sel = [
+    # Selection('tkIso0p2Pt10', 'tkIso <= 0.2 & p_{T}>10GeV', '(tkIso<=0.2)&(pt>10)'),
+    # Selection('tkIsoPV0p06Pt10', 'tkIsoPV <= 0.06 & p_{T}>10GeV', '(tkIsoPV<=0.06)&(pt>10)')
+]
+
+fill_isowp_sel(eg_iso_eb_wp_sel, eg_iso_eb_wp)
+
+eg_iso_pt_eb_selections = []
+eg_iso_pt_eb_selections += add_selections(eg_id_eb_sel, eg_iso_eb_wp_sel)
 
 eg_iso_sel = [
     Selection('all'),
@@ -483,7 +531,7 @@ if __name__ == "__main__":
     #     print sel
     # for sel in gen_ee_selections_tketa:
     #     print sel
-    for sel in barrel_rate_selections:
+    for sel in eg_iso_pt_eb_selections:
         print (sel)
     # for sel in eg_pt_selections_barrel:
     #     print sel
