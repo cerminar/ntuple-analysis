@@ -1100,16 +1100,20 @@ class IsoTuplePlotter(BasePlotter):
                 self.h_resoset[histo_name] = histos.IsoTuples(histo_name)
 
     def fill_histos(self, debug=0):
-        for tp_sel in self.data_selections:
-            objects = self.data_set.query(tp_sel)
-            for gen_sel in self.gen_selections:
-                genReference = self.gen_set.query(gen_sel)
-                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+        pass
 
+    def fill_histos_event(self, idx, debug=0):
+        for tp_sel in self.data_selections:
+            objects = self.data_set.query_event(tp_sel, idx)
+            for gen_sel in self.gen_selections:
+                genReference = self.gen_set.query_event(gen_sel, idx)
+                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                # print (histo_name)
+                # print (f'# data: {objects.shape[0]}')
+                # print (f'# gen: {genReference.shape[0]}')
+                # print (genReference)
                 h_resoset = self.h_resoset[histo_name]
-                # print 'TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name)
-                # print genReference
-                # print objects
+                # print ('TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name))
                 self.plotObjectMatch(genReference,
                                      objects,
                                      None,
@@ -1118,6 +1122,7 @@ class IsoTuplePlotter(BasePlotter):
                                      h_resoset,
                                      self.data_set.name,
                                      debug)
+
 
 
 
