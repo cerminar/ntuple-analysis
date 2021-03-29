@@ -435,9 +435,27 @@ tp_cluster_tc_match_plotters = [
 
 eg_isotuples_plotters = [
     plotters.IsoTuplePlotter(
-        collections.tkelesEL,
+        collections.tkeles_EE_pfnf,
         collections.gen_parts,
         selections.eg_id_ee_selections,
         selections.gen_pid_ee_sel
+        ),
+    plotters.IsoTuplePlotter(
+        collections.tkem_EE_pfnf,
+        collections.gen_parts,
+        selections.eg_id_ee_selections,
+        selections.gen_pid_ee_sel
+        ),
+    plotters.IsoTuplePlotter(
+        collections.tkeles_EB_pfnf,
+        collections.gen_parts,
+        selections.eg_id_eb_sel,
+        selections.gen_pid_sel
+        ),
+    plotters.IsoTuplePlotter(
+        collections.tkem_EB_pfnf,
+        collections.gen_parts,
+        selections.eg_id_eb_sel,
+        selections.gen_pid_sel
         )
 ]

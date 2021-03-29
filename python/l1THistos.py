@@ -1180,7 +1180,7 @@ class ClusterConeHistos(BaseHistos):
 class IsoTuples(BaseTuples):
     def __init__(self, name, root_file=None, debug=False):
         BaseTuples.__init__(
-            self, 'iso', 'pid_gen:e_gen:pt_gen:eta_gen:e:pt:eta:iso',
+            self, 'iso', 'pid_gen:e_gen:pt_gen:eta_gen:e:pt:eta:tkIso:pfIso:tkIsoPV:pfIsoPV',
             name, root_file, debug)
 
     def fill(self, reference, target):
@@ -1198,7 +1198,14 @@ class IsoTuples(BaseTuples):
         values_fill.append(target.pt)
         values_fill.append(target.eta)
         values_fill.append(target.tkIso)
-
+        values_fill.append(target.pfIso)
+        if 'tkIsoPV' in target.keys():
+            values_fill.append(target.tkIsoPV)
+            values_fill.append(target.pfIsoPV)
+        else:
+            values_fill.append(-1)
+            values_fill.append(-1)
+            
         self.t_values.Fill(array('f', values_fill))
 
 
