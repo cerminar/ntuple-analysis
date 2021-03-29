@@ -277,10 +277,11 @@ def main(analyze, submit_mode=False):
                          outfile=os.path.join(sample_batch_dir, 'batch_harvest.sub'),
                          params=params)
 
-            if opt.LOCAL:
-                editTemplate(infile='templates/run_local.sh',
-                             outfile=os.path.join(sample_batch_dir, 'run_local.sh'),
-                             params=params)
+            if submit_mode:
+                if opt.LOCAL:
+                    editTemplate(infile='templates/run_local.sh',
+                                 outfile=os.path.join(sample_batch_dir, 'run_local.sh'),
+                                 params=params)
                 
             for jid in range(0, n_jobs):
                 dagman_spl += 'JOB Job_{} batch.sub\n'.format(jid)
