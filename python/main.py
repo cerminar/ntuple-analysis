@@ -326,12 +326,13 @@ def main(analyze, submit_mode=False):
         # print('condor_submit {}'.format(condor_file_path))
         print('condor_submit_dag {}'.format(dagman_file_name))
         
-        if opt.LOCAL:
-            print('will now run jobs on local resources')
-            analyze(batch_dir,
-                    samples_to_process,
-                    opt.WORKERS,
-                    opt.WORKDIR)
+        if submit_mode:
+            if opt.LOCAL:
+                print('will now run jobs on local resources')
+                analyze(batch_dir,
+                        samples_to_process,
+                        opt.WORKERS,
+                        opt.WORKDIR)
         
         sys.exit(0)
 
