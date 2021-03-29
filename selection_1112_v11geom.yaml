@@ -359,7 +359,7 @@ collections:
       ele_flat2to100_PU200: 3
       photon_flat8to150_PU0: 4
       photon_flat8to150_PU200: 2
-
+      
 
   isostudy_eg:
     file_label:
@@ -367,7 +367,7 @@ collections:
     samples:
       # - ele_flat2to100_PU0
       # - ele_flat2to100_PU200
-      - doubleele_flat1to100_PU0
+      # - doubleele_flat1to100_PU0
       - doubleele_flat1to100_PU200
       - nugun_alleta_pu200
       # - photon_flat8to150_PU0
@@ -376,7 +376,7 @@ collections:
     plotters:
       - eg_isotuples_plotters
     htc_jobflavor:
-      espresso
+      microcentury
     priorities:
       nugun_alleta_pu200: 6
       ele_flat2to100_PU0: 1
@@ -385,6 +385,10 @@ collections:
       photon_flat8to150_PU200: 0
       doubleele_flat1to100_PU0: 2
       doubleele_flat1to100_PU200: 7
+    events_per_job:
+      doubleele_flat1to100_PU0: 10000
+      doubleele_flat1to100_PU200: 20000
+      nugun_alleta_pu200: 11000
 
 
 
