@@ -368,6 +368,7 @@ collections:
       # - ele_flat2to100_PU0
       # - ele_flat2to100_PU200
       # - doubleele_flat1to100_PU0
+      - doublephoton_flat1to100_PU200
       - doubleele_flat1to100_PU200
       - nugun_alleta_pu200
       # - photon_flat8to150_PU0
@@ -385,9 +386,11 @@ collections:
       photon_flat8to150_PU200: 0
       doubleele_flat1to100_PU0: 2
       doubleele_flat1to100_PU200: 7
+      doublephoton_flat1to100_PU200: 6
     events_per_job:
       doubleele_flat1to100_PU0: 10000
       doubleele_flat1to100_PU200: 20000
+      doublephoton_flat1to100_PU200: 20000
       nugun_alleta_pu200: 11000
 
 
