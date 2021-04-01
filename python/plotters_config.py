@@ -49,9 +49,9 @@ eg_rate_plotters = [
     # plotters.RatePlotter(
     #     collections.tkeles_EB, selections.barrel_rate_selections),
     plotters.RatePlotter(
-        collections.tkem_EE, selections.eg_id_iso_eta_ee_selections),
+        collections.tkem_EE_pfnf, selections.eg_id_iso_eta_ee_selections),
     plotters.RatePlotter(
-        collections.tkem_EB, selections.barrel_rate_selections),
+        collections.tkem_EB_pfnf, selections.barrel_rate_selections),
     # plotters.RatePlotter(
     #     collections.tkeles_EE_pf, selections.eg_id_iso_eta_ee_selections),
     # plotters.RatePlotter(

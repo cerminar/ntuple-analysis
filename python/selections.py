@@ -7,8 +7,11 @@ Selections can be composed (added). The actual selection syntax follows the
 `pandas` `DataFrame` `query` syntax.
 """
 
-
 from __future__ import print_function
+import json
+
+
+
 class PID:
     electron = 11
     photon = 22
@@ -140,6 +143,23 @@ def fill_isowp_sel(sel_list, wps):
                     f'({iso_var_name}<=0.{iso_cut_value})&(pt>{pt_cut})')
             )
 
+
+def read_isowp_sel(file_name, obj_name, eta_reg):
+    iso_wps = {}
+    with open(file_name) as f:
+        iso_wps = json.load(f)
+
+    iso_wps_eb = iso_wps[obj_name]
+    ret_sel = []
+    for iso_var, wps_pt in iso_wps_eb.items():
+        for pt_point, wps in wps_pt.items():
+            for eff, cut in wps.items():
+                eff_str = str(eff).split('.')[1]
+                pt_str = pt_point.split(eta_reg)[1]
+                wp_name = f'{iso_var}WP{eff_str}{pt_str}'
+                wp_label = f'{iso_var} WP{eff_str} @ {pt_str}'
+                ret_sel.append(Selection(f'{wp_name}', f'{wp_label}', f'{iso_var}<={cut}'))
+    return ret_sel
 
 
 # TP selections
@@ -333,19 +353,21 @@ eg_eta_sel = [
 ]
 eg_id_iso_sel = [
     Selection('all'),
-    Selection('LooseTkID', 'LooseTkID', 'looseTkID'),
+    # Selection('LooseTkID', 'LooseTkID', 'looseTkID'),
     # Selection('Iso0p1', 'Iso0p1', '((tkIso <= 0.1) & (abs(eta) <= 1.479)) | ((tkIso <= 0.125) & (abs(eta) > 1.479))'),
     ]
 
-for iso_var in ['tkIso']:
-    for cut in [0.1, 0.2, 0.3, 0.4, 0.5]:
-        cut_str = str(cut).replace('.', 'p')
-        eg_id_iso_sel.append(Selection(f'{iso_var}{cut_str}', f'{iso_var}<={cut}', f'{iso_var}<={cut}'))
+eg_id_iso_sel.extend(read_isowp_sel('data/iso_wps.json', 'PFTkEmEB', 'EtaF'))
 
-for iso_var in ['tkIsoPV']:
-    for cut in [0.01, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3]:
-        cut_str = str(cut).replace('.', 'p')
-        eg_id_iso_sel.append(Selection(f'{iso_var}{cut_str}', f'{iso_var}<={cut}', f'{iso_var}<={cut}'))
+# for iso_var in ['tkIso']:
+#     for cut in [0.1, 0.2, 0.3, 0.4, 0.5]:
+#         cut_str = str(cut).replace('.', 'p')
+#         eg_id_iso_sel.append(Selection(f'{iso_var}{cut_str}', f'{iso_var}<={cut}', f'{iso_var}<={cut}'))
+# 
+# for iso_var in ['tkIsoPV']:
+#     for cut in [0.01, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3]:
+#         cut_str = str(cut).replace('.', 'p')
+#         eg_id_iso_sel.append(Selection(f'{iso_var}{cut_str}', f'{iso_var}<={cut}', f'{iso_var}<={cut}'))
 
 
 barrel_rate_selections = add_selections(eg_eta_eb_sel, eg_id_iso_sel)
@@ -417,16 +439,16 @@ eg_iso_sel = [
     # Selection('Iso0p3', 'Iso0p3', 'tkIso <= 0.3'), 
     ]
 
-for iso_var in ['tkIso']:
-    for cut in [0.1, 0.2, 0.3, 0.4, 0.5]:
-        cut_str = str(cut).replace('.', 'p')
-        eg_iso_sel.append(Selection(f'{iso_var}{cut_str}', f'{iso_var}<={cut}', f'{iso_var}<={cut}'))
-
-for iso_var in ['tkIsoPV']:
-    for cut in [0.01, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3]:
-        cut_str = str(cut).replace('.', 'p')
-        eg_iso_sel.append(Selection(f'{iso_var}{cut_str}', f'{iso_var}<={cut}', f'{iso_var}<={cut}'))
-
+eg_iso_sel.extend(read_isowp_sel('data/iso_wps.json', 'PFTkEmEE', 'EtaABC'))
+# for iso_var in ['tkIso']:
+#     for cut in [0.1, 0.2, 0.3, 0.4, 0.5]:
+#         cut_str = str(cut).replace('.', 'p')
+#         eg_iso_sel.append(Selection(f'{iso_var}{cut_str}', f'{iso_var}<={cut}', f'{iso_var}<={cut}'))
+# 
+# for iso_var in ['tkIsoPV']:
+#     for cut in [0.01, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3]:
+#         cut_str = str(cut).replace('.', 'p')
+#         eg_iso_sel.append(Selection(f'{iso_var}{cut_str}', f'{iso_var}<={cut}', f'{iso_var}<={cut}'))
 
 
 eg_id_iso_ee_sel = []
@@ -531,7 +553,7 @@ if __name__ == "__main__":
     #     print sel
     # for sel in gen_ee_selections_tketa:
     #     print sel
-    for sel in eg_iso_pt_eb_selections:
+    for sel in eg_id_iso_eta_ee_selections:
         print (sel)
     # for sel in eg_pt_selections_barrel:
     #     print sel

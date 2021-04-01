@@ -7,7 +7,7 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v146C
+  plot_version: v146D
   run_clustering: False
   run_density_computation: False
   calib_version: calib-v134C
@@ -316,7 +316,7 @@ collections:
     priorities:
       nugun_alleta_pu200: 6
     events_per_job:
-      nugun_alleta_pu200: 10000
+      nugun_alleta_pu200: 20000
 
   noise_samples:
     file_label:
