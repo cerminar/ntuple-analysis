@@ -9,7 +9,7 @@ Selections can be composed (added). The actual selection syntax follows the
 
 from __future__ import print_function
 import json
-
+import os
 
 
 class PID:
@@ -145,8 +145,10 @@ def fill_isowp_sel(sel_list, wps):
 
 
 def read_isowp_sel(file_name, obj_name, eta_reg):
+    pwd = os.path.dirname(__file__)
+    filename = os.path.join(pwd, '..', file_name)
     iso_wps = {}
-    with open(file_name) as f:
+    with open(filename) as f:
         iso_wps = json.load(f)
 
     iso_wps_eb = iso_wps[obj_name]
@@ -160,6 +162,22 @@ def read_isowp_sel(file_name, obj_name, eta_reg):
                 wp_label = f'{iso_var} WP{eff_str} @ {pt_str}'
                 ret_sel.append(Selection(f'{wp_name}', f'{wp_label}', f'{iso_var}<={cut}'))
     return ret_sel
+
+
+def read_isoptwp_sel(file_name, obj_name):
+    pwd = os.path.dirname(__file__)
+    filename = os.path.join(pwd, '..', file_name)
+    iso_wps = {}
+    with open(filename) as f:
+        iso_wps = json.load(f)
+
+    iso_wps_obj = iso_wps[obj_name]
+    ret_sel = []
+    for iso_sel, wps_pt in iso_wps_obj.items():
+        for rate_point, pt_cut in wps_pt.items():
+            ret_sel.append((iso_sel, Selection(f'@{rate_point}kHz', f'@{rate_point}kHz', f'pt>={pt_cut}')))
+    return ret_sel
+
 
 
 # TP selections
@@ -389,24 +407,6 @@ eg_id_pt_ee_selections = []
 eg_id_pt_ee_selections += add_selections(eg_id_ee_selections, tp_pt_sel)
 
 
-eg_iso_ee_wp = {
-    'tkIso0p2': [27, 16, 8],
-    'tkIsoPV0p06': [27, 19, 11]
-}
-
-eg_iso_ee_wp_sel = [
-    # Selection('tkIso0p2Pt10', 'tkIso <= 0.2 & p_{T}>10GeV', '(tkIso<=0.2)&(pt>10)'),
-    # Selection('tkIsoPV0p06Pt10', 'tkIsoPV <= 0.06 & p_{T}>10GeV', '(tkIsoPV<=0.06)&(pt>10)')
-]
-
-fill_isowp_sel(eg_iso_ee_wp_sel, eg_iso_ee_wp)
-
-
-eg_iso_pt_ee_selections = []
-eg_iso_pt_ee_selections += add_selections(eg_id_ee_selections, eg_iso_ee_wp_sel)
-
-
-# EG selection quality and Pt EB
 
 
 eg_id_eb_sel = [
@@ -417,20 +417,6 @@ eg_id_eb_sel = [
 eg_id_pt_eb_selections = []
 eg_id_pt_eb_selections += add_selections(eg_id_eb_sel, tp_pt_sel)
 
-eg_iso_eb_wp = {
-    'tkIso0p2': [10, 23, 40],
-    'tkIsoPV0p06': [13, 24, 35]
-}
-
-eg_iso_eb_wp_sel = [
-    # Selection('tkIso0p2Pt10', 'tkIso <= 0.2 & p_{T}>10GeV', '(tkIso<=0.2)&(pt>10)'),
-    # Selection('tkIsoPV0p06Pt10', 'tkIsoPV <= 0.06 & p_{T}>10GeV', '(tkIsoPV<=0.06)&(pt>10)')
-]
-
-fill_isowp_sel(eg_iso_eb_wp_sel, eg_iso_eb_wp)
-
-eg_iso_pt_eb_selections = []
-eg_iso_pt_eb_selections += add_selections(eg_id_eb_sel, eg_iso_eb_wp_sel)
 
 eg_iso_sel = [
     Selection('all'),
@@ -543,6 +529,33 @@ pfeg_eb_input_selections = add_selections(
 pftkinput_selections = []
 pftkinput_selections += add_selections(pfinput_regions, pftkinput_quality)
 
+eg_iso_ee_wp = {
+    'tkIso0p2': [27, 16, 8],
+    'tkIsoPV0p06': [27, 19, 11]
+}
+
+eg_iso_ee_wp_sel = [
+    # Selection('tkIso0p2Pt10', 'tkIso <= 0.2 & p_{T}>10GeV', '(tkIso<=0.2)&(pt>10)'),
+    # Selection('tkIsoPV0p06Pt10', 'tkIsoPV <= 0.06 & p_{T}>10GeV', '(tkIsoPV<=0.06)&(pt>10)')
+]
+
+# print(isopt_sels)
+# fill_isowp_sel(eg_iso_ee_wp_sel, eg_iso_ee_wp)
+
+
+eg_iso_pt_ee_selections = []
+for iso_sel_name, pt_sel in read_isoptwp_sel('data/iso_pt_wps.json', 'PFNFtkEmEE'):
+    iso_sel = list(filter(lambda x: x.name == iso_sel_name, eg_id_iso_eta_ee_selections))[0]
+    eg_iso_pt_ee_selections.append(iso_sel+pt_sel)
+    # print(iso_sel+pt_sel)
+# eg_iso_pt_ee_selections += add_selections(eg_id_ee_selections, eg_iso_ee_wp_sel)
+
+eg_iso_pt_eb_selections = []
+for iso_sel_name, pt_sel in read_isoptwp_sel('data/iso_pt_wps.json', 'PFNFtkEmEB'):
+    iso_sel = list(filter(lambda x: x.name == iso_sel_name, barrel_rate_selections))[0]
+    eg_iso_pt_eb_selections.append(iso_sel+pt_sel)
+
+# EG selection quality and Pt EB
 
 if __name__ == "__main__":
     # for sel in pfeginput_selections:
@@ -553,7 +566,7 @@ if __name__ == "__main__":
     #     print sel
     # for sel in gen_ee_selections_tketa:
     #     print sel
-    for sel in eg_id_iso_eta_ee_selections:
+    for sel in eg_iso_pt_eb_selections:
         print (sel)
     # for sel in eg_pt_selections_barrel:
     #     print sel

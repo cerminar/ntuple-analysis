@@ -189,10 +189,10 @@ eg_genmatched_plotters_iso = [
     # #     collections.tkelesEL_all, collections.gen_parts,
     # #     selections.eg_id_iso_pt_eb_selections_ext, selections.gen_selections),
     plotters.EGGenMatchPlotter(
-        collections.tkem_EE, collections.gen_parts,
+        collections.tkem_EE_pfnf, collections.gen_parts,
         selections.eg_iso_pt_ee_selections, selections.gen_ee_tk_selections),
     plotters.EGGenMatchPlotter(
-        collections.tkem_EB, collections.gen_parts,
+        collections.tkem_EB_pfnf, collections.gen_parts,
         selections.eg_iso_pt_eb_selections, selections.gen_eb_selections),
     # plotters.EGGenMatchPlotter(
     #     collections.tkem_EE_pf, collections.gen_parts,
