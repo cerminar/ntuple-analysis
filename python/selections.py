@@ -542,18 +542,18 @@ eg_iso_ee_wp_sel = [
 # print(isopt_sels)
 # fill_isowp_sel(eg_iso_ee_wp_sel, eg_iso_ee_wp)
 
-
 eg_iso_pt_ee_selections = []
-for iso_sel_name, pt_sel in read_isoptwp_sel('data/iso_pt_wps.json', 'PFNFtkEmEE'):
-    iso_sel = list(filter(lambda x: x.name == iso_sel_name, eg_id_iso_eta_ee_selections))[0]
-    eg_iso_pt_ee_selections.append(iso_sel+pt_sel)
-    # print(iso_sel+pt_sel)
-# eg_iso_pt_ee_selections += add_selections(eg_id_ee_selections, eg_iso_ee_wp_sel)
-
+# for iso_sel_name, pt_sel in read_isoptwp_sel('data/iso_pt_wps.json', 'PFNFtkEmEE'):
+#     print (iso_sel_name, pt_sel)
+#     iso_sel = list(filter(lambda x: x.name == iso_sel_name, eg_id_iso_eta_ee_selections))[0]
+#     eg_iso_pt_ee_selections.append(iso_sel+pt_sel)
+#     # print(iso_sel+pt_sel)
+# # eg_iso_pt_ee_selections += add_selections(eg_id_ee_selections, eg_iso_ee_wp_sel)
+# 
 eg_iso_pt_eb_selections = []
-for iso_sel_name, pt_sel in read_isoptwp_sel('data/iso_pt_wps.json', 'PFNFtkEmEB'):
-    iso_sel = list(filter(lambda x: x.name == iso_sel_name, barrel_rate_selections))[0]
-    eg_iso_pt_eb_selections.append(iso_sel+pt_sel)
+# for iso_sel_name, pt_sel in read_isoptwp_sel('data/iso_pt_wps.json', 'PFNFtkEmEB'):
+#     iso_sel = list(filter(lambda x: x.name == iso_sel_name, barrel_rate_selections))[0]
+#     eg_iso_pt_eb_selections.append(iso_sel+pt_sel)
 
 # EG selection quality and Pt EB
 
