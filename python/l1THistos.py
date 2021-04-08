@@ -289,7 +289,9 @@ class RateHistos(BaseHistos):
         if root_file is not None or True:
             for attr_1d in [attr for attr in dir(self) if (attr.startswith('h_') and 'TH1' in getattr(self, attr).ClassName())]:
                 setattr(self, attr_1d+'_graph', GraphBuilder(self, attr_1d))
-
+        
+        if root_file is not None:
+            self.normalize(31000)
             # self.h_simenergy = ROOT.TH1F(name+'_energy', 'Digi sim-energy (GeV)', 100, 0, 2)
 
     def fill(self, pt, eta):
