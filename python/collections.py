@@ -264,19 +264,14 @@ def tkeg_fromcluster_fixture(tkegs):
     return tkegs
 
 
-# FIXME: scorporate the part wich computes the layer_weights 
+# NOTE: scorporate the part wich computes the layer_weights 
 # (needed only by rthe calib plotters) from the rest (creating ad-hoc collections)
 # this should also allow for removing the tc dependency -> huge speedup in filling
-def cl3d_fixtures(clusters, tcs):
-    # print clusters.columns
-    # for backward compatibility
+# FIXME: this needs to be ported to the new interface reading several entries at once
+def cl3d_layerEnergy_hoe(clusters, tcs):
+    """ """
     if clusters.empty:
         return clusters
-
-    clusters.rename(columns={'clusters_id': 'clusters',
-                             'clusters_n': 'nclu'},
-                    inplace=True)
-    # clusters['hwQual'] = clusters['quality']
     do_compute_hoe = False
     do_compute_layer_energy = False
     if 'hoe' not in clusters.columns:
@@ -284,7 +279,7 @@ def cl3d_fixtures(clusters, tcs):
     if 'layer_energy' not in clusters.columns:
         do_compute_layer_energy = True
 
-    def compute_layer_energy3(cluster, do_layer_energy=True, do_hoe=False):
+    def compute_layer_energy(cluster, do_layer_energy=True, do_hoe=False):
         components = tcs[tcs.id.isin(cluster.clusters)]
         hist, bins = np.histogram(components.layer.values,
                                   bins=range(0, 29, 2),
@@ -300,35 +295,31 @@ def cl3d_fixtures(clusters, tcs):
             results.append(hoe)
         return results
 
-    def compute_layer_energy2(cluster, do_layer_energy=True, do_hoe=False):
-        components = tcs[tcs.id.isin(cluster.clusters)]
-        hist, bins = np.histogram(components.layer.values,
-                                  bins=range(0, 29, 2),
-                                  weights=components.energy.values)
-        if do_layer_energy:
-            cluster['layer_energy'] = hist
-        if do_hoe:
-            em_energy = np.sum(hist)
-            hoe = -1
-            if em_energy != 0:
-                hoe = max(0, cluster.energy - em_energy)/em_energy
-            cluster['hoe'] = hoe
-        return cluster
-
     if do_compute_hoe or do_compute_layer_energy:
-        # clusters = clusters.apply(lambda cl: compute_layer_energy2(cl,
-        #                                                            do_compute_layer_energy,
-        #                                                            do_compute_hoe), axis=1)
         new_columns = []
         if do_compute_layer_energy:
             new_columns.append('layer_energy')
         if do_compute_hoe:
             new_columns.append('hoe')
-        clusters[new_columns] = clusters.apply(lambda cl: compute_layer_energy3(cl,
-                                                                                do_compute_layer_energy,
-                                                                                do_compute_hoe),
-                                               result_type='expand',
-                                               axis=1)
+        clusters[new_columns] = clusters.apply(
+            lambda cl: compute_layer_energy(
+                cl,
+                do_compute_layer_energy,
+                do_compute_hoe),
+            result_type='expand',
+            axis=1)
+    return clusters
+    
+
+def cl3d_fixtures(clusters):
+    # print(clusters.columns)
+    # for backward compatibility
+    if clusters.empty:
+        return clusters
+
+    clusters.rename(columns={'clusters_id': 'clusters',
+                             'clusters_n': 'nclu'},
+                    inplace=True)
 
     clusters['ptem'] = clusters.pt/(1+clusters.hoe)
     clusters['eem'] = clusters.energy/(1+clusters.hoe)
@@ -760,29 +751,26 @@ cl3d_truth = DFCollection(
     name='HMvDRTrue', label='HM+dR(layer) True Cl3d',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='cl3dtruth', entry_block=entry_block),
-    fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
-    depends_on=[tcs], debug=0)
+    fixture_function=lambda clusters: cl3d_fixtures(clusters),
+    debug=0)
 
 cl3d_def = DFCollection(
     name='DEF', label='dRC3d',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='cl3d', entry_block=entry_block),
-    fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
-    depends_on=[tcs])
+    fixture_function=lambda clusters: cl3d_fixtures(clusters))
 
 cl3d_def_nc = DFCollection(
     name='DEFNC', label='dRC3d NewTh',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='cl3dNC', entry_block=entry_block),
-    fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
-    depends_on=[tcs])
+    fixture_function=lambda clusters: cl3d_fixtures(clusters))
 
 cl3d_hm = DFCollection(
     name='HMvDR', label='HM+dR(layer) Cl3d',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='HMvDR', entry_block=entry_block, fallback='hmVRcl3d'),
-    fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
-    depends_on=[tcs],
+    fixture_function=lambda clusters: cl3d_fixtures(clusters),
     debug=0,
     print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'phi', 'quality', 'ienergy', 'ipt']].sort_values(by='pt', ascending=False))
 # cl3d_hm.activate()
@@ -809,29 +797,25 @@ cl3d_hm_rebin = DFCollection(
     name='HMvDRRebin', label='HM+dR(layer) rebin Cl3d ',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='hmVRcl3dRebin', entry_block=entry_block),
-    fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
-    depends_on=[tcs])
+    fixture_function=lambda clusters: cl3d_fixtures(clusters))
 
 cl3d_hm_stc = DFCollection(
     name='HMvDRsTC', label='HM+dR(layer) SuperTC Cl3d ',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='hmVRcl3dSTC', entry_block=entry_block),
-    fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
-    depends_on=[tcs])
+    fixture_function=lambda clusters: cl3d_fixtures(clusters))
 
 cl3d_hm_nc0 = DFCollection(
     name='HMvDRNC0', label='HM+dR(layer) Cl3d + NewTh0',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='hmVRcl3dNC0', entry_block=entry_block),
-    fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
-    depends_on=[tcs])
+    fixture_function=lambda clusters: cl3d_fixtures(clusters))
 
 cl3d_hm_nc1 = DFCollection(
     name='HMvDRNC1', label='HM+dR(layer) Cl3d + NewTh1',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='hmVRcl3dNC1', entry_block=entry_block),
-    fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
-    depends_on=[tcs])
+    fixture_function=lambda clusters: cl3d_fixtures(clusters))
 
 cl3d_def_merged = DFCollection(
     name='DEFMerged', label='dRC3d merged',
