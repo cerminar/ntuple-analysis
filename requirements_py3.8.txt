@@ -62,3 +62,5 @@ tornado==6.0.4
 typing-extensions==3.7.4.3
 urllib3==1.25.11
 yarl==1.6.2
+uproot4==4.0.0
+tabulate==0.8.9
