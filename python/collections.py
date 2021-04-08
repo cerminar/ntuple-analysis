@@ -145,17 +145,6 @@ class DFCollection(object):
         self.next_entry_read = 0
         self.read_entry_block = read_entry_block
         # print (f'Create collection: {self.name} with read_entry_block: {read_entry_block}')
-        if len(depends_on) > 0:
-            common_block_size = -1
-            for coll in depends_on:
-                if common_block_size == -1:
-                    common_block_size = coll.read_entry_block
-                else:
-                    if coll.read_entry_block != common_block_size:
-                        raise ValueError(f'Collection {self.name} depends on collections with different common_block_size!')
-            if common_block_size != self.read_entry_block:
-                print(f'Collection {self.name}: common_block_size set to dependent value: {common_block_size}')
-                self.read_entry_block = common_block_size
                 
         self.new_read = False
         self.new_read_nentries = 0
@@ -166,6 +155,19 @@ class DFCollection(object):
         event_manager.registerCollection(self)
 
     def activate(self):
+        if len(self.depends_on) > 0:
+            common_block_size = -1
+            for coll in self.depends_on:
+                if common_block_size == -1:
+                    common_block_size = coll.read_entry_block
+                else:
+                    if coll.read_entry_block != common_block_size:
+                        raise ValueError(f'Collection {self.name} depends on collections with different common_block_size!')
+            if common_block_size != self.read_entry_block:
+                print(f'Collection {self.name}: common_block_size set to dependent value: {common_block_size}')
+                self.read_entry_block = common_block_size
+
+
         if not self.is_active:
             for dep in self.depends_on:
                 dep.activate()
@@ -727,6 +729,7 @@ tcs = DFCollection(
     name='TC', label='Trigger Cells',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='tc', entry_block=entry_block),
+    read_entry_block=200,
     fixture_function=tc_fixtures, debug=0)
 
 tcs_truth = DFCollection(
@@ -771,6 +774,7 @@ cl3d_hm = DFCollection(
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='HMvDR', entry_block=entry_block, fallback='hmVRcl3d'),
     fixture_function=lambda clusters: cl3d_fixtures(clusters),
+    read_entry_block=200,
     debug=0,
     print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'phi', 'quality', 'ienergy', 'ipt']].sort_values(by='pt', ascending=False))
 # cl3d_hm.activate()
