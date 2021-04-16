@@ -230,7 +230,7 @@ collections:
       # - ttower_plotters
       # - ttower_genmatched_plotters
     htc_jobflavor:
-      tomorrow
+      microcentury
     priorities:
       ele_flat2to100_PU0: 1
       ele_flat2to100_PU200: 5
@@ -244,7 +244,7 @@ collections:
       photon_flat8to150_PU200: 0
       doubleele_flat1to100_PU0: 2100
       doubleele_flat1to100_PU200: 800
-      doublephoton_flat1to100_PU200: 800
+      doublephoton_flat1to100_PU200: 5000
 
 
   highpt_tps:
