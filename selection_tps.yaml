@@ -243,7 +243,7 @@ collections:
       photon_flat8to150_PU0: 0
       photon_flat8to150_PU200: 0
       doubleele_flat1to100_PU0: 2100
-      doubleele_flat1to100_PU200: 800
+      doubleele_flat1to100_PU200: 10000
       doublephoton_flat1to100_PU200: 5000
 
 
