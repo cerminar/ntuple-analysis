@@ -189,7 +189,7 @@ tp_pt_sel = [
     Selection('all', '', ''),
     # Selection('Pt5to10', '5<=p_{T}^{L1}<10GeV', '(pt >= 5) & (pt < 10)'),
     # Selection('Pt10to20', '10<=p_{T}^{L1}<20GeV', '(pt >= 10) & (pt < 20)'),
-    Selection('Pt10', 'p_{T}^{L1}>=10GeV', 'pt >= 10'),
+    # Selection('Pt10', 'p_{T}^{L1}>=10GeV', 'pt >= 10'),
     Selection('Pt10', 'p_{T}^{L1}>=10GeV', 'pt >= 10'),
     Selection('Pt20', 'p_{T}^{L1}>=20GeV', 'pt >= 20'),
     # Selection('Pt25', 'p_{T}^{L1}>=25GeV', 'pt >= 25'),
@@ -269,6 +269,7 @@ gen_eta_sel = [
 
 
 gen_pt_sel = [
+    Selection('all'),
     Selection('Pt15', 'p_{T}^{GEN}>=15GeV', 'pt >= 15'),
     # Selection('Pt10to25', '10 #leq p_{T}^{GEN} < 25GeV', '(pt >= 10) & (pt < 25)'),
     # Selection('Pt20', 'p_{T}^{GEN}>=20GeV', 'pt >= 20'),
@@ -302,6 +303,7 @@ gen_part_fbrem_sel = [
 ]
 gen_ele_ee_sel = add_selections(gen_ele_sel, gen_ee_sel)
 gen_ele_pt_ee_sel = add_selections(gen_ele_ee_sel, gen_pt_sel)
+gen_ele_pt_eta_ee_sel = add_selections(gen_eta_ee_sel, gen_pt_sel)
 gen_ele_eta_ee_sel = add_selections(gen_ele_ee_sel, gen_eta_ee_sel)
 gen_ele_eta_brem_ee_sel = add_selections(gen_ele_eta_ee_sel, gen_part_fbrem_sel)
 
@@ -316,9 +318,10 @@ gen_ee_selections = []
 gen_ee_selections += gen_pid_ee_sel
 gen_ee_selections += gen_pid_pt_ee_sel
 gen_ee_selections += gen_pid_eta_ee_sel
+gen_ee_selections += gen_ele_pt_eta_ee_sel
 gen_ee_extrange_selections = gen_ee_selections
 gen_ee_selections = add_selections(gen_ee_selections, gen_pt_upper)
-
+gen_ee_selections = prune(gen_ee_selections)
 
 
 # gen_ee_selections += add_selections(gen_pid_eta_ee_sel, gen_pt_sel_red)
@@ -565,7 +568,7 @@ if __name__ == "__main__":
     #     print sel
     # for sel in gen_ee_selections_tketa:
     #     print sel
-    for sel in eg_iso_pt_eb_selections:
+    for sel in gen_ee_selections:
         print (sel)
     # for sel in eg_pt_selections_barrel:
     #     print sel

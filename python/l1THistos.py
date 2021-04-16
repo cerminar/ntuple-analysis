@@ -439,6 +439,34 @@ class Cluster3DHistos(BaseHistos):
             rnp.fill_hist(self.h_bdtPi, cl3ds.bdt_pi)
         rnp.fill_hist(self.h_bdtEg, cl3ds.bdteg)
 
+    def fill_lazy(self, filler, sel_name):
+        # self.h_npt05.Fill(len(cl3ds[cl3ds.pt > 0.5].index))
+        # self.h_npt20.Fill(len(cl3ds[cl3ds.pt > 2.0].index))
+
+        filler.fill1d_lazy(self.h_pt, 'pt', sel_name)
+        filler.fill1d_lazy(self.h_eta, 'eta', sel_name)
+        filler.fill1d_lazy(self.h_energy, 'energy', sel_name)
+        filler.fill1d_lazy(self.h_nclu, 'nclu', sel_name)
+        # filler.fill2d_lazy(self.h_ncluVpt, cl3ds[['nclu', 'pt']], sel_name)
+        filler.fill1d_lazy(self.h_showlenght, 'showerlength', sel_name)
+        filler.fill1d_lazy(self.h_firstlayer, 'firstlayer', sel_name)
+        filler.fill1d_lazy(self.h_sEtaEtaTot, 'seetot', sel_name)
+        filler.fill1d_lazy(self.h_sEtaEtaMax, 'seemax', sel_name)
+        filler.fill1d_lazy(self.h_sPhiPhiTot, 'spptot', sel_name)
+        filler.fill1d_lazy(self.h_sPhiPhiMax, 'sppmax', sel_name)
+        filler.fill1d_lazy(self.h_sZZ, 'szz', sel_name)
+        filler.fill1d_lazy(self.h_eMaxOverE, 'emaxe', sel_name)
+        filler.fill1d_lazy(self.h_HoE, 'hoe', sel_name)
+        if 'iso0p2' in filler.columns:
+            filler.fill1d_lazy(self.h_iso0p2, 'iso0p2', sel_name)
+            filler.fill1d_lazy(self.h_isoRel0p2, 'isoRel0p2', sel_name)
+        if 'bdt_pu' in filler.columns:
+            filler.fill1d_lazy(self.h_bdtPU, 'bdt_pu', sel_name)
+        if 'bdt_pi' in filler.columns:
+            filler.fill1d_lazy(self.h_bdtPi, 'bdt_pi', sel_name)
+        filler.fill1d_lazy(self.h_bdtEg, 'bdteg', sel_name)
+
+
 
 class EGHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):

@@ -29,11 +29,11 @@ track_plotters = [plotters.TrackPlotter(collections.tracks, selections.tracks_se
 # tkeg_plotters = [plotters.TkEGPlotter(collections.tkegs, selections.tkeg_qual_selections)]
 rate_plotters = [
     plotters.RatePlotter(collections.cl3d_hm, selections.tp_rate_selections),
-    plotters.RatePlotter(collections.cl3d_hm_calib, selections.tp_rate_selections),
-    plotters.RatePlotter(collections.cl3d_hm_shapeDr, selections.tp_rate_selections),
-    plotters.RatePlotter(collections.cl3d_hm_shapeDr_calib, selections.tp_rate_selections),
-    plotters.RatePlotter(collections.cl3d_hm_shapeDr_calib_new, selections.tp_rate_selections),
-    plotters.RatePlotter(collections.cl3d_hm_shapeDtDu_calib, selections.tp_rate_selections),
+    # plotters.RatePlotter(collections.cl3d_hm_calib, selections.tp_rate_selections),
+    # plotters.RatePlotter(collections.cl3d_hm_shapeDr, selections.tp_rate_selections),
+    # plotters.RatePlotter(collections.cl3d_hm_shapeDr_calib, selections.tp_rate_selections),
+    # plotters.RatePlotter(collections.cl3d_hm_shapeDr_calib_new, selections.tp_rate_selections),
+    # plotters.RatePlotter(collections.cl3d_hm_shapeDtDu_calib, selections.tp_rate_selections),
     # plotters.RatePlotter(collections.cl3d_hm_emint, selections.tp_rate_selections),
 ]
 
@@ -94,12 +94,16 @@ tp_calib_plotters = [
 ]
 
 tp_genmatched_plotters = [
-    plotters.TPGenMatchPlotter(
-        collections.tp_hm_vdr, collections.gen_parts,
-        selections.tp_match_selections, selections.gen_ee_selections),
-    plotters.TPGenMatchPlotter(
-        collections.tp_hm_emint, collections.gen_parts,
-        selections.tp_match_selections, selections.gen_ee_selections),
+    plotters.Cl3DGenMatchPlotter(
+        collections.cl3d_hm, collections.gen_parts,
+        selections.tp_match_selections, selections.gen_ee_selections
+    ),
+    # plotters.TPGenMatchPlotter(
+    #     collections.tp_hm_vdr, collections.gen_parts,
+    #     selections.tp_match_selections, selections.gen_ee_selections),
+    # plotters.TPGenMatchPlotter(
+    #     collections.tp_hm_emint, collections.gen_parts,
+    #     selections.tp_match_selections, selections.gen_ee_selections),
     # plotters.TPGenMatchPlotter(
     #     collections.tp_hm_calib, collections.gen_parts,
     #     selections.tp_match_selections, selections.gen_ee_selections),

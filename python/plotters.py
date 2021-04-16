@@ -166,6 +166,15 @@ class GenericDataFramePlotter(BasePlotter):
             self.fill_histos(debug)
 
 
+class GenPlotter(GenericDataFrameLazyPlotter):
+    def __init__(self, gen_set, gen_selections=[selections.Selection('all')]):
+        super(GenPlotter, self).__init__(
+            histos.GenParticleHistos, 
+            gen_set, 
+            selections.add_selections(
+                gen_selections,
+                [selections.Selection('', '', 'gen > 0')]))
+    
 class TkElePlotter(GenericDataFrameLazyPlotter):
     def __init__(self, tkeg_set, tkeg_selections=[selections.Selection('all')]):
         super(TkElePlotter, self).__init__(histos.TkEleHistos, tkeg_set, tkeg_selections)
@@ -223,25 +232,6 @@ class TPPlotter(BasePlotter):
             # utils.debugPrintOut(debug, '{}_{}'.format(self.tp_set.name, 'CL3D'), cl3Ds, cl3Ds[:3])
             if not cl3Ds.empty and not cl2Ds.empty and not tcs.empty:
                 self.h_tpset[tp_sel.name].fill(tcs, cl2Ds, cl3Ds)
-
-
-class GenPlotter:
-    def __init__(self, gen_set, gen_selections=[selections.Selection('all')]):
-        self.gen_set = gen_set
-        self.gen_selections = selections.add_selections(
-            gen_selections,
-            [selections.Selection('', '', 'gen > 0')])
-        self.h_gen = {}
-
-    def book_histos(self):
-        self.gen_set.activate()
-        for selection in self.gen_selections:
-            self.h_gen[selection.name] = histos.GenParticleHistos(name='h_genParts_{}'.format(selection.name))
-
-    def fill_histos(self, debug=0):
-        for gen_sel in self.gen_selections:
-            gen_parts = self.gen_set.query(gen_sel)
-            self.h_gen[gen_sel.name].fill(gen_parts)
 
 
 class TPGenMatchPlotter(BasePlotter):
@@ -643,6 +633,15 @@ class TrackGenMatchPlotter(GenericGenMatchPlotter):
                                                    data_set, gen_set,
                                                    data_selections, gen_selections,
                                                    gen_eta_phi_columns=['eta', 'phi'])
+
+
+class Cl3DGenMatchPlotter(GenericGenMatchPlotter):
+    def __init__(self, data_set, gen_set,
+                 data_selections=[selections.Selection('all')],
+                 gen_selections=[selections.Selection('all')]):
+        super(Cl3DGenMatchPlotter, self).__init__(histos.Cluster3DHistos, histos.ResoHistos,
+                                                  data_set, gen_set,
+                                                  data_selections, gen_selections)
 
 
 class EGGenMatchPlotter(GenericGenMatchPlotter):
