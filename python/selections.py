@@ -255,7 +255,7 @@ gen_eta_ee_sel = [
     # Selection('EtaAB', '|#eta^{GEN}| <= 1.7', 'abs(eta) <= 1.7'),
     # Selection('EtaABC', '|#eta^{GEN}| <= 2.4', 'abs(eta) <= 2.4'),
     Selection('EtaBC', '1.52 < |#eta^{GEN}| <= 2.4', '1.52 < abs(eta) <= 2.4'),
-    # Selection('EtaBCD', '1.52 < |#eta^{GEN}| <= 2.8', '1.52 < abs(eta) <= 2.8'),
+    Selection('EtaBCD', '1.52 < |#eta^{GEN}| <= 2.8', '1.52 < abs(eta) <= 2.8'),
     # Selection('EtaBCDE', '1.52 < |#eta^{GEN}|', '1.52 < abs(eta)')
     ]
 gen_eta_eb_sel = [
@@ -318,7 +318,7 @@ gen_ee_selections = []
 gen_ee_selections += gen_pid_ee_sel
 gen_ee_selections += gen_pid_pt_ee_sel
 gen_ee_selections += gen_pid_eta_ee_sel
-gen_ee_selections += gen_ele_pt_eta_ee_sel
+# gen_ee_selections += gen_ele_pt_eta_ee_sel
 gen_ee_extrange_selections = gen_ee_selections
 gen_ee_selections = add_selections(gen_ee_selections, gen_pt_upper)
 gen_ee_selections = prune(gen_ee_selections)
@@ -378,7 +378,8 @@ eg_id_iso_sel = [
     # Selection('Iso0p1', 'Iso0p1', '((tkIso <= 0.1) & (abs(eta) <= 1.479)) | ((tkIso <= 0.125) & (abs(eta) > 1.479))'),
     ]
 
-eg_id_iso_sel.extend(read_isowp_sel('data/iso_wps.json', 'PFTkEmEB', 'EtaF'))
+if False:
+    eg_id_iso_sel.extend(read_isowp_sel('data/iso_wps.json', 'PFTkEmEB', 'EtaF'))
 
 # for iso_var in ['tkIso']:
 #     for cut in [0.1, 0.2, 0.3, 0.4, 0.5]:
@@ -402,8 +403,10 @@ eg_id_ee_selections = [
     # Selection('EGq1', 'q1', 'hwQual > 0'),
     # Selection('EGq2', 'hwQual 2', 'hwQual == 2'),
     # Selection('EGq3', 'hwQual 3', 'hwQual == 3'),
-    # Selection('EGq4', 'hwQual 4', 'hwQual == 4'),
-    Selection('EGq5', 'hwQual 5', 'hwQual == 5')
+    Selection('PFEG', 'PF EG-ID', '(hwQual == 1) | (hwQual == 3)'),
+    Selection('EGnoPU', 'EG-ID noPU', '(hwQual == 3) | (hwQual == 2)'),
+    Selection('EGq4', 'EG-ID', 'hwQual == 4'),
+    # Selection('EGq5', 'hwQual 5', 'hwQual == 5')
 ]
 
 eg_id_pt_ee_selections = []
@@ -428,7 +431,8 @@ eg_iso_sel = [
     # Selection('Iso0p3', 'Iso0p3', 'tkIso <= 0.3'), 
     ]
 
-eg_iso_sel.extend(read_isowp_sel('data/iso_wps.json', 'PFTkEmEE', 'EtaABC'))
+if False:
+    eg_iso_sel.extend(read_isowp_sel('data/iso_wps.json', 'PFTkEmEE', 'EtaABC'))
 # for iso_var in ['tkIso']:
 #     for cut in [0.1, 0.2, 0.3, 0.4, 0.5]:
 #         cut_str = str(cut).replace('.', 'p')
@@ -546,16 +550,18 @@ eg_iso_ee_wp_sel = [
 # fill_isowp_sel(eg_iso_ee_wp_sel, eg_iso_ee_wp)
 
 eg_iso_pt_ee_selections = []
-for iso_sel_name, pt_sel in read_isoptwp_sel('data/iso_pt_wps.json', 'PFNFtkEmEE'):
-    iso_sel = list(filter(lambda x: x.name == iso_sel_name, eg_id_iso_eta_ee_selections))[0]
-    eg_iso_pt_ee_selections.append(iso_sel+pt_sel)
-    # print(iso_sel+pt_sel)
-# eg_iso_pt_ee_selections += add_selections(eg_id_ee_selections, eg_iso_ee_wp_sel)
-# 
 eg_iso_pt_eb_selections = []
-for iso_sel_name, pt_sel in read_isoptwp_sel('data/iso_pt_wps.json', 'PFNFtkEmEB'):
-    iso_sel = list(filter(lambda x: x.name == iso_sel_name, barrel_rate_selections))[0]
-    eg_iso_pt_eb_selections.append(iso_sel+pt_sel)
+
+if False:
+    for iso_sel_name, pt_sel in read_isoptwp_sel('data/iso_pt_wps.json', 'PFNFtkEmEE'):
+        iso_sel = list(filter(lambda x: x.name == iso_sel_name, eg_id_iso_eta_ee_selections))[0]
+        eg_iso_pt_ee_selections.append(iso_sel+pt_sel)
+        # print(iso_sel+pt_sel)
+    # eg_iso_pt_ee_selections += add_selections(eg_id_ee_selections, eg_iso_ee_wp_sel)
+    # 
+    for iso_sel_name, pt_sel in read_isoptwp_sel('data/iso_pt_wps.json', 'PFNFtkEmEB'):
+        iso_sel = list(filter(lambda x: x.name == iso_sel_name, barrel_rate_selections))[0]
+        eg_iso_pt_eb_selections.append(iso_sel+pt_sel)
 
 # EG selection quality and Pt EB
 
