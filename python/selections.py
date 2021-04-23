@@ -218,9 +218,9 @@ tp_eta_ee_sel = [
     # Selection('EtaDE', '2.4 < |#eta^{L1}| <= 3.0', '2.4 < abs(eta) <= 3.0'),
     # Selection('EtaE', '|#eta^{L1}| > 2.8', 'abs(eta) > 2.8'),
     # Selection('EtaAB', '|#eta^{L1}| <= 1.7', 'abs(eta) <= 1.7'),
-    Selection('EtaABC', '|#eta^{L1}| <= 2.4', 'abs(eta) <= 2.4'),
-    # Selection('EtaBC', '1.52 < |#eta^{L1}| <= 2.4', '1.52 < abs(eta) <= 2.4'),
-    # Selection('EtaBCD', '1.52 < |#eta^{L1}| <= 2.8', '1.52 < abs(eta) <= 2.8'),
+    # Selection('EtaABC', '|#eta^{L1}| <= 2.4', 'abs(eta) <= 2.4'),
+    Selection('EtaBC', '1.52 < |#eta^{L1}| <= 2.4', '1.52 < abs(eta) <= 2.4'),
+    Selection('EtaBCD', '1.52 < |#eta^{L1}| <= 2.8', '1.52 < abs(eta) <= 2.8'),
     # Selection('EtaBCDE', '1.52 < |#eta^{L1}| < 3', '1.52 < abs(eta) < 3')
                      ]
 
@@ -403,10 +403,10 @@ eg_id_ee_selections = [
     # Selection('EGq1', 'q1', 'hwQual > 0'),
     # Selection('EGq2', 'hwQual 2', 'hwQual == 2'),
     # Selection('EGq3', 'hwQual 3', 'hwQual == 3'),
-    Selection('PFEG', 'PF EG-ID', '(hwQual == 1) | (hwQual == 3)'),
-    Selection('EGnoPU', 'EG-ID noPU', '(hwQual == 3) | (hwQual == 2)'),
+    # Selection('PFEG', 'PF EG-ID', '(hwQual == 1) | (hwQual == 3)'),
+    # Selection('EGnoPU', 'EG-ID noPU', '(hwQual == 3) | (hwQual == 2)'),
     Selection('EGq4', 'EG-ID', 'hwQual == 4'),
-    # Selection('EGq5', 'hwQual 5', 'hwQual == 5')
+    Selection('EGq5', 'EG-ID+brem', 'hwQual == 5')
 ]
 
 eg_id_pt_ee_selections = []
@@ -557,11 +557,12 @@ if False:
         iso_sel = list(filter(lambda x: x.name == iso_sel_name, eg_id_iso_eta_ee_selections))[0]
         eg_iso_pt_ee_selections.append(iso_sel+pt_sel)
         # print(iso_sel+pt_sel)
-    # eg_iso_pt_ee_selections += add_selections(eg_id_ee_selections, eg_iso_ee_wp_sel)
     # 
     for iso_sel_name, pt_sel in read_isoptwp_sel('data/iso_pt_wps.json', 'PFNFtkEmEB'):
         iso_sel = list(filter(lambda x: x.name == iso_sel_name, barrel_rate_selections))[0]
         eg_iso_pt_eb_selections.append(iso_sel+pt_sel)
+else:
+    eg_iso_pt_ee_selections += add_selections(eg_id_ee_selections, eg_iso_ee_wp_sel)
 
 # EG selection quality and Pt EB
 
@@ -574,7 +575,7 @@ if __name__ == "__main__":
     #     print sel
     # for sel in gen_ee_selections_tketa:
     #     print sel
-    for sel in gen_ee_selections:
+    for sel in eg_id_iso_eta_ee_selections:
         print (sel)
     # for sel in eg_pt_selections_barrel:
     #     print sel
