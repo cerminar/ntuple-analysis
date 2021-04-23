@@ -400,13 +400,13 @@ eg_all_rate_selections = [sel for sel in all_rate_selections if 'Iso' not in sel
 
 
 eg_id_ee_selections = [
-    # Selection('EGq1', 'q1', 'hwQual > 0'),
-    # Selection('EGq2', 'hwQual 2', 'hwQual == 2'),
+    Selection('EGq1', 'hwQual=1', 'hwQual == 1'),
+    Selection('EGq2', 'hwQual=2', 'hwQual == 2'),
     # Selection('EGq3', 'hwQual 3', 'hwQual == 3'),
     # Selection('PFEG', 'PF EG-ID', '(hwQual == 1) | (hwQual == 3)'),
     # Selection('EGnoPU', 'EG-ID noPU', '(hwQual == 3) | (hwQual == 2)'),
-    Selection('EGq4', 'EG-ID', 'hwQual == 4'),
-    Selection('EGq5', 'EG-ID+brem', 'hwQual == 5')
+    Selection('EGq4', 'hwQual=4', 'hwQual == 4'),
+    Selection('EGq5', 'hwQual=5', 'hwQual == 5')
 ]
 
 eg_id_pt_ee_selections = []
