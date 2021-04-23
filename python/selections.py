@@ -10,7 +10,7 @@ Selections can be composed (added). The actual selection syntax follows the
 from __future__ import print_function
 import json
 import os
-
+import re
 
 class PID:
     electron = 11
@@ -178,6 +178,36 @@ def read_isoptwp_sel(file_name, obj_name):
             ret_sel.append((iso_sel, Selection(f'@{rate_point}kHz', f'@{rate_point}kHz', f'pt>={pt_cut}')))
     return ret_sel
 
+
+class Selector(object):
+    def __init__(self, selector):
+        self.selections = []
+        self.debug = False
+        r = re.compile(selector)
+        mgr = SelectionManager()
+        self.selections = [sel for sel in mgr.selections if r.match(sel.name)]
+        self.selections = prune(self.selections)
+        if self.debug:
+            print([sel.name for sel in self.selections])
+    
+    def dot(self, selector):
+        other = Selector(selector)
+        self.selections = add_selections(self.selections, other.selections)
+        if self.debug:
+            print([sel.name for sel in self.selections])
+        return self
+
+    def __add__(self, other):
+        self.selections.extend(other.selections)
+        if self.debug:
+            print([sel.name for sel in self.selections])
+        return self
+    
+    def __repr__(self):
+        return '<Selector sels=\n{}\n>'.format('\n'.join([str(sel) for sel in self.selections]))
+    
+    def __call__(self):
+        return self.selections
 
 
 # TP selections
@@ -566,36 +596,16 @@ else:
 
 # EG selection quality and Pt EB
 
+sim_rate_ee_selections = (Selector('^EGq[4-5]$').dot('^Eta[^D][BC]*[BCD]$|all'))()
+emu_rate_ee_selections = (Selector('^EGq[1-2]$').dot('^Eta[^D][BC]*[BCD]$|all'))()
+sim_gen_ee_selections = (Selector('^EGq[4-5]$').dot('^Pt[1-2][0]$|all'))()
+emu_gen_ee_selections = (Selector('^EGq[1-2]$').dot('^Pt[1-2][0]$|all'))()
+
 if __name__ == "__main__":
-    # for sel in pfeginput_selections:
-    #     print(sel)
-    # for sel in eg_pt_selections:
-    #     print sel.name
-    # for sel in tkisoeg_pt_selections:
-    #     print sel
-    # for sel in gen_ee_selections_tketa:
-    #     print sel
-    for sel in eg_id_iso_eta_ee_selections:
+    
+    print('enter selection name: ')
+    selec_name = input()
+    sel_list = []
+    sel_list = eval(selec_name)
+    for sel in sel_list:
         print (sel)
-    # for sel in eg_pt_selections_barrel:
-    #     print sel
-    # for sel in gen_part_barrel_selections:
-    #     print sel
-    # for sel in gen_selections:
-    #     print sel
-    # for sel in gen_ee_selections_tketa:
-    #     print sel
-    # for sel in eg_pt_selections:
-    #     print sel
-    # for sel in eg_id_iso_eta_ee_selections:
-    #     print sel
-    # for sel in eg_id_iso_pt_eb_selections_ext:
-    #     print sel
-    # for sel in eg_id_pt_eb_selections_ext:
-    #     print sel
-    # for sel in eg_all_rate_selections:
-    #     print sel
-    # for sel in tp_rate_selections:
-    #     print sel
-    # for sel in gen_ele_ee_selections:
-    #     print sel
