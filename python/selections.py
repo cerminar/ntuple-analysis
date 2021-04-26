@@ -73,10 +73,17 @@ class Selection:
 
     def __init__(self, name, label='', selection=''):
         self.name = name
-        self.label = label
+        self.label_ = label
         self.selection = selection
         self.hash = hash(selection)
         self.register()
+    
+    @property
+    def label(self):
+        obj_name = 'L1'
+        if 'GEN' in self.name:
+            obj_name = 'GEN'
+        return self.label_.replace('TOBJ', obj_name)    
 
     def register(self):
         selection_manager = SelectionManager()
@@ -88,11 +95,15 @@ class Selection:
             return self
         if self.all:
             return sel_obj
-        new_label = '{}, {}'.format(self.label, sel_obj.label)
-        if self.label == '':
-            new_label = sel_obj.label
+        new_label = '{}, {}'.format(self.label_, sel_obj.label_)
+        if self.label_ == '':
+            new_label = sel_obj.label_
         if sel_obj.label == '':
-            new_label = self.label
+            new_label = self.label_
+        # obj_name = 'L1'
+        # if 'GEN' in sel_obj.name or 'GEN' in self.name:
+        #     obj_name = 'GEN'
+        # new_label = new_label.replace('TOBJ', obj_name)    
         return Selection(name='{}{}'.format(self.name, sel_obj.name),
                          label=new_label,
                          selection='({}) & ({})'.format(self.selection, sel_obj.selection))
@@ -180,17 +191,19 @@ def read_isoptwp_sel(file_name, obj_name):
 
 
 class Selector(object):
+    all_selections = []
+
     def __init__(self, selector):
         self.selections = []
         self.debug = False
         r = re.compile(selector)
-        mgr = SelectionManager()
-        self.selections = [sel for sel in mgr.selections if r.match(sel.name)]
+        # mgr = SelectionManager()
+        self.selections = [sel for sel in Selector.all_selections if r.match(sel.name)]
         self.selections = prune(self.selections)
         if self.debug:
             print([sel.name for sel in self.selections])
     
-    def dot(self, selector):
+    def times(self, selector):
         other = Selector(selector)
         self.selections = add_selections(self.selections, other.selections)
         if self.debug:
@@ -209,6 +222,29 @@ class Selector(object):
     def __call__(self):
         return self.selections
 
+def compare_selections(sel1, sel2):
+    if len(sel1) != len(sel2):
+        print(f'[DIFF] len 1: {len(sel1)} len2: {len(sel2)}')
+        return False
+    
+    sel1.sort(key=lambda x: x.name)
+    sel2.sort(key=lambda x: x.name)
+    ret = True
+    for id in range(0, len(sel1)):
+        isDiff = False
+        if sel1[id].name != sel2[id].name:
+            isDiff = True
+        if sel1[id].label != sel2[id].label:
+            isDiff = True
+        if sel1[id].selection != sel2[id].selection:
+            isDiff = True
+        
+        if isDiff:
+            print(f'[DIFF] {sel1[id]} {sel2[id]}')
+            ret = False
+            
+    return ret
+            
 
 # TP selections
 tp_id_sel = [
@@ -254,12 +290,6 @@ tp_eta_ee_sel = [
     # Selection('EtaBCDE', '1.52 < |#eta^{L1}| < 3', '1.52 < abs(eta) < 3')
                      ]
 
-
-tp_rate_selections = add_selections(tp_id_sel, tp_eta_ee_sel)
-tp_match_selections = add_selections(tp_id_sel, tp_pt_sel)
-tp_calib_selections = tp_id_sel
-
-
 genpart_ele_selections = [
     Selection('Ele', 'e^{#pm}', 'abs(pdgid) == {}'.format(PID.electron))]
 genpart_photon_selections = [
@@ -273,6 +303,10 @@ gen_ee_sel = [
     # # FIXME: remove after test (or pick one)
     # Selection('R0', 'R0', 'reachedEE >0 ')
 ]
+
+
+
+
 # gen_ee_sel = [
 #     Selection('', '', 'reachedEE >0 ')]
 gen_eta_ee_sel = [
@@ -328,9 +362,87 @@ gen_ele_sel = [
 ]
 gen_part_fbrem_sel = [
     Selection('all', '', ''),
-    Selection('HBrem', 'f_{BREM} >= 0.5', 'fbrem >= 0.5'),
-    Selection('LBrem', 'ff_{BREM} < 0.5', 'fbrem < 0.5'),
+    Selection('BremH', 'f_{BREM}>=0.5', 'fbrem >= 0.5'),
+    Selection('BremL', 'f_{BREM}<0.5', 'fbrem < 0.5'),
 ]
+
+
+eg_eta_eb_sel = [
+    Selection('all'),
+    # Selection('EtaF', '|#eta^{L1}| <= 1.479', 'abs(eta) <= 1.479')
+    ]
+eg_eta_sel = [
+    Selection('all'),
+    Selection('EtaF', '|#eta^{L1}| <= 1.479', 'abs(eta) <= 1.479'),
+    Selection('EtaA', '|#eta^{L1}| <= 1.52', 'abs(eta) <= 1.52'),
+    Selection('EtaBC', '1.52 < |#eta^{L1}| <= 2.4', '1.52 < abs(eta) <= 2.4')
+]
+
+eg_id_ee_selections = [
+    Selection('EGq1', 'hwQual=1', 'hwQual == 1'),
+    Selection('EGq2', 'hwQual=2', 'hwQual == 2'),
+    Selection('EGq3', 'hwQual=3', 'hwQual == 3'),
+    Selection('EGq2or3', 'hwQual=2/3', '(hwQual == 2) || (hwQual == 3)'),
+    Selection('EGq1or3', 'hwQual=1/3', '(hwQual == 1) || (hwQual == 3)'),
+    # Selection('PFEG', 'PF EG-ID', '(hwQual == 1) | (hwQual == 3)'),
+    # Selection('EGnoPU', 'EG-ID noPU', '(hwQual == 3) | (hwQual == 2)'),
+    Selection('EGq4', 'hwQual=4', 'hwQual == 4'),
+    Selection('EGq5', 'hwQual=5', 'hwQual == 5'),
+    Selection('EGq6', 'hwQual=6', 'hwQual == 6')
+
+]
+
+tracks_quality_sels = [Selection('all'),
+                       Selection('St4', '# stubs > 3', 'nStubs > 3')]
+tracks_pt_sels = [Selection('all'),
+                  Selection('Pt2', 'p_{T}^{TOBJ}>=2GeV', 'pt >= 2'),
+                  Selection('Pt5', 'p_{T}^{TOBJ}>=5GeV', 'pt >= 5'),
+                  Selection('Pt10', 'p_{T}^{TOBJ}>=10GeV', 'pt >= 10')]
+
+pfinput_regions = [
+    Selection('all'),
+    Selection('PFinBRL', 'Barrel', 'eta_reg_4 | eta_reg_5 | eta_reg_6'),  # 4 5 6
+    Selection('PFinHGC', 'HgCal', 'eta_reg_3 | eta_reg_7'),  # 3 7
+    Selection('PFinHGCNoTk', 'HgCalNoTk', 'eta_reg_2 | eta_reg_8'),  # 2 8
+    Selection('PFinHF', 'HF', 'eta_reg_0 | eta_reg_1 | eta_reg_9 | eta_reg_10'),  # 0 1 9 10
+    ]
+
+pftkinput_quality = [
+    Selection('all'),
+    Selection('TkPt2Chi2', 'p_{T}^{TOBJ} > 2GeV & #Chi^{2}_{norm} < 15', '(pt > 2) & (chi2Red < 15) & (nStubs >= 4)'),
+    Selection('TkPt2', 'p_{T}^{TOBJ} > 2GeV', '(pt > 2) & (nStubs >= 4)'),
+    Selection('TkPt2Chi2Pt5', '(p_{T}^{TOBJ} > 2GeV & #Chi^{2}_{norm} < 15) | p_{T}^{TOBJ} > 5GeV ', '((pt > 2) & (chi2Red < 15) | (pt > 5))  & (nStubs >= 4)'),
+    Selection('TkPt2Chi2Pt10', '(p_{T}^{TOBJ} > 2GeV & #Chi^{2}_{norm} < 15) | p_{T}^{TOBJ} > 10GeV ', '((pt > 2) & (chi2Red < 15) | (pt > 10)) & (nStubs >= 4)'),
+    Selection('TkPt5', 'p_{T}^{TOBJ} > 5GeV', '(pt > 5)'),
+    Selection('TkPt10', 'p_{T}^{TOBJ} > 10GeV', '(pt > 10)'),
+    ]
+
+pfeginput_pt = [
+    Selection('all'),
+    Selection('Pt1', 'p_{T}^{TOBJ} > 1GeV', '(pt > 1)'),
+    Selection('Pt2', 'p_{T}^{TOBJ} > 2GeV', '(pt > 2)'),
+    Selection('Pt5', 'p_{T}^{TOBJ} > 5GeV', '(pt > 5)'),
+]
+
+pfeg_ee_input_qual = [
+    Selection('EGq1', 'hwQual 1', 'hwQual == 1'),
+]
+
+sm = SelectionManager()
+Selector.all_selections = sm.selections.copy()
+
+# tp_rate_selections = add_selections(tp_id_sel, tp_eta_ee_sel)
+# tp_match_selections = add_selections(tp_id_sel, tp_pt_sel)
+# tp_calib_selections = tp_id_sel
+# tracks_selections = []
+# tracks_selections += add_selections(tracks_quality_sels, tracks_pt_sels)
+
+tp_rate_selections = (Selector('^Em|all').times('^Eta[^D][BC]*[BCD]$|all'))()
+tp_match_selections = (Selector('^Em|all').times('^Pt[1-3]0$|all'))()
+tp_calib_selections = (Selector('^Em|all'))()
+
+tracks_selections = (Selector('^St[3-4]|all').times('^Pt[2-5]$|^Pt10$|all'))()
+
 gen_ele_ee_sel = add_selections(gen_ele_sel, gen_ee_sel)
 gen_ele_pt_ee_sel = add_selections(gen_ele_ee_sel, gen_pt_sel)
 gen_ele_pt_eta_ee_sel = add_selections(gen_eta_ee_sel, gen_pt_sel)
@@ -392,16 +504,6 @@ genpart_ele_genplotting += gen_ele_ee_sel
 
 # EG selection quality and Pt EE
 
-eg_eta_eb_sel = [
-    Selection('all'),
-    # Selection('EtaF', '|#eta^{L1}| <= 1.479', 'abs(eta) <= 1.479')
-    ]
-eg_eta_sel = [
-    Selection('all'),
-    Selection('EtaF', '|#eta^{L1}| <= 1.479', 'abs(eta) <= 1.479'),
-    Selection('EtaA', '|#eta^{L1}| <= 1.52', 'abs(eta) <= 1.52'),
-    Selection('EtaBC', '1.52 < |#eta^{L1}| <= 2.4', '1.52 < abs(eta) <= 2.4')
-]
 eg_id_iso_sel = [
     Selection('all'),
     # Selection('LooseTkID', 'LooseTkID', 'looseTkID'),
@@ -429,15 +531,6 @@ eg_barrel_rate_selections = [sel for sel in barrel_rate_selections if 'Iso' not 
 eg_all_rate_selections = [sel for sel in all_rate_selections if 'Iso' not in sel.name]
 
 
-eg_id_ee_selections = [
-    Selection('EGq1', 'hwQual=1', 'hwQual == 1'),
-    Selection('EGq2', 'hwQual=2', 'hwQual == 2'),
-    # Selection('EGq3', 'hwQual 3', 'hwQual == 3'),
-    # Selection('PFEG', 'PF EG-ID', '(hwQual == 1) | (hwQual == 3)'),
-    # Selection('EGnoPU', 'EG-ID noPU', '(hwQual == 3) | (hwQual == 2)'),
-    Selection('EGq4', 'hwQual=4', 'hwQual == 4'),
-    Selection('EGq5', 'hwQual=5', 'hwQual == 5')
-]
 
 eg_id_pt_ee_selections = []
 eg_id_pt_ee_selections += add_selections(eg_id_ee_selections, tp_pt_sel)
@@ -502,46 +595,6 @@ eg_id_iso_pt_eb_selections_ext = []
 eg_id_iso_pt_eb_selections_ext += add_selections(eg_id_pt_eb_selections_ext, eg_id_iso_sel)
 
 
-tracks_quality_sels = [Selection('all'),
-                       Selection('St4', '# stubs > 3', 'nStubs > 3')]
-tracks_pt_sels = [Selection('all'),
-                  Selection('Pt2', 'p_{T}^{tk} > 2 GeV', 'pt > 2'),
-                  Selection('Pt5', 'p_{T}^{tk} > 5 GeV', 'pt > 5'),
-                  Selection('Pt10', 'p_{T}^{tk} > 10 GeV', 'pt > 10')]
-
-tracks_selections = []
-tracks_selections += add_selections(tracks_quality_sels, tracks_pt_sels)
-
-
-pfinput_regions = [
-    Selection('all'),
-    Selection('BRL', 'Barrel', 'eta_reg_4 | eta_reg_5 | eta_reg_6'),  # 4 5 6
-    Selection('HGC', 'HgCal', 'eta_reg_3 | eta_reg_7'),  # 3 7
-    Selection('HGCNoTk', 'HgCalNoTk', 'eta_reg_2 | eta_reg_8'),  # 2 8
-    Selection('HF', 'HF', 'eta_reg_0 | eta_reg_1 | eta_reg_9 | eta_reg_10'),  # 0 1 9 10
-    ]
-
-pftkinput_quality = [
-    Selection('all'),
-    Selection('Pt2Chi2', 'p_{T}^{Tk} > 2GeV & #Chi^{2}_{norm} < 15', '(pt > 2) & (chi2Red < 15) & (nStubs >= 4)'),
-    Selection('Pt2', 'p_{T}^{Tk} > 2GeV', '(pt > 2) & (nStubs >= 4)'),
-    Selection('Pt2Chi2Pt5', '(p_{T}^{Tk} > 2GeV & #Chi^{2}_{norm} < 15) | p_{T}^{Tk} > 5GeV ', '((pt > 2) & (chi2Red < 15) | (pt > 5))  & (nStubs >= 4)'),
-    Selection('Pt2Chi2Pt10', '(p_{T}^{Tk} > 2GeV & #Chi^{2}_{norm} < 15) | p_{T}^{Tk} > 10GeV ', '((pt > 2) & (chi2Red < 15) | (pt > 10)) & (nStubs >= 4)'),
-    Selection('Pt5', 'p_{T}^{Tk} > 5GeV', '(pt > 5)'),
-    Selection('Pt10', 'p_{T}^{Tk} > 10GeV', '(pt > 10)'),
-    ]
-
-pfeginput_pt = [
-    Selection('all'),
-    Selection('Pt1', 'p_{T}^{Tk} > 1GeV', '(pt > 1)'),
-    Selection('Pt2', 'p_{T}^{Tk} > 2GeV', '(pt > 2)'),
-    Selection('Pt5', 'p_{T}^{Tk} > 5GeV', '(pt > 5)'),
-]
-
-pfeg_ee_input_qual = [
-    Selection('EGq1', 'hwQual 1', 'hwQual == 1'),
-]
-
 
 pfeg_tp_input_selections = add_selections(
     pfinput_regions,
@@ -596,10 +649,10 @@ else:
 
 # EG selection quality and Pt EB
 
-sim_rate_ee_selections = (Selector('^EGq[4-5]$').dot('^Eta[^D][BC]*[BCD]$|all'))()
-emu_rate_ee_selections = (Selector('^EGq[1-2]$').dot('^Eta[^D][BC]*[BCD]$|all'))()
-sim_gen_ee_selections = (Selector('^EGq[4-5]$').dot('^Pt[1-2][0]$|all'))()
-emu_gen_ee_selections = (Selector('^EGq[1-2]$').dot('^Pt[1-2][0]$|all'))()
+simeg_rate_ee_selections = (Selector('^EGq[4-5]$').times('^Eta[^D][BC]*[BCD]$|all'))()
+emueg_rate_ee_selections = (Selector('^EGq[1-3,6]$|^EGq[1,2]or[3]').times('^Eta[^D][BC]*[BCD]$|all'))()
+simeg_match_ee_selections = (Selector('^EGq[4-5]$').times('^Pt[1-2][0]$|all'))()
+emueg_match_ee_selections = (Selector('^EGq[1-3,6]$|^EGq[1,2]or[3]').times('^Pt[1-2][0]$|all'))()
 
 if __name__ == "__main__":
     
