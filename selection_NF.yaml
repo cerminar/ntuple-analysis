@@ -136,7 +136,7 @@ collections:
       - eg_plotters
       - eg_genmatched_plotters
     htc_jobflavor:
-      espresso
+      microcentury
     priorities:
       ele_flat2to100_PU0: 1
       ele_flat2to100_PU200: 5
@@ -151,7 +151,7 @@ collections:
       # photon_flat8to150_PU0: 0
       # photon_flat8to150_PU200: 0
       doubleele_flat1to100_PU0: 2000
-      doubleele_flat1to100_PU200: 3500
+      doubleele_flat1to100_PU200: 5000
       doublephoton_flat1to100_PU200: 1000
 
       # dyll_PU200: 5
