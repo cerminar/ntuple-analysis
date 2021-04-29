@@ -171,7 +171,7 @@ class GenPlotter(GenericDataFrameLazyPlotter):
         super(GenPlotter, self).__init__(
             histos.GenParticleHistos, 
             gen_set, 
-            selections.add_selections(
+            selections.multiply_selections(
                 gen_selections,
                 [selections.Selection('', '', 'gen > 0')]))
     
@@ -252,7 +252,7 @@ class TPGenMatchPlotter(BasePlotter):
             tp_set, 
             tp_selections, 
             gen_set, 
-            selections.add_selections(
+            selections.multiply_selections(
                 gen_selections,
                 [selections.Selection('', '', 'gen > 0')]))
 
@@ -503,7 +503,7 @@ class GenericGenMatchPlotter(BasePlotter):
             data_set,
             data_selections,
             gen_set,
-            selections.add_selections(
+            selections.multiply_selections(
                 gen_selections,
                 [selections.Selection('', '', 'gen > 0')]))
 
@@ -671,7 +671,7 @@ class ResoNtupleMatchPlotter(BasePlotter):
             data_set,
             data_selections,
             gen_set,
-            selections.add_selections(
+            selections.multiply_selections(
                 gen_selections,
                 [selections.Selection('', '', 'gen > 0')]))
 
@@ -748,7 +748,7 @@ class CalibrationPlotter(BasePlotter):
             data_set,
             data_selections,
             gen_set,
-            selections.add_selections(
+            selections.multiply_selections(
                 gen_selections,
                 [selections.Selection('', '', 'gen > 0')]))
 
@@ -968,7 +968,7 @@ class ClusterTCGenMatchPlotter(BasePlotter):
             data_set,
             data_selections,
             gen_set,
-            selections.add_selections(
+            selections.multiply_selections(
                 gen_selections,
                 [selections.Selection('', '', 'gen > 0')]))
 
@@ -1048,7 +1048,7 @@ class IsoTuplePlotter(BasePlotter):
             data_set,
             data_selections,
             gen_set,
-            selections.add_selections(
+            selections.multiply_selections(
                 gen_selections,
                 [selections.Selection('', '', 'gen > 0')]))
 
@@ -1127,11 +1127,11 @@ class IsoTuplePlotter(BasePlotter):
 
 
 if __name__ == "__main__":
-    for sel in selections.add_selections(selections.tp_id_selections,
+    for sel in selections.multiply_selections(selections.tp_id_selections,
                                          selections.tp_eta_selections):
         print(sel)
 
-    print(selections.add_selections(selections.tp_id_selections,
+    print(selections.multiply_selections(selections.tp_id_selections,
                                     selections.tp_pt_selections))
 
     # print(selections.gen_selection)
