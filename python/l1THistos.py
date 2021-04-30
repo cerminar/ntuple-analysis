@@ -217,7 +217,7 @@ class GenPartHistos(BaseHistos):
 class GenParticleHistos(BaseHistos):
     def __init__(self, name, root_file=None, extended_range=False, debug=False):
         if not root_file:
-            pt_bins = [y for y in range(0, 102, 2)]
+            pt_bins = [y for y in range(0, 202, 2)]
             if(extended_range):
                 # print ('Booking: {} with extended range'.format(name))
                 pt_bins = [y for y in range(0, 200, 2)] + \
