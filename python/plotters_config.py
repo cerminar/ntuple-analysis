@@ -219,12 +219,12 @@ eg_genmatched_plotters_iso = [
 
 # NOTE: collections and selections have been revised (and trimmed)
 eg_genmatched_plotters = [
-    # plotters.EGGenMatchPlotter(
-    #     collections.egs_EE, collections.gen_parts,
-    #     selections.eg_id_pt_ee_selections, selections.gen_ee_selections),
-    # plotters.EGGenMatchPlotter(
-    #     collections.egs_EB, collections.gen_parts,
-    #     selections.eg_id_pt_eb_selections, selections.gen_eb_selections),
+    plotters.EGGenMatchPlotter(
+        collections.egs_EE, collections.gen_parts,
+        selections.simeg_match_ee_selections, selections.gen_ee_selections),
+    plotters.EGGenMatchPlotter(
+        collections.egs_EB, collections.gen_parts,
+        selections.eg_id_pt_eb_selections, selections.gen_eb_selections),
     # plotters.EGGenMatchPlotter(
     #     collections.egs_EE_pf, collections.gen_parts,
     #     selections.eg_id_pt_ee_selections, selections.gen_ee_selections),
@@ -237,9 +237,9 @@ eg_genmatched_plotters = [
     plotters.EGGenMatchPlotter(
         collections.tkeles_EE, collections.gen_parts,
         selections.simeg_match_ee_selections, selections.gen_ee_tk_selections),
-    # plotters.EGGenMatchPlotter(
-    #     collections.tkeles_EB, collections.gen_parts,
-    #     selections.eg_id_pt_eb_selections, selections.gen_eb_selections),
+    plotters.EGGenMatchPlotter(
+        collections.tkeles_EB, collections.gen_parts,
+        selections.eg_id_pt_eb_selections, selections.gen_eb_selections),
     # plotters.EGGenMatchPlotter(
     #     collections.tkeles_EE_pf, collections.gen_parts,
     #     selections.eg_id_pt_ee_selections, selections.gen_ee_tk_selections),
@@ -249,18 +249,18 @@ eg_genmatched_plotters = [
     plotters.EGGenMatchPlotter(
         collections.tkeles_EE_pfnf, collections.gen_parts,
         selections.emueg_match_ee_selections, selections.gen_ee_tk_selections),
-    # plotters.EGGenMatchPlotter(
-    #     collections.tkeles_EB_pfnf, collections.gen_parts,
-    #     selections.eg_id_pt_eb_selections, selections.gen_eb_selections),
+    plotters.EGGenMatchPlotter(
+        collections.tkeles_EB_pfnf, collections.gen_parts,
+        selections.eg_id_pt_eb_selections, selections.gen_eb_selections),
     # plotters.EGGenMatchPlotter(
     #     collections.tkelesEL_all, collections.gen_parts,
     #     selections.eg_id_iso_pt_eb_selections_ext, selections.gen_selections),
     plotters.EGGenMatchPlotter(
         collections.tkem_EE, collections.gen_parts,
         selections.simeg_match_ee_selections, selections.gen_ee_tk_selections),
-    # plotters.EGGenMatchPlotter(
-    #     collections.tkem_EB, collections.gen_parts,
-    #     selections.eg_id_pt_eb_selections, selections.gen_eb_selections),
+    plotters.EGGenMatchPlotter(
+        collections.tkem_EB, collections.gen_parts,
+        selections.eg_id_pt_eb_selections, selections.gen_eb_selections),
     # plotters.EGGenMatchPlotter(
     #     collections.tkem_EE_pf, collections.gen_parts,
     #     selections.eg_id_pt_ee_selections, selections.gen_ee_tk_selections),
