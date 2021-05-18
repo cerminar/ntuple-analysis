@@ -128,7 +128,7 @@ collections:
       # - ele_flat2to100_PU200
       # - doubleele_flat1to100_PU0
       - doubleele_flat1to100_PU200
-      # - doublephoton_flat1to100_PU200
+      - doublephoton_flat1to100_PU200
       # - photon_flat8to150_PU0
       # - photon_flat8to150_PU200
       # - dyll_PU200
