@@ -7,7 +7,7 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v147C
+  plot_version: v148A
   run_clustering: False
   run_density_computation: False
   calib_version: calib-v134C
@@ -437,11 +437,11 @@ samples:
     # gen_selections: !!python/name:python.selections.genpart_photon_selections
 
   doubleele_flat1to100_PU200:
-    input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU200_v65B/
+    input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU200_v66/
     events_per_job : 200
 
   doublephoton_flat1to100_PU200:
-    input_sample_dir: DoublePhoton_FlatPt-1To100/DoublePhoton_FlatPt-1To100_PU200_v65B/
+    input_sample_dir: DoublePhoton_FlatPt-1To100/DoublePhoton_FlatPt-1To100_PU200_v66/
     events_per_job : 200
 
   ele_flat2to100_PU0:
