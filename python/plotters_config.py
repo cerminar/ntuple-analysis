@@ -270,9 +270,9 @@ eg_genmatched_plotters = [
     plotters.EGGenMatchPlotter(
         collections.tkem_EE_pfnf, collections.gen_parts,
         selections.emueg_match_ee_selections, selections.gen_ee_tk_selections),
-    # plotters.EGGenMatchPlotter(
-    #     collections.tkem_EB_pfnf, collections.gen_parts,
-    #     selections.eg_id_pt_eb_selections, selections.gen_eb_selections),
+    plotters.EGGenMatchPlotter(
+        collections.tkem_EB_pfnf, collections.gen_parts,
+        selections.eg_id_pt_eb_selections, selections.gen_eb_selections),
 
 ]
 
