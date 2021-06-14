@@ -44,7 +44,9 @@ def get_collection_parameters(opt, cfgfile):
     for machine, odir in cfgfile['common']['output_dir'].items():
         if machine in hostname:
             outdir = odir
-    plot_version = cfgfile['common']['plot_version']
+    plot_version = '{}.{}'.format(
+        cfgfile['common']['plot_version'], 
+        cfgfile['samples']['version'])
 
     collection_params = {}
     for collection, collection_data in cfgfile['collections'].items():
@@ -204,8 +206,12 @@ def main(analyze, submit_mode=False):
 
     print('About to process samples: {}'.format(samples_to_process))
 
+    plot_version = '{}.{}'.format(
+        cfgfile['common']['plot_version'], 
+        cfgfile['samples']['version'])
+
     if opt.BATCH and not opt.RUN:
-        batch_dir = 'batch_{}_{}'.format(opt.COLLECTION, cfgfile['common']['plot_version'])
+        batch_dir = 'batch_{}_{}'.format(opt.COLLECTION, plot_version)
         if not os.path.exists(batch_dir):
             os.mkdir(batch_dir)
             os.mkdir(batch_dir+'/conf/')
@@ -324,7 +330,7 @@ def main(analyze, submit_mode=False):
             dagman_splice.close()
 
             # copy the config file in the batch directory
-            copyfile(opt.CONFIGFILE, os.path.join(sample_batch_dir, opt.CONFIGFILE))
+            # copyfile(opt.CONFIGFILE, os.path.join(sample_batch_dir, opt.CONFIGFILE))
 
         dagman_file_name = os.path.join(batch_dir, 'dagman.dag')
         dagman_file = open(dagman_file_name, 'w')
