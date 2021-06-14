@@ -79,7 +79,7 @@ def get_collection_parameters(opt, cfgfile):
                 if sample in collection_data['weights'].keys():
                     weight_file = collection_data['weights'][sample]
 
-            params = Parameters({'input_base_dir': cfgfile['common']['input_dir'],
+            params = Parameters({'input_base_dir': cfgfile['samples']['input_dir'],
                                  'input_sample_dir': cfgfile['samples'][sample]['input_sample_dir'],
                                  'tree_name': cfgfile['samples']['tree_name'],
                                  'output_filename_base': output_filename_base,
@@ -88,7 +88,7 @@ def get_collection_parameters(opt, cfgfile):
                                  'clusterize': cfgfile['common']['run_clustering'],
                                  'eventsToDump': [],
                                  'version': plot_version,
-                                 'calib_version':  cfgfile['common']['calib_version'],
+                                 'calib_version':  cfgfile['samples']['calib_version'],
                                  'maxEvents': int(opt.NEVENTS),
                                  'events_per_job': events_per_job,
                                  'computeDensity': cfgfile['common']['run_density_computation'],
@@ -116,6 +116,15 @@ def editTemplate(infile, outfile, params):
     out_file.close()
 
 
+def parse_yaml(filename):
+    with open(filename, 'r') as stream:
+        if '3.8' in platform.python_version():
+            cfgfile = yaml.load(stream, Loader=yaml.FullLoader)
+        else:
+            cfgfile = yaml.load(stream)
+    return cfgfile
+
+
 def main(analyze, submit_mode=False):
     # ============================================
     # configuration bit
@@ -123,7 +132,15 @@ def main(analyze, submit_mode=False):
     usage = ('usage: %prog [options]\n'
              + '%prog -h for help')
     parser = optparse.OptionParser(usage)
-    parser.add_option('-f', '--file', dest='CONFIGFILE', help='specify the ini configuration file')
+    parser.add_option(
+        '-f', '--file',
+        dest='CONFIGFILE',
+        help='specify the yaml configuration file')
+    parser.add_option(
+        '-i', '--input-dataset',
+        default=None,
+        dest='DATASETFILE',
+        help='specify the yaml file defining the input dataset')
     parser.add_option('-c', '--collection', dest='COLLECTION',
                       help='specify the collection to be processed')
     parser.add_option('-s', '--sample', dest='SAMPLE',
@@ -144,7 +161,7 @@ def main(analyze, submit_mode=False):
                           help="# of local workers")
         parser.add_option("-w", "--workdir", dest="WORKDIR",
                           help="local work directory")
-                      
+
 
     # parser.add_option("-i", "--inputJson", dest="INPUT", default='input.json', help="list of input files and properties in JSON format")
 
@@ -157,12 +174,10 @@ def main(analyze, submit_mode=False):
                 parser.error('workdir not provided')
 
     # read the config file
-    cfgfile = None
-    with open(opt.CONFIGFILE, 'r') as stream:
-        if '3.8' in platform.python_version():
-            cfgfile = yaml.load(stream, Loader=yaml.FullLoader)
-        else:
-            cfgfile = yaml.load(stream)
+    cfgfile = {}
+    cfgfile.update(parse_yaml(opt.CONFIGFILE))
+    if opt.DATASETFILE is not None:
+        cfgfile.update(parse_yaml(opt.DATASETFILE))
 
     collection_params = get_collection_parameters(opt, cfgfile)
 
@@ -219,12 +234,13 @@ def main(analyze, submit_mode=False):
                 n_jobs = 1
             print('# of jobs to be submitted: {}'.format(n_jobs))
             sample['nbatch_jobs'] = n_jobs
-            
+
             params = {}
             params['TEMPL_TASKDIR'] = sample_batch_dir
             params['TEMPL_NJOBS'] = str(n_jobs)
             params['TEMPL_WORKDIR'] = os.environ["PWD"]
             params['TEMPL_CFG'] = opt.CONFIGFILE
+            params['TEMPL_INPUT'] = opt.DATASETFILE
             params['TEMPL_COLL'] = opt.COLLECTION
             params['TEMPL_SAMPLE'] = sample.name
             params['TEMPL_OUTFILE'] = '{}.root'.format(sample.output_filename_base)
@@ -282,7 +298,7 @@ def main(analyze, submit_mode=False):
                     editTemplate(infile='templates/run_local.sh',
                                  outfile=os.path.join(sample_batch_dir, 'run_local.sh'),
                                  params=params)
-                
+
             for jid in range(0, n_jobs):
                 dagman_spl += 'JOB Job_{} batch.sub\n'.format(jid)
                 dagman_spl += 'VARS Job_{} JOB_ID="{}"\n'.format(jid, jid)
@@ -325,7 +341,7 @@ def main(analyze, submit_mode=False):
         print('Ready for HT-Condor submission please run the following commands:')
         # print('condor_submit {}'.format(condor_file_path))
         print('condor_submit_dag {}'.format(dagman_file_name))
-        
+
         if submit_mode:
             if opt.LOCAL:
                 print('will now run jobs on local resources')
@@ -333,7 +349,7 @@ def main(analyze, submit_mode=False):
                         samples_to_process,
                         opt.WORKERS,
                         opt.WORKDIR)
-        
+
         sys.exit(0)
 
     if submit_mode:
