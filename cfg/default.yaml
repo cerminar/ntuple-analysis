@@ -59,30 +59,6 @@ collections:
       doubleele_flat1to100_PU200: 800
       doublephoton_flat1to100_PU200: 800
 
-
-  single_part_tt:
-    file_label:
-      tt
-    samples:
-      - ele_flat2to100_PU0
-      - ele_flat2to100_PU200
-      - pion_flat2to100_PU0
-      - pion_flat2to100_PU200
-    plotters:
-      # - tp_plotters
-      # - tp_genmatched_plotters
-      # - genpart_plotters
-      - ttower_plotters
-      - ttower_genmatched_plotters
-    htc_jobflavor:
-      workday
-    priorities:
-      ele_flat2to100_PU0: 0
-      ele_flat2to100_PU200: 0
-      pion_flat2to100_PU0: 0
-      pion_flat2to100_PU200: 0
-
-
   single_empart_guns_isostudy:
     file_label:
       eg
@@ -154,132 +130,132 @@ collections:
 
       # dyll_PU200: 5
 
-  electron_eff_eg:
-    file_label:
-      eg
-    samples:
-      - ele_flat2to100_PU0
-      - ele_flat2to100_PU200
-      # - dyll_PU200
-    plotters:
-      - ele_genmatched_plotters
-    htc_jobflavor:
-      tomorrow
-    priorities:
-      ele_flat2to100_PU0: 1
-      ele_flat2to100_PU200: 5
-      dyll_PU200: 4
-    weights:
-      dyll_PU200: data/dyll_pt_weights.root
+  # electron_eff_eg:
+  #   file_label:
+  #     eg
+  #   samples:
+  #     - ele_flat2to100_PU0
+  #     - ele_flat2to100_PU200
+  #     # - dyll_PU200
+  #   plotters:
+  #     - ele_genmatched_plotters
+  #   htc_jobflavor:
+  #     tomorrow
+  #   priorities:
+  #     ele_flat2to100_PU0: 1
+  #     ele_flat2to100_PU200: 5
+  #     dyll_PU200: 4
+  #   weights:
+  #     dyll_PU200: data/dyll_pt_weights.root
 
 
-  single_empart_guns_resotuples:
-    file_label:
-      reso
-    samples:
-      - ele_flat2to100_PU0
-      - ele_flat2to100_PU200
-      # - photon_flat8to150_PU0
-      # - photon_flat8to150_PU200
-    plotters:
-      - eg_resotuples_plotters
-      - tp_resotuples_plotters
-    htc_jobflavor:
-      workday
-    priorities:
-      ele_flat2to100_PU0: 1
-      ele_flat2to100_PU200: 5
-      photon_flat8to150_PU0: 0
-      photon_flat8to150_PU200: 0
+  # single_empart_guns_resotuples:
+  #   file_label:
+  #     reso
+  #   samples:
+  #     - ele_flat2to100_PU0
+  #     - ele_flat2to100_PU200
+  #     # - photon_flat8to150_PU0
+  #     # - photon_flat8to150_PU200
+  #   plotters:
+  #     - eg_resotuples_plotters
+  #     - tp_resotuples_plotters
+  #   htc_jobflavor:
+  #     workday
+  #   priorities:
+  #     ele_flat2to100_PU0: 1
+  #     ele_flat2to100_PU200: 5
+  #     photon_flat8to150_PU0: 0
+  #     photon_flat8to150_PU200: 0
 
-  single_empart_guns_calibs:
-    file_label:
-      calibs
-    samples:
-      - ele_flat2to100_PU0
-      - ele_flat2to100_PU200
-      - photon_flat8to150_PU0
-      # - photon_flat8to150_PU200
-    plotters:
-      - tp_calib_plotters
-      # - ttower_plotters
-      # - ttower_genmatched_plotters
-    htc_jobflavor:
-      microcentury
-    priorities:
-      ele_flat2to100_PU0: 5
-      ele_flat2to100_PU200: 3
-      photon_flat8to150_PU0: 4
-      photon_flat8to150_PU200: 1
+  # single_empart_guns_calibs:
+  #   file_label:
+  #     calibs
+  #   samples:
+  #     - ele_flat2to100_PU0
+  #     - ele_flat2to100_PU200
+  #     - photon_flat8to150_PU0
+  #     # - photon_flat8to150_PU200
+  #   plotters:
+  #     - tp_calib_plotters
+  #     # - ttower_plotters
+  #     # - ttower_genmatched_plotters
+  #   htc_jobflavor:
+  #     microcentury
+  #   priorities:
+  #     ele_flat2to100_PU0: 5
+  #     ele_flat2to100_PU200: 3
+  #     photon_flat8to150_PU0: 4
+  #     photon_flat8to150_PU200: 1
 
-  single_empart_guns_tps:
-    file_label:
-      tps
-    samples:
-      - doubleele_flat1to100_PU200
-      # - ele_flat2to100_PU0
-      # - ele_flat2to100_PU200
-      # - photon_flat8to150_PU0
-      # - photon_flat8to150_PU200
-    plotters:
-      - tp_plotters
-      - tp_genmatched_plotters
-      - genpart_plotters
-      # - ttower_plotters
-      # - ttower_genmatched_plotters
-    htc_jobflavor:
-      tomorrow
-    priorities:
-      ele_flat2to100_PU0: 1
-      ele_flat2to100_PU200: 5
-      photon_flat8to150_PU0: 0
-      photon_flat8to150_PU200: 4
-      doubleele_flat1to100_PU200: 5
-    events_per_job:
-      ele_flat2to100_PU0: 1
-      ele_flat2to100_PU200: 5
-      photon_flat8to150_PU0: 0
-      photon_flat8to150_PU200: 0
-      doubleele_flat1to100_PU0: 2100
-      doubleele_flat1to100_PU200: 800
-      doublephoton_flat1to100_PU200: 800
-
-
-  highpt_tps:
-    file_label:
-      tps
-    samples:
-      - zprime_ee_PU200
-    plotters:
-      # - tp_plotters
-      - tp_genmatched_extrange_plotters
-      # - genpart_plotters
-      # - ttower_plotters
-      # - ttower_genmatched_plotters
-    htc_jobflavor:
-      workday
-    priorities:
-      zprime_ee_PU200: 5
-    events_per_job:
-      zprime_ee_PU200: 2000
-
-  single_had_guns_tps:
-    file_label:
-      tps
-    samples:
-      - pion_flat2to100_PU0
-      - pion_flat2to100_PU200
-    plotters:
-      - tp_plotters
-      - tp_genmatched_plotters
-      - genpart_plotters
-      # - ttower_plotters
-      # - ttower_genmatched_plotters
-    htc_jobflavor:
-      tomorrow
-    priorities:
-      pion_flat2to100_PU0: 0
-      pion_flat2to100_PU200: 0
+  # single_empart_guns_tps:
+  #   file_label:
+  #     tps
+  #   samples:
+  #     - doubleele_flat1to100_PU200
+  #     # - ele_flat2to100_PU0
+  #     # - ele_flat2to100_PU200
+  #     # - photon_flat8to150_PU0
+  #     # - photon_flat8to150_PU200
+  #   plotters:
+  #     - tp_plotters
+  #     - tp_genmatched_plotters
+  #     - genpart_plotters
+  #     # - ttower_plotters
+  #     # - ttower_genmatched_plotters
+  #   htc_jobflavor:
+  #     tomorrow
+  #   priorities:
+  #     ele_flat2to100_PU0: 1
+  #     ele_flat2to100_PU200: 5
+  #     photon_flat8to150_PU0: 0
+  #     photon_flat8to150_PU200: 4
+  #     doubleele_flat1to100_PU200: 5
+  #   events_per_job:
+  #     ele_flat2to100_PU0: 1
+  #     ele_flat2to100_PU200: 5
+  #     photon_flat8to150_PU0: 0
+  #     photon_flat8to150_PU200: 0
+  #     doubleele_flat1to100_PU0: 2100
+  #     doubleele_flat1to100_PU200: 800
+  #     doublephoton_flat1to100_PU200: 800
+  # 
+  # 
+  # highpt_tps:
+  #   file_label:
+  #     tps
+  #   samples:
+  #     - zprime_ee_PU200
+  #   plotters:
+  #     # - tp_plotters
+  #     - tp_genmatched_extrange_plotters
+  #     # - genpart_plotters
+  #     # - ttower_plotters
+  #     # - ttower_genmatched_plotters
+  #   htc_jobflavor:
+  #     workday
+  #   priorities:
+  #     zprime_ee_PU200: 5
+  #   events_per_job:
+  #     zprime_ee_PU200: 2000
+  # 
+  # single_had_guns_tps:
+  #   file_label:
+  #     tps
+  #   samples:
+  #     - pion_flat2to100_PU0
+  #     - pion_flat2to100_PU200
+  #   plotters:
+  #     - tp_plotters
+  #     - tp_genmatched_plotters
+  #     - genpart_plotters
+  #     # - ttower_plotters
+  #     # - ttower_genmatched_plotters
+  #   htc_jobflavor:
+  #     tomorrow
+  #   priorities:
+  #     pion_flat2to100_PU0: 0
+  #     pion_flat2to100_PU200: 0
 
   correlator_occupancy:
     file_label:
@@ -316,47 +292,47 @@ collections:
     events_per_job:
       nugun_alleta_pu200: 20000
 
-  noise_samples:
-    file_label:
-      noise
-    samples:
-      - nugun_alleta_pu0
-      - nugun_alleta_pu200
-      # - nugun_endcap_PU50
-      # - nugun_endcap_PU100
-      # - nugun_endcap_PU140
-      # - nugun_endcap_PU200
-    plotters:
-      # - rate_plotters
-      - ttower_plotters
-      # - tp_plotters
-      # - eg_rate_plotters
-    htc_jobflavor:
-      workday
-    priorities:
-      nugun_alleta_pu0: 0
-      nugun_alleta_pu200: 0
+  # noise_samples:
+  #   file_label:
+  #     noise
+  #   samples:
+  #     - nugun_alleta_pu0
+  #     - nugun_alleta_pu200
+  #     # - nugun_endcap_PU50
+  #     # - nugun_endcap_PU100
+  #     # - nugun_endcap_PU140
+  #     # - nugun_endcap_PU200
+  #   plotters:
+  #     # - rate_plotters
+  #     - ttower_plotters
+  #     # - tp_plotters
+  #     # - eg_rate_plotters
+  #   htc_jobflavor:
+  #     workday
+  #   priorities:
+  #     nugun_alleta_pu0: 0
+  #     nugun_alleta_pu200: 0
 
-  single_empart_guns_tccluster_matcher:
-    file_label:
-      tccl
-    samples:
-      - ele_flat2to100_PU0
-      # - ele_flat2to100_PU200
-      - photon_flat8to150_PU0
-      # - photon_flat8to150_PU200
-    plotters:
-      # - tp_plotters
-      - tp_cluster_tc_match_plotters
-      # - ttower_plotters
-      # - ttower_genmatched_plotters
-    htc_jobflavor:
-      microcentury
-    priorities:
-      ele_flat2to100_PU0: 5
-      ele_flat2to100_PU200: 3
-      photon_flat8to150_PU0: 4
-      photon_flat8to150_PU200: 2
+  # single_empart_guns_tccluster_matcher:
+  #   file_label:
+  #     tccl
+  #   samples:
+  #     - ele_flat2to100_PU0
+  #     # - ele_flat2to100_PU200
+  #     - photon_flat8to150_PU0
+  #     # - photon_flat8to150_PU200
+  #   plotters:
+  #     # - tp_plotters
+  #     - tp_cluster_tc_match_plotters
+  #     # - ttower_plotters
+  #     # - ttower_genmatched_plotters
+  #   htc_jobflavor:
+  #     microcentury
+  #   priorities:
+  #     ele_flat2to100_PU0: 5
+  #     ele_flat2to100_PU200: 3
+  #     photon_flat8to150_PU0: 4
+  #     photon_flat8to150_PU200: 2
       
 
   isostudy_eg:
