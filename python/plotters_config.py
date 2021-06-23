@@ -465,3 +465,16 @@ eg_isotuples_plotters = [
         selections.gen_pid_sel
         )
 ]
+
+decTk_plotters = [
+    plotters.DecTkPlotter(
+        collections.decTk,
+        selections.dectk_selections
+    ),
+    plotters.DecTrackGenMatchPlotter(
+        collections.decTk,
+        collections.gen_parts,
+        selections.dectk_match_selections,
+        selections.gen_ee_tk_selections
+    )
+]

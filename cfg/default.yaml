@@ -367,6 +367,36 @@ collections:
       doublephoton_flat1to100_PU200: 20000
       nugun_alleta_pu200: 11000
 
+  decoded_tk:
+    file_label:
+      dtk
+    samples:
+      # - ele_flat2to100_PU0
+      # - ele_flat2to100_PU200
+      # - doubleele_flat1to100_PU0
+      - doubleele_flat1to100_PU200
+      # - nugun_alleta_pu200
+      # - photon_flat8to150_PU0
+      # - photon_flat8to150_PU200
+      # - dyll_PU200
+    plotters:
+      - decTk_plotters
+    htc_jobflavor:
+      microcentury
+    priorities:
+      nugun_alleta_pu200: 6
+      ele_flat2to100_PU0: 1
+      ele_flat2to100_PU200: 5
+      photon_flat8to150_PU0: 0
+      photon_flat8to150_PU200: 0
+      doubleele_flat1to100_PU0: 2
+      doubleele_flat1to100_PU200: 7
+      doublephoton_flat1to100_PU200: 6
+    events_per_job:
+      doubleele_flat1to100_PU0: 10000
+      doubleele_flat1to100_PU200: 10000
+      doublephoton_flat1to100_PU200: 20000
+      nugun_alleta_pu200: 11000
 
 
 plotters:
@@ -392,6 +422,7 @@ plotters:
   tp_resotuples_plotters: !!python/name:python.plotters_config.tp_resotuples_plotters
   tp_cluster_tc_match_plotters: !!python/name:python.plotters_config.tp_cluster_tc_match_plotters
   eg_isotuples_plotters: !!python/name:python.plotters_config.eg_isotuples_plotters
+  decTk_plotters: !!python/name:python.plotters_config.decTk_plotters
     # tp_set: !null,
     # tp_selection: !!python/name:python.selections.tp_match_selections}
 #  gen_selection: gen_part_selections

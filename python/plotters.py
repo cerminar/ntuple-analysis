@@ -31,6 +31,15 @@ from . import selections as selections
 # import collections as collections
 ROOT.gROOT.ProcessLine('#include "src/fastfilling.h"');
 
+
+class Test(object):
+    def __init__(self, name):
+        self.name = name
+         
+    def __repr__(self):
+        return "<TEST class, {}>".format(self.name)
+
+
 class BasePlotter(object):
     def __init__(self, data_set, data_selections, gen_set=None, gen_selections=None):
         self.data_set = data_set
@@ -65,6 +74,13 @@ class BasePlotter(object):
                                                            ignore_index=True)
         return histo_primitives
 
+    def __repr__(self):
+        return '<{}, ds: {}, ds_sel: {}, g: {}, g_sel: {} >'.format(
+            self.__class__.__name__,
+            self.data_set,
+            self.data_selections,
+            self.gen_set,
+            self.gen_selections)
     # def change_genpart_selection(self, newselection):
     #     """Allow customization of gen selection per sample."""
     #     if self.gen_selections is not None:
@@ -103,7 +119,7 @@ class RatePlotter(BasePlotter):
     def fill_histos_event(self, idx, debug=0):
         if self.data_set.new_read:
             self.fill_histos(debug)
-
+            
 
 class GenericDataFrameLazyPlotter(BasePlotter):
     def __init__(self, HistoClass, data_set, selections=[selections.Selection('all')]):
@@ -204,6 +220,13 @@ class TTPlotter(GenericDataFramePlotter):
     def __init__(self, tt_set, tt_selections=[selections.Selection('all')]):
         super(TTPlotter, self).__init__(histos.TriggerTowerHistos, tt_set, tt_selections)
 
+class EGPlotter(GenericDataFrameLazyPlotter):
+    def __init__(self, eg_set, eg_selections=[selections.Selection('all')]):
+        super(EGPlotter, self).__init__(histos.EGHistos, eg_set, eg_selections)
+
+class DecTkPlotter(GenericDataFrameLazyPlotter):
+    def __init__(self, tk_set, tk_selections=[selections.Selection('all')]):
+        super(DecTkPlotter, self).__init__(histos.DecTkHistos, tk_set, tk_selections)
 
 class TPPlotter(BasePlotter):
     def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
@@ -633,6 +656,17 @@ class TrackGenMatchPlotter(GenericGenMatchPlotter):
                                                    data_set, gen_set,
                                                    data_selections, gen_selections,
                                                    gen_eta_phi_columns=['eta', 'phi'])
+
+
+class DecTrackGenMatchPlotter(GenericGenMatchPlotter):
+    def __init__(self, data_set, gen_set,
+                 data_selections=[selections.Selection('all')],
+                 gen_selections=[selections.Selection('all')]):
+        super(DecTrackGenMatchPlotter, self).__init__(
+            histos.DecTkHistos, histos.DecTkResoHistos,
+            data_set, gen_set,
+            data_selections, gen_selections,
+            gen_eta_phi_columns=['eta', 'phi'])
 
 
 class Cl3DGenMatchPlotter(GenericGenMatchPlotter):

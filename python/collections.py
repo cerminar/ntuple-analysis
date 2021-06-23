@@ -102,6 +102,7 @@ class EventManager(object):
 class DFCollection(object):
     """
     [DFCollection]: collection of objects consumed by plotters.
+
     This class represents the DataFrame of the objects which need to be plotted.
     The objects are registered with the EventManager at creation time but they
     are actually created/read event by event only if one plotter object activates
@@ -167,7 +168,6 @@ class DFCollection(object):
                 print(f'Collection {self.name}: common_block_size set to dependent value: {common_block_size}')
                 self.read_entry_block = common_block_size
 
-
         if not self.is_active:
             for dep in self.depends_on:
                 dep.activate()
@@ -183,7 +183,7 @@ class DFCollection(object):
             # print ([self.read_entry_block, (event.entry_range[1]-event.global_entry), (event.tree.num_entries - event.file_entry)])
             stride = min([self.read_entry_block, (1+event.entry_range[1]-event.global_entry), (event.tree.num_entries - event.file_entry)])
             if stride == 0:
-                print ('ERROR Last event????')
+                print('ERROR Last event????')
                 self.new_read = False
             else:
                 self.new_read = True
@@ -237,29 +237,25 @@ class DFCollection(object):
             self.cached_queries[sys.intern(selection.selection)] = ret
             entries = ret.index.get_level_values('entry').unique()
             self.cached_entries[selection.hash] = entries
-            if not idx in entries:
+            if idx not in entries:
                 return self.empty_df
             return ret.loc[idx]
         # print ('    query not cached')
         # print (f'     {self.cached_queries.keys()}')
         entries = self.cached_entries[selection.hash]
-        if not idx in entries:
+        if idx not in entries:
             return self.empty_df
         return self.cached_queries[selection.selection].loc[idx]
 
-
-
     def clear_query_cache(self, debug=0):
         if (debug > 5):
-            print ('Coll: {} # queries: {} # unique queries: {}'.format(
+            print('Coll: {} # queries: {} # unique queries: {}'.format(
                 self.name, self.n_queries, len(self.cached_queries.keys())))
         self.n_queries = 0
         self.cached_entries.clear()
         self.cached_queries.clear()
 
             
-
-
 def tkeg_fromcluster_fixture(tkegs):
     # print tkegs
     tkegs.loc[tkegs.hwQual == 1, 'hwQual'] = 3
@@ -354,10 +350,10 @@ def mc_fixtures(particles):
     particles['firstmother_pdgid'] = particles.pdgid
     return particles
     # FIXME: this is broken
-    print (particles)
+    # print(particles)
 
     for particle in particles.itertuples():
-        print( particle.daughters)
+        print(particle.daughters)
         if particle.daughters == [[], []]:
             continue
         particles.loc[particle.daughters, 'firstmother'] = particle.Index
@@ -627,17 +623,20 @@ def barrel_quality(electrons):
     electrons['photonID'] = ((hwqual.values >> 2) & 1) > 0
     return electrons
 
+
 def fake_endcap_quality(electrons):
     # just added for compatibility with barrel
     electrons['looseTkID'] = True
     electrons['photonID'] = True
     return electrons
 
+
 def tkele_fixture_ee(electrons):
     electrons['looseTkID'] = True
     electrons['photonID'] = True
     electrons['dpt'] = electrons.tkPt - electrons.pt
     return electrons
+
 
 def tkele_fixture_eb(electrons):
     # if electrons.empty:
@@ -697,11 +696,25 @@ def map2pfregions(objects, eta_var, phi_var, fiducial=False):
 def maptk2pfregions_in(objects):
     return map2pfregions(objects, 'caloeta', 'calophi', fiducial=False)
 
+
 def mapcalo2pfregions_in(objects):
     return map2pfregions(objects, 'eta', 'phi', fiducial=False)
 
+
 def mapcalo2pfregions_out(objects):
     return map2pfregions(objects, 'eta', 'phi', fiducial=True)
+
+
+def decodedTk_fixtures(objects):
+    objects['deltaZ0'] = objects.z0 - objects.simz0
+    objects['deltaCaloEta'] = objects.caloeta - objects.simcaloeta
+    # have dphi between -pi and pi
+    comp_remainder = np.vectorize(math.remainder)
+    objects['deltaCaloPhi'] = comp_remainder(objects.calophi - objects.simcalophi, 2*np.pi)
+
+    objects['abseta'] = np.abs(objects.eta)
+    objects['simabseta'] = np.abs(objects.simeta)
+    return objects
 
 
 calib_mgr = calib.CalibManager()
@@ -859,18 +872,20 @@ cl3d_hm_cylind2p5 = DFCollection(
 
 cl3d_hm_shape = DFCollection(
     name='HMvDRshape', label='HM shape',
-    filler_function=lambda event, entry_block: get_cylind_clusters_mp(cl3d_hm.df, tcs.df,
-                                                         [1.]*2+[1.6]*2+[2.5]*2+[5.0]*2+[5.0]*2+[5.0]*2+[5.0]*2+[5.]*2+[6.]*2+[7.]*2+[7.2]*2+[7.4]*2+[7.2]*2+[7.]*2+[2.5]*25,
-                                                         POOL),
+    filler_function=lambda event, entry_block: get_cylind_clusters_mp(
+        cl3d_hm.df, tcs.df,
+        [1.]*2+[1.6]*2+[2.5]*2+[5.0]*2+[5.0]*2+[5.0]*2+[5.0]*2+[5.]*2+[6.]*2+[7.]*2+[7.2]*2+[7.4]*2+[7.2]*2+[7.]*2+[2.5]*25,
+        POOL),
     depends_on=[cl3d_hm, tcs], debug=0)
 
 
 cl3d_hm_shapeDr = DFCollection(
     name='HMvDRshapeDr', label='HM #Delta#rho < 0.015',
-    filler_function=lambda event, entry_block: get_dr_clusters_mp(cl3d_hm.df[cl3d_hm.df.quality > 0],
-                                                     tcs.df,
-                                                     0.015,
-                                                     POOL),
+    filler_function=lambda event, entry_block: get_dr_clusters_mp(
+        cl3d_hm.df[cl3d_hm.df.quality > 0],
+        tcs.df,
+        0.015,
+        POOL),
     depends_on=[cl3d_hm, tcs],
     debug=0,
     print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality']].sort_values(by='pt', ascending=False)[:10])
@@ -878,10 +893,11 @@ cl3d_hm_shapeDr = DFCollection(
 
 cl3d_hm_shapeDtDu = DFCollection(
     name='HMvDRshapeDtDu', label='HM #Deltau #Deltat',
-    filler_function=lambda event, entry_block: get_dtdu_clusters_mp(cl3d_hm.df[cl3d_hm.df.quality > 0],
-                                                       tcs.df,
-                                                       (0.015, 0.007),
-                                                       POOL),
+    filler_function=lambda event, entry_block: get_dtdu_clusters_mp(
+        cl3d_hm.df[cl3d_hm.df.quality > 0],
+        tcs.df,
+        (0.015, 0.007),
+        POOL),
     depends_on=[cl3d_hm, tcs],
     debug=0,
     print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality']].sort_values(by='pt', ascending=False)[:10])
@@ -1362,6 +1378,13 @@ cl3d_hm_pfinputs = DFCollection(
     filler_function=lambda event, entry_block: cl3d_hm.df,
     fixture_function=mapcalo2pfregions_in,
     depends_on=[cl3d_hm],
+    debug=0)
+
+decTk = DFCollection(
+    name='PFDecTk', label='decoded Tk',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='pfdtk', entry_block=entry_block),
+    fixture_function=decodedTk_fixtures,
     debug=0)
 
 

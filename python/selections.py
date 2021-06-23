@@ -509,6 +509,8 @@ pfeg_ee_input_selections = (Selector('^PFinH')*('^Pt[1,2,5]$|all')*('^EGq[1]$|al
 pfeg_eb_input_selections = (Selector('^PFinB|all')*('^Pt[1,2,5]$'))()
 pftkinput_selections = (Selector('^PFinBRL|^PFinHGC$')*('^TkPt'))()
 
+dectk_selections = (Selector('^Eta[AB]*[BC]$|all')*('^Pt[1,2,5][0]$|all'))()
+dectk_match_selections = (Selector('^Pt[1,2,5][0]$|all'))()
 # EG selection quality and Pt EE
 
 eg_id_iso_sel = [
