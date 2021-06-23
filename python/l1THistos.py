@@ -27,6 +27,21 @@ class HistoLazyFiller(object):
 
         self.manager.add_1Dhisto(histo, col_name, sel_name)
 
+    def fill2d_lazy(self, histo, x_col_name, y_col_name, sel_name):
+        if not self.manager.knowsVariable(x_col_name):
+            # print (" - add variable {}".format(col_name))
+            self.manager.addVariable(x_col_name, self.df[x_col_name].values)
+
+        if not self.manager.knowsVariable(y_col_name):
+            # print (" - add variable {}".format(col_name))
+            self.manager.addVariable(y_col_name, self.df[y_col_name].values)
+
+        if not self.manager.knowsSelection(sel_name):
+            print("*** [HistoLazyFiller] ERROR: selection: {} not known!".format(sel_name))
+            raise ValueError('[HistoLazyFiller] selection {} not known'.format(sel_name))
+
+        self.manager.add_2Dhisto(histo, x_col_name, y_col_name, sel_name)
+
     def add_selection(self, sel_name, sel_values):
         self.manager.addFilter(sel_name, sel_values)
 
@@ -524,6 +539,52 @@ class EGHistos(BaseHistos):
         # self.h_pfIso = ROOT.TH1F(name+'_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
         # self.h_tkIsoPV = ROOT.TH1F(name+'_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2)
         # self.h_pfIsoPV = ROOT.TH1F(name+'_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
+
+
+class DecTkHistos(BaseHistos):
+    def __init__(self, name, root_file=None, debug=False):
+        if not root_file:
+            self.h_pt = ROOT.TH1F(
+                name+'_pt', 'Pt (GeV); p_{T} [GeV]', 
+                100, 0, 100)
+            self.h_eta = ROOT.TH1F(
+                name+'_eta', 'eta; #eta;', 
+                100, -4, 4)
+            self.h_z0 = ROOT.TH1F(
+                name+'_z0', 'z0; z_{0} [cm];', 
+                100, -10, 10)
+            self.h_deltaZ0 = ROOT.TH1F(
+                name+'_deltaZ0', '#Delta z0; z0^{decoded}-z0^{float};', 
+                50, -0.2, 0.2)
+            self.h_deltaCaloEta = ROOT.TH1F(
+                name+'_deltaCaloEta', '#Delta #eta_{@calo}; #eta_{@calo}^{decoded}-#eta_{@calo}^{float};', 
+                100, -1, 1)
+            self.h_deltaCaloEtaVabseta = ROOT.TH2F(
+                name+'_deltaCaloEtaVabseta', '#Delta #eta_{@calo} vs |#eta^{float}|; |#eta^{float}|; ##eta_{@calo}^{decoded}-#eta_{@calo}^{float};', 
+                100, 0, 2.5,
+                100, -0.1, 0.1)
+            self.h_deltaCaloPhi = ROOT.TH1F(
+                name+'_deltaCaloPhi', '#Delta #phi_{@calo}; #phi_{@calo}^{decoded}-#phi_{@calo}^{float};', 
+                100, -1, 1)
+            self.h_deltaCaloPhiVabseta = ROOT.TH2F(
+                name+'_deltaCaloPhiVabseta', '#Delta #phi_{@calo} vs |#eta^{float}|; |#phi^{float}|; ##phi_{@calo}^{decoded}-#eta_{@calo}^{float};', 
+                100, 0, 2.5,
+                100, -0.1, 0.1)
+
+        BaseHistos.__init__(self, name, root_file, debug)
+
+    def fill(self, egs):
+        weight = None
+
+    def fill_lazy(self, filler, sel_name):
+        filler.fill1d_lazy(self.h_pt, 'pt', sel_name)
+        filler.fill1d_lazy(self.h_eta, 'eta', sel_name)
+        filler.fill1d_lazy(self.h_z0, 'z0', sel_name)
+        filler.fill1d_lazy(self.h_deltaZ0, 'deltaZ0', sel_name)
+        filler.fill1d_lazy(self.h_deltaCaloEta, 'deltaCaloEta', sel_name)
+        filler.fill2d_lazy(self.h_deltaCaloEtaVabseta, 'simabseta', 'deltaCaloEta', sel_name)
+        filler.fill1d_lazy(self.h_deltaCaloPhi, 'deltaCaloPhi', sel_name)
+        filler.fill2d_lazy(self.h_deltaCaloPhiVabseta, 'simabseta', 'deltaCaloPhi', sel_name)
 
 
 class TkEleHistos(BaseHistos):
@@ -1128,6 +1189,105 @@ class TrackResoHistos(BaseResoHistos):
 
     def fill_nMatch(self, n_matches):
         self.h_nMatch.Fill(n_matches)
+
+
+class DecTkResoHistos(BaseResoHistos):
+    def __init__(self, name, root_file=None, debug=False):
+        if not root_file:
+            self.h_ptResVpt = ROOT.TH2F(
+                name+'_ptResVpt',
+                'Track Pt reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];',
+                50, 0, 100, 100, -20, 20)
+            self.h_ptResp = ROOT.TH1F(
+                name+'_ptResp',
+                'Track Pt resp.; p_{T}^{L1}/p_{T}^{GEN}',
+                100, 0, 3)
+            self.h_ptRespVpt = ROOT.TH2F(
+                name+'_ptRespVpt',
+                'Track Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
+                50, 0, 100, 100, 0, 3)
+            self.h_ptRespVeta = ROOT.TH2F(
+                name+'_ptRespVeta',
+                'Track Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};',
+                50, -4, 4, 100, 0, 3)
+            self.h_etaRes = ROOT.TH1F(
+                name+'_etaRes',
+                'Track eta reso',
+                100, -0.4, 0.4)
+            self.h_phiRes = ROOT.TH1F(
+                name+'_phiRes',
+                'Track phi reso',
+                100, -0.4, 0.4)
+            self.h_caloEtaRes = ROOT.TH1F(
+                name+'_caloEtaRes',
+                '$eta_{@calo} reso; $eta_{@calo}^{L1} vs $eta_{@calo}^{GEN}',
+                100, -0.4, 0.4)
+            self.h_caloPhiRes = ROOT.TH1F(
+                name+'_caloPhiRes',
+                '$phi_{@calo} reso; $phi_{@calo}^{L1} vs $phi_{@calo}^{GEN}',
+                100, -0.4, 0.4)
+            self.h_caloEtaResVabseta = ROOT.TH2F(
+                name+'_caloEtaResVabseta',
+                '$eta_{@calo} reso; |#eta^{GEN}|; $eta_{@calo}^{L1} vs $eta_{@calo}^{GEN}',
+                50, 0, 3,
+                100, -0.4, 0.4)
+            self.h_caloPhiResVabseta = ROOT.TH2F(
+                name+'_caloPhiResVabseta',
+                '$phi_{@calo} reso; |#eta^{GEN}|; $phi_{@calo}^{L1} vs $phi_{@calo}^{GEN}',
+                50, 0, 3,
+                100, -0.4, 0.4)
+            self.h_nMatch = ROOT.TH1F(
+                name+'_nMatch',
+                '# matches',
+                100, 0, 100)
+
+            # self.h_pt2stResVpt = ROOT.TH2F(name+'_pt2stResVpt', 'EG Pt 2stubs reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];',
+            #                                50, 0, 100, 100, -20, 20)
+            #
+            # self.h_pt2stResp = ROOT.TH1F(name+'_pt2stResp', 'Track Pt resp.; p_{T}^{L1}/p_{T}^{GEN}',
+            #                              100, 0, 3)
+            # self.h_pt2stRespVpt = ROOT.TH2F(name+'_pt2stRespVpt', 'Track Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
+            #                                 50, 0, 100, 100, 0, 3)
+            # self.h_pt2stRespVeta = ROOT.TH2F(name+'_pt2stRespVeta', 'Track Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};',
+            #                                  50, -4, 4, 100, 0, 3)
+
+        BaseResoHistos.__init__(self, name, root_file, debug)
+
+    def fill(self, reference, target):
+        # target_pt, target_eta, target_phi = \
+        #     target[['pt', 'eta', 'phi']].values[0]
+        # reference_pt, reference_eta, reference_phi = \
+        #     reference[['pt', 'eta', 'phi']].values
+        target_line = target.iloc[0]
+
+        target_pt = target_line.pt
+        target_eta = target_line.eta
+        target_phi = target_line.phi
+        reference_pt = reference.pt
+        reference_eta = reference.eta
+        reference_phi = reference.phi
+
+        self.h_ptResVpt.Fill(reference_pt, target_pt-reference_pt)
+        self.h_ptResp.Fill(target_pt/reference_pt)
+        self.h_ptRespVeta.Fill(reference_eta, target_pt/reference_pt)
+        self.h_ptRespVpt.Fill(reference_pt, target_pt/reference_pt)
+
+        # self.h_pt2stResVpt.Fill(reference.pt, target.pt2stubs-reference.pt)
+        # self.h_pt2stResp.Fill(target.pt2stubs/reference.pt)
+        # self.h_pt2stRespVeta.Fill(reference.eta, target.pt2stubs/reference.pt)
+        # self.h_pt2stRespVpt.Fill(reference.pt, target.pt2stubs/reference.pt)
+
+        self.h_etaRes.Fill(target_eta - reference_eta)
+        self.h_phiRes.Fill(target_phi - reference_phi)
+        self.h_caloEtaRes.Fill(target_line.caloeta - reference.exeta)
+        self.h_caloPhiRes.Fill(target_line.calophi - reference.exphi)
+        self.h_caloEtaResVabseta.Fill(reference_eta, target_line.caloeta - reference.exeta)
+        self.h_caloPhiResVabseta.Fill(reference_eta, target_line.calophi - reference.exphi)
+
+
+    def fill_nMatch(self, n_matches):
+        self.h_nMatch.Fill(n_matches)
+
 
 
 class EGResoHistos(BaseResoHistos):

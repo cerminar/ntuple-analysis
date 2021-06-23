@@ -7,12 +7,20 @@
 // 
 
 
-
-
-
 class HistoFiller {
 public:
-  HistoFiller(TH1F *histo, const std::vector<float> & source, const std::vector<bool> & filter) :
+  
+  virtual void fill(unsigned int id) = 0;  
+
+  virtual unsigned int nevents() const = 0;
+  
+};
+
+
+
+class HistoFiller1D : public HistoFiller {
+public:
+  HistoFiller1D(TH1F *histo, const std::vector<float> & source, const std::vector<bool> & filter) :
   histo(histo),
   filter(filter),
   source(source) {
@@ -22,7 +30,7 @@ public:
 
   }
 
-  HistoFiller(const HistoFiller& other) : histo(other.histo),
+  HistoFiller1D(const HistoFiller1D& other) : histo(other.histo),
   source(other.source),
   filter(other.filter) {
     // std::cout << "COPY CTROR" << std::endl;
@@ -47,6 +55,51 @@ public:
   const std::vector<bool> & filter;
   
 };
+
+
+
+class HistoFiller2D : public HistoFiller {
+public:
+  HistoFiller2D(TH2F *histo, const std::vector<float> & sourceX, const std::vector<float> & sourceY, const std::vector<bool> & filter) :
+  histo(histo),
+  filter(filter),
+  sourceX(sourceX),
+  sourceY(sourceY) {
+    // std::cout << "Add histo: " << histo->GetName() << ": " << histo << std::endl;
+    // std::cout << "# of events: " << source.size() << std::endl;
+    // std::cout << &source << std::endl;
+
+  }
+
+  HistoFiller2D(const HistoFiller2D& other) : histo(other.histo),
+  sourceX(other.sourceX),
+  sourceY(other.sourceY),
+  filter(other.filter) {
+    // std::cout << "COPY CTROR" << std::endl;
+    // std::cout << "# of events: " << source.size() << std::endl;
+  }
+  
+  
+  void fill(unsigned int id) {
+    // std::cout << "FILL histo: " << histo->GetName() << ": " << histo << std::endl;
+    // std::cout << "   entry: " << id << " value: " << source[id] << std::endl;
+    if(filter[id]) 
+      histo->Fill(sourceX[id], sourceY[id]);
+  }
+  
+  unsigned int nevents() const {
+    // std::cout << "# of events: " << source.size() << std::endl;
+    return sourceX.size();
+  }
+  
+  TH2F *histo;
+  const std::vector<float> & sourceX;
+  const std::vector<float> & sourceY;
+  const std::vector<bool> & filter;
+  
+};
+
+
 
 class DataFrame {
 public:
@@ -91,7 +144,11 @@ public:
 
   
   void add_1Dhisto(TH1F *histo, const std::string& source, const std::string& filter) {
-    fillers.emplace_back(HistoFiller(histo, frame.branches[source], frame.filters[filter]));
+    fillers.push_back(new HistoFiller1D(histo, frame.branches[source], frame.filters[filter]));
+  }
+
+  void add_2Dhisto(TH2F *histo, const std::string& sourceX, const std::string& sourceY, const std::string& filter) {
+    fillers.push_back(new HistoFiller2D(histo, frame.branches[sourceX], frame.branches[sourceY], frame.filters[filter]));
   }
   
   bool knowsVariable(const std::string& name) const {
@@ -103,9 +160,9 @@ public:
   }
   
   void fill() {
-    for(unsigned int id = 0; id < fillers[0].nevents(); id++) {
-      for(auto & filler: fillers) {
-        filler.fill(id);
+    for(unsigned int id = 0; id < fillers[0]->nevents(); id++) {
+      for(auto filler: fillers) {
+        filler->fill(id);
       }
     }
     // for(auto & filler: fillers) {
@@ -115,7 +172,7 @@ public:
   
 private:
   DataFrame frame;
-  std::vector<HistoFiller> fillers;
+  std::vector<HistoFiller *> fillers;
 };
 
 
