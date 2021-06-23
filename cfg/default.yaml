@@ -6,7 +6,7 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v148C
+  plot_version: v149A
   run_clustering: False
   run_density_computation: False
 # +AccountingGroup = "group_u_CMS.u_zh.users"
@@ -394,7 +394,7 @@ collections:
       doublephoton_flat1to100_PU200: 6
     events_per_job:
       doubleele_flat1to100_PU0: 10000
-      doubleele_flat1to100_PU200: 10000
+      doubleele_flat1to100_PU200: 30000
       doublephoton_flat1to100_PU200: 20000
       nugun_alleta_pu200: 11000
 
