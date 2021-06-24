@@ -547,6 +547,17 @@ class DecTkHistos(BaseHistos):
             self.h_pt = ROOT.TH1F(
                 name+'_pt', 'Pt (GeV); p_{T} [GeV]', 
                 100, 0, 100)
+            self.h_deltaPt = ROOT.TH1F(
+                name+'_deltaPt', 'Pt (GeV); p_{T}^{decoded}-p_{T}^{float}  [GeV]', 
+                100, -10, 10)
+            self.h_deltaPtVeta = ROOT.TH2F(
+                name+'_deltaPtVeta', 'Pt (GeV); #eta^{float}; p_{T}^{decoded}-p_{T}^{float}  [GeV]', 
+                100, -2.5, 2.5,
+                100, -0.25, 0.25)
+            self.h_deltaPtVabseta = ROOT.TH2F(
+                name+'_deltaPtVabseta', 'Pt (GeV); |#eta^{float}|; p_{T}^{decoded}-p_{T}^{float}  [GeV]', 
+                50, 0, 2.5,
+                100, -0.25, 0.25)
             self.h_eta = ROOT.TH1F(
                 name+'_eta', 'eta; #eta;', 
                 100, -4, 4)
@@ -556,6 +567,10 @@ class DecTkHistos(BaseHistos):
             self.h_deltaZ0 = ROOT.TH1F(
                 name+'_deltaZ0', '#Delta z0; z0^{decoded}-z0^{float};', 
                 50, -0.2, 0.2)
+            self.h_deltaZ0Veta = ROOT.TH2F(
+                name+'_deltaZ0Veta', '#Delta z0; #eta^{float}; z0^{decoded}-z0^{float};', 
+                100, -2.5, 2.5,
+                50, -0.05, 0.05)
             self.h_deltaEta = ROOT.TH1F(
                 name+'_deltaEta', '#Delta #eta_{@vtx}; #eta_{@vtx}^{decoded}-#eta_{@vtx}^{float};', 
                 100, -1, 1)
@@ -593,9 +608,13 @@ class DecTkHistos(BaseHistos):
 
     def fill_lazy(self, filler, sel_name):
         filler.fill1d_lazy(self.h_pt, 'pt', sel_name)
+        filler.fill1d_lazy(self.h_deltaPt, 'deltaPt', sel_name)
+        filler.fill2d_lazy(self.h_deltaPtVeta, 'simeta', 'deltaPt', sel_name)
+        filler.fill2d_lazy(self.h_deltaPtVabseta, 'simabseta', 'deltaPt', sel_name)
         filler.fill1d_lazy(self.h_eta, 'eta', sel_name)
         filler.fill1d_lazy(self.h_z0, 'z0', sel_name)
         filler.fill1d_lazy(self.h_deltaZ0, 'deltaZ0', sel_name)
+        filler.fill2d_lazy(self.h_deltaZ0Veta, 'simeta', 'deltaZ0', sel_name)
         filler.fill1d_lazy(self.h_deltaEta, 'deltaEta', sel_name)
         filler.fill2d_lazy(self.h_deltaEtaVabseta, 'simabseta', 'deltaEta', sel_name)
         filler.fill2d_lazy(self.h_deltaEtaVeta, 'simeta', 'deltaEta', sel_name)

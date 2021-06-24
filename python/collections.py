@@ -707,6 +707,7 @@ def mapcalo2pfregions_out(objects):
 
 def decodedTk_fixtures(objects):
     objects['deltaZ0'] = objects.z0 - objects.simz0
+    objects['deltaPt'] = objects.pt - objects.simpt
     objects['deltaEta'] = objects.eta - objects.simeta
     objects['deltaCaloEta'] = objects.caloeta - objects.simcaloeta
     # have dphi between -pi and pi
