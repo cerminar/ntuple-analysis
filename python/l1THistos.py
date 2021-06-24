@@ -560,14 +560,18 @@ class DecTkHistos(BaseHistos):
                 name+'_deltaCaloEta', '#Delta #eta_{@calo}; #eta_{@calo}^{decoded}-#eta_{@calo}^{float};', 
                 100, -1, 1)
             self.h_deltaCaloEtaVabseta = ROOT.TH2F(
-                name+'_deltaCaloEtaVabseta', '#Delta #eta_{@calo} vs |#eta^{float}|; |#eta^{float}|; ##eta_{@calo}^{decoded}-#eta_{@calo}^{float};', 
+                name+'_deltaCaloEtaVabseta', '#Delta #eta_{@calo} vs |#eta^{float}|; |#eta^{float}|; #eta_{@calo}^{decoded}-#eta_{@calo}^{float};', 
                 100, 0, 2.5,
+                100, -0.1, 0.1)
+            self.h_deltaCaloEtaVeta = ROOT.TH2F(
+                name+'_deltaCaloEtaVeta', '#Delta #eta_{@calo} vs #eta^{float}; #eta^{float}; #eta_{@calo}^{decoded}-#eta_{@calo}^{float};', 
+                200, -2.5, 2.5,
                 100, -0.1, 0.1)
             self.h_deltaCaloPhi = ROOT.TH1F(
                 name+'_deltaCaloPhi', '#Delta #phi_{@calo}; #phi_{@calo}^{decoded}-#phi_{@calo}^{float};', 
                 100, -1, 1)
             self.h_deltaCaloPhiVabseta = ROOT.TH2F(
-                name+'_deltaCaloPhiVabseta', '#Delta #phi_{@calo} vs |#eta^{float}|; |#phi^{float}|; ##phi_{@calo}^{decoded}-#eta_{@calo}^{float};', 
+                name+'_deltaCaloPhiVabseta', '#Delta #phi_{@calo} vs |#eta^{float}|; |#phi^{float}|; #phi_{@calo}^{decoded}-#phi_{@calo}^{float};', 
                 100, 0, 2.5,
                 100, -0.1, 0.1)
 
@@ -583,6 +587,7 @@ class DecTkHistos(BaseHistos):
         filler.fill1d_lazy(self.h_deltaZ0, 'deltaZ0', sel_name)
         filler.fill1d_lazy(self.h_deltaCaloEta, 'deltaCaloEta', sel_name)
         filler.fill2d_lazy(self.h_deltaCaloEtaVabseta, 'simabseta', 'deltaCaloEta', sel_name)
+        filler.fill2d_lazy(self.h_deltaCaloEtaVeta, 'simeta', 'deltaCaloEta', sel_name)
         filler.fill1d_lazy(self.h_deltaCaloPhi, 'deltaCaloPhi', sel_name)
         filler.fill2d_lazy(self.h_deltaCaloPhiVabseta, 'simabseta', 'deltaCaloPhi', sel_name)
 
@@ -1220,22 +1225,32 @@ class DecTkResoHistos(BaseResoHistos):
                 100, -0.4, 0.4)
             self.h_caloEtaRes = ROOT.TH1F(
                 name+'_caloEtaRes',
-                '$eta_{@calo} reso; $eta_{@calo}^{L1} vs $eta_{@calo}^{GEN}',
-                100, -0.4, 0.4)
-            self.h_caloPhiRes = ROOT.TH1F(
-                name+'_caloPhiRes',
-                '$phi_{@calo} reso; $phi_{@calo}^{L1} vs $phi_{@calo}^{GEN}',
-                100, -0.4, 0.4)
+                '#eta_{@calo} reso; #eta_{@calo}^{L1} vs #eta_{@calo}^{GEN}',
+                100, -0.15, 0.15)
             self.h_caloEtaResVabseta = ROOT.TH2F(
                 name+'_caloEtaResVabseta',
-                '$eta_{@calo} reso; |#eta^{GEN}|; $eta_{@calo}^{L1} vs $eta_{@calo}^{GEN}',
-                50, 0, 3,
+                '#eta_{@calo} reso; |#eta^{GEN}|; #eta_{@calo}^{L1} vs #eta_{@calo}^{GEN}',
+                50, 0, 2.5,
+                100, -0.1, 0.1)
+            self.h_caloEtaResVeta = ROOT.TH2F(
+                name+'_caloEtaResVeta',
+                '#eta_{@calo} reso; #eta^{GEN}; #eta_{@calo}^{L1} vs #eta_{@calo}^{GEN}',
+                200, -2.5, 2.5,
+                100, -0.1, 0.1)
+            self.h_caloPhiRes = ROOT.TH1F(
+                name+'_caloPhiRes',
+                '#phi_{@calo} reso; #phi_{@calo}^{L1} vs #phi_{@calo}^{GEN}',
                 100, -0.4, 0.4)
             self.h_caloPhiResVabseta = ROOT.TH2F(
                 name+'_caloPhiResVabseta',
-                '$phi_{@calo} reso; |#eta^{GEN}|; $phi_{@calo}^{L1} vs $phi_{@calo}^{GEN}',
+                '#phi_{@calo} reso; |#eta^{GEN}|; #phi_{@calo}^{L1} vs #phi_{@calo}^{GEN}',
                 50, 0, 3,
                 100, -0.4, 0.4)
+            # self.h_caloPhiResVeta = ROOT.TH2F(
+            #     name+'_caloPhiResVabseta',
+            #     '#phi_{@calo} reso; #eta^{GEN}; #phi_{@calo}^{L1} vs #phi_{@calo}^{GEN}',
+            #     50, 0, 3,
+            #     100, -0.4, 0.4)
             self.h_nMatch = ROOT.TH1F(
                 name+'_nMatch',
                 '# matches',
@@ -1281,8 +1296,10 @@ class DecTkResoHistos(BaseResoHistos):
         self.h_phiRes.Fill(target_phi - reference_phi)
         self.h_caloEtaRes.Fill(target_line.caloeta - reference.exeta)
         self.h_caloPhiRes.Fill(target_line.calophi - reference.exphi)
-        self.h_caloEtaResVabseta.Fill(reference_eta, target_line.caloeta - reference.exeta)
-        self.h_caloPhiResVabseta.Fill(reference_eta, target_line.calophi - reference.exphi)
+        self.h_caloEtaResVabseta.Fill(reference.abseta, target_line.caloeta - reference.exeta)
+        self.h_caloPhiResVabseta.Fill(reference.abseta, target_line.calophi - reference.exphi)
+        self.h_caloEtaResVeta.Fill(reference_eta, target_line.caloeta - reference.exeta)
+        # self.h_caloPhiResVeta.Fill(reference_eta, target_line.calophi - reference.exphi)
 
 
     def fill_nMatch(self, n_matches):
