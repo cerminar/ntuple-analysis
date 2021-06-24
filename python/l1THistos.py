@@ -556,6 +556,17 @@ class DecTkHistos(BaseHistos):
             self.h_deltaZ0 = ROOT.TH1F(
                 name+'_deltaZ0', '#Delta z0; z0^{decoded}-z0^{float};', 
                 50, -0.2, 0.2)
+            self.h_deltaEta = ROOT.TH1F(
+                name+'_deltaEta', '#Delta #eta_{@vtx}; #eta_{@vtx}^{decoded}-#eta_{@vtx}^{float};', 
+                100, -1, 1)
+            self.h_deltaEtaVabseta = ROOT.TH2F(
+                name+'_deltaEtaVabseta', '#Delta #eta_{@vtx} vs |#eta^{float}|; |#eta^{float}|; #eta_{@vtx}^{decoded}-#eta_{@vtx}^{float};', 
+                100, 0, 2.5,
+                100, -0.1, 0.1)
+            self.h_deltaEtaVeta = ROOT.TH2F(
+                name+'_deltaEtaVeta', '#Delta #eta_{@vtx} vs #eta^{float}; #eta^{float}; #eta_{@vtx}^{decoded}-#eta_{@vtx}^{float};', 
+                200, -2.5, 2.5,
+                100, -0.1, 0.1)
             self.h_deltaCaloEta = ROOT.TH1F(
                 name+'_deltaCaloEta', '#Delta #eta_{@calo}; #eta_{@calo}^{decoded}-#eta_{@calo}^{float};', 
                 100, -1, 1)
@@ -585,6 +596,9 @@ class DecTkHistos(BaseHistos):
         filler.fill1d_lazy(self.h_eta, 'eta', sel_name)
         filler.fill1d_lazy(self.h_z0, 'z0', sel_name)
         filler.fill1d_lazy(self.h_deltaZ0, 'deltaZ0', sel_name)
+        filler.fill1d_lazy(self.h_deltaEta, 'deltaEta', sel_name)
+        filler.fill2d_lazy(self.h_deltaEtaVabseta, 'simabseta', 'deltaEta', sel_name)
+        filler.fill2d_lazy(self.h_deltaEtaVeta, 'simeta', 'deltaEta', sel_name)
         filler.fill1d_lazy(self.h_deltaCaloEta, 'deltaCaloEta', sel_name)
         filler.fill2d_lazy(self.h_deltaCaloEtaVabseta, 'simabseta', 'deltaCaloEta', sel_name)
         filler.fill2d_lazy(self.h_deltaCaloEtaVeta, 'simeta', 'deltaCaloEta', sel_name)
@@ -1218,7 +1232,17 @@ class DecTkResoHistos(BaseResoHistos):
             self.h_etaRes = ROOT.TH1F(
                 name+'_etaRes',
                 'Track eta reso',
-                100, -0.4, 0.4)
+                100, -0.15, 0.15)
+            self.h_etaResVabseta = ROOT.TH2F(
+                name+'_etaResVabseta',
+                '#eta_{@vtx} reso; |#eta^{GEN}|; #eta_{@vtx}^{L1} vs #eta_{@vtx}^{GEN}',
+                50, 0, 2.5,
+                100, -0.1, 0.1)
+            self.h_etaResVeta = ROOT.TH2F(
+                name+'_etaResVeta',
+                '#eta_{@vtx} reso; #eta^{GEN}; #eta_{@vtx}^{L1} vs #eta_{@vtx}^{GEN}',
+                200, -2.5, 2.5,
+                100, -0.1, 0.1)
             self.h_phiRes = ROOT.TH1F(
                 name+'_phiRes',
                 'Track phi reso',
@@ -1293,6 +1317,9 @@ class DecTkResoHistos(BaseResoHistos):
         # self.h_pt2stRespVpt.Fill(reference.pt, target.pt2stubs/reference.pt)
 
         self.h_etaRes.Fill(target_eta - reference_eta)
+        self.h_etaResVabseta.Fill(reference.abseta, target_eta - reference_eta)
+        self.h_etaResVeta.Fill(reference.eta, target_eta - reference_eta)
+
         self.h_phiRes.Fill(target_phi - reference_phi)
         self.h_caloEtaRes.Fill(target_line.caloeta - reference.exeta)
         self.h_caloPhiRes.Fill(target_line.calophi - reference.exphi)
