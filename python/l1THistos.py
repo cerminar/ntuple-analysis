@@ -174,7 +174,9 @@ class GraphBuilder:
 
 
 class BaseResoHistos(BaseHistos):
-    """ Base class for resolution histogram classes.
+    """
+
+        Base class for resolution histogram classes.
 
         The class adds a special method to produce a graph out of each
         2D histograms of the class via e special <histoname>_graph method.
@@ -189,7 +191,10 @@ class BaseResoHistos(BaseHistos):
         will create the graph accessible with:
         hreso.g_energyResVenergy_sigmaEOE
         )
+        --------
+        
     """
+
     def __init__(self, name, root_file=None, debug=False):
         BaseHistos.__init__(self, name, root_file, debug)
         if root_file is not None or True:
@@ -545,66 +550,82 @@ class DecTkHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_pt = ROOT.TH1F(
-                name+'_pt', 'Pt (GeV); p_{T} [GeV]', 
+                name+'_pt',
+                'Pt (GeV); p_{T} [GeV]',
                 100, 0, 100)
             self.h_deltaPt = ROOT.TH1F(
-                name+'_deltaPt', 'Pt (GeV); p_{T}^{decoded}-p_{T}^{float}  [GeV]', 
+                name+'_deltaPt',
+                'Pt (GeV); p_{T}^{decoded}-p_{T}^{float}  [GeV]',
                 100, -10, 10)
             self.h_deltaPtVeta = ROOT.TH2F(
-                name+'_deltaPtVeta', 'Pt (GeV); #eta^{float}; p_{T}^{decoded}-p_{T}^{float}  [GeV]', 
-                100, -2.5, 2.5,
-                100, -0.25, 0.25)
+                name+'_deltaPtVeta',
+                'Pt (GeV); #eta^{float}; p_{T}^{decoded}-p_{T}^{float}  [GeV]',
+                50, -2.5, 2.5,
+                50, -0.25, 0.25)
             self.h_deltaPtVabseta = ROOT.TH2F(
-                name+'_deltaPtVabseta', 'Pt (GeV); |#eta^{float}|; p_{T}^{decoded}-p_{T}^{float}  [GeV]', 
+                name+'_deltaPtVabseta',
+                'Pt (GeV); |#eta^{float}|; p_{T}^{decoded}-p_{T}^{float}  [GeV]',
                 50, 0, 2.5,
-                100, -0.25, 0.25)
+                50, -0.25, 0.25)
             self.h_eta = ROOT.TH1F(
-                name+'_eta', 'eta; #eta;', 
+                name+'_eta',
+                '#eta; #eta;',
                 100, -4, 4)
             self.h_z0 = ROOT.TH1F(
-                name+'_z0', 'z0; z_{0} [cm];', 
+                name+'_z0',
+                'z0; z_{0} [cm];',
                 100, -10, 10)
             self.h_deltaZ0 = ROOT.TH1F(
-                name+'_deltaZ0', '#Delta z0; z0^{decoded}-z0^{float};', 
+                name+'_deltaZ0',
+                '#Delta z0; z0^{decoded}-z0^{float};',
                 50, -0.2, 0.2)
             self.h_deltaZ0Veta = ROOT.TH2F(
-                name+'_deltaZ0Veta', '#Delta z0; #eta^{float}; z0^{decoded}-z0^{float};', 
+                name+'_deltaZ0Veta',
+                '#Delta z0; #eta^{float}; z0^{decoded}-z0^{float};',
                 100, -2.5, 2.5,
                 50, -0.05, 0.05)
             self.h_deltaEta = ROOT.TH1F(
-                name+'_deltaEta', '#Delta #eta_{@vtx}; #eta_{@vtx}^{decoded}-#eta_{@vtx}^{float};', 
+                name+'_deltaEta',
+                '#Delta #eta_{@vtx}; #eta_{@vtx}^{decoded}-#eta_{@vtx}^{float};',
                 100, -1, 1)
             self.h_deltaEtaVabseta = ROOT.TH2F(
-                name+'_deltaEtaVabseta', '#Delta #eta_{@vtx} vs |#eta^{float}|; |#eta^{float}|; #eta_{@vtx}^{decoded}-#eta_{@vtx}^{float};', 
-                100, 0, 2.5,
-                100, -0.1, 0.1)
+                name+'_deltaEtaVabseta',
+                '#Delta #eta_{@vtx} vs |#eta^{float}|; |#eta^{float}|; #eta_{@vtx}^{decoded}-#eta_{@vtx}^{float};',
+                25, 0, 2.5,
+                100, -0.004, 0.004)
             self.h_deltaEtaVeta = ROOT.TH2F(
-                name+'_deltaEtaVeta', '#Delta #eta_{@vtx} vs #eta^{float}; #eta^{float}; #eta_{@vtx}^{decoded}-#eta_{@vtx}^{float};', 
-                200, -2.5, 2.5,
-                100, -0.1, 0.1)
+                name+'_deltaEtaVeta',
+                '#Delta #eta_{@vtx} vs #eta^{float}; #eta^{float}; #eta_{@vtx}^{decoded}-#eta_{@vtx}^{float};',
+                50, -2.5, 2.5,
+                50, -0.004, 0.004)
             self.h_deltaCaloEta = ROOT.TH1F(
-                name+'_deltaCaloEta', '#Delta #eta_{@calo}; #eta_{@calo}^{decoded}-#eta_{@calo}^{float};', 
+                name+'_deltaCaloEta',
+                '#Delta #eta_{@calo}; #eta_{@calo}^{decoded}-#eta_{@calo}^{float};',
                 100, -1, 1)
             self.h_deltaCaloEtaVabseta = ROOT.TH2F(
-                name+'_deltaCaloEtaVabseta', '#Delta #eta_{@calo} vs |#eta^{float}|; |#eta^{float}|; #eta_{@calo}^{decoded}-#eta_{@calo}^{float};', 
-                100, 0, 2.5,
-                100, -0.1, 0.1)
+                name+'_deltaCaloEtaVabseta',
+                '#Delta #eta_{@calo} vs |#eta^{float}|; |#eta^{float}|; #eta_{@calo}^{decoded}-#eta_{@calo}^{float};',
+                50, 0, 2.5,
+                100, -0.04, 0.04)
             self.h_deltaCaloEtaVeta = ROOT.TH2F(
-                name+'_deltaCaloEtaVeta', '#Delta #eta_{@calo} vs #eta^{float}; #eta^{float}; #eta_{@calo}^{decoded}-#eta_{@calo}^{float};', 
-                200, -2.5, 2.5,
-                100, -0.1, 0.1)
+                name+'_deltaCaloEtaVeta',
+                '#Delta #eta_{@calo} vs #eta^{float}; #eta^{float}; #eta_{@calo}^{decoded}-#eta_{@calo}^{float};',
+                100, -2.5, 2.5,
+                100, -0.04, 0.04)
             self.h_deltaCaloPhi = ROOT.TH1F(
-                name+'_deltaCaloPhi', '#Delta #phi_{@calo}; #phi_{@calo}^{decoded}-#phi_{@calo}^{float};', 
+                name+'_deltaCaloPhi',
+                '#Delta #phi_{@calo}; #phi_{@calo}^{decoded}-#phi_{@calo}^{float};',
                 100, -1, 1)
             self.h_deltaCaloPhiVabseta = ROOT.TH2F(
-                name+'_deltaCaloPhiVabseta', '#Delta #phi_{@calo} vs |#eta^{float}|; |#phi^{float}|; #phi_{@calo}^{decoded}-#phi_{@calo}^{float};', 
+                name+'_deltaCaloPhiVabseta',
+                '#Delta #phi_{@calo} vs |#eta^{float}|; |#phi^{float}|; #phi_{@calo}^{decoded}-#phi_{@calo}^{float};',
                 100, 0, 2.5,
                 100, -0.1, 0.1)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, egs):
-        weight = None
+        pass
 
     def fill_lazy(self, filler, sel_name):
         filler.fill1d_lazy(self.h_pt, 'pt', sel_name)
@@ -638,7 +659,7 @@ class TkEleHistos(BaseHistos):
             self.h_ptVtkpt = ROOT.TH2F(name+'_ptVtkpt', 'TkEG Pt (GeV) vs TkPt; p_{T}^{Tk} [GeV]; p_{T}^{EG} [GeV]', 100, 0, 100, 100, 0, 100)
             self.h_tkIso = ROOT.TH1F(name+'_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2)
             self.h_pfIso = ROOT.TH1F(name+'_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
-            
+
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, tkegs):
@@ -962,8 +983,8 @@ class ResoHistos(BaseResoHistos):
         target_phi = target_line.phi
         target_nclu = target_line.nclu
 
-        reference_pt, reference_energy, reference_eta, reference_phi = \
-            reference.pt, reference.energy, reference.eta, reference.phi
+        reference_pt, reference_energy, reference_eta = \
+            reference.pt, reference.energy, reference.eta
 
         self.h_ptRes.Fill((target_pt - reference_pt)/reference_pt)
         # self.h_energyRes.Fill(target_energy - reference.energy)
@@ -1347,10 +1368,8 @@ class DecTkResoHistos(BaseResoHistos):
         self.h_caloEtaResVeta.Fill(reference_eta, target_line.caloeta - reference.exeta)
         # self.h_caloPhiResVeta.Fill(reference_eta, target_line.calophi - reference.exphi)
 
-
     def fill_nMatch(self, n_matches):
         self.h_nMatch.Fill(n_matches)
-
 
 
 class EGResoHistos(BaseResoHistos):
