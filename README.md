@@ -44,7 +44,7 @@ After this initial (once in a time) setup is done you can just activate the virt
 
 ## HGCAL L1 TPG analysis
 
-`python analyzeHgcalL1Tntuple.py -f selection.yaml -c single_empart_guns_tracks -s ele_flat2to100_PU0 -n 10 -d 2`
+`python analyzeHgcalL1Tntuple.py -f cfg/default.yaml -i cfg/datasets/ntp_v68C.yaml -c decoded_tk -s doubleele_flat1to100_PU200 -n 3000 -d 2`
 
 see:
 
@@ -53,14 +53,18 @@ see:
 for the details.
 
 ### Configuration file
-The configuration file specifies the details of the jobs:
-   - input output directories
-   - versioning of the output file names
-   - details of the input samples (location of the ntuple files)
+The configuration is handled by 2 yaml files. 
+One specifying    
+   - output directories
+   - versioning of the plots
    - collections of samples, i.e. group of samples to be processed homogeneously: for each collection the list of plotters (see below) to be run is provided.
 
-An example of configuration file can be found in:
-[selection_1112_v11geom.yaml](selection_1112_v11geom.yaml)
+The other prividing
+   - details of the input samples (location of the ntuple files)
+
+Example of configuration file can be found in:
+ - [cfg/default.yaml](cfg/default.yaml)
+ - [cfg/datasets/ntp_v66.yaml](cfg/datasets/ntp_v66.yaml)
 
 
 ### Reading ntuple branches or creating derived ones
