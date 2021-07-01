@@ -18,4 +18,4 @@ source ./setVirtualEnvWrapper.sh
 workon TEMPL_VIRTUALENV
 # cd ${BATCH_DIR}
 date
-python analyzeHgcalL1Tntuple.py -f TEMPL_CFG -c TEMPL_COLL -s TEMPL_SAMPLE -n -1 -o ${BATCH_DIR} -r ${PROCID} -b
+python analyzeHgcalL1Tntuple.py -f TEMPL_CFG -i TEMPL_INPUT -c TEMPL_COLL -s TEMPL_SAMPLE -n -1 -o ${BATCH_DIR} -r ${PROCID} -b

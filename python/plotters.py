@@ -29,6 +29,15 @@ from . import utils as utils
 from . import clusterTools as clAlgo
 from . import selections as selections
 # import collections as collections
+ROOT.gROOT.ProcessLine('#include "src/fastfilling.h"');
+
+
+class Test(object):
+    def __init__(self, name):
+        self.name = name
+         
+    def __repr__(self):
+        return "<TEST class, {}>".format(self.name)
 
 
 class BasePlotter(object):
@@ -65,6 +74,13 @@ class BasePlotter(object):
                                                            ignore_index=True)
         return histo_primitives
 
+    def __repr__(self):
+        return '<{}, ds: {}, ds_sel: {}, g: {}, g_sel: {} >'.format(
+            self.__class__.__name__,
+            self.data_set,
+            self.data_selections,
+            self.gen_set,
+            self.gen_selections)
     # def change_genpart_selection(self, newselection):
     #     """Allow customization of gen selection per sample."""
     #     if self.gen_selections is not None:
@@ -97,16 +113,48 @@ class RatePlotter(BasePlotter):
         # print self.tp_set.name
         for selection in self.tp_selections:
             sel_clusters = self.tp_set.query(selection)
-            # print sel_clusters
-            trigger_clusters = sel_clusters[['pt', 'eta']].sort_values(by='pt',
-                                                                       ascending=False)
-            # print trigger_clusters[:5]
+            self.h_rate[selection.name].fill_many(sel_clusters.loc[sel_clusters['pt'].groupby(level='entry', group_keys=False).nlargest(n=1).index, ['pt']])
+            self.h_rate[selection.name].fill_norm(self.tp_set.new_read_nentries)
 
-            if not trigger_clusters.empty:
-                # print trigger_clusters.iloc[0]
-                self.h_rate[selection.name].fill(trigger_clusters.iloc[0].pt,
-                                                 trigger_clusters.iloc[0].eta)
-            self.h_rate[selection.name].fill_norm()
+    def fill_histos_event(self, idx, debug=0):
+        if self.data_set.new_read:
+            self.fill_histos(debug)
+            
+
+class GenericDataFrameLazyPlotter(BasePlotter):
+    def __init__(self, HistoClass, data_set, selections=[selections.Selection('all')]):
+        self.HistoClass = HistoClass
+        self.h_set = {}
+        super(GenericDataFrameLazyPlotter, self).__init__(data_set, selections)
+
+    def book_histos(self):
+        self.data_set.activate()
+        data_name = self.data_set.name
+        for selection in self.data_selections:
+            self.h_set[selection.name] = self.HistoClass(name='{}_{}_nomatch'.format(data_name,
+                                                                                     selection.name))
+
+    def fill_histos(self, debug=0):
+        # if not (idx, 0) in self.data_set.df.index:
+        #     return
+        dataframe = self.data_set.df
+        if dataframe.empty:
+            return
+        filler = histos.HistoLazyFiller(dataframe)
+        # print (self.data_set.name)
+        # print (self.data_set.df.columns)
+        
+        for data_sel in self.data_selections:
+            if data_sel.all:
+                filler.add_selection(data_sel.name, np.full(dataframe.shape[0], True, dtype=bool))
+            else:
+                filler.add_selection(data_sel.name, dataframe.eval(data_sel.selection).values)
+            self.h_set[data_sel.name].fill_lazy(filler, data_sel.name)
+        filler.fill()
+    
+    def fill_histos_event(self, idx, debug=0):
+        if self.data_set.new_read:
+            self.fill_histos(debug)
 
 
 class GenericDataFramePlotter(BasePlotter):
@@ -123,17 +171,32 @@ class GenericDataFramePlotter(BasePlotter):
                                                                                      selection.name))
 
     def fill_histos(self, debug=0):
+        if self.data_set.df.empty:
+            return
         for data_sel in self.data_selections:
             data = self.data_set.query(data_sel)
             self.h_set[data_sel.name].fill(data)
 
+    def fill_histos_event(self, idx, debug=0):
+        if self.data_set.new_read:
+            self.fill_histos(debug)
 
-class TkElePlotter(GenericDataFramePlotter):
+
+class GenPlotter(GenericDataFrameLazyPlotter):
+    def __init__(self, gen_set, gen_selections=[selections.Selection('all')]):
+        super(GenPlotter, self).__init__(
+            histos.GenParticleHistos, 
+            gen_set, 
+            selections.multiply_selections(
+                gen_selections,
+                [selections.Selection('', '', 'gen > 0')]))
+    
+class TkElePlotter(GenericDataFrameLazyPlotter):
     def __init__(self, tkeg_set, tkeg_selections=[selections.Selection('all')]):
         super(TkElePlotter, self).__init__(histos.TkEleHistos, tkeg_set, tkeg_selections)
 
 
-class TkEmPlotter(GenericDataFramePlotter):
+class TkEmPlotter(GenericDataFrameLazyPlotter):
     def __init__(self, tkeg_set, tkeg_selections=[selections.Selection('all')]):
         super(TkEmPlotter, self).__init__(histos.TkEmHistos, tkeg_set, tkeg_selections)
 
@@ -148,7 +211,7 @@ class TrackPlotter(GenericDataFramePlotter):
         super(TrackPlotter, self).__init__(histos.TrackHistos, trk_set, track_selections)
 
 
-class EGPlotter(GenericDataFramePlotter):
+class EGPlotter(GenericDataFrameLazyPlotter):
     def __init__(self, eg_set, eg_selections=[selections.Selection('all')]):
         super(EGPlotter, self).__init__(histos.EGHistos, eg_set, eg_selections)
 
@@ -157,6 +220,13 @@ class TTPlotter(GenericDataFramePlotter):
     def __init__(self, tt_set, tt_selections=[selections.Selection('all')]):
         super(TTPlotter, self).__init__(histos.TriggerTowerHistos, tt_set, tt_selections)
 
+class EGPlotter(GenericDataFrameLazyPlotter):
+    def __init__(self, eg_set, eg_selections=[selections.Selection('all')]):
+        super(EGPlotter, self).__init__(histos.EGHistos, eg_set, eg_selections)
+
+class DecTkPlotter(GenericDataFrameLazyPlotter):
+    def __init__(self, tk_set, tk_selections=[selections.Selection('all')]):
+        super(DecTkPlotter, self).__init__(histos.DecTkHistos, tk_set, tk_selections)
 
 class TPPlotter(BasePlotter):
     def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
@@ -187,25 +257,6 @@ class TPPlotter(BasePlotter):
                 self.h_tpset[tp_sel.name].fill(tcs, cl2Ds, cl3Ds)
 
 
-class GenPlotter:
-    def __init__(self, gen_set, gen_selections=[selections.Selection('all')]):
-        self.gen_set = gen_set
-        self.gen_selections = selections.add_selections(
-            gen_selections,
-            [selections.Selection('', '', 'gen > 0')])
-        self.h_gen = {}
-
-    def book_histos(self):
-        self.gen_set.activate()
-        for selection in self.gen_selections:
-            self.h_gen[selection.name] = histos.GenParticleHistos(name='h_genParts_{}'.format(selection.name))
-
-    def fill_histos(self, debug=0):
-        for gen_sel in self.gen_selections:
-            gen_parts = self.gen_set.query(gen_sel)
-            self.h_gen[gen_sel.name].fill(gen_parts)
-
-
 class TPGenMatchPlotter(BasePlotter):
     def __init__(self, tp_set, gen_set,
                  tp_selections=[selections.Selection('all')], 
@@ -224,7 +275,7 @@ class TPGenMatchPlotter(BasePlotter):
             tp_set, 
             tp_selections, 
             gen_set, 
-            selections.add_selections(
+            selections.multiply_selections(
                 gen_selections,
                 [selections.Selection('', '', 'gen > 0')]))
 
@@ -475,7 +526,7 @@ class GenericGenMatchPlotter(BasePlotter):
             data_set,
             data_selections,
             gen_set,
-            selections.add_selections(
+            selections.multiply_selections(
                 gen_selections,
                 [selections.Selection('', '', 'gen > 0')]))
 
@@ -491,13 +542,24 @@ class GenericGenMatchPlotter(BasePlotter):
                         h_reso,
                         algoname,
                         debug):
+                        
+
+
+        gen_filler = histos.HistoLazyFiller(genParticles)
+        den_sel = np.full(genParticles.shape[0], True, dtype=bool)
+        num_sel = np.full(genParticles.shape[0], False, dtype=bool)
+        
         # fill histo with all selected GEN particles before any match
+        gen_filler.add_selection('den', den_sel)
         if h_gen:
-            h_gen.fill(genParticles)
+            h_gen.fill_lazy(gen_filler, 'den')
 
         best_match_indexes = {}
         positional = True
         if not objects.empty:
+            obj_filler = histos.HistoLazyFiller(objects)
+            obj_ismatch = np.full(objects.shape[0], False, dtype=bool)
+
             best_match_indexes, allmatches = utils.match_etaphi(
                 genParticles[self.gen_eta_phi_columns],
                 objects[['eta', 'phi']],
@@ -511,12 +573,14 @@ class GenericGenMatchPlotter(BasePlotter):
             for idx in list(best_match_indexes.keys()):
                 if positional:
                     obj_matched = objects.iloc[[best_match_indexes[idx]]]
+                    obj_ismatch[best_match_indexes[idx]] = True
                 else: 
                     obj_matched = objects.loc[[best_match_indexes[idx]]]
-                
-                h_object_matched.fill(obj_matched)
-                gen_matched = genParticles.loc[[idx]]
-                h_reso.fill(reference=gen_matched.iloc[0], target=obj_matched)
+                    obj_ismatch[objects.index.get_loc(best_match_indexes[idx])] = True
+
+                # h_object_matched.fill(obj_matched)
+                num_sel[genParticles.index.get_loc(idx)] = True
+                h_reso.fill(reference=genParticles.loc[idx], target=obj_matched)
                 
                 if hasattr(h_reso, 'fill_nMatch'):
                     h_reso.fill_nMatch(len(allmatches[idx]))
@@ -532,9 +596,18 @@ class GenericGenMatchPlotter(BasePlotter):
                 # print(objects.iloc[[best_match_iloc[idx]]])
                 # print ("--")
 
-                if h_gen_matched is not None:
-                    h_gen_matched.fill(gen_matched)
+                # if h_gen_matched is not None:
+                #     h_gen_matched.fill(gen_matched)
+            obj_filler.add_selection('match', obj_ismatch)
+            h_object_matched.fill_lazy(obj_filler, 'match')
+            obj_filler.fill()
+        
+        if h_gen_matched is not None:
+            gen_filler.add_selection('num', num_sel)
+            h_gen_matched.fill_lazy(gen_filler, 'num')
 
+        gen_filler.fill()
+        
     def book_histos(self):
         self.gen_set.activate()
         self.data_set.activate()
@@ -546,12 +619,20 @@ class GenericGenMatchPlotter(BasePlotter):
                 self.h_effset[histo_name] = histos.HistoSetEff(histo_name)
 
     def fill_histos(self, debug=0):
-        for tp_sel in self.data_selections:
-            objects = self.data_set.query(tp_sel)
-            for gen_sel in self.gen_selections:
-                genReference = self.gen_set.query(gen_sel)
-                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+        pass
 
+    def fill_histos_event(self, idx, debug=0):
+        for tp_sel in self.data_selections:
+            objects = self.data_set.query_event(tp_sel, idx)
+            for gen_sel in self.gen_selections:
+                genReference = self.gen_set.query_event(gen_sel, idx)
+                if genReference.empty:
+                    continue
+                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                # print (histo_name)
+                # print (f'# data: {objects.shape[0]}')
+                # print (f'# gen: {genReference.shape[0]}')
+                # print (genReference)
                 h_obj_match = self.h_dataset[histo_name]
                 h_resoset = self.h_resoset[histo_name]
                 h_genseleff = self.h_effset[histo_name]
@@ -564,6 +645,7 @@ class GenericGenMatchPlotter(BasePlotter):
                                      h_resoset,
                                      self.data_set.name,
                                      debug)
+        # print (f'Filling histof for data: {self.data_set.name}, entry: {idx}')
         # print ("# of queries: {}".format(qcounter))
 
 class TrackGenMatchPlotter(GenericGenMatchPlotter):
@@ -574,6 +656,26 @@ class TrackGenMatchPlotter(GenericGenMatchPlotter):
                                                    data_set, gen_set,
                                                    data_selections, gen_selections,
                                                    gen_eta_phi_columns=['eta', 'phi'])
+
+
+class DecTrackGenMatchPlotter(GenericGenMatchPlotter):
+    def __init__(self, data_set, gen_set,
+                 data_selections=[selections.Selection('all')],
+                 gen_selections=[selections.Selection('all')]):
+        super(DecTrackGenMatchPlotter, self).__init__(
+            histos.DecTkHistos, histos.DecTkResoHistos,
+            data_set, gen_set,
+            data_selections, gen_selections,
+            gen_eta_phi_columns=['eta', 'phi'])
+
+
+class Cl3DGenMatchPlotter(GenericGenMatchPlotter):
+    def __init__(self, data_set, gen_set,
+                 data_selections=[selections.Selection('all')],
+                 gen_selections=[selections.Selection('all')]):
+        super(Cl3DGenMatchPlotter, self).__init__(histos.Cluster3DHistos, histos.ResoHistos,
+                                                  data_set, gen_set,
+                                                  data_selections, gen_selections)
 
 
 class EGGenMatchPlotter(GenericGenMatchPlotter):
@@ -603,7 +705,7 @@ class ResoNtupleMatchPlotter(BasePlotter):
             data_set,
             data_selections,
             gen_set,
-            selections.add_selections(
+            selections.multiply_selections(
                 gen_selections,
                 [selections.Selection('', '', 'gen > 0')]))
 
@@ -680,7 +782,7 @@ class CalibrationPlotter(BasePlotter):
             data_set,
             data_selections,
             gen_set,
-            selections.add_selections(
+            selections.multiply_selections(
                 gen_selections,
                 [selections.Selection('', '', 'gen > 0')]))
 
@@ -900,7 +1002,7 @@ class ClusterTCGenMatchPlotter(BasePlotter):
             data_set,
             data_selections,
             gen_set,
-            selections.add_selections(
+            selections.multiply_selections(
                 gen_selections,
                 [selections.Selection('', '', 'gen > 0')]))
 
@@ -980,7 +1082,7 @@ class IsoTuplePlotter(BasePlotter):
             data_set,
             data_selections,
             gen_set,
-            selections.add_selections(
+            selections.multiply_selections(
                 gen_selections,
                 [selections.Selection('', '', 'gen > 0')]))
 
@@ -1031,16 +1133,20 @@ class IsoTuplePlotter(BasePlotter):
                 self.h_resoset[histo_name] = histos.IsoTuples(histo_name)
 
     def fill_histos(self, debug=0):
-        for tp_sel in self.data_selections:
-            objects = self.data_set.query(tp_sel)
-            for gen_sel in self.gen_selections:
-                genReference = self.gen_set.query(gen_sel)
-                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+        pass
 
+    def fill_histos_event(self, idx, debug=0):
+        for tp_sel in self.data_selections:
+            objects = self.data_set.query_event(tp_sel, idx)
+            for gen_sel in self.gen_selections:
+                genReference = self.gen_set.query_event(gen_sel, idx)
+                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                # print (histo_name)
+                # print (f'# data: {objects.shape[0]}')
+                # print (f'# gen: {genReference.shape[0]}')
+                # print (genReference)
                 h_resoset = self.h_resoset[histo_name]
-                # print 'TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name)
-                # print genReference
-                # print objects
+                # print ('TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name))
                 self.plotObjectMatch(genReference,
                                      objects,
                                      None,
@@ -1053,12 +1159,13 @@ class IsoTuplePlotter(BasePlotter):
 
 
 
+
 if __name__ == "__main__":
-    for sel in selections.add_selections(selections.tp_id_selections,
+    for sel in selections.multiply_selections(selections.tp_id_selections,
                                          selections.tp_eta_selections):
         print(sel)
 
-    print(selections.add_selections(selections.tp_id_selections,
+    print(selections.multiply_selections(selections.tp_id_selections,
                                     selections.tp_pt_selections))
 
     # print(selections.gen_selection)

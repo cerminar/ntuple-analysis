@@ -7,7 +7,7 @@ common:
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v146F
+  plot_version: v146E
   run_clustering: False
   run_density_computation: False
   calib_version: calib-v134C
@@ -128,7 +128,7 @@ collections:
       # - ele_flat2to100_PU200
       # - doubleele_flat1to100_PU0
       - doubleele_flat1to100_PU200
-      # - doublephoton_flat1to100_PU200
+      - doublephoton_flat1to100_PU200
       # - photon_flat8to150_PU0
       # - photon_flat8to150_PU200
       # - dyll_PU200
@@ -151,7 +151,7 @@ collections:
       # photon_flat8to150_PU0: 0
       # photon_flat8to150_PU200: 0
       doubleele_flat1to100_PU0: 2000
-      doubleele_flat1to100_PU200: 4000
+      doubleele_flat1to100_PU200: 1000
       doublephoton_flat1to100_PU200: 1000
 
       # dyll_PU200: 5
@@ -224,13 +224,13 @@ collections:
       # - photon_flat8to150_PU0
       # - photon_flat8to150_PU200
     plotters:
-      - tp_plotters
+      # - tp_plotters
       - tp_genmatched_plotters
       - genpart_plotters
       # - ttower_plotters
       # - ttower_genmatched_plotters
     htc_jobflavor:
-      tomorrow
+      microcentury
     priorities:
       ele_flat2to100_PU0: 1
       ele_flat2to100_PU200: 5
@@ -243,8 +243,8 @@ collections:
       photon_flat8to150_PU0: 0
       photon_flat8to150_PU200: 0
       doubleele_flat1to100_PU0: 2100
-      doubleele_flat1to100_PU200: 800
-      doublephoton_flat1to100_PU200: 800
+      doubleele_flat1to100_PU200: 10000
+      doublephoton_flat1to100_PU200: 5000
 
 
   highpt_tps:
@@ -428,20 +428,20 @@ plotters:
 #test: !!python/name:python.selections.gen_part_selections
 samples:
   # tree_name: hgcalTriggerNtuplizer/HGCalTriggerNtuple
-  tree_name: l1CaloTriggerNtuplizer_egOnly/HGCalTriggerNtuple
-  # tree_name: l1CaloTriggerNtuplizer/HGCalTriggerNtuple
+  # tree_name: l1CaloTriggerNtuplizer_egOnly/HGCalTriggerNtuple
+  tree_name: l1CaloTriggerNtuplizer/HGCalTriggerNtuple
 
   doubleele_flat1to100_PU0:
-    input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU0_v64E/
+    input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU0_v64D/
     events_per_job : 500
     # gen_selections: !!python/name:python.selections.genpart_photon_selections
 
   doubleele_flat1to100_PU200:
-    input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU200_v64E/
+    input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU200_v63H/
     events_per_job : 200
 
   doublephoton_flat1to100_PU200:
-    input_sample_dir: DoublePhoton_FlatPt-1To100/DoublePhoton_FlatPt-1To100_PU200_v64E/
+    input_sample_dir: DoublePhoton_FlatPt-1To100/DoublePhoton_FlatPt-1To100_PU200_v64D/
     events_per_job : 200
 
   ele_flat2to100_PU0:
@@ -474,7 +474,7 @@ samples:
     events_per_job: 500
 
   nugun_alleta_pu200:
-    input_sample_dir: MinBias_TuneCP5_14TeV-pythia8/NuGunAllEta_PU200_v64E/
+    input_sample_dir: MinBias_TuneCP5_14TeV-pythia8/NuGunAllEta_PU200_v64D/
     # input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v47/191105_135050/0000/
     events_per_job: 300
 
