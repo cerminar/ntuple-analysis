@@ -399,27 +399,28 @@ def tower_fixtures(towers):
 
 
 def recluster_mp(cl3ds, tcs, cluster_size, cluster_function, pool):
-    cluster_sides = [x for x in [cl3ds[cl3ds.eta > 0],
-                                 cl3ds[cl3ds.eta < 0]]]
-    tc_sides = [x for x in [tcs[tcs.eta > 0],
-                            tcs[tcs.eta < 0]]]
-
-    cluster_sizes = [cluster_size, cluster_size]
-
-    cluster_and_tc_sides = zip(cluster_sides, tc_sides, cluster_sizes)
-
-    result_3dcl = pool.map(cluster_function, cluster_and_tc_sides)
-
-    # result_3dcl = []
-    # result_3dcl.append(cluster_function(cluster_and_tc_sides[0]))
-    # result_3dcl.append(cluster_function(cluster_and_tc_sides[1]))
-
-    # print result_3dcl[0]
-    # print result_3dcl[1]
-
+    # FIXME: need to be ported to uproot multiindexing
+    # cluster_sides = [x for x in [cl3ds[cl3ds.eta > 0],
+    #                              cl3ds[cl3ds.eta < 0]]]
+    # tc_sides = [x for x in [tcs[tcs.eta > 0],
+    #                         tcs[tcs.eta < 0]]]
+    # 
+    # cluster_sizes = [cluster_size, cluster_size]
+    # 
+    # cluster_and_tc_sides = zip(cluster_sides, tc_sides, cluster_sizes)
+    # 
+    # result_3dcl = pool.map(cluster_function, cluster_and_tc_sides)
+    # 
+    # # result_3dcl = []
+    # # result_3dcl.append(cluster_function(cluster_and_tc_sides[0]))
+    # # result_3dcl.append(cluster_function(cluster_and_tc_sides[1]))
+    # 
+    # # print result_3dcl[0]
+    # # print result_3dcl[1]
+    # 
     merged_clusters = pd.DataFrame(columns=cl3ds.columns)
-    for res3D in result_3dcl:
-        merged_clusters = merged_clusters.append(res3D, ignore_index=True, sort=False)
+    # for res3D in result_3dcl:
+    #     merged_clusters = merged_clusters.append(res3D, ignore_index=True, sort=False)
     return merged_clusters
 
 
@@ -457,16 +458,17 @@ def get_emint_clusters(triggerClusters):
 
 
 def get_merged_cl3d(triggerClusters, pool, debug=0):
+    # FIXME: need to be ported to uproot multiindexing
     merged_clusters = pd.DataFrame(columns=triggerClusters.columns)
-    if triggerClusters.empty:
-        return merged_clusters
-    # FIXME: filter only interesting clusters
-    clusterSides = [x for x in [triggerClusters[triggerClusters.eta > 0],
-                                triggerClusters[triggerClusters.eta < 0]] if not x.empty]
-
-    results3Dcl = pool.map(clAlgo.merge3DClustersEtaPhi, clusterSides)
-    for res3D in results3Dcl:
-        merged_clusters = merged_clusters.append(res3D, ignore_index=True, sort=False)
+    # if triggerClusters.empty:
+    #     return merged_clusters
+    # # FIXME: filter only interesting clusters
+    # clusterSides = [x for x in [triggerClusters[triggerClusters.eta > 0],
+    #                             triggerClusters[triggerClusters.eta < 0]] if not x.empty]
+    # 
+    # results3Dcl = pool.map(clAlgo.merge3DClustersEtaPhi, clusterSides)
+    # for res3D in results3Dcl:
+    #     merged_clusters = merged_clusters.append(res3D, ignore_index=True, sort=False)
     return merged_clusters
 
 
@@ -474,31 +476,34 @@ def get_trackmatched_egs(egs, tracks, debug=0):
     newcolumns = ['pt', 'energy', 'eta', 'phi', 'hwQual']
     newcolumns.extend(['tkpt', 'tketa', 'tkphi', 'tkz0', 'tkchi2', 'tkchi2Red', 'tknstubs', 'deta', 'dphi', 'dr'])
     matched_egs = pd.DataFrame(columns=newcolumns)
-    if egs.empty or tracks.empty:
-        return matched_egs
-    best_match_indexes, allmatches = match_etaphi(egs[['eta', 'phi']],
-                                                  tracks[['caloeta', 'calophi']],
-                                                  tracks['pt'],
-                                                  deltaR=0.1)
-    for bestmatch_idxes in best_match_indexes.iteritems():
-        bestmatch_eg = egs.loc[bestmatch_idxes[0]]
-        bestmatch_tk = tracks.loc[bestmatch_idxes[1]]
-        matched_egs = matched_egs.append({'pt': bestmatch_eg.pt,
-                                          'energy': bestmatch_eg.energy,
-                                          'eta': bestmatch_eg.eta,
-                                          'phi': bestmatch_eg.phi,
-                                          'hwQual': bestmatch_eg.hwQual,
-                                          'tkpt': bestmatch_tk.pt,
-                                          'tketa': bestmatch_tk.eta,
-                                          'tkphi': bestmatch_tk.phi,
-                                          'tkz0': bestmatch_tk.z0,
-                                          'tkchi2': bestmatch_tk.chi2,
-                                          'tkchi2Red': bestmatch_tk.chi2Red,
-                                          'tknstubs': bestmatch_tk.nStubs,
-                                          'deta': bestmatch_tk.eta - bestmatch_eg.eta,
-                                          'dphi': bestmatch_tk.phi - bestmatch_eg.phi,
-                                          'dr': math.sqrt((bestmatch_tk.phi-bestmatch_eg.phi)**2+(bestmatch_tk.eta-bestmatch_eg.eta)**2)},
-                                         ignore_index=True, sort=False)
+    # FIXME: need to be ported to uproot multiindexing
+    # 
+    # 
+    # if egs.empty or tracks.empty:
+    #     return matched_egs
+    # best_match_indexes, allmatches = match_etaphi(egs[['eta', 'phi']],
+    #                                               tracks[['caloeta', 'calophi']],
+    #                                               tracks['pt'],
+    #                                               deltaR=0.1)
+    # for bestmatch_idxes in best_match_indexes.iteritems():
+    #     bestmatch_eg = egs.loc[bestmatch_idxes[0]]
+    #     bestmatch_tk = tracks.loc[bestmatch_idxes[1]]
+    #     matched_egs = matched_egs.append({'pt': bestmatch_eg.pt,
+    #                                       'energy': bestmatch_eg.energy,
+    #                                       'eta': bestmatch_eg.eta,
+    #                                       'phi': bestmatch_eg.phi,
+    #                                       'hwQual': bestmatch_eg.hwQual,
+    #                                       'tkpt': bestmatch_tk.pt,
+    #                                       'tketa': bestmatch_tk.eta,
+    #                                       'tkphi': bestmatch_tk.phi,
+    #                                       'tkz0': bestmatch_tk.z0,
+    #                                       'tkchi2': bestmatch_tk.chi2,
+    #                                       'tkchi2Red': bestmatch_tk.chi2Red,
+    #                                       'tknstubs': bestmatch_tk.nStubs,
+    #                                       'deta': bestmatch_tk.eta - bestmatch_eg.eta,
+    #                                       'dphi': bestmatch_tk.phi - bestmatch_eg.phi,
+    #                                       'dr': math.sqrt((bestmatch_tk.phi-bestmatch_eg.phi)**2+(bestmatch_tk.eta-bestmatch_eg.eta)**2)},
+    #                                      ignore_index=True, sort=False)
     return matched_egs
 
 
@@ -553,17 +558,19 @@ def get_calibrated_clusters(calib_factors, input_3Dclusters):
 
 def build3DClusters(name, algorithm, triggerClusters, pool, debug):
     trigger3DClusters = pd.DataFrame()
-    if triggerClusters.empty:
-        return trigger3DClusters
-    clusterSides = [x for x in [triggerClusters[triggerClusters.eta > 0],
-                                triggerClusters[triggerClusters.eta < 0]] if not x.empty]
-    results3Dcl = pool.map(algorithm, clusterSides)
-    for res3D in results3Dcl:
-        trigger3DClusters = trigger3DClusters.append(res3D, ignore_index=True, sort=False)
-
-    debugPrintOut(debug, name='{} 3D clusters'.format(name),
-                  toCount=trigger3DClusters,
-                  toPrint=trigger3DClusters.iloc[:3])
+    # FIXME: need to be ported to uproot multiindexing
+    # 
+    # if triggerClusters.empty:
+    #     return trigger3DClusters
+    # clusterSides = [x for x in [triggerClusters[triggerClusters.eta > 0],
+    #                             triggerClusters[triggerClusters.eta < 0]] if not x.empty]
+    # results3Dcl = pool.map(algorithm, clusterSides)
+    # for res3D in results3Dcl:
+    #     trigger3DClusters = trigger3DClusters.append(res3D, ignore_index=True, sort=False)
+    # 
+    # debugPrintOut(debug, name='{} 3D clusters'.format(name),
+    #               toCount=trigger3DClusters,
+    #               toPrint=trigger3DClusters.iloc[:3])
     return trigger3DClusters
 #     trigger3DClustersDBS = build3DClusters(
 #         'DBS', clAlgo.build3DClustersEtaPhi, triggerClustersDBS, pool, debug)
@@ -1175,36 +1182,6 @@ egs_EB = DFCollection(
     fixture_function=barrel_quality,
     read_entry_block=200,
     debug=0)
-
-# egs_EE_pf_r1 = DFCollection(
-#     name='PFEgEEr1', label='EG EE Corr. (r1)',
-#     filler_function=lambda event, entry_block: event.getDataFrame(prefix='PFegammaEE'),
-#     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
-#     fixture_function=fake_endcap_quality,
-#     debug=0)
-# 
-# egs_EE_pf_r2 = DFCollection(
-#     name='PFEgEEr2', label='EG EE Corr. (r2)',
-#     filler_function=lambda event, entry_block: event.getDataFrame(prefix='PFegammaEENoTk'),
-#     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
-#     fixture_function=fake_endcap_quality,
-#     debug=0)
-# 
-# egs_EE_pf_r3 = DFCollection(
-#     name='PFEgEEr3', label='EG EE Corr. (r3)',
-#     filler_function=lambda event, entry_block: event.getDataFrame(prefix='PFegammaEEHF'),
-#     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
-#     fixture_function=fake_endcap_quality,
-#     debug=0)
-
-
-# egs_EE_pf = DFCollection(
-#     name='PFEgEE', label='EG EE Corr.',
-#     filler_function=lambda event, entry_block: pd.concat([egs_EE_pf_r2.df, egs_EE_pf_r1.df, egs_EE_pf_r3.df], ignore_index=True),
-#     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
-#     # fixture_function=mapcalo2pfregions,
-#     depends_on=[egs_EE_pf_r1, egs_EE_pf_r2, egs_EE_pf_r3],
-#     debug=0)
 
 egs_EE_pf = DFCollection(
     name='PFEgEE', label='EG EE Corr.',
