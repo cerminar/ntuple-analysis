@@ -200,7 +200,7 @@ if __name__ == '__main__':
         status = main()
         sys.exit(status)
     except Exception as inst:
-        print (str(inst))
-        print ("Unexpected error:", sys.exc_info()[0])
+        print(str(inst))
+        print("Unexpected error:", sys.exc_info()[0])
         traceback.print_exc()
         sys.exit(100)

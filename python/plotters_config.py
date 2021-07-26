@@ -216,7 +216,6 @@ eg_genmatched_plotters_iso = [
 ]
 
 
-
 # NOTE: collections and selections have been revised (and trimmed)
 eg_genmatched_plotters = [
     plotters.EGGenMatchPlotter(

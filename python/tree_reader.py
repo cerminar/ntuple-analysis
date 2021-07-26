@@ -2,6 +2,7 @@ import uproot4 as up
 import pandas as pd
 import datetime
 
+
 class TreeReader(object):
     def __init__(self, entry_range, max_events):
         self.tree = None
@@ -28,23 +29,22 @@ class TreeReader(object):
                             'gen_TrueNumInt']
         if len(self._branches) == 0:
             self._branches = [br for br in self.tree.keys() if br not in branch_blacklist]
-        print (f'open new tree file with # entries: {self.tree.num_entries}')
+        print(f'open new tree file with # entries: {self.tree.num_entries}')
         self.file_entry = -1
-
 
     def next(self, debug=0):
             
         if self.max_events != -1:
             if self.n_tot_entries == self.max_events:
-                print ('END loop for max_event!')
+                print('END loop for max_event!')
                 # we processed the max # of events
                 return False
         if self.entry_range[1] != -1:
             if self.global_entry == self.entry_range[1]:
-                print ('END loop for entry_range')
+                print('END loop for entry_range')
                 return False
         if self.file_entry == self.tree.num_entries-1:
-            print ('END loop for end_of_file')
+            print('END loop for end_of_file')
             return False
 
         if self.global_entry == -1:
@@ -55,14 +55,13 @@ class TreeReader(object):
             self.global_entry += 1
         self.n_tot_entries += 1
 
-
         # entry is the cursor in the file: when we open a new one (not the first) needs to be set to 0 again
         if debug >= 2 or self.global_entry % 100 == 0:
             self.printEntry()
         return True
 
     def printEntry(self):
-        print ("--- File entry: {}, global entry: {}, tot # events: {} @ {}".format(
+        print("--- File entry: {}, global entry: {}, tot # events: {} @ {}".format(
             self.file_entry, self.global_entry, self.n_tot_entries, datetime.datetime.now()))
         
     def getDataFrame(self, prefix, entry_block, fallback=None):
