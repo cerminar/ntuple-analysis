@@ -24,25 +24,20 @@ import sys
 # that are in the HGCalNtuple
 import ROOT
 import os
-import datetime
 import traceback
 import platform
 
 
 import root_numpy as rnp
 import pandas as pd
-import numpy as np
 import uproot4 as up
 
 from python.main import main
-from NtupleDataFormat import HGCalNtuple
 import python.l1THistos as histos
 # import python.clusterTools as clAlgo
 import python.file_manager as fm
 import python.collections as collections
-from python.utils import debugPrintOut
 import python.calibrations as calibs
-import python.plotters_config
 import python.timecounter as timecounter
 import python.tree_reader as treereader
 # from pandas.core.common import SettingWithCopyError, SettingWithCopyWarning
@@ -66,12 +61,6 @@ def dumpFrame2JSON(filename, frame):
         f.write(frame.to_json())
 
 
-def executor(ipl_plotter_arg1_arg2):
-    ipl, entry, debug = ipl_plotter_arg1_arg2
-    plotter.fill_histos_event(entry, debug)
-    plotters_glb[ipl].fill_histos_event(entry, debug)
-    return ipl
-
 def pool_init(plotters):
     global plotters_glb
     plotters_glb = plotters
@@ -79,7 +68,7 @@ def pool_init(plotters):
 
 # @profile
 def analyze(params, batch_idx=-1):
-    print (params)
+    print(params)
     debug = int(params.debug)
 
     # tree_name = 'hgcalTriggerNtuplizer/HGCalTriggerNtuple'
@@ -109,7 +98,7 @@ def analyze(params, batch_idx=-1):
         print('        - {}'.format(file_name))
 
     files_with_protocol = [fm.get_eos_protocol(file_name)+file_name for file_name in input_files]
-    
+
     output = ROOT.TFile(params.output_filename, "RECREATE")
     output.cd()
     hm = histos.HistoManager()
@@ -136,30 +125,30 @@ def analyze(params, batch_idx=-1):
     # event loop
 
     tree_reader = treereader.TreeReader(range_ev, params.maxEvents)
-    print ('events_per_job: {}'.format(params.events_per_job))
-    print ('maxEvents: {}'.format(params.maxEvents))
-    print ('range_ev: {}'.format(range_ev))
+    print('events_per_job: {}'.format(params.events_per_job))
+    print('maxEvents: {}'.format(params.maxEvents))
+    print('range_ev: {}'.format(range_ev))
 
     break_file_loop = False
     for tree_file_name in files_with_protocol:
         if break_file_loop:
             break
         tree_file = up.open(tree_file_name, num_workers=2)
-        print (f'opening file: {tree_file_name}')
+        print(f'opening file: {tree_file_name}')
         ttree = tree_file[params.tree_name.split('/')[0]][params.tree_name.split('/')[1]]
-        
+
         tree_reader.setTree(ttree)
-        
+
         while tree_reader.next(debug):
-            
+
             try:
                 collection_manager.read(tree_reader, debug)
                 # processes = []
                 for plotter in plotter_collection:
                     plotter.fill_histos_event(tree_reader.file_entry, debug=debug)
-                
+
                 # pool = Pool(processes=2, initializer=pool_init, initargs=(plotter_collection,))
-                # 
+                #
                 # args = ((ipl, tree_reader.file_entry, debug) for ipl, plotter in enumerate(plotter_collection))
                 # pool.map(executor, args)
                 # # pool.apply_async(executor, (plotter.fill_histos_event, tree_reader.file_entry, debug))
@@ -167,20 +156,18 @@ def analyze(params, batch_idx=-1):
                 # pool.join()
 
                 if tree_reader.global_entry != 0 and tree_reader.global_entry % 1000 == 0:
-                    print ("Writing histos to file")
+                    print("Writing histos to file")
                     hm.writeHistos()
 
                 if batch_idx != -1 and timecounter.counter.started() and tree_reader.global_entry % 100 == 0:
                     # when in batch mode, if < 5min are left we stop the event loop
                     if timecounter.counter.job_flavor_time_left(params.htc_jobflavor) < 5*60:
-                        tree_reader.printEntry()                        
-                        print ('    less than 5 min left for batch slot: exit event loop!')
+                        tree_reader.printEntry()               
+                        print('    less than 5 min left for batch slot: exit event loop!')
                         timecounter.counter.job_flavor_time_perc(params.htc_jobflavor)
                         break_file_loop = True
                         break
 
-
-            
             except Exception as inst:
                 tree_reader.printEntry()
                 print(f"[EXCEPTION OCCURRED:] {str(inst)}")
@@ -196,7 +183,6 @@ def analyze(params, batch_idx=-1):
     hm.writeHistos()
 
     output.Close()
-
 
     return tree_reader.n_tot_entries
 
