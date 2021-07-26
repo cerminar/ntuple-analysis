@@ -2,7 +2,7 @@
 from __future__ import print_function
 import os
 import subprocess32
-from NtupleDataFormat import HGCalNtuple
+import uproot4 as up
 import json
 import uuid
 from io import open
@@ -78,9 +78,9 @@ def listFiles(input_dir, match=b'.root', recursive=True, debug=0):
                         if f.decode('utf-8').split()[0][0] == 'd']
 
     if debug > 3:
-        print ('--- PWD: {}'.format(input_dir))
-        print ('DIRS: {}'.format(onlydirs))
-        print ('FILES: {}'.format(onlyfiles))
+        print('--- PWD: {}'.format(input_dir))
+        print('DIRS: {}'.format(onlydirs))
+        print('FILES: {}'.format(onlyfiles))
 
     for dirname in onlydirs:
         onlyfiles.extend(listFiles(dirname, match, recursive))
@@ -130,8 +130,9 @@ def get_metadata(input_dir, tree, debug=0):
         print('# of files: {}'.format(len(files)))
 
         for idx, file_name in enumerate(files):
-            ntuple = HGCalNtuple([file_name], tree)
-            nevents = ntuple.nevents()
+            tree_file = up.open(file_name)
+            nevents = tree_file[tree].num_entries
+            tree_file.close()
             file_metadata[file_name] = nevents
             if debug > 2:
                 print(' [{}] file: {} # events: {}'.format(idx, file_name, nevents))
@@ -229,8 +230,6 @@ def get_njobs(nev_toprocess, nev_perjob, metadata, debug=0):
     return ret
 
 
-
-
 if __name__ == "__main__":
     """
     Meant to test the module functionality
@@ -285,17 +284,15 @@ if __name__ == "__main__":
     #     batch_id=121,
     #     debug=True)
 
-    input_dir='/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6//DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU0_v63A/'
+    input_dir = '/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6//DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU0_v63A/'
     tree_name = 'l1CaloTriggerNtuplizer_egOnly/HGCalTriggerNtuple'
     nev_toprocess = 100
     files = get_files_for_processing(input_dir, tree_name, nev_toprocess, debug=4)
 
-
-    input_dir='/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6//DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU200_v63B/'
+    input_dir = '/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6//DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU200_v63B/'
     tree_name = 'l1CaloTriggerNtuplizer_egOnly/HGCalTriggerNtuple'
     nev_toprocess = 100
     files = get_files_for_processing(input_dir, tree_name, nev_toprocess, debug=4)
-
 
     # get_checksum(filename=plots1/histos_nugun_alleta_pu200_v55.root)
 
