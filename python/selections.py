@@ -76,13 +76,13 @@ class Selection:
         self.selection = selection
         self.hash = hash(selection)
         self.register()
-    
+
     @property
     def label(self):
         obj_name = 'L1'
         if 'GEN' in self.name:
             obj_name = 'GEN'
-        return self.label_.replace('TOBJ', obj_name)    
+        return self.label_.replace('TOBJ', obj_name)
 
     def register(self):
         selection_manager = SelectionManager()
@@ -105,7 +105,7 @@ class Selection:
         # obj_name = 'L1'
         # if 'GEN' in sel_obj.name or 'GEN' in self.name:
         #     obj_name = 'GEN'
-        # new_label = new_label.replace('TOBJ', obj_name)    
+        # new_label = new_label.replace('TOBJ', obj_name)
         return Selection(name='{}{}'.format(self.name, sel_obj.name),
                          label=new_label,
                          selection='({}) & ({})'.format(self.selection, sel_obj.selection))
@@ -151,8 +151,8 @@ def fill_isowp_sel(sel_list, wps):
             iso_cut_value = iso_cut.split('0p')[1]
             sel_list.append(
                 Selection(
-                    f'{iso_cut}Pt{pt_cut}', 
-                    f'{iso_var_name}<=0.{iso_cut_value} & p_{{T}}>{pt_cut}GeV', 
+                    f'{iso_cut}Pt{pt_cut}',
+                    f'{iso_var_name}<=0.{iso_cut_value} & p_{{T}}>{pt_cut}GeV',
                     f'({iso_var_name}<=0.{iso_cut_value})&(pt>{pt_cut})')
             )
 
@@ -204,7 +204,7 @@ class Selector(object):
         self.selections = prune(self.selections)
         if self.debug:
             print([sel.name for sel in self.selections])
-    
+
     def times(self, selector):
         return self.__mul__(selector)
 
@@ -227,23 +227,24 @@ class Selector(object):
         if match.__class__ == Selector:
             other = match
         else:
-            other = Selector(match)        
+            other = Selector(match)
         self.selections.extend(other.selections)
         if self.debug:
             print([sel.name for sel in self.selections])
         return self
-    
+
     def __repr__(self):
         return '<Selector sels=\n{}\n>'.format('\n'.join([str(sel) for sel in self.selections]))
-    
+
     def __call__(self):
         return self.selections
+
 
 def compare_selections(sel1, sel2):
     if len(sel1) != len(sel2):
         print(f'[DIFF] len 1: {len(sel1)} len2: {len(sel2)}')
         return False
-    
+
     sel1.sort(key=lambda x: x.name)
     sel2.sort(key=lambda x: x.name)
     ret = True
@@ -255,13 +256,13 @@ def compare_selections(sel1, sel2):
             isDiff = True
         if sel1[id].selection != sel2[id].selection:
             isDiff = True
-        
+
         if isDiff:
             print(f'[DIFF] \n {sel1[id]} \n {sel2[id]}')
             ret = False
-            
+
     return ret
-            
+
 
 # TP selections
 tp_id_sel = [
@@ -468,7 +469,7 @@ eg_id_eb_sel = [
 iso_sel = [
     Selection('Iso0p2', 'Iso0p2', 'tkIso <= 0.2'),
     Selection('Iso0p1', 'Iso0p1', 'tkIso <= 0.1'),
-    Selection('Iso0p3', 'Iso0p3', 'tkIso <= 0.3'), 
+    Selection('Iso0p3', 'Iso0p3', 'tkIso <= 0.3'),
     ]
 
 sm = SelectionManager()
@@ -526,7 +527,7 @@ if False:
 #     for cut in [0.1, 0.2, 0.3, 0.4, 0.5]:
 #         cut_str = str(cut).replace('.', 'p')
 #         eg_id_iso_sel.append(Selection(f'{iso_var}{cut_str}', f'{iso_var}<={cut}', f'{iso_var}<={cut}'))
-# 
+#
 # for iso_var in ['tkIsoPV']:
 #     for cut in [0.01, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3]:
 #         cut_str = str(cut).replace('.', 'p')
@@ -539,22 +540,14 @@ all_rate_selections = prune(eg_eta_sel+barrel_rate_selections)
 eg_barrel_rate_selections = [sel for sel in barrel_rate_selections if 'Iso' not in sel.name]
 eg_all_rate_selections = [sel for sel in all_rate_selections if 'Iso' not in sel.name]
 
-
-
-
-
-
-
-
 # eg_id_pt_eb_selections = []
 # eg_id_pt_eb_selections += multiply_selections(eg_id_eb_sel, tp_pt_sel)
-
 
 eg_iso_sel = [
     Selection('all'),
     # Selection('Iso0p2', 'Iso0p2', 'tkIso <= 0.2'),
     # Selection('Iso0p1', 'Iso0p1', 'tkIso <= 0.1'),
-    # Selection('Iso0p3', 'Iso0p3', 'tkIso <= 0.3'), 
+    # Selection('Iso0p3', 'Iso0p3', 'tkIso <= 0.3'),
     ]
 
 if False:
@@ -575,7 +568,6 @@ eg_id_iso_pt_ee_selections_ext = prune(eg_id_iso_pt_ee_selections_ext)
 eg_id_iso_pt_eb_selections_ext = []
 # eg_id_iso_pt_eb_selections_ext += tp_pt_sel_ext
 eg_id_iso_pt_eb_selections_ext += multiply_selections(eg_id_pt_eb_selections_ext, eg_id_iso_sel)
-
 
 
 eg_iso_ee_wp = {
@@ -599,7 +591,7 @@ if False:
         iso_sel = list(filter(lambda x: x.name == iso_sel_name, eg_id_iso_eta_ee_selections))[0]
         eg_iso_pt_ee_selections.append(iso_sel+pt_sel)
         # print(iso_sel+pt_sel)
-    # 
+    #
     for iso_sel_name, pt_sel in read_isoptwp_sel('data/iso_pt_wps.json', 'PFNFtkEmEB'):
         iso_sel = list(filter(lambda x: x.name == iso_sel_name, barrel_rate_selections))[0]
         eg_iso_pt_eb_selections.append(iso_sel+pt_sel)
@@ -610,10 +602,10 @@ else:
 
 
 if __name__ == "__main__":
-    
+
     print('enter selection name: ')
     selec_name = input()
     sel_list = []
     sel_list = eval(selec_name)
     for sel in sel_list:
-        print (sel)
+        print(sel)

@@ -192,7 +192,7 @@ class BaseResoHistos(BaseHistos):
         hreso.g_energyResVenergy_sigmaEOE
         )
         --------
-        
+
     """
 
     def __init__(self, name, root_file=None, debug=False):
