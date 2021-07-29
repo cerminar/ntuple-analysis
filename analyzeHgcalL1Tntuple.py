@@ -173,8 +173,10 @@ def analyze(params, batch_idx=-1):
                 print(f"[EXCEPTION OCCURRED:] {str(inst)}")
                 print("Unexpected error:", sys.exc_info()[0])
                 traceback.print_exc()
+                tree_file.close()
                 sys.exit(200)
 
+        tree_file.close()
     # print("Processed {} events/{} TOT events".format(nev, ntuple.nevents()))
 
     print("Writing histos to file {}".format(params.output_filename))
