@@ -1,6 +1,6 @@
-import uproot4 as up
 import pandas as pd
 import datetime
+import resource
 
 
 class TreeReader(object):
@@ -33,7 +33,7 @@ class TreeReader(object):
         self.file_entry = -1
 
     def next(self, debug=0):
-            
+
         if self.max_events != -1:
             if self.n_tot_entries == self.max_events:
                 print('END loop for max_event!')
@@ -61,23 +61,27 @@ class TreeReader(object):
         return True
 
     def printEntry(self):
-        print("--- File entry: {}, global entry: {}, tot # events: {} @ {}".format(
-            self.file_entry, self.global_entry, self.n_tot_entries, datetime.datetime.now()))
-        
+        print("--- File entry: {}, global entry: {}, tot # events: {} @ {}, MaxRSS {:.2f} Mb".format(
+            self.file_entry,
+            self.global_entry,
+            self.n_tot_entries,
+            datetime.datetime.now(),
+            resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1E6))
+
     def getDataFrame(self, prefix, entry_block, fallback=None):
         branches = [br for br in self._branches
                     if br.startswith(prefix+'_') and
                     not br == '{}_n'.format(prefix)]
         names = ['_'.join(br.split('_')[1:]) for br in branches]
         name_map = dict(zip(branches, names))
-        
+
         if len(branches) == 0:
             if fallback is not None:
                 return self.getDataFrame(prefix=fallback, entry_block=entry_block)
             return pd.DataFrame()
-            
+
         # FIXME: stride needs to be set somehow
         df = self.tree.arrays(branches, library='pd', entry_start=self.file_entry, entry_stop=self.file_entry+entry_block)
         df.rename(columns=name_map, inplace=True)
-        
+
         return df
