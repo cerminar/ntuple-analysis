@@ -1311,7 +1311,7 @@ class DecTkResoHistos(BaseResoHistos):
                 50, 0, 3,
                 100, -0.4, 0.4)
             self.h_dzRes = ROOT.TH1F(
-                name+'_hdzRes',
+                name+'_dzRes',
                 '#DeltaZ_{0} res; #DeltaZ_{0}^{L1}-#DeltaZ_{0}^{GEN}',
                 100, -10, 10)
 
@@ -1426,7 +1426,7 @@ class EGResoHistos(BaseResoHistos):
                 100, -0.1, 0.1)
 
             self.h_dzRes = ROOT.TH1F(
-                name+'_hdzRes',
+                name+'_dzRes',
                 '#DeltaZ_{0} res; #DeltaZ_{0}^{L1}-#DeltaZ_{0}^{GEN}',
                 100, -10, 10)
 
