@@ -1310,6 +1310,11 @@ class DecTkResoHistos(BaseResoHistos):
                 '#phi_{@calo} reso; |#eta^{GEN}|; #phi_{@calo}^{L1} vs #phi_{@calo}^{GEN}',
                 50, 0, 3,
                 100, -0.4, 0.4)
+            self.h_dzRes = ROOT.TH1F(
+                name+'_hdzRes',
+                '#DeltaZ_{0} res; #DeltaZ_{0}^{L1}-#DeltaZ_{0}^{GEN}',
+                100, -10, 10)
+
             # self.h_caloPhiResVeta = ROOT.TH2F(
             #     name+'_caloPhiResVabseta',
             #     '#phi_{@calo} reso; #eta^{GEN}; #phi_{@calo}^{L1} vs #phi_{@calo}^{GEN}',
@@ -1367,6 +1372,7 @@ class DecTkResoHistos(BaseResoHistos):
         self.h_caloPhiResVabseta.Fill(reference.abseta, target_line.calophi - reference.exphi)
         self.h_caloEtaResVeta.Fill(reference_eta, target_line.caloeta - reference.exeta)
         # self.h_caloPhiResVeta.Fill(reference_eta, target_line.calophi - reference.exphi)
+        self.h_dzRes.Fill(target.z0 - reference.ovz)
 
     def fill_nMatch(self, n_matches):
         self.h_nMatch.Fill(n_matches)
@@ -1376,18 +1382,53 @@ class EGResoHistos(BaseResoHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
 
-            self.h_ptResVpt = ROOT.TH2F(name+'_ptResVpt', 'EG Pt reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];', 50, 0, 100, 100, -10, 10)
-            self.h_ptRes = ROOT.TH1F(name+'_ptRes', 'EG Pt res.; (p_{T}^{L1}-p_{T}^{GEN})/p_{T}^{GEN}', 100, -1, 1)
+            self.h_ptResVpt = ROOT.TH2F(
+                name+'_ptResVpt',
+                'EG Pt reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];',
+                50, 0, 100,
+                100, -10, 10)
+            self.h_ptRes = ROOT.TH1F(
+                name+'_ptRes',
+                'EG Pt res.; (p_{T}^{L1}-p_{T}^{GEN})/p_{T}^{GEN}',
+                100, -1, 1)
 
-            self.h_ptResp = ROOT.TH1F(name+'_ptResp', 'EG Pt resp.; p_{T}^{L1}/p_{T}^{GEN}', 100, 0, 3)
-            self.h_ptRespVpt = ROOT.TH2F(name+'_ptRespVpt', 'EG Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 3)
-            self.h_ptRespVeta = ROOT.TH2F(name+'_ptRespVeta', 'EG Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};', 50, -4, 4, 100, 0, 3)
+            self.h_ptResp = ROOT.TH1F(
+                name+'_ptResp',
+                'EG Pt resp.; p_{T}^{L1}/p_{T}^{GEN}',
+                100, 0, 3)
+            self.h_ptRespVpt = ROOT.TH2F(
+                name+'_ptRespVpt',
+                'EG Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
+                50, 0, 100,
+                100, 0, 3)
+            self.h_ptRespVeta = ROOT.TH2F(
+                name+'_ptRespVeta',
+                'EG Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};',
+                50, -4, 4,
+                100, 0, 3)
 
-            self.h_etaRes = ROOT.TH1F(name+'_etaRes', 'EG eta reso; #eta^{L1}-#eta^{GEN}', 100, -0.1, 0.1)
-            self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'EG phi reso; #phi^{L1}-#phi^{GEN}', 100, -0.1, 0.1)
+            self.h_etaRes = ROOT.TH1F(
+                name+'_etaRes',
+                'EG eta reso; #eta^{L1}-#eta^{GEN}',
+                100, -0.1, 0.1)
+            self.h_phiRes = ROOT.TH1F(
+                name+'_phiRes',
+                'EG phi reso; #phi^{L1}-#phi^{GEN}',
+                100, -0.1, 0.1)
 
-            self.h_exetaRes = ROOT.TH1F(name+'_exetaRes', 'EG eta reso; #eta^{L1}-#eta^{GEN}_{calo}', 100, -0.1, 0.1)
-            self.h_exphiRes = ROOT.TH1F(name+'_exphiRes', 'EG phi reso; #phi^{L1}-#phi^{GEN}_{calo}', 100, -0.1, 0.1)
+            self.h_exetaRes = ROOT.TH1F(
+                name+'_exetaRes',
+                'EG eta reso; #eta^{L1}-#eta^{GEN}_{calo}',
+                100, -0.1, 0.1)
+            self.h_exphiRes = ROOT.TH1F(
+                name+'_exphiRes',
+                'EG phi reso; #phi^{L1}-#phi^{GEN}_{calo}',
+                100, -0.1, 0.1)
+
+            self.h_dzRes = ROOT.TH1F(
+                name+'_hdzRes',
+                '#DeltaZ_{0} res; #DeltaZ_{0}^{L1}-#DeltaZ_{0}^{GEN}',
+                100, -10, 10)
 
         BaseResoHistos.__init__(self, name, root_file, debug)
 
@@ -1415,6 +1456,9 @@ class EGResoHistos(BaseResoHistos):
 
         self.h_exetaRes.Fill(target_eta - reference_exeta, reference_weight)
         self.h_exphiRes.Fill(target_phi - reference_exphi, reference_weight)
+
+        if 'tkZ0' in target.columns:
+            self.h_dzRes.Fill(target.tkZ0 - reference.ovz)
 
 
 class ClusterConeHistos(BaseHistos):
