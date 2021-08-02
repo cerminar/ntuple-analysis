@@ -194,6 +194,14 @@ class DFCollection(object):
         else:
             self.new_read = False
 
+        if self.debug > 0:
+            df_print = self.empty_df
+            if event.file_entry in self.df.index.get_level_values('entry'):
+                df_print = self.df.loc[event.file_entry]
+            debugPrintOut(max(debug, self.debug), self.label,
+                          toCount=df_print,
+                          toPrint=self.print_function(df_print))
+
     def fill_real(self, event, stride, weight_file=None, debug=0):
         self.clear_query_cache(debug)
         self.df = self.filler_function(event, stride)
@@ -207,9 +215,6 @@ class DFCollection(object):
         self.entries = self.df.index.get_level_values('entry').unique()
         if debug > 2:
             print(f'read coll. {self.name} from entry: {event.file_entry} to entry: {event.file_entry+stride} (stride: {stride}), # rows: {self.df.shape[0]}, # entries: {len(self.entries)}')
-        debugPrintOut(max(debug, self.debug), self.label,
-                      toCount=self.df,
-                      toPrint=self.print_function(self.df))
 
     def query(self, selection):
         self.n_queries += 1
@@ -746,6 +751,7 @@ gen_parts = DFCollection(
     debug=0,
     # print_function=lambda df: df[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'ovz', 'pid', 'gen', 'reachedEE', 'firstmother_pdgid']],
     print_function=lambda df: df[['gen', 'pid', 'eta', 'phi', 'pt', 'mother', 'ovz', 'dvz', 'reachedEE']].sort_values(by='mother', ascending=False),
+    # print_function=lambda df: df.columns,
     weight_function=gen_part_pt_weights)
 
 tcs = DFCollection(
