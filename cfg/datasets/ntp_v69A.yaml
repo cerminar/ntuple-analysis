@@ -1,8 +1,10 @@
-# 
+# NOTE: fix of track extrapolation (digitized tracks with bitwise extrapolation)
+# branch:
+
 samples:
   input_dir:  /eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6/
   calib_version: calib-v134C
-  version: 68A
+  version: 69A
 
   # tree_name: hgcalTriggerNtuplizer/HGCalTriggerNtuple
   tree_name: l1CaloTriggerNtuplizer_egOnly/HGCalTriggerNtuple
