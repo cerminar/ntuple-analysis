@@ -23,21 +23,21 @@ Edit/skip it accordingly for your specific system.
 
 ### 3. create a virtualenv for the project
 
-The first time you will have to create the actual instance of the `virtualenv`:
+The **first time** you will have to create the actual instance of the `virtualenv`:
 
-`mkvirtualenv -p \`which python3.8\` <venvname>`
+``mkvirtualenv -p `which python3.8` <venvname>``
 
 The requirements for the virtualenv setup are in are in the file:
 
 [requirements.txt](requirements.txt)
 
-You can use the file directly using:
+and 
 
-`pip install -r requirements.txt`
+[requirements_py3.8.txt](requirements_py3.8.txt)
 
-If you want to use python 3 (recommended)
+for python 2.7 and 3.8 respectively.
 
-`mkvirtualenv -p <path_python3.8> <venvname>`
+You can use the file directly using for example:
 
 `pip install -r requirements_py3.8.txt`
 
