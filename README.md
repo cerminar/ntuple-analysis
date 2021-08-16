@@ -1,25 +1,31 @@
 # ntuple-tools
 
-The python scripts in this repository should help you get started analysing the [HGCal ntuple](https://github.com/CMS-HGCAL/reco-ntuples) and/or the [HGCAL L1 TP ntuples](https://github.com/PFCal-dev/cmssw/tree/hgc-tpg-devel-CMSSW_10_3_0_pre4/L1Trigger/L1THGCal/plugins/ntuples)
+The python scripts in this repository should help you get started analysing the [HGCAL L1 TP ntuples](https://github.com/PFCal-dev/cmssw/tree/hgc-tpg-devel-CMSSW_10_3_0_pre4/L1Trigger/L1THGCal/plugins/ntuples)
 
 ## Pre-requisites
 
-For setting up the python version on lxplus you can just source the script:
-
-`source setup_lxplus.sh`
+### 1. setup virtualenvwrapper
 
 Setup a `virtualenv` using `virtualenvwrapper`.
 
-Follow the `virtualenvwrapper` [installation instructions](https://virtualenvwrapper.readthedocs.io/en/latest/install.html) to install it in the `~/.local/` directory (using `$ pip install --user virtualenvwrapper`). This needs to be done only once for your account.
-Note, on lxplus you might need to use `$ pip install --upgrade --user virtualenvwrapper` to avoid clashes with the system-wide installation.
+Follow the `virtualenvwrapper` [installation instructions](https://virtualenvwrapper.readthedocs.io/en/latest/install.html) to install it in the `~/.local/` directory (using `$ pip install --user virtualenvwrapper`). This needs to be done only once for your account and can be done with whatever `python` version is in use in the system.
 
 For starting using virtualenvwrapper
 
 `source setVirtualEnvWrapper.sh`
 
+### 2. lxplus setup
+
+This step is `lxplus` specific, givin access to a more recent `python` and `root` version.
+Edit/skip it accordingly for your specific system.
+
+`source setup_lxplus.sh`
+
+### 3. create a virtualenv for the project
+
 The first time you will have to create the actual instance of the `virtualenv`:
 
-`mkvirtualenv <venvname>`
+`mkvirtualenv -p \`which python3.8\` <venvname>`
 
 The requirements for the virtualenv setup are in are in the file:
 
