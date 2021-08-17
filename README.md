@@ -4,28 +4,37 @@ The python scripts in this repository should help you get started analysing the 
 
 ## Pre-requisites
 
-### 1. setup virtualenvwrapper
-
-Setup a `virtualenv` using `virtualenvwrapper`.
-
-Follow the `virtualenvwrapper` [installation instructions](https://virtualenvwrapper.readthedocs.io/en/latest/install.html) to install it in the `~/.local/` directory (using `$ pip install --user virtualenvwrapper`). This needs to be done only once for your account and can be done with whatever `python` version is in use in the system.
-
-For starting using virtualenvwrapper
-
-`source setVirtualEnvWrapper.sh`
-
-### 2. lxplus setup
+### 1. lxplus setup
 
 This step is `lxplus` specific, givin access to a more recent `python` and `root` version.
 Edit/skip it accordingly for your specific system.
 
 `source setup_lxplus.sh`
 
-### 3. create a virtualenv for the project
+### 2. install `virtualenvwrapper`
+
+This stetp needs to be done **only once** for your account and can be done with whatever `python` version is in use in the system.
+
+For some reason the current `CMSSW` scrips seems to deliver an inconsistent setup of `virtualenv` and `virtualenvwrapper`, for this reason we force a new installation in `~/.local` using:
+
+`pip install --ignore-installed --user virtualenv`
+`pip install --ignore-installed --user virtualenv`
+
+For a more complete overview of the procedure you can refer to
+`virtualenvwrapper` [installation instructions](https://virtualenvwrapper.readthedocs.io/en/latest/install.html) 
+
+### 3. setup `virtualenvwrapper`
+
+For starting using virtualenvwrapper
+
+`source setVirtualEnvWrapper.sh`
+
+### 4. create a virtualenv for the project
 
 The **first time** you will have to create the actual instance of the `virtualenv`:
 
-``mkvirtualenv -p `which python3.8` <venvname>``
+``mkvirtualenv --system-site-packages
+ -p `which python3.8` -r requirements_py3.8.txt <venvname>``
 
 The requirements for the virtualenv setup are in are in the file:
 
@@ -40,6 +49,8 @@ for python 2.7 and 3.8 respectively.
 You can use the file directly using for example:
 
 `pip install -r requirements_py3.8.txt`
+
+### 5. activate the `virtualenv`
 
 After this initial (once in a time) setup is done you can just activate the virtualenv calling:
 
