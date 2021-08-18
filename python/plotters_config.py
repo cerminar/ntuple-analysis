@@ -271,12 +271,12 @@ eg_genmatched_plotters = [
     plotters.EGGenMatchPlotter(
         collections.tkem_EB_pfnf, collections.gen_parts,
         selections.eg_id_pt_eb_selections, selections.gen_eb_selections),
-    plotters.DecTrackGenMatchPlotter(
-        collections.decTk,
-        collections.gen_parts,
-        selections.dectk_match_selections,
-        selections.gen_ee_tk_selections
-    )
+    # plotters.DecTrackGenMatchPlotter(
+    #     collections.decTk,
+    #     collections.gen_parts,
+    #     selections.dectk_match_selections,
+    #     selections.gen_ee_tk_selections
+    # )
 ]
 
 
