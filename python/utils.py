@@ -6,11 +6,11 @@ from scipy.spatial import cKDTree
 
 def match_etaphi(ref_etaphi, trigger_etaphi, trigger_pt, deltaR=0.2, return_positional=False):
     '''Match objects within a given DeltaR.
-    
+
     If return_positional = False
      Returns the panda index of the best match (highest-pt)
        and of all the matches
-    If return_positional = True 
+    If return_positional = True
      Returns the position of the best match (highest-pt)
        and of all the matches in the input trigger_etaphi and trigger_pt arrays.
        '''
@@ -23,7 +23,7 @@ def match_etaphi(ref_etaphi, trigger_etaphi, trigger_pt, deltaR=0.2, return_posi
     kdtree = cKDTree(trigger_etaphi)
     best_match_indices = {}
     all_matches_indices = {}
-    
+
     # for iref,(eta,phi) in enumerate(ref_etaphi):
     for index, row in ref_etaphi.iterrows():
         gen_eta, gen_phi = row.values
@@ -50,7 +50,7 @@ def match_etaphi(ref_etaphi, trigger_etaphi, trigger_pt, deltaR=0.2, return_posi
                 best_match = trigger_pt.iloc[matched].idxmax()
                 best_match_indices[index] = best_match
                 all_matches_indices[index] = trigger_pt.iloc[matched].index.values
-                
+
             # print ('best match:')
             # print (best_match)
             # best_match_indices[index] = best_match

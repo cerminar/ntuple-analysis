@@ -479,7 +479,6 @@ def get_component_pt_v9calib(cl3d, cl2ds):
     return components.ptcalib_v9calib.sum()
 
 
-
 calib_factors = None
 
 

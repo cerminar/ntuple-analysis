@@ -1,39 +1,74 @@
 # ntuple-tools
 
-The python scripts in this repository should help you get started analysing the [HGCal ntuple](https://github.com/CMS-HGCAL/reco-ntuples) and/or the [HGCAL L1 TP ntuples](https://github.com/PFCal-dev/cmssw/tree/hgc-tpg-devel-CMSSW_10_3_0_pre4/L1Trigger/L1THGCal/plugins/ntuples)
+The python scripts in this repository should help you get started analysing the [HGCAL L1 TP ntuples](https://github.com/PFCal-dev/cmssw/tree/hgc-tpg-devel-CMSSW_10_3_0_pre4/L1Trigger/L1THGCal/plugins/ntuples)
 
-## Pre-requisites
+## Pre-requisites: first time setup
 
-For setting up the python version on lxplus you can just source the script:
+### 1. lxplus setup
+
+This step is `lxplus` specific, givin access to a more recent `python` and `root` version.
+Edit/skip it accordingly for your specific system.
 
 `source setup_lxplus.sh`
 
-Setup a `virtualenv` using `virtualenvwrapper`.
+### 2. install `virtualenvwrapper`
 
-Follow the `virtualenvwrapper` [installation instructions](https://virtualenvwrapper.readthedocs.io/en/latest/install.html) to install it in the `~/.local/` directory (using `$ pip install --user virtualenvwrapper`). This needs to be done only once for your account.
-Note, on lxplus you might need to use `$ pip install --upgrade --user virtualenvwrapper` to avoid clashes with the system-wide installation.
+This stetp needs to be done **only once** for your account and can be done with whatever `python` version is in use in the system.
+
+For some reason the current `CMSSW` scrips seems to deliver an inconsistent setup of `virtualenv` and `virtualenvwrapper`, for this reason we force a new installation in `~/.local` using:
+
+`pip install --ignore-installed --user virtualenv`
+
+`pip install --ignore-installed --user virtualenvwrapper`
+
+For a more complete overview of the procedure you can refer to
+`virtualenvwrapper` [installation instructions](https://virtualenvwrapper.readthedocs.io/en/latest/install.html) 
+
+### 3. setup `virtualenvwrapper`
 
 For starting using virtualenvwrapper
 
 `source setVirtualEnvWrapper.sh`
 
-The first time you will have to create the actual instance of the `virtualenv`:
+### 4. create a virtualenv for the project
 
-`mkvirtualenv <venvname>`
+The **first time** you will have to create the actual instance of the `virtualenv`:
+
+``mkvirtualenv --system-site-packages
+ -p `which python3.8` -r requirements_py3.8.txt <venvname>``
 
 The requirements for the virtualenv setup are in are in the file:
 
 [requirements.txt](requirements.txt)
 
-You can use the file directly using:
+and 
 
-`pip install -r requirements.txt`
+[requirements_py3.8.txt](requirements_py3.8.txt)
 
-If you want to use python 3 (recommended)
+for python 2.7 and 3.8 respectively.
 
-`mkvirtualenv -p <path_python3.8> <venvname>`
+You can use the file directly using for example:
 
 `pip install -r requirements_py3.8.txt`
+
+
+## Setup after first installation
+
+### 1. lxplus setup
+
+This step is `lxplus` specific, givin access to a more recent `python` and `root` version.
+Edit/skip it accordingly for your specific system.
+
+`source setup_lxplus.sh`
+
+
+### 2. setup `virtualenvwrapper`
+
+For starting using virtualenvwrapper
+
+`source setVirtualEnvWrapper.sh`
+
+### 3. activate the `virtualenv`
 
 After this initial (once in a time) setup is done you can just activate the virtualenv calling:
 
@@ -42,15 +77,15 @@ After this initial (once in a time) setup is done you can just activate the virt
 (`lsvirtualenv` is your friend in case you forgot the name).
 
 
-## HGCAL L1 TPG analysis
+## Running the analysis
 
-`python analyzeHgcalL1Tntuple.py -f cfg/default.yaml -i cfg/datasets/ntp_v68C.yaml -c decoded_tk -s doubleele_flat1to100_PU200 -n 3000 -d 2`
-
-see:
+The main script is `analyzeHgcalL1Tntuple.py`:
 
 `python analyzeHgcalL1Tntuple.py --help`
 
-for the details.
+An example of how to run it:
+
+`python analyzeHgcalL1Tntuple.py -f cfg/default.yaml -i cfg/datasets/ntp_v68C.yaml -c single_empart_guns_egvalid -s doubleele_flat1to100_PU200 -n 300 -d 2`
 
 ### Configuration file
 The configuration is handled by 2 yaml files. 

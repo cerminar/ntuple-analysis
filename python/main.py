@@ -164,7 +164,6 @@ def main(analyze, submit_mode=False):
         parser.add_option("-w", "--workdir", dest="WORKDIR",
                           help="local work directory")
 
-
     # parser.add_option("-i", "--inputJson", dest="INPUT", default='input.json', help="list of input files and properties in JSON format")
 
     global opt, args

@@ -24,7 +24,7 @@ import sys
 
 import root_numpy.tmva as rnptmva
 
-from .utils import debugPrintOut, match_etaphi
+from .utils import debugPrintOut
 import python.clusterTools as clAlgo
 from python.mp_pool import POOL
 import python.classifiers as classifiers
@@ -118,6 +118,7 @@ class DFCollection(object):
         fixture_function (callable): adds columns to the data-frame
         depends_on (list): specify the dependencies (typically called as argument by the filler_function at filling time)
         debug (int): specify the debug level object by object (also the global one is used)
+
     """
 
     def __init__(self, name, label,
@@ -146,7 +147,7 @@ class DFCollection(object):
         self.next_entry_read = 0
         self.read_entry_block = read_entry_block
         # print (f'Create collection: {self.name} with read_entry_block: {read_entry_block}')
-                
+
         self.new_read = False
         self.new_read_nentries = 0
         self.register()
@@ -193,6 +194,14 @@ class DFCollection(object):
         else:
             self.new_read = False
 
+        if self.debug > 0:
+            df_print = self.empty_df
+            if event.file_entry in self.df.index.get_level_values('entry'):
+                df_print = self.df.loc[event.file_entry]
+            debugPrintOut(max(debug, self.debug), self.label,
+                          toCount=df_print,
+                          toPrint=self.print_function(df_print))
+
     def fill_real(self, event, stride, weight_file=None, debug=0):
         self.clear_query_cache(debug)
         self.df = self.filler_function(event, stride)
@@ -206,9 +215,6 @@ class DFCollection(object):
         self.entries = self.df.index.get_level_values('entry').unique()
         if debug > 2:
             print(f'read coll. {self.name} from entry: {event.file_entry} to entry: {event.file_entry+stride} (stride: {stride}), # rows: {self.df.shape[0]}, # entries: {len(self.entries)}')
-        debugPrintOut(max(debug, self.debug), self.label,
-                      toCount=self.df,
-                      toPrint=self.print_function(self.df))
 
     def query(self, selection):
         self.n_queries += 1
@@ -255,14 +261,14 @@ class DFCollection(object):
         self.cached_entries.clear()
         self.cached_queries.clear()
 
-            
+
 def tkeg_fromcluster_fixture(tkegs):
     # print tkegs
     tkegs.loc[tkegs.hwQual == 1, 'hwQual'] = 3
     return tkegs
 
 
-# NOTE: scorporate the part wich computes the layer_weights 
+# NOTE: scorporate the part wich computes the layer_weights
 # (needed only by rthe calib plotters) from the rest (creating ad-hoc collections)
 # this should also allow for removing the tc dependency -> huge speedup in filling
 # FIXME: this needs to be ported to the new interface reading several entries at once
@@ -307,7 +313,7 @@ def cl3d_layerEnergy_hoe(clusters, tcs):
             result_type='expand',
             axis=1)
     return clusters
-    
+
 
 def cl3d_fixtures(clusters):
     # print(clusters.columns)
@@ -346,7 +352,7 @@ def gen_fixtures(particles, mc_particles):
 
 
 def mc_fixtures(particles):
-    particles['firstmother'] = particles.index
+    particles['firstmother'] = particles.index.to_numpy()
     particles['firstmother_pdgid'] = particles.pdgid
     return particles
     # FIXME: this is broken
@@ -404,20 +410,20 @@ def recluster_mp(cl3ds, tcs, cluster_size, cluster_function, pool):
     #                              cl3ds[cl3ds.eta < 0]]]
     # tc_sides = [x for x in [tcs[tcs.eta > 0],
     #                         tcs[tcs.eta < 0]]]
-    # 
+    #
     # cluster_sizes = [cluster_size, cluster_size]
-    # 
+    #
     # cluster_and_tc_sides = zip(cluster_sides, tc_sides, cluster_sizes)
-    # 
+    #
     # result_3dcl = pool.map(cluster_function, cluster_and_tc_sides)
-    # 
+    #
     # # result_3dcl = []
     # # result_3dcl.append(cluster_function(cluster_and_tc_sides[0]))
     # # result_3dcl.append(cluster_function(cluster_and_tc_sides[1]))
-    # 
+    #
     # # print result_3dcl[0]
     # # print result_3dcl[1]
-    # 
+    #
     merged_clusters = pd.DataFrame(columns=cl3ds.columns)
     # for res3D in result_3dcl:
     #     merged_clusters = merged_clusters.append(res3D, ignore_index=True, sort=False)
@@ -465,7 +471,7 @@ def get_merged_cl3d(triggerClusters, pool, debug=0):
     # # FIXME: filter only interesting clusters
     # clusterSides = [x for x in [triggerClusters[triggerClusters.eta > 0],
     #                             triggerClusters[triggerClusters.eta < 0]] if not x.empty]
-    # 
+    #
     # results3Dcl = pool.map(clAlgo.merge3DClustersEtaPhi, clusterSides)
     # for res3D in results3Dcl:
     #     merged_clusters = merged_clusters.append(res3D, ignore_index=True, sort=False)
@@ -477,8 +483,8 @@ def get_trackmatched_egs(egs, tracks, debug=0):
     newcolumns.extend(['tkpt', 'tketa', 'tkphi', 'tkz0', 'tkchi2', 'tkchi2Red', 'tknstubs', 'deta', 'dphi', 'dr'])
     matched_egs = pd.DataFrame(columns=newcolumns)
     # FIXME: need to be ported to uproot multiindexing
-    # 
-    # 
+    #
+    #
     # if egs.empty or tracks.empty:
     #     return matched_egs
     # best_match_indexes, allmatches = match_etaphi(egs[['eta', 'phi']],
@@ -559,7 +565,7 @@ def get_calibrated_clusters(calib_factors, input_3Dclusters):
 def build3DClusters(name, algorithm, triggerClusters, pool, debug):
     trigger3DClusters = pd.DataFrame()
     # FIXME: need to be ported to uproot multiindexing
-    # 
+    #
     # if triggerClusters.empty:
     #     return trigger3DClusters
     # clusterSides = [x for x in [triggerClusters[triggerClusters.eta > 0],
@@ -567,7 +573,7 @@ def build3DClusters(name, algorithm, triggerClusters, pool, debug):
     # results3Dcl = pool.map(algorithm, clusterSides)
     # for res3D in results3Dcl:
     #     trigger3DClusters = trigger3DClusters.append(res3D, ignore_index=True, sort=False)
-    # 
+    #
     # debugPrintOut(debug, name='{} 3D clusters'.format(name),
     #               toCount=trigger3DClusters,
     #               toPrint=trigger3DClusters.iloc[:3])
@@ -745,6 +751,7 @@ gen_parts = DFCollection(
     debug=0,
     # print_function=lambda df: df[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'ovz', 'pid', 'gen', 'reachedEE', 'firstmother_pdgid']],
     print_function=lambda df: df[['gen', 'pid', 'eta', 'phi', 'pt', 'mother', 'ovz', 'dvz', 'reachedEE']].sort_values(by='mother', ascending=False),
+    # print_function=lambda df: df.columns,
     weight_function=gen_part_pt_weights)
 
 tcs = DFCollection(
@@ -1084,14 +1091,14 @@ egs_all = DFCollection(
 tracks = DFCollection(
     name='L1Trk', label='L1Track',
     filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='l1Trk', entry_block=entry_block), 
+        prefix='l1Trk', entry_block=entry_block),
     print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
     debug=0)
 
 tracks_emu = DFCollection(
     name='L1TrkEmu', label='L1Track EMU',
     filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='l1trackemu', entry_block=entry_block), 
+        prefix='l1trackemu', entry_block=entry_block),
     debug=0)
 
 

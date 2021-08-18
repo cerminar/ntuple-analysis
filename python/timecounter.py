@@ -48,13 +48,13 @@ class TimeCounter(object):
     def print_nevent_per_jobflavor(self, time_per_event):
         if self.start_tic != 0:
             for job_flavor, job_time in self.job_flavors.items():
-                print ("{} {}: # ev: {}".format(job_flavor, self.job_flavors_labels[job_flavor], int(job_time/(1.1*time_per_event))))
+                print("{} {}: # ev: {}".format(job_flavor, self.job_flavors_labels[job_flavor], int(job_time/(1.1*time_per_event))))
 
     def job_flavor_time_perc(self, flavor):
         if self.start_tic != 0:
             time = self.time()
             flavor_time = self.job_flavor_time(flavor)
-            print ('Job time: {:.2f}: {:.1f}% of flavor {}'.format(time, 100*time/flavor_time, flavor))
+            print('Job time: {:.2f}: {:.1f}% of flavor {}'.format(time, 100*time/flavor_time, flavor))
             return time/flavor_time
 
     def job_flavor_time_left(self, flavor):

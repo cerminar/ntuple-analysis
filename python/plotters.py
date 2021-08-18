@@ -29,13 +29,13 @@ from . import utils as utils
 from . import clusterTools as clAlgo
 from . import selections as selections
 # import collections as collections
-ROOT.gROOT.ProcessLine('#include "src/fastfilling.h"');
+ROOT.gROOT.ProcessLine('#include "src/fastfilling.h"')
 
 
 class Test(object):
     def __init__(self, name):
         self.name = name
-         
+
     def __repr__(self):
         return "<TEST class, {}>".format(self.name)
 
@@ -119,7 +119,7 @@ class RatePlotter(BasePlotter):
     def fill_histos_event(self, idx, debug=0):
         if self.data_set.new_read:
             self.fill_histos(debug)
-            
+
 
 class GenericDataFrameLazyPlotter(BasePlotter):
     def __init__(self, HistoClass, data_set, selections=[selections.Selection('all')]):
@@ -143,7 +143,7 @@ class GenericDataFrameLazyPlotter(BasePlotter):
         filler = histos.HistoLazyFiller(dataframe)
         # print (self.data_set.name)
         # print (self.data_set.df.columns)
-        
+
         for data_sel in self.data_selections:
             if data_sel.all:
                 filler.add_selection(data_sel.name, np.full(dataframe.shape[0], True, dtype=bool))
@@ -151,7 +151,7 @@ class GenericDataFrameLazyPlotter(BasePlotter):
                 filler.add_selection(data_sel.name, dataframe.eval(data_sel.selection).values)
             self.h_set[data_sel.name].fill_lazy(filler, data_sel.name)
         filler.fill()
-    
+
     def fill_histos_event(self, idx, debug=0):
         if self.data_set.new_read:
             self.fill_histos(debug)
@@ -185,12 +185,13 @@ class GenericDataFramePlotter(BasePlotter):
 class GenPlotter(GenericDataFrameLazyPlotter):
     def __init__(self, gen_set, gen_selections=[selections.Selection('all')]):
         super(GenPlotter, self).__init__(
-            histos.GenParticleHistos, 
-            gen_set, 
+            histos.GenParticleHistos,
+            gen_set,
             selections.multiply_selections(
                 gen_selections,
                 [selections.Selection('', '', 'gen > 0')]))
-    
+
+
 class TkElePlotter(GenericDataFrameLazyPlotter):
     def __init__(self, tkeg_set, tkeg_selections=[selections.Selection('all')]):
         super(TkElePlotter, self).__init__(histos.TkEleHistos, tkeg_set, tkeg_selections)
@@ -220,13 +221,11 @@ class TTPlotter(GenericDataFramePlotter):
     def __init__(self, tt_set, tt_selections=[selections.Selection('all')]):
         super(TTPlotter, self).__init__(histos.TriggerTowerHistos, tt_set, tt_selections)
 
-class EGPlotter(GenericDataFrameLazyPlotter):
-    def __init__(self, eg_set, eg_selections=[selections.Selection('all')]):
-        super(EGPlotter, self).__init__(histos.EGHistos, eg_set, eg_selections)
 
 class DecTkPlotter(GenericDataFrameLazyPlotter):
     def __init__(self, tk_set, tk_selections=[selections.Selection('all')]):
         super(DecTkPlotter, self).__init__(histos.DecTkHistos, tk_set, tk_selections)
+
 
 class TPPlotter(BasePlotter):
     def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
@@ -259,7 +258,7 @@ class TPPlotter(BasePlotter):
 
 class TPGenMatchPlotter(BasePlotter):
     def __init__(self, tp_set, gen_set,
-                 tp_selections=[selections.Selection('all')], 
+                 tp_selections=[selections.Selection('all')],
                  gen_selections=[selections.Selection('all')],
                  extended_range=False):
         # self.tp_set = tp_set
@@ -270,11 +269,11 @@ class TPGenMatchPlotter(BasePlotter):
         self.h_resoset = {}
         self.h_effset = {}
         self.h_conecluster = {}
-        self.extended_range=extended_range
+        self.extended_range = extended_range
         super(TPGenMatchPlotter, self).__init__(
-            tp_set, 
-            tp_selections, 
-            gen_set, 
+            tp_set,
+            tp_selections,
+            gen_set,
             selections.multiply_selections(
                 gen_selections,
                 [selections.Selection('', '', 'gen > 0')]))
@@ -424,13 +423,13 @@ class TPGenMatchPlotter(BasePlotter):
                 if debug >= 6:
                     print(('--- Dump match for algo {} ---------------'.format(algoname)))
                     print(('GEN particle: idx: {}'.format(idx)))
-                    print (genParticle)
-                    print ('Matched to 3D cluster:')
-                    print (matched3DCluster)
-                    print ('Matched 2D clusters:')
-                    print (matchedClusters)
-                    print ('matched cells:')
-                    print (matchedTriggerCells)
+                    print(genParticle)
+                    print('Matched to 3D cluster:')
+                    print(matched3DCluster)
+                    print('Matched 2D clusters:')
+                    print(matchedClusters)
+                    print('matched cells:')
+                    print(matchedTriggerCells)
 
                     print(('3D cluster energy: {}'.format(matched3DCluster.energy.sum())))
                     print(('3D cluster pt: {}'.format(matched3DCluster.pt.sum())))
@@ -438,15 +437,15 @@ class TPGenMatchPlotter(BasePlotter):
                     print(('sum 2D cluster energy: {}'.format(matchedClusters.energy.sum()*calib_factor)))
                     # print ('sum 2D cluster pt: {}'.format(matchedClusters.pt.sum()*calib_factor))
                     print(('sum TC energy: {}'.format(matchedTriggerCells.energy.sum())))
-                    print ('Sum of matched clusters in cone:')
-                    print (clustersInCone)
+                    print('Sum of matched clusters in cone:')
+                    print(clustersInCone)
             else:
                 if debug >= 5:
                     print(('==== Warning no match found for algo {}, idx {} ======================'.format(algoname,
                                                                                                            idx)))
                     if debug >= 2:
-                        print (genParticle)
-                        print (trigger3DClusters)
+                        print(genParticle)
+                        print(trigger3DClusters)
 
         # if len(allmatched2Dclusters) != 0:
         #     matchedClustersAll = pd.concat(allmatched2Dclusters)
@@ -542,13 +541,11 @@ class GenericGenMatchPlotter(BasePlotter):
                         h_reso,
                         algoname,
                         debug):
-                        
-
 
         gen_filler = histos.HistoLazyFiller(genParticles)
         den_sel = np.full(genParticles.shape[0], True, dtype=bool)
         num_sel = np.full(genParticles.shape[0], False, dtype=bool)
-        
+
         # fill histo with all selected GEN particles before any match
         gen_filler.add_selection('den', den_sel)
         if h_gen:
@@ -566,7 +563,7 @@ class GenericGenMatchPlotter(BasePlotter):
                 objects['pt'],
                 deltaR=0.1,
                 return_positional=positional)
-                
+
             # print (objects)
             # print (best_match_indexes)
             # print (best_match_iloc)
@@ -574,14 +571,14 @@ class GenericGenMatchPlotter(BasePlotter):
                 if positional:
                     obj_matched = objects.iloc[[best_match_indexes[idx]]]
                     obj_ismatch[best_match_indexes[idx]] = True
-                else: 
+                else:
                     obj_matched = objects.loc[[best_match_indexes[idx]]]
                     obj_ismatch[objects.index.get_loc(best_match_indexes[idx])] = True
 
                 # h_object_matched.fill(obj_matched)
                 num_sel[genParticles.index.get_loc(idx)] = True
                 h_reso.fill(reference=genParticles.loc[idx], target=obj_matched)
-                
+
                 if hasattr(h_reso, 'fill_nMatch'):
                     h_reso.fill_nMatch(len(allmatches[idx]))
 
@@ -601,13 +598,13 @@ class GenericGenMatchPlotter(BasePlotter):
             obj_filler.add_selection('match', obj_ismatch)
             h_object_matched.fill_lazy(obj_filler, 'match')
             obj_filler.fill()
-        
+
         if h_gen_matched is not None:
             gen_filler.add_selection('num', num_sel)
             h_gen_matched.fill_lazy(gen_filler, 'num')
 
         gen_filler.fill()
-        
+
     def book_histos(self):
         self.gen_set.activate()
         self.data_set.activate()
@@ -647,6 +644,7 @@ class GenericGenMatchPlotter(BasePlotter):
                                      debug)
         # print (f'Filling histof for data: {self.data_set.name}, entry: {idx}')
         # print ("# of queries: {}".format(qcounter))
+
 
 class TrackGenMatchPlotter(GenericGenMatchPlotter):
     def __init__(self, data_set, gen_set,
@@ -740,14 +738,14 @@ class ResoNtupleMatchPlotter(BasePlotter):
                 if debug >= 4:
                     print(('--- Dump match for algo {} ---------------'.format(algoname)))
                     print(('GEN particle: idx: {}'.format(idx)))
-                    print (genParticle)
-                    print ('Matched to track object:')
-                    print (obj_matched)
+                    print(genParticle)
+                    print('Matched to track object:')
+                    print(obj_matched)
             else:
                 if debug >= 5:
                     print(('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx)))
-                    print (genParticle)
-                    print (objects)
+                    print(genParticle)
+                    print(objects)
 
     def book_histos(self):
         self.gen_set.activate()
@@ -826,14 +824,14 @@ class CalibrationPlotter(BasePlotter):
                 if debug >= 4:
                     print(('--- Dump match for algo {} ---------------'.format(algoname)))
                     print(('GEN particle: idx: {}'.format(idx)))
-                    print (genParticle)
-                    print ('Matched to track object:')
-                    print (obj_matched)
+                    print(genParticle)
+                    print('Matched to track object:')
+                    print(obj_matched)
             else:
                 if debug >= 5:
                     print(('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx)))
-                    print (genParticle)
-                    print (objects)
+                    print(genParticle)
+                    print(objects)
 
     def book_histos(self):
         self.gen_set.activate()
@@ -956,14 +954,14 @@ class TTGenMatchPlotter:
                 if debug >= 4:
                     print(('--- Dump match for algo {} ---------------'.format(algoname)))
                     print(('GEN particle: idx: {}'.format(idx)))
-                    print (genParticle)
-                    print ('Matched Trigger Tower:')
-                    print (matchedTower)
+                    print(genParticle)
+                    print('Matched Trigger Tower:')
+                    print(matchedTower)
             else:
                 if debug >= 0:
                     print(('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx)))
                     if debug >= 2:
-                        print (genParticle)
+                        print(genParticle)
 
 
 class CorrOccupancyPlotter(BasePlotter):
@@ -977,8 +975,8 @@ class CorrOccupancyPlotter(BasePlotter):
         for selection in self.tp_selections:
             self.h_occ[selection.name] = histos.CorrOccupancyHistos(
                 name='{}_{}'.format(
-                tp_name,
-                selection.name))
+                    tp_name,
+                    selection.name))
 
     def fill_histos(self, debug=0):
         # print '------------------'
@@ -1042,7 +1040,7 @@ class ClusterTCGenMatchPlotter(BasePlotter):
                 if debug >= 4:
                     print(('--- Dump match for algo {} ---------------'.format(algoname)))
                     print(('GEN particle: idx: {}'.format(idx)))
-                    print (genParticle)
+                    print(genParticle)
 
     def book_histos(self):
         self.gen_set.activate()
@@ -1157,15 +1155,14 @@ class IsoTuplePlotter(BasePlotter):
                                      debug)
 
 
-
-
-
 if __name__ == "__main__":
-    for sel in selections.multiply_selections(selections.tp_id_selections,
-                                         selections.tp_eta_selections):
+    for sel in selections.multiply_selections(
+            selections.tp_id_selections,
+            selections.tp_eta_selections):
         print(sel)
 
-    print(selections.multiply_selections(selections.tp_id_selections,
-                                    selections.tp_pt_selections))
+    print(selections.multiply_selections(
+            selections.tp_id_selections,
+            selections.tp_pt_selections))
 
     # print(selections.gen_selection)

@@ -1,5 +1,6 @@
 import math
 
+
 class PFRegionizer(object):
     def __init__(self):
         # setup the regions
@@ -74,9 +75,9 @@ class PFRegionizer(object):
 regionizer = PFRegionizer()
 
 regions = {
-'all': range(0, regionizer.n_eta_regions()),
-'BRL': [4,5,6],
-'HGC': [3, 7],
-'HGCNoTk': [2, 8],
-'HF': [0, 1, 9, 10]
+    'all': range(0, regionizer.n_eta_regions()),
+    'BRL': [4, 5, 6],
+    'HGC': [3, 7],
+    'HGCNoTk': [2, 8],
+    'HF': [0, 1, 9, 10]
 }

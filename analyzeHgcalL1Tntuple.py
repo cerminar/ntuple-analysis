@@ -106,7 +106,7 @@ def analyze(params, batch_idx=-1):
     # instantiate all the plotters
     plotter_collection = []
     plotter_collection.extend(params.plotters)
-    print(plotter_collection)
+    # print(plotter_collection)
 
     # -------------------------------------------------------
     # book histos
@@ -162,7 +162,7 @@ def analyze(params, batch_idx=-1):
                 if batch_idx != -1 and timecounter.counter.started() and tree_reader.global_entry % 100 == 0:
                     # when in batch mode, if < 5min are left we stop the event loop
                     if timecounter.counter.job_flavor_time_left(params.htc_jobflavor) < 5*60:
-                        tree_reader.printEntry()               
+                        tree_reader.printEntry()
                         print('    less than 5 min left for batch slot: exit event loop!')
                         timecounter.counter.job_flavor_time_perc(params.htc_jobflavor)
                         break_file_loop = True
@@ -173,8 +173,10 @@ def analyze(params, batch_idx=-1):
                 print(f"[EXCEPTION OCCURRED:] {str(inst)}")
                 print("Unexpected error:", sys.exc_info()[0])
                 traceback.print_exc()
+                tree_file.close()
                 sys.exit(200)
 
+        tree_file.close()
     # print("Processed {} events/{} TOT events".format(nev, ntuple.nevents()))
 
     print("Writing histos to file {}".format(params.output_filename))

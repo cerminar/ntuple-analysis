@@ -13,5 +13,3 @@ echo $?
 eval `scram runtime -sh`
 cd -
 source /cvmfs/cms.cern.ch/slc7_amd64_gcc820/lcg/root/6.22.03/bin/thisroot.sh
-export VIRTUALENVWRAPPER_PYTHON=`which python`
-export VIRTUALENV_PYTHON=`which python`
