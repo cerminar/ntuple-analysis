@@ -6,5 +6,4 @@ six==1.16.0
 uproot4==0.1.2
 subprocess32==3.5.4
 PyYAML==5.4.1
-ROOT==0.0.1
 scikit_learn==0.24.2
