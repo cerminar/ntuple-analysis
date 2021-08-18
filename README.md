@@ -18,6 +18,7 @@ This stetp needs to be done **only once** for your account and can be done with 
 For some reason the current `CMSSW` scrips seems to deliver an inconsistent setup of `virtualenv` and `virtualenvwrapper`, for this reason we force a new installation in `~/.local` using:
 
 `pip install --ignore-installed --user virtualenv`
+
 `pip install --ignore-installed --user virtualenv`
 
 For a more complete overview of the procedure you can refer to
