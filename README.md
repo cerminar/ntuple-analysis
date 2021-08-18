@@ -2,7 +2,7 @@
 
 The python scripts in this repository should help you get started analysing the [HGCAL L1 TP ntuples](https://github.com/PFCal-dev/cmssw/tree/hgc-tpg-devel-CMSSW_10_3_0_pre4/L1Trigger/L1THGCal/plugins/ntuples)
 
-## Pre-requisites
+## Pre-requisites: first time setup
 
 ### 1. lxplus setup
 
@@ -19,7 +19,7 @@ For some reason the current `CMSSW` scrips seems to deliver an inconsistent setu
 
 `pip install --ignore-installed --user virtualenv`
 
-`pip install --ignore-installed --user virtualenv`
+`pip install --ignore-installed --user virtualenvwrapper`
 
 For a more complete overview of the procedure you can refer to
 `virtualenvwrapper` [installation instructions](https://virtualenvwrapper.readthedocs.io/en/latest/install.html) 
@@ -51,7 +51,24 @@ You can use the file directly using for example:
 
 `pip install -r requirements_py3.8.txt`
 
-### 5. activate the `virtualenv`
+
+## Setup after first installation
+
+### 1. lxplus setup
+
+This step is `lxplus` specific, givin access to a more recent `python` and `root` version.
+Edit/skip it accordingly for your specific system.
+
+`source setup_lxplus.sh`
+
+
+### 2. setup `virtualenvwrapper`
+
+For starting using virtualenvwrapper
+
+`source setVirtualEnvWrapper.sh`
+
+### 3. activate the `virtualenv`
 
 After this initial (once in a time) setup is done you can just activate the virtualenv calling:
 
@@ -60,15 +77,15 @@ After this initial (once in a time) setup is done you can just activate the virt
 (`lsvirtualenv` is your friend in case you forgot the name).
 
 
-## HGCAL L1 TPG analysis
+## Running the analysis
 
-`python analyzeHgcalL1Tntuple.py -f cfg/default.yaml -i cfg/datasets/ntp_v68C.yaml -c decoded_tk -s doubleele_flat1to100_PU200 -n 3000 -d 2`
-
-see:
+The main script is `analyzeHgcalL1Tntuple.py`:
 
 `python analyzeHgcalL1Tntuple.py --help`
 
-for the details.
+An example of how to run it:
+
+`python analyzeHgcalL1Tntuple.py -f cfg/default.yaml -i cfg/datasets/ntp_v68C.yaml -c single_empart_guns_egvalid -s doubleele_flat1to100_PU200 -n 300 -d 2`
 
 ### Configuration file
 The configuration is handled by 2 yaml files. 
