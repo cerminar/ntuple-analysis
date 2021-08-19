@@ -512,6 +512,12 @@ pftkinput_selections = (Selector('^PFinBRL|^PFinHGC$')*('^TkPt'))()
 
 dectk_selections = (Selector('^Eta[AB]*[BC]$|all')*('^Pt[1,2,5][0]$|all'))()
 dectk_match_selections = (Selector('^Pt5$|^Pt[1,2,5][0]$|all'))()
+
+egid_ee_selections = (Selector('^EGq[4-5]'))()
+egid_ee_pfnf_selections = (Selector('^EGq[1-2]$'))()
+
+
+
 # EG selection quality and Pt EE
 
 eg_id_iso_sel = [
