@@ -36,6 +36,11 @@ def get_eos_protocol(dirname):
     return protocol
 
 
+def file_name_wprotocol(filename):
+    protocol = get_eos_protocol(filename)
+    return f'{protocol}{filename}'
+
+
 def copy_from_eos(input_dir, file_name, target_file_name, dowait=False, silent=False):
     protocol = get_eos_protocol(dirname=input_dir)
     eos_proc = subprocess32.Popen(['eos', protocol, 'cp', os.path.join(input_dir, file_name), target_file_name], stdout=subprocess32.PIPE, stderr=subprocess32.STDOUT)
@@ -130,7 +135,7 @@ def get_metadata(input_dir, tree, debug=0):
         print('# of files: {}'.format(len(files)))
 
         for idx, file_name in enumerate(files):
-            tree_file = up.open(file_name)
+            tree_file = up.open(file_name_wprotocol(file_name))
             nevents = tree_file[tree].num_entries
             tree_file.close()
             file_metadata[file_name] = nevents
