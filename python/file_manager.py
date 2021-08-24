@@ -144,9 +144,11 @@ def get_metadata(input_dir, tree, debug=0):
 
         with open(json_name, 'w', encoding='utf-8') as fp:
             json.dump(file_metadata, fp)
-        copy_to_eos(file_name=json_name,
-                    target_dir=input_dir,
-                    target_file_name=json_name)
+        retc = copy_to_eos(
+            file_name=json_name,
+            target_dir=input_dir,
+            target_file_name=json_name)
+        print(f'COPY: {json_name} to {input_dir} w name: {json_name} return: {retc}')
     else:
         print('dir already indexed, will read metadata...')
         unique_filename = '{}.json'.format(uuid.uuid4())
