@@ -26,7 +26,7 @@ import ROOT
 import os
 import traceback
 import platform
-
+# import tracemalloc
 
 import root_numpy as rnp
 import pandas as pd
@@ -43,7 +43,24 @@ import python.tree_reader as treereader
 # from pandas.core.common import SettingWithCopyError, SettingWithCopyWarning
 # import warnings
 # warnings.filterwarnings('error', category=SettingWithCopyWarning)
-ROOT.ROOT.EnableImplicitMT()
+# ROOT.ROOT.EnableImplicitMT(2)
+
+
+# class Tracer(object):
+#     def __init__(self):
+#         tracemalloc.start(10)
+#         self.snapshots = []
+# 
+#     def collect_stats(self):
+#         filters = []
+#         self.snapshots.append(tracemalloc.take_snapshot())
+#         if len(self.snapshots) > 1:
+#             stats = self.snapshots[-1].filter_traces(filters).compare_to(self.snapshots[-2], 'filename')
+# 
+#             for stat in stats[:10]:
+#                 print("{} new KiB {} total KiB {} new {} total memory blocks: ".format(stat.size_diff/1024, stat.size / 1024, stat.count_diff, stat.count))
+#                 for line in stat.traceback.format():
+#                     print(line)
 
 
 def convertGeomTreeToDF(tree):
@@ -129,6 +146,8 @@ def analyze(params, batch_idx=-1):
     print('maxEvents: {}'.format(params.maxEvents))
     print('range_ev: {}'.format(range_ev))
 
+    # tr = Tracer()
+
     break_file_loop = False
     for tree_file_name in files_with_protocol:
         if break_file_loop:
@@ -154,6 +173,8 @@ def analyze(params, batch_idx=-1):
                 # # pool.apply_async(executor, (plotter.fill_histos_event, tree_reader.file_entry, debug))
                 # pool.close()
                 # pool.join()
+                # if tree_reader.global_entry % 100 == 0:
+                #     tr.collect_stats()
 
                 if tree_reader.global_entry != 0 and tree_reader.global_entry % 1000 == 0:
                     print("Writing histos to file")
@@ -185,6 +206,7 @@ def analyze(params, batch_idx=-1):
     hm.writeHistos()
 
     output.Close()
+    # ROOT.ROOT.DisableImplicitMT()
 
     return tree_reader.n_tot_entries
 
