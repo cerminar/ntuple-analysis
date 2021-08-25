@@ -28,7 +28,7 @@ collections:
       # - photon_flat8to150_PU200
       # - dyll_PU200
     plotters:
-      - test
+      - !!python/name:cfg.test.plotters
     htc_jobflavor:
       microcentury
     priorities:
@@ -45,6 +45,3 @@ collections:
       doubleele_flat1to100_PU200: 50000
       doublephoton_flat1to100_PU200: 50000
       nugun_alleta_pu200: 20000
-
-plotters:
-  test: !!python/name:cfg.test.test_plotters

@@ -56,7 +56,7 @@ def get_collection_parameters(opt, cfgfile):
 
         plotters = []
         for plotter in collection_data['plotters']:
-            plotters.extend(cfgfile['plotters'][plotter])
+            plotters.extend(plotter)
 
         for sample in samples:
             events_per_job = -1
