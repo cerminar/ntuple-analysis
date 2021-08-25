@@ -3,6 +3,8 @@ from . import plotters
 from . import collections
 from . import selections
 
+from cfg import *
+
 tp_plotters = [
     # TPPlotter(collections.tp_def, selections.tp_id_selections),
     # TPPlotter(collections.tp_truth, selections.tp_id_selections),
