@@ -418,6 +418,7 @@ eg_id_ee_selections = [
     Selection('EGq3', 'hwQual=3', 'hwQual == 3'),
     Selection('EGq2or3', 'hwQual=2/3', '(hwQual == 2) | (hwQual == 3)'),
     Selection('EGq1or3', 'hwQual=1/3', '(hwQual == 1) | (hwQual == 3)'),
+    Selection('EGq4or5', 'hwQual=4/5', '(hwQual == 4) | (hwQual == 5)'),
     # Selection('PFEG', 'PF EG-ID', '(hwQual == 1) | (hwQual == 3)'),
     # Selection('EGnoPU', 'EG-ID noPU', '(hwQual == 3) | (hwQual == 2)'),
     Selection('EGq4', 'hwQual=4', 'hwQual == 4'),
@@ -515,8 +516,6 @@ dectk_match_selections = (Selector('^Pt5$|^Pt[1,2,5][0]$|all'))()
 
 egid_ee_selections = (Selector('^EGq[4-5]'))()
 egid_ee_pfnf_selections = (Selector('^EGq[1-2]$'))()
-
-
 
 # EG selection quality and Pt EE
 
