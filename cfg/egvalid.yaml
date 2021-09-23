@@ -38,8 +38,8 @@ collections:
       doublephoton_flat1to100_PU200: 6
     events_per_job:
       doubleele_flat1to100_PU0: 10000
-      doubleele_flat1to100_PU200: 50000
-      doublephoton_flat1to100_PU200: 50000
+      doubleele_flat1to100_PU200: 5000
+      doublephoton_flat1to100_PU200: 5000
 
   egvalid_sim:
     file_label:
@@ -64,8 +64,8 @@ collections:
       doublephoton_flat1to100_PU200: 6
     events_per_job:
       doubleele_flat1to100_PU0: 10000
-      doubleele_flat1to100_PU200: 50000
-      doublephoton_flat1to100_PU200: 50000
+      doubleele_flat1to100_PU200: 10000
+      doublephoton_flat1to100_PU200: 10000
 
   egvalid_l1tc:
     file_label:
@@ -90,8 +90,8 @@ collections:
       doublephoton_flat1to100_PU200: 6
     events_per_job:
       doubleele_flat1to100_PU0: 10000
-      doubleele_flat1to100_PU200: 50000
-      doublephoton_flat1to100_PU200: 50000
+      doubleele_flat1to100_PU200: 10000
+      doublephoton_flat1to100_PU200: 10000
 
   egvalid_l1tc_fw:
     file_label:
@@ -116,5 +116,5 @@ collections:
       doublephoton_flat1to100_PU200: 6
     events_per_job:
       doubleele_flat1to100_PU0: 10000
-      doubleele_flat1to100_PU200: 50000
-      doublephoton_flat1to100_PU200: 50000
+      doubleele_flat1to100_PU200: 10000
+      doublephoton_flat1to100_PU200: 10000
