@@ -111,13 +111,11 @@ class Selection:
                          selection='({}) & ({})'.format(self.selection, sel_obj.selection))
 
     def __str__(self):
-        return 'n: {}, s: {}, l:{}'.format(self.name, self.selection, self.label)
+        return 'n: {}, \n\t s: {}, \n\t l:{}'.format(self.name, self.selection, self.label)
 
     def __repr__(self):
-        return '<{} n: {}, s: {}, l:{}> '.format(self.__class__.__name__,
-                                                 self.name,
-                                                 self.selection,
-                                                 self.label)
+        return '<{} {}> '.format(self.__class__.__name__,
+                                  self)
 
     @property
     def all(self):
