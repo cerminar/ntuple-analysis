@@ -4,8 +4,8 @@ import python.collections as collections
 import python.selections as selections
 
 sim_eg_match_ee_selections = (selections.Selector('^EGq[4-5]$')*('^Pt[1-3][0]$|all'))()
-gen_ee_tk_selections = (selections.Selector('GEN$')*('Ee$')*('^EtaA$|EtaBC$|all')+selections.Selector('GEN$')*('Ee$')*('Pt15|Pt30'))()
-gen_ee_selections = (selections.Selector('GEN$')*('Ee')*('^Eta[BC]+[CD]$|^Eta[A,D]$|all')+selections.Selector('GEN$')*('Ee')*('^Pt15|^Pt30'))()
+gen_ee_tk_selections = (selections.Selector('GEN$')*('Ee$')*('^Eta[A-C]$|EtaBC$|all')+selections.Selector('GEN$')*('Ee$')*('Pt15|Pt30'))()
+gen_ee_selections = (selections.Selector('GEN$')*('Ee')*('^Eta[BC]+[CD]$|^Eta[A-D]$|all')+selections.Selector('GEN$')*('Ee')*('^Pt15|^Pt30'))()
 
 
 tdrsim_eg_genmatched = [
