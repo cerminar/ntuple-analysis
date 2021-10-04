@@ -1173,7 +1173,7 @@ tkeles_all = DFCollection(
 # try to cleanup a bit
 
 egs_EE = DFCollection(
-    name='EgEE', label='EG EE',
+    name='EgEE', label='EG EE (sim)',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='egammaEE', entry_block=entry_block),
     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
@@ -1191,7 +1191,7 @@ egs_EB = DFCollection(
     debug=0)
 
 egs_EE_pf = DFCollection(
-    name='PFEgEE', label='EG EE Corr.',
+    name='PFEgEE', label='EG EE (old EMU)',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='PFegammaEE', entry_block=entry_block),
     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
@@ -1200,7 +1200,7 @@ egs_EE_pf = DFCollection(
     debug=0)
 
 egs_EE_pfnf = DFCollection(
-    name='PFNFEgEE', label='EG EE Corr. New',
+    name='PFNFEgEE', label='EG EE',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='PFNFegammaEE', entry_block=entry_block),
     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
@@ -1209,7 +1209,7 @@ egs_EE_pfnf = DFCollection(
     debug=0)
 
 tkeles_EE = DFCollection(
-    name='tkEleEE', label='TkEle EE',
+    name='tkEleEE', label='TkEle EE (sim)',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='tkEleEE', entry_block=entry_block),
     fixture_function=tkele_fixture_ee,
@@ -1223,28 +1223,28 @@ tkeles_EB = DFCollection(
     debug=0)
 
 tkeles_EE_pf = DFCollection(
-    name='PFtkEleEE', label='TkEle EE Corr.',
+    name='PFtkEleEE', label='TkEle EE (old EMU)',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='PFtkEleEE', entry_block=entry_block),
     fixture_function=tkele_fixture_ee,
     debug=0)
 
 tkeles_EB_pf = DFCollection(
-    name='PFtkEleEB', label='TkEle EB Corr',
+    name='PFtkEleEB', label='TkEle EB (old EMU)',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='PFtkEleEB', entry_block=entry_block),
     fixture_function=tkele_fixture_eb,
     debug=0)
 
 tkeles_EE_pfnf = DFCollection(
-    name='PFNFtkEleEE', label='TkEle EE Corr. New',
+    name='PFNFtkEleEE', label='TkEle EE',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='PFNFtkEleEE', entry_block=entry_block),
     fixture_function=tkele_fixture_ee,
     debug=0)
 
 tkeles_EB_pfnf = DFCollection(
-    name='PFNFtkEleEB', label='TkEle EB Corr. New',
+    name='PFNFtkEleEB', label='TkEle EB',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='PFNFtkEleEB', entry_block=entry_block),
     fixture_function=tkele_fixture_eb,
@@ -1253,7 +1253,7 @@ tkeles_EB_pfnf = DFCollection(
 # --------
 
 tkem_EE = DFCollection(
-    name='tkEmEE', label='TkEm EE',
+    name='tkEmEE', label='TkEm EE (sim)',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='tkEmEE', entry_block=entry_block),
     fixture_function=fake_endcap_quality,
@@ -1269,14 +1269,14 @@ tkem_EB = DFCollection(
     debug=0)
 
 tkem_EE_pf = DFCollection(
-    name='PFtkEmEE', label='TkEm EE Corr.',
+    name='PFtkEmEE', label='TkEm EE (old EMU)',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='PFtkEmEE', entry_block=entry_block),
     fixture_function=fake_endcap_quality,
     debug=0)
 
 tkem_EB_pf = DFCollection(
-    name='PFtkEmEB', label='TkEm EB Corr',
+    name='PFtkEmEB', label='TkEm EB (old EMU)',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='PFtkEmEB', entry_block=entry_block),
     fixture_function=barrel_quality,
@@ -1284,14 +1284,14 @@ tkem_EB_pf = DFCollection(
     debug=0)
 
 tkem_EE_pfnf = DFCollection(
-    name='PFNFtkEmEE', label='TkEm EE Corr. New',
+    name='PFNFtkEmEE', label='TkEm EE',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='PFNFtkEmEE', entry_block=entry_block),
     fixture_function=fake_endcap_quality,
     debug=0)
 
 tkem_EB_pfnf = DFCollection(
-    name='PFNFtkEmEB', label='TkEm EB Corr. New',
+    name='PFNFtkEmEB', label='TkEm EB',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='PFNFtkEmEB', entry_block=entry_block),
     fixture_function=barrel_quality,
@@ -1299,7 +1299,7 @@ tkem_EB_pfnf = DFCollection(
     debug=0)
 
 egs_EE_pf_reg = DFCollection(
-    name='PFOutEgEE', label='EG EE Corr.',
+    name='PFOutEgEE', label='EG EE (old EMU)',
     filler_function=lambda event, entry_block: egs_EE_pf.df,
     print_function=lambda df: df[[
         'pt', 'eta', 'hwQual',
@@ -1311,28 +1311,28 @@ egs_EE_pf_reg = DFCollection(
     debug=0)
 
 tkeles_EE_pf_reg = DFCollection(
-    name='PFOuttkEleEE', label='TkEle EE Corr.',
+    name='PFOuttkEleEE', label='TkEle EE (old EMU)',
     filler_function=lambda event, entry_block: tkeles_EE_pf.df,
     fixture_function=mapcalo2pfregions_out,
     depends_on=[tkeles_EE_pf],
     debug=0)
 
 tkeles_EB_pf_reg = DFCollection(
-    name='PFOuttkEleEB', label='TkEle EB Corr',
+    name='PFOuttkEleEB', label='TkEle EB (old EMU)',
     filler_function=lambda event, entry_block: tkeles_EB_pf.df,
     fixture_function=mapcalo2pfregions_out,
     depends_on=[tkeles_EB_pf],
     debug=0)
 
 tkem_EE_pf_reg = DFCollection(
-    name='PFOuttkEmEE', label='TkEm EE Corr.',
+    name='PFOuttkEmEE', label='TkEm EE (old EMU)',
     filler_function=lambda event, entry_block: tkem_EE_pf.df,
     fixture_function=mapcalo2pfregions_out,
     depends_on=[tkem_EE_pf],
     debug=0)
 
 tkem_EB_pf_reg = DFCollection(
-    name='PFOuttkEmEB', label='TkEm EB Corr',
+    name='PFOuttkEmEB', label='TkEm EB (old EMU)',
     filler_function=lambda event, entry_block: tkem_EB_pf.df,
     fixture_function=mapcalo2pfregions_out,
     depends_on=[tkem_EB_pf],
