@@ -137,7 +137,8 @@ def analyze(params, batch_idx=-1):
 
     calib_manager = calibs.CalibManager()
     calib_manager.set_calibration_version(params.calib_version)
-
+    if params.rate_pt_wps:
+        calib_manager.set_pt_wps_version(params.rate_pt_wps)
     # -------------------------------------------------------
     # event loop
 
