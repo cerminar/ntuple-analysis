@@ -8,6 +8,8 @@ samples:
 
   # tree_name: hgcalTriggerNtuplizer/HGCalTriggerNtuple
   tree_name: l1CaloTriggerNtuplizer_pf/HGCalTriggerNtuple
+  rate_pt_wps: data/rate_pt_wps_v150A.70A.json
+
   # tree_name: l1CaloTriggerNtuplizer/HGCalTriggerNtuple
 
   # doubleele_flat1to100_PU0:
