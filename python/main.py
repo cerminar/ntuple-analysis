@@ -12,6 +12,7 @@ from shutil import copyfile
 
 import python.file_manager as fm
 import python.plotters_config
+import python.calibrations as calib
 
 
 class Parameters(dict):
@@ -56,7 +57,7 @@ def get_collection_parameters(opt, cfgfile):
 
         plotters = []
         for plotter in collection_data['plotters']:
-            plotters.extend(cfgfile['plotters'][plotter])
+            plotters.extend(plotter)
 
         for sample in samples:
             events_per_job = -1
@@ -81,6 +82,11 @@ def get_collection_parameters(opt, cfgfile):
                 if sample in collection_data['weights'].keys():
                     weight_file = collection_data['weights'][sample]
 
+            rate_pt_wps = None
+            if 'rate_pt_wps' in cfgfile['samples']:
+                rate_pt_wps = cfgfile['samples']['rate_pt_wps']
+
+            
             params = Parameters({'input_base_dir': cfgfile['samples']['input_dir'],
                                  'input_sample_dir': cfgfile['samples'][sample]['input_sample_dir'],
                                  'tree_name': cfgfile['samples']['tree_name'],
@@ -91,6 +97,7 @@ def get_collection_parameters(opt, cfgfile):
                                  'eventsToDump': [],
                                  'version': plot_version,
                                  'calib_version':  cfgfile['samples']['calib_version'],
+                                 'rate_pt_wps': rate_pt_wps,
                                  'maxEvents': int(opt.NEVENTS),
                                  'events_per_job': events_per_job,
                                  'computeDensity': cfgfile['common']['run_density_computation'],
@@ -176,9 +183,9 @@ def main(analyze, submit_mode=False):
 
     # read the config file
     cfgfile = {}
-    cfgfile.update(parse_yaml(opt.CONFIGFILE))
     if opt.DATASETFILE is not None:
         cfgfile.update(parse_yaml(opt.DATASETFILE))
+    cfgfile.update(parse_yaml(opt.CONFIGFILE))
 
     collection_params = get_collection_parameters(opt, cfgfile)
 

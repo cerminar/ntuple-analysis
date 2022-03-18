@@ -12,9 +12,11 @@ Objects:
     all collections (DFCollection and TPSet instances) that
     can be used by plotters.
 """
+import os
+import json
 import pandas as pd
 import numpy as np
-
+from . import selections
 
 class CalibManager(object):
     """
@@ -28,6 +30,7 @@ class CalibManager(object):
 
     class __TheManager:
         def __init__(self):
+            self.rate_pt_wps = None
             self.calib_version = None
             self.calib_table = {
                 'calib-v96bis': {
@@ -196,6 +199,26 @@ class CalibManager(object):
 
         def get_calibration(self, collection_name, calib_key):
             return self.calib_table[self.calib_version][collection_name][calib_key]
+
+        def set_pt_wps_version(self, version):
+            self.rate_pt_wps = version
+            print(f'[CalibManager] pt wps json file version: {self.rate_pt_wps}!')
+
+        def get_pt_wps(self):
+            pt_wps = {}
+            # print(f'[CalibManager] about to read pt wps json file version: {self.rate_pt_wps}!')
+
+            if self.rate_pt_wps:
+                pwd = os.path.dirname(__file__)
+                filename = os.path.join(pwd, '..', self.rate_pt_wps)
+                if os.path.isfile(filename):
+                    print(f'[CalibManager] reading pt wps json file {self.rate_pt_wps}!')
+                    with open(filename) as f:
+                        pt_wps = json.load(f)
+                else:
+                    raise KeyError(f'[CalibManager] pt wps json file {self.rate_pt_wps} not found!')
+                    print(f'[CalibManager] pt wps json file {self.rate_pt_wps} not found!')
+            return pt_wps
 
     instance = None
 
@@ -494,3 +517,23 @@ def get_calib_factors():
                                                                    'pt_l': np.float64})
     return calib_factors
 # get_layer_pt_calibv9
+
+
+def rate_pt_wps_selections(wps, obj):
+    data_selections = []
+    # gen_selections = []
+    sm = selections.SelectionManager()
+    if obj.name in wps.keys():
+        print(wps[obj.name])
+        for obj_sel_name, pt_wps in wps[obj.name].items():
+            # print(f'WPS for {obj_sel_name}:')
+            for rate, pt_cut in wps[obj.name][obj_sel_name].items():
+                # print(f'   rate: {rate}kHz, pt cut: {pt_cut}GeV')
+                pt_sel = selections.Selection(
+                    f'@{rate}kHz', f'p_{{T}}^{{TOBJ}}>={pt_cut}GeV (@{rate}kHz)', f'pt >= {pt_cut}')
+                obj_sel = selections.Selector(f'^{obj_sel_name}$', sm.selections)()[0]
+
+                # print(obj_sel*pt_sel)
+                data_selections.append(obj_sel*pt_sel)
+                # gen_selections.append(selections.Selection('all'))
+    return data_selections

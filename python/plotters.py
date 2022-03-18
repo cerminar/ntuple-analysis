@@ -28,6 +28,8 @@ from . import l1THistos as histos
 from . import utils as utils
 from . import clusterTools as clAlgo
 from . import selections as selections
+from . import calibrations as calib
+
 # import collections as collections
 ROOT.gROOT.ProcessLine('#include "src/fastfilling.h"')
 
@@ -674,6 +676,21 @@ class Cl3DGenMatchPlotter(GenericGenMatchPlotter):
         super(Cl3DGenMatchPlotter, self).__init__(histos.Cluster3DHistos, histos.ResoHistos,
                                                   data_set, gen_set,
                                                   data_selections, gen_selections)
+
+
+class EGGenMatchPtWPSPlotter(GenericGenMatchPlotter):
+    def __init__(self, data_set, gen_set, gen_selections):
+        super(EGGenMatchPtWPSPlotter, self).__init__(
+            histos.EGHistos, histos.EGResoHistos,
+            data_set, gen_set,
+            [], gen_selections)
+
+    def book_histos(self):
+        calib_mgr = calib.CalibManager()
+        rate_pt_wps = calib_mgr.get_pt_wps()
+        self.data_selections = calib.rate_pt_wps_selections(
+            rate_pt_wps, self.data_set)
+        GenericGenMatchPlotter.book_histos(self)
 
 
 class EGGenMatchPlotter(GenericGenMatchPlotter):

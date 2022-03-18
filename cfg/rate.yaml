@@ -1,0 +1,86 @@
+
+common:
+  output_dir:
+    default: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
+    matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
+    Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
+  output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
+  output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
+  plot_version: v150A
+  run_clustering: False
+  run_density_computation: False
+# +AccountingGroup = "group_u_CMS.u_zh.users"
+# +AccountingGroup = "group_u_CMST3.all"
+
+collections:
+      
+  tp_rate:
+    file_label:
+      rate
+    samples:
+      - nugun_alleta_pu200
+    plotters:
+      - !!python/name:cfg.rate.tp_plotters
+    htc_jobflavor:
+      microcentury
+    priorities:
+      nugun_alleta_pu200: 6
+    events_per_job:
+      nugun_alleta_pu200: 20000
+
+  eg_rate:
+    file_label:
+      rate
+    samples:
+      - nugun_alleta_pu200
+    plotters:
+      - !!python/name:cfg.rate.eg_tdrsim_plotters
+      - !!python/name:cfg.rate.eg_emu_plotters
+    htc_jobflavor:
+      microcentury
+    priorities:
+      nugun_alleta_pu200: 6
+    events_per_job:
+      nugun_alleta_pu200: 20000
+
+  eg_rate_sim:
+    file_label:
+      rate
+    samples:
+      - nugun_alleta_pu200
+    plotters:
+      - !!python/name:cfg.rate.eg_tdrsim_plotters
+    htc_jobflavor:
+      microcentury
+    priorities:
+      nugun_alleta_pu200: 6
+    events_per_job:
+      nugun_alleta_pu200: 20000
+
+  eg_rate_emu:
+    file_label:
+      rate
+    samples:
+      - nugun_alleta_pu200
+    plotters:
+      - !!python/name:cfg.rate.eg_emu_plotters
+    htc_jobflavor:
+      microcentury
+    priorities:
+      nugun_alleta_pu200: 6
+    events_per_job:
+      nugun_alleta_pu200: 20000
+
+  eg_rate_emufw:
+    file_label:
+      rate
+    samples:
+      - nugun_alleta_pu200
+    plotters:
+      - !!python/name:cfg.rate.eg_emufw_plotters
+    htc_jobflavor:
+      microcentury
+    priorities:
+      nugun_alleta_pu200: 6
+    events_per_job:
+      nugun_alleta_pu200: 20000

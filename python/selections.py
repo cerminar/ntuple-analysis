@@ -106,18 +106,19 @@ class Selection:
         # if 'GEN' in sel_obj.name or 'GEN' in self.name:
         #     obj_name = 'GEN'
         # new_label = new_label.replace('TOBJ', obj_name)
-        return Selection(name='{}{}'.format(self.name, sel_obj.name),
-                         label=new_label,
-                         selection='({}) & ({})'.format(self.selection, sel_obj.selection))
+        return Selection(
+            name='{}{}'.format(self.name, sel_obj.name),
+            label=new_label,
+            selection='({}) & ({})'.format(self.selection, sel_obj.selection))
 
     def __str__(self):
-        return 'n: {}, s: {}, l:{}'.format(self.name, self.selection, self.label)
+        return 'n: {}, \n\t s: {}, \n\t l:{}'.format(
+            self.name, self.selection, self.label)
 
     def __repr__(self):
-        return '<{} n: {}, s: {}, l:{}> '.format(self.__class__.__name__,
-                                                 self.name,
-                                                 self.selection,
-                                                 self.label)
+        return '<{} {}> '.format(
+            self.__class__.__name__,
+            self)
 
     @property
     def all(self):
@@ -193,14 +194,17 @@ def read_isoptwp_sel(file_name, obj_name):
 
 
 class Selector(object):
+    # common to all instances of the object
     selection_primitives = []
 
-    def __init__(self, selector):
+    def __init__(self, selector, primitives=None):
+        if primitives is None:
+            primitives = Selector.selection_primitives
         self.selections = []
         self.debug = False
         r = re.compile(selector)
         # mgr = SelectionManager()
-        self.selections = [sel for sel in Selector.selection_primitives if r.match(sel.name)]
+        self.selections = [sel for sel in primitives if r.match(sel.name)]
         self.selections = prune(self.selections)
         if self.debug:
             print([sel.name for sel in self.selections])
@@ -329,14 +333,14 @@ gen_ee_sel = [
 # ]
 
 other_selections = [
-    Selection('EtaA', '|#eta^{TOBJ}| <= 1.52', 'abs(eta) <= 1.52'),
+    Selection('EtaA', '1.49 < |#eta^{TOBJ}| <= 1.52', '1.49 < abs(eta) <= 1.52'),
     Selection('EtaB', '1.52 < |#eta^{TOBJ}| <= 1.7', '1.52 < abs(eta) <= 1.7'),
     Selection('EtaC', '1.7 < |#eta^{TOBJ}| <= 2.4', '1.7 < abs(eta) <= 2.4'),
     Selection('EtaD', '2.4 < |#eta^{TOBJ}| <= 2.8', '2.4 < abs(eta) <= 2.8'),
     Selection('EtaDE', '2.4 < |#eta^{TOBJ}| <= 3.0', '2.4 < abs(eta) <= 3.0'),
     Selection('EtaE', '|#eta^{TOBJ}| > 2.8', 'abs(eta) > 2.8'),
-    Selection('EtaAB', '|#eta^{TOBJ}| <= 1.7', 'abs(eta) <= 1.7'),
-    Selection('EtaABC', '|#eta^{TOBJ}| <= 2.4', 'abs(eta) <= 2.4'),
+    Selection('EtaAB', '1.49 < |#eta^{TOBJ}| <= 1.7', '1.49 < abs(eta) <= 1.7'),
+    Selection('EtaABC', '1.49 < |#eta^{TOBJ}| <= 2.4', '1.49 < abs(eta) <= 2.4'),
     Selection('EtaBCDE', '1.52 < |#eta^{TOBJ}|', '1.52 < abs(eta)')
 ]
 
@@ -418,6 +422,7 @@ eg_id_ee_selections = [
     Selection('EGq3', 'hwQual=3', 'hwQual == 3'),
     Selection('EGq2or3', 'hwQual=2/3', '(hwQual == 2) | (hwQual == 3)'),
     Selection('EGq1or3', 'hwQual=1/3', '(hwQual == 1) | (hwQual == 3)'),
+    Selection('EGq4or5', 'hwQual=4/5', '(hwQual == 4) | (hwQual == 5)'),
     # Selection('PFEG', 'PF EG-ID', '(hwQual == 1) | (hwQual == 3)'),
     # Selection('EGnoPU', 'EG-ID noPU', '(hwQual == 3) | (hwQual == 2)'),
     Selection('EGq4', 'hwQual=4', 'hwQual == 4'),
@@ -499,8 +504,8 @@ gen_pid_ee_selections = (Selector('GEN$')*('Ee$'))()
 
 simeg_ee_selections = (Selector('^EGq[4-5]$')*('^Pt[1-3][0]$|all'))()
 emueg_ee_selections = (Selector('^EGq[1-2]$')*('^Pt[1-3][0]$|all'))()
-simeg_rate_ee_selections = (Selector('^EGq[4-5]$')*('^Eta[^DA][BC]*[BCD]$|all'))()
-emueg_rate_ee_selections = (Selector('^EGq[1-3,6]$|^EGq[1,2]or[3]')*('^Eta[^DA][BC]*[BCD]$|all'))()
+# simeg_rate_ee_selections = (Selector('^EGq[4-5]$')*('^Eta[^DA][BC]*[BCD]$|all'))()
+# emueg_rate_ee_selections = (Selector('^EGq[1-3,6]$|^EGq[1,2]or[3]')*('^Eta[^DA][BC]*[BCD]$|all'))()
 simeg_match_ee_selections = (Selector('^EGq[4-5]$')*('^Pt[1-3][0]$|all'))()
 emueg_match_ee_selections = (Selector('^EGq[1,2]$')*('^Pt[1-2][0]$|all'))()
 eg_id_eta_ee_selections = (Selector('^EGq[4-5]')*('^Eta[BC]+[CD]$|all'))()
@@ -515,8 +520,6 @@ dectk_match_selections = (Selector('^Pt5$|^Pt[1,2,5][0]$|all'))()
 
 egid_ee_selections = (Selector('^EGq[4-5]'))()
 egid_ee_pfnf_selections = (Selector('^EGq[1-2]$'))()
-
-
 
 # EG selection quality and Pt EE
 
