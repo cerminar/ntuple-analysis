@@ -4,6 +4,7 @@ common:
     default: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
     matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
+    triolet: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
   plot_version: v150A
