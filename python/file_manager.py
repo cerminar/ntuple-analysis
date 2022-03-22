@@ -1,28 +1,196 @@
 # from __future__ import absolute_import
 from __future__ import print_function
+from importlib.resources import path
 import os
-import subprocess32
+from unittest import result
+import subprocess as subproc
 import uproot4 as up
 import json
 import uuid
 from io import open
 
 
-def get_checksum(filename):
-    protocol = get_eos_protocol(filename)
-    if protocol == '':
-        # this is a local file:
-        eos_proc = subprocess32.Popen(['xrdadler32', filename], stdout=subprocess32.PIPE)
-        eos_proc.wait()
-        if eos_proc.returncode == 0:
-            return eos_proc.stdout.readlines()[0].split()[0]
-    else:
-        eos_proc = subprocess32.Popen(['xrdfs', protocol, 'query', 'checksum', filename], stdout=subprocess32.PIPE)
-        eos_proc.wait()
-        if eos_proc.returncode == 0:
-            return eos_proc.stdout.readlines()[0].split()[1]
+class FileEntry(object):
+    def __init__(self, name, date, attributes, owner, group, size) -> None:
+        self.name = name
+        self.attributes = attributes
+        self.owner = owner
+        self.group = group
+        self.size = size
+        self.date = date
+    
+    def is_dir(self):
+        return self.attributes[0] == 'd'
 
-    return 'dummy'
+    def __str__(self) -> str:
+        return f'{self.attributes} {self.name}'
+    
+    def basename(self):
+        return os.path.basename(self.name)
+    
+    def dirname(self):
+        return os.path.dirname(self.name)
+
+
+class FileSystem(object):
+    def __init__(self, protocol) -> None:
+        self.protocol = protocol
+        self.protocol_host = protocol.lstrip('root://')
+        self.cmd_base_ = []
+
+        return
+
+    def list_dir(self, path, recursive=False):
+        ls_cmd = self.list_dir_cmd(path, recursive)
+        ok, entries = self.exec(ls_cmd)
+        if ok:
+            return self.list_dir_parse(entries, path)
+        return []
+
+    def parse_file_list(self):
+        pass
+
+    def list_dir_cmd(self,  path, recursive=False):
+        pass
+    
+    def list_dir_parse(self,  lines, path):
+        pass
+
+    def checksum_cmd(self, filename):
+        pass
+  
+    def checksum_parse(self, results):
+        pass
+
+    def copy_cmd(self, source, target):
+        pass
+
+    def checksum(self, filename):
+        cmd = self.checksum_cmd(filename)
+        ok, result = self.exec(cmd)
+        if ok:
+            return self.checksum_parse(result)
+        return 'dummy'
+
+
+    def exec(self, cmd):
+        proc = subproc.Popen(cmd, stdout=subproc.PIPE)
+        
+        try:
+            outs, errs = proc.communicate(timeout=15)
+            lines = outs.splitlines()
+            # print(lines)
+        except subproc.TimeoutExpired:
+            proc.kill()
+            outs, errs = proc.communicate()
+            print(outs)
+            print(errs)
+        return True,lines
+
+    def copy(self, source, target, silent=False):
+        cmd = self.copy_cmd(source, target)
+        ok, result = self.exec(cmd)
+        if not silent:
+            print(result)
+        return ok
+
+
+
+
+class XrdFileSystem(FileSystem):
+    def __init__(self, protocol) -> None:
+        super().__init__(protocol)
+        self.cmd_base_ = ['xrdfs', self.protocol]
+
+    def list_dir_cmd(self,  path, recursive=False):
+        ls_cmd = []
+        ls_cmd.extend(self.cmd_base_)
+        ls_cmd.extend(['ls', '-l'])
+        if recursive:
+            ls_cmd.append('-R')
+        ls_cmd.append(path)
+        return ls_cmd
+    
+    def list_dir_parse(self, lines, path):
+        ret = []
+        for line in lines:
+            line = line.decode('utf-8')
+            parts = line.split()
+            ret.append(FileEntry(parts[4], f'{parts[1]} {parts[2]}', parts[0], '', '', parts[2]))
+        return ret
+
+    def checksum_cmd(self, filename):
+        cmd = self.cmd_base_
+        cmd.extend(['query', 'checksum', filename])
+        return cmd
+  
+    def checksum_parse(self, results):
+        return results[0].split()[1]
+
+    def copy_cmd(self, source, target):
+        return ['xrdcp', file_name_wprotocol(source), file_name_wprotocol(target)]
+
+class LocalFileSystem(FileSystem):
+    def __init__(self, protocol) -> None:
+        super().__init__(protocol)
+    
+    def list_dir_cmd(self,  path, recursive=False):
+        ls_cmd = []
+        ls_cmd.extend(self.cmd_base_)
+        ls_cmd.extend(['ls', '-l'])
+        if recursive:
+            ls_cmd.append('-R')
+        ls_cmd.append(path)
+        return ls_cmd
+        
+    
+    def list_dir_parse(self, lines, path):
+        ret = []
+        for line in lines:
+            # move to string for all the rest of the operations
+            line = line.decode('utf-8')
+            parts = line.split()
+            if len(parts) == 0:
+                continue
+            elif len(parts) == 1:
+                if parts[0][-1] == ':':
+                    path = (parts[0].rstrip(':'))
+                else:
+                    print(f'ERROR [LocalFileSystem::list_dir_parse] parsing: {parts}')
+                continue
+            elif len(parts) == 2:
+                if parts[0] == 'total':
+                    continue
+                else:
+                    print(f'ERROR [LocalFileSystem::list_dir_parse] parsing: {parts}')
+            ret.append(FileEntry(os.path.join(path, parts[8]), f'{parts[4]} {parts[5]} {parts[6]} {parts[7]}', parts[0], parts[2], parts[3], parts[4]))
+        return ret
+
+    def checksum_cmd(self, filename):
+        cmd = self.cmd_base_
+        cmd.extend(['xrdadler32', filename])
+        return cmd
+
+    def checksum_parse(self, results):
+        return results[0].split()[0]
+    
+    def copy_cmd(self, source, target):
+        return ['cp', source, target]
+
+
+
+def filesystem(filename):
+    print(f'TYPE: {type(filename)}')
+    protocol = get_eos_protocol(filename)
+    fs = XrdFileSystem(protocol)
+    if protocol == '':
+        fs = LocalFileSystem(protocol)
+    return fs
+
+
+def get_checksum(filename):
+    fs = filesystem(filename)
+    return fs.checksum(filename)
 #     xrdfs root://eosuser.cern.ch/  query checksum /eos/user/c/cerminar/hgcal/CMSSW1015/plots/histos_ele_flat2to100_PU200_v55_93.root
 #     xrdadler32 plots1/histos_ele_flat2to100_PU200_v55_93.root
 
@@ -42,54 +210,21 @@ def file_name_wprotocol(filename):
 
 
 def copy_from_eos(input_dir, file_name, target_file_name, dowait=False, silent=False):
-    protocol = get_eos_protocol(dirname=input_dir)
-    eos_proc = subprocess32.Popen(['eos', protocol, 'cp', os.path.join(input_dir, file_name), target_file_name], stdout=subprocess32.PIPE, stderr=subprocess32.STDOUT)
-    if dowait:
-        eos_proc.wait()
-    if not silent:
-        print(eos_proc.stdout.readlines())
-    return eos_proc.returncode
-
+    fs = XrdFileSystem(get_eos_protocol(input_dir))
+    return fs.copy(os.path.join(input_dir, file_name), target_file_name, silent)
+    
 
 def copy_to_eos(file_name, target_dir, target_file_name):
-    protocol = get_eos_protocol(dirname=target_dir)
-    eos_proc = subprocess32.Popen(['eos', protocol, 'cp', file_name, os.path.join(target_dir, target_file_name)], stdout=subprocess32.PIPE, stderr=subprocess32.STDOUT)
-    eos_proc.wait()
-    print(eos_proc.stdout.readlines())
-    return eos_proc.returncode
+    fs = XrdFileSystem(get_eos_protocol(target_dir))
+    return fs.copy(file_name, os.path.join(target_dir, target_file_name))
 
 
-def listFiles(input_dir, match=b'.root', recursive=True, debug=0):
-    onlyfiles = []
-    onlydirs = []
-    # print ('--- PWD: {}'.format(input_dir))
-
-    if not input_dir.startswith('/eos'):
-        onlyfiles = [os.path.join(input_dir, f) for f in os.listdir(input_dir)
-                     if os.path.isfile(os.path.join(input_dir, f)) and match.decode('utf-8') in f]
-        if recursive:
-            onlydirs = [os.path.join(input_dir, f) for f in os.listdir(input_dir)
-                        if os.path.isdir(os.path.join(input_dir, f))]
-    else:
-        # we read the input files via EOS
-        protocol = get_eos_protocol(dirname=input_dir)
-        options = '-l'
-        eos_proc = subprocess32.Popen(['eos', protocol, 'ls', options, input_dir], stdout=subprocess32.PIPE)
-        lines = eos_proc.stdout.readlines()
-        onlyfiles = [os.path.join(input_dir, f.decode('utf-8').split()[-1].rstrip()) for f in lines
-                     if match in f and f.decode('utf-8').split()[0][0] != 'd']
-        if recursive:
-            onlydirs = [os.path.join(input_dir, f.decode('utf-8').split()[-1].rstrip()) for f in lines
-                        if f.decode('utf-8').split()[0][0] == 'd']
-
-    if debug > 3:
-        print('--- PWD: {}'.format(input_dir))
-        print('DIRS: {}'.format(onlydirs))
-        print('FILES: {}'.format(onlyfiles))
-
-    for dirname in onlydirs:
-        onlyfiles.extend(listFiles(dirname, match, recursive))
-    return sorted(onlyfiles)
+def listFiles(input_dir, match='.root', recursive=True, debug=0):
+    print(f'TYPE: {type(input_dir)}')
+    fs = filesystem(input_dir)
+    allfiles = fs.list_dir(input_dir, recursive)
+    matchedfiles = [f.name for f in allfiles if match in f.name]
+    return sorted(matchedfiles)
 
 
 def stage_files(files_to_stage):
@@ -106,6 +241,7 @@ def stage_files(files_to_stage):
 
 
 def get_files_for_processing(input_dir, tree, nev_toprocess, debug=0):
+    print(f'TYPE: {type(input_dir)}')
     metadata = get_metadata(input_dir, tree, debug)
     # return ['./ntuple_1417.root']
     return get_files_to_process(nev_toprocess, metadata, debug)
@@ -125,9 +261,10 @@ def get_number_of_jobs_for_batchprocessing(input_dir, tree, nev_toprocess, nev_p
 
 
 def get_metadata(input_dir, tree, debug=0):
+    print(f'TYPE: {type(input_dir)}')
     json_name = 'metadata.json'
     file_metadata = {}
-    json_files = listFiles(input_dir, match=json_name.encode())
+    json_files = listFiles(input_dir, match=json_name)
     if len(json_files) == 0:
         print('no metadata file {} in input dir: {}'.format(json_name, input_dir))
         print('Will now index files...')
@@ -271,13 +408,37 @@ if __name__ == "__main__":
     #
     # print jobs
 
+    print('Local fs:')
+    local_fs = LocalFileSystem(protocol='root://localhost')
+    dir = u'/Users/cerminar/cernbox/hgcal/CMSSW1015/'
+    print(f'list dir: :{dir}')
+    for f in local_fs.list_dir(path=dir):
+        print(f)
+    
+    dir = u'/Users/cerminar/CERNbox/hgcal/CMSSW1015/plots/'
+    print(f'list dir: :{dir}')
+    rfiles = [f.name for f in local_fs.list_dir(path=dir) if '.root' in f.name]
+    print (f'# files: {len(rfiles)}')
+    
+    print(f'Checksum file: {rfiles[0]}: {local_fs.checksum(rfiles[0])}')
+
+    xrd_fs = XrdFileSystem(protocol='root://eoscms.cern.ch')
+    for f in xrd_fs.list_dir(path=u'/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v53/'):
+        print(f)
+
+    dir = u'/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v53/'
+    rfiles = [f.name for f in xrd_fs.list_dir(path=dir, recursive=True) if '.root' in f.name]
+    print(f'Checksum file: {rfiles[0]}: {xrd_fs.checksum(rfiles[0])}')
+
+
+
     local_dir = u'/Users/cerminar/cernbox/hgcal/CMSSW1015/'
-    local_files = listFiles(local_dir, match=b'.root')
+    local_files = listFiles(local_dir, match='.root')
     print(len(local_files))
 
     input_dir = u'/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v53/'
     # input_dir = '/Users/cerminar/Workspace/hgcal-analysis/ntuple-tools/'
-    found_files = listFiles(input_dir, match=b'.root')
+    found_files = listFiles(input_dir, match='.root')
     print(found_files)
     print('# of files: {}'.format(len(found_files)))
 
@@ -291,15 +452,25 @@ if __name__ == "__main__":
     #     batch_id=121,
     #     debug=True)
 
+
     input_dir = '/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6//DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU0_v63A/'
     tree_name = 'l1CaloTriggerNtuplizer_egOnly/HGCalTriggerNtuple'
     nev_toprocess = 100
+    print(f'Input dir: {input_dir}, tree_name: {tree_name}, nev: {nev_toprocess}')
     files = get_files_for_processing(input_dir, tree_name, nev_toprocess, debug=4)
+    print(f'   files for processing: {files}')
 
     input_dir = '/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6//DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU200_v63B/'
     tree_name = 'l1CaloTriggerNtuplizer_egOnly/HGCalTriggerNtuple'
     nev_toprocess = 100
-    files = get_files_for_processing(input_dir, tree_name, nev_toprocess, debug=4)
+    print(f'Input dir: {input_dir}, tree_name: {tree_name}, nev: {nev_toprocess}')
+    #files = get_files_for_processing(input_dir, tree_name, nev_toprocess, debug=4)
+    #print(f'   files for processing: {files}')
+
+    json_name = 'metadata.json'
+    file_metadata = {}
+    json_files = listFiles(input_dir, match=json_name)
+
 
     # get_checksum(filename=plots1/histos_nugun_alleta_pu200_v55.root)
 
