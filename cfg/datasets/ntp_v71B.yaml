@@ -7,7 +7,7 @@ samples:
   version: 71B
 
   # tree_name: hgcalTriggerNtuplizer/HGCalTriggerNtuple
-  tree_name: l1EGTriggerNtuplizer_l1tCorr/L1TEGTriggerNtuple
+  tree_name: l1EGTriggerNtuplizer_l1tCorr/HGCalTriggerNtuple
   rate_pt_wps: data/rate_pt_wps_v150A.70B.json
   # tree_name: l1CaloTriggerNtuplizer/HGCalTriggerNtuple
 
