@@ -28,7 +28,7 @@ import traceback
 import platform
 # import tracemalloc
 
-import root_numpy as rnp
+# import root_numpy as rnp
 import pandas as pd
 import uproot4 as up
 
@@ -215,7 +215,7 @@ def analyze(params, batch_idx=-1):
 if __name__ == "__main__":
 
     tic = 0
-    if '3.8' in platform.python_version():
+    if '3.8' in platform.python_version() or '3.9' in platform.python_version() or '3.10' in platform.python_version():
         timecounter.counter.start()
 
     nevents = 0
