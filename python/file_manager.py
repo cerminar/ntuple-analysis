@@ -180,7 +180,6 @@ class LocalFileSystem(FileSystem):
 
 
 def filesystem(filename):
-    print(f'TYPE: {type(filename)}')
     protocol = get_eos_protocol(filename)
     fs = XrdFileSystem(protocol)
     if protocol == '':
@@ -220,7 +219,6 @@ def copy_to_eos(file_name, target_dir, target_file_name):
 
 
 def listFiles(input_dir, match='.root', recursive=True, debug=0):
-    print(f'TYPE: {type(input_dir)}')
     fs = filesystem(input_dir)
     allfiles = fs.list_dir(input_dir, recursive)
     matchedfiles = [f.name for f in allfiles if match in f.name]
@@ -241,7 +239,6 @@ def stage_files(files_to_stage):
 
 
 def get_files_for_processing(input_dir, tree, nev_toprocess, debug=0):
-    print(f'TYPE: {type(input_dir)}')
     metadata = get_metadata(input_dir, tree, debug)
     # return ['./ntuple_1417.root']
     return get_files_to_process(nev_toprocess, metadata, debug)
@@ -261,7 +258,6 @@ def get_number_of_jobs_for_batchprocessing(input_dir, tree, nev_toprocess, nev_p
 
 
 def get_metadata(input_dir, tree, debug=0):
-    print(f'TYPE: {type(input_dir)}')
     json_name = 'metadata.json'
     file_metadata = {}
     json_files = listFiles(input_dir, match=json_name)
