@@ -268,9 +268,16 @@ def get_metadata(input_dir, tree, debug=0):
         print('# of files: {}'.format(len(files)))
 
         for idx, file_name in enumerate(files):
-            tree_file = up.open(file_name_wprotocol(file_name))
-            nevents = tree_file[tree].num_entries
-            tree_file.close()
+            nevents = 0
+            try:
+                tree_file = up.open(file_name_wprotocol(file_name))
+                nevents = tree_file[tree].num_entries
+                tree_file.close()
+            except OSError as error:
+                print(error.strerror)
+                print(f'WARNING: file {file_name} can not be indexed, skipping!')
+                continue 
+            
             file_metadata[file_name] = nevents
             if debug > 2:
                 print(' [{}] file: {} # events: {}'.format(idx, file_name, nevents))
