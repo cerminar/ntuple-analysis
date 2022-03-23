@@ -54,8 +54,8 @@ samples:
   #   events_per_job: 500
 
   nugun_alleta_pu200:
-    # input_sample_dir: MinBias_TuneCP5_14TeV-pythia8/NuGunAllEta_PU200_v70B3/
-    input_sample_dir: NuGunAllEta_PU200/NTP/v71A/
+    input_sample_dir: MinBias_TuneCP5_14TeV-pythia8/NuGunAllEta_PU200_v71A/
+    # input_sample_dir: NuGunAllEta_PU200/NTP/v71A/
     # input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v47/191105_135050/0000/
     events_per_job: 300
   # 
