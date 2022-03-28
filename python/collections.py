@@ -182,7 +182,11 @@ class DFCollection(object):
         # print (f'Coll: {self.name} fill for entry: {event.file_entry}')
         if event.file_entry == 0 or event.file_entry == self.next_entry_read or event.global_entry == event.entry_range[0]:
             # print ([self.read_entry_block, (event.entry_range[1]-event.global_entry), (event.tree.num_entries - event.file_entry)])
-            stride = min([self.read_entry_block, (1+event.entry_range[1]-event.global_entry), (event.tree.num_entries - event.file_entry)])
+            if event.entry_range[1] != -1:
+                stride = min([self.read_entry_block, (1+event.entry_range[1]-event.global_entry), (event.tree.num_entries - event.file_entry)])
+            else:
+                stride = min([self.read_entry_block, (event.tree.num_entries - event.file_entry)])
+            # print(f'[fill] stride: {stride}')
             if stride == 0:
                 print('ERROR Last event????')
                 self.new_read = False
@@ -741,6 +745,19 @@ gen = DFCollection(
     fixture_function=mc_fixtures,
     debug=0)
 
+sim_parts = DFCollection(
+    name='GEN', label='GEN particles',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='simpart', entry_block=entry_block),
+    fixture_function=lambda gen_parts: gen_fixtures(gen_parts, gen),
+    # read_entry_block=10,
+    depends_on=[gen],
+    debug=0,
+    # print_function=lambda df: df[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'ovz', 'pid', 'gen', 'reachedEE', 'firstmother_pdgid']],
+    print_function=lambda df: df[['gen', 'pid', 'eta', 'phi', 'pt', 'mother', 'ovz', 'dvz', 'reachedEE']].sort_values(by='mother', ascending=False),
+    # print_function=lambda df: df.columns,
+    weight_function=gen_part_pt_weights)
+
 gen_parts = DFCollection(
     name='GEN', label='GEN particles',
     filler_function=lambda event, entry_block: event.getDataFrame(
@@ -753,6 +770,7 @@ gen_parts = DFCollection(
     print_function=lambda df: df[['gen', 'pid', 'eta', 'phi', 'pt', 'mother', 'ovz', 'dvz', 'reachedEE']].sort_values(by='mother', ascending=False),
     # print_function=lambda df: df.columns,
     weight_function=gen_part_pt_weights)
+
 
 tcs = DFCollection(
     name='TC', label='Trigger Cells',
@@ -1321,7 +1339,7 @@ tkem_EB_pfnf = DFCollection(
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='PFNFtkEmEB', entry_block=entry_block),
     fixture_function=barrel_quality,
-    read_entry_block=200,
+    read_entry_block=500,
     debug=0)
 
 TkEmEE = DFCollection(

@@ -82,7 +82,7 @@ collections:
       # - dyll_PU200
     plotters:
       - !!python/name:cfg.egvalid.l1tc_eg_genmatched
-      # - !!python/name:cfg.egvalid.l1tc_rate_pt_wps
+      - !!python/name:cfg.egvalid.l1tc_rate_pt_wps
       # - !!python/name:cfg.egvalid.l1tc_fw_eg_genmatched      
     htc_jobflavor:
       microcentury
@@ -110,7 +110,7 @@ collections:
     plotters:
       # - !!python/name:cfg.egvalid.l1tc_eg_genmatched
       - !!python/name:cfg.egvalid.l1tc_fw_eg_genmatched      
-      - !!python/name:cfg.egvalid.l1tc_rate_pt_wps
+      # - !!python/name:cfg.egvalid.l1tc_rate_pt_wps
     htc_jobflavor:
       microcentury
     priorities:

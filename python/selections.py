@@ -407,7 +407,7 @@ gen_part_fbrem_sel = [
 
 eg_eta_eb_sel = [
     Selection('all'),
-    # Selection('EtaF', '|#eta^{TOBJ}| <= 1.479', 'abs(eta) <= 1.479')
+    Selection('EtaF', '|#eta^{TOBJ}| <= 1.479', 'abs(eta) <= 1.479')
     ]
 eg_eta_sel = [
     Selection('all'),
@@ -525,7 +525,7 @@ egid_ee_pfnf_selections = (Selector('^EGq[1-2]$'))()
 
 eg_id_iso_sel = [
     Selection('all'),
-    # Selection('LooseTkID', 'LooseTkID', 'looseTkID'),
+    Selection('LooseTkID', 'LooseTkID', 'looseTkID'),
     # Selection('Iso0p1', 'Iso0p1', '((tkIso <= 0.1) & (abs(eta) <= 1.479)) | ((tkIso <= 0.125) & (abs(eta) > 1.479))'),
     ]
 
