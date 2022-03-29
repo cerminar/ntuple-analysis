@@ -18,6 +18,7 @@ if [ -d "/cvmfs/cms.cern.ch" ]; then
   source ./setup_lxplus.sh
 else
   source ~/scripts/setPortPython.sh
+  source /opt/root/root-6.24.06_py310/bin/thisroot.sh
 fi
 source ./setVirtualEnvWrapper.sh
 workon TEMPL_VIRTUALENV

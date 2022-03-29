@@ -73,19 +73,38 @@ class FileSystem(object):
         return 'dummy'
 
 
-    def exec(self, cmd):
+    def exec(self, cmd, timeout=None):
         proc = subproc.Popen(cmd, stdout=subproc.PIPE)
-        
+        retcode, outs, errs = -1, '', ''
+        lines = []
         try:
-            outs, errs = proc.communicate(timeout=15)
+            proc = subproc.run(cmd, check=False, capture_output=True, timeout=timeout)
+            retcode, outs, errs = proc.returncode, proc.stdout, proc.stderr
             lines = outs.splitlines()
             # print(lines)
         except subproc.TimeoutExpired:
+            print('[exec] Time-out exceeded!')
             proc.kill()
             outs, errs = proc.communicate()
             print(outs)
             print(errs)
-        return True,lines
+        ret = retcode == 0
+        return ret,lines
+
+    # def exec(self, cmd, timeout=15):
+    #     proc = subproc.Popen(cmd, stdout=subproc.PIPE)
+    #     lines = []
+    #     try:
+    #         outs, errs = proc.communicate(timeout=timeout)
+    #         lines = outs.splitlines()
+    #         # print(lines)
+    #     except subproc.TimeoutExpired:
+    #         print('[exec] Time-out exceeded!')
+    #         proc.kill()
+    #         outs, errs = proc.communicate()
+    #         print(outs)
+    #         print(errs)
+    #     return True,lines
 
     def copy(self, source, target, silent=False):
         cmd = self.copy_cmd(source, target)
