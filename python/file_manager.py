@@ -73,29 +73,13 @@ class FileSystem(object):
         return 'dummy'
 
 
-    def exec(self, cmd, timeout=None):
-        proc = subproc.Popen(cmd, stdout=subproc.PIPE)
-        retcode, outs, errs = -1, '', ''
-        lines = []
-        try:
-            proc = subproc.run(cmd, check=False, capture_output=True, timeout=timeout)
-            retcode, outs, errs = proc.returncode, proc.stdout, proc.stderr
-            lines = outs.splitlines()
-            # print(lines)
-        except subproc.TimeoutExpired:
-            print('[exec] Time-out exceeded!')
-            proc.kill()
-            outs, errs = proc.communicate()
-            print(outs)
-            print(errs)
-        ret = retcode == 0
-        return ret,lines
-
-    # def exec(self, cmd, timeout=15):
+    # def exec(self, cmd, timeout=None):
     #     proc = subproc.Popen(cmd, stdout=subproc.PIPE)
+    #     retcode, outs, errs = -1, '', ''
     #     lines = []
     #     try:
-    #         outs, errs = proc.communicate(timeout=timeout)
+    #         proc = subproc.run(cmd, check=False, capture_output=True, timeout=timeout)
+    #         retcode, outs, errs = proc.returncode, proc.stdout, proc.stderr
     #         lines = outs.splitlines()
     #         # print(lines)
     #     except subproc.TimeoutExpired:
@@ -104,7 +88,24 @@ class FileSystem(object):
     #         outs, errs = proc.communicate()
     #         print(outs)
     #         print(errs)
-    #     return True,lines
+    #     print(retcode, outs, errs)
+    #     ret = retcode == 0
+    #     return ret,lines
+
+    def exec(self, cmd, timeout=15):
+        proc = subproc.Popen(cmd, stdout=subproc.PIPE)
+        lines = []
+        try:
+            outs, errs = proc.communicate(timeout=timeout)
+            lines = outs.splitlines()
+            # print(lines)
+        except subproc.TimeoutExpired:
+            print('[exec] Time-out exceeded!')
+            proc.kill()
+            outs, errs = proc.communicate()
+            print(outs)
+            print(errs)
+        return True,lines
 
     def copy(self, source, target, silent=False):
         cmd = self.copy_cmd(source, target)
@@ -247,7 +248,8 @@ def listFiles(input_dir, match='.root', recursive=True, debug=0):
 def stage_files(files_to_stage):
     ret_files = []
     for file_name in files_to_stage:
-        copy_from_eos(os.path.dirname(file_name), os.path.basename(file_name), os.path.basename(file_name))
+        copy_ret = copy_from_eos(os.path.dirname(file_name), os.path.basename(file_name), os.path.basename(file_name))
+        print(f'copy of file {file_name}, returned: {copy_ret}')
         # FIXME: this is a very loose check...
         if os.path.isfile(os.path.basename(file_name)):
             ret_files.append(os.path.basename(file_name))
@@ -311,9 +313,10 @@ def get_metadata(input_dir, tree, debug=0):
     else:
         print('dir already indexed, will read metadata...')
         unique_filename = '{}.json'.format(uuid.uuid4())
-        copy_from_eos(input_dir=input_dir,
-                      file_name=json_name,
-                      target_file_name=unique_filename)
+        ret = copy_from_eos(input_dir=input_dir,
+                            file_name=json_name,
+                            target_file_name=unique_filename)
+        print(f'copy file: {unique_filename} ret: {ret}')
         with open(unique_filename, 'r', encoding='utf-8') as fp:
             file_metadata = json.load(fp)
         os.remove(unique_filename)
