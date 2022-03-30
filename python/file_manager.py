@@ -2,6 +2,7 @@
 from __future__ import print_function
 from importlib.resources import path
 import os
+import time
 from unittest import result
 import subprocess as subproc
 import uproot4 as up
@@ -45,6 +46,8 @@ class FileSystem(object):
         ok, entries = self.exec(ls_cmd)
         if ok:
             return self.list_dir_parse(entries, path)
+        else:
+            raise RuntimeError(f'Failed to list path: {path}')
         return []
 
     def parse_file_list(self):
@@ -62,7 +65,7 @@ class FileSystem(object):
     def checksum_parse(self, results):
         pass
 
-    def copy_cmd(self, source, target):
+    def copy_cmd(self, source, target, options=[]):
         pass
 
     def checksum(self, filename):
@@ -70,48 +73,49 @@ class FileSystem(object):
         ok, result = self.exec(cmd)
         if ok:
             return self.checksum_parse(result)
+        else:
+            # FIXME: not sure this is the desired behaviour...
+            raise RuntimeError(f'Failed to checksum file: {filename}')
         return 'dummy'
 
-
-    # def exec(self, cmd, timeout=None):
-    #     proc = subproc.Popen(cmd, stdout=subproc.PIPE)
-    #     retcode, outs, errs = -1, '', ''
-    #     lines = []
-    #     try:
-    #         proc = subproc.run(cmd, check=False, capture_output=True, timeout=timeout)
-    #         retcode, outs, errs = proc.returncode, proc.stdout, proc.stderr
-    #         lines = outs.splitlines()
-    #         # print(lines)
-    #     except subproc.TimeoutExpired:
-    #         print('[exec] Time-out exceeded!')
-    #         proc.kill()
-    #         outs, errs = proc.communicate()
-    #         print(outs)
-    #         print(errs)
-    #     print(retcode, outs, errs)
-    #     ret = retcode == 0
-    #     return ret,lines
-
-    def exec(self, cmd, timeout=15):
+    def exec(self, cmd, timeout=15, throw_on_timeout=False, debug=False):
         proc = subproc.Popen(cmd, stdout=subproc.PIPE)
         lines = []
         try:
             outs, errs = proc.communicate(timeout=timeout)
             lines = outs.splitlines()
             # print(lines)
-        except subproc.TimeoutExpired:
-            print('[exec] Time-out exceeded!')
+        except subproc.TimeoutExpired as exc:
+            print(f'[exec] cmd: {cmd} Time-out exceeded!')
             proc.kill()
             outs, errs = proc.communicate()
             print(outs)
             print(errs)
-        return True,lines
+            if throw_on_timeout:
+                raise exc
+        if debug:
+            print(f'cmd: {cmd} return code: {proc.returncode}')
+        return (proc.returncode == 0),lines
 
     def copy(self, source, target, silent=False):
         cmd = self.copy_cmd(source, target)
-        ok, result = self.exec(cmd)
+        ok, result = False, []
+        try:
+            ok, result = self.exec(cmd, 60, True)
+        except subproc.TimeoutExpired:
+            # in this case we retry after some waiting time to randomize acces and adding --continue to the copy command
+            # when possible
+            time.sleep(5)
+            cmd = self.copy_cmd(source, target, ['--continue'])
+            ok, result = self.exec(cmd, 60)
         if not silent:
             print(result)
+        if not ok:
+            source_cks = filesystem(source).checksum(source)
+            target_cks = filesystem(target).checksum(target)
+            print(f'ckecksums source: {source_cks}, target {target_cks}')
+            return source_cks == target_cks
+        
         return ok
 
 
@@ -140,15 +144,19 @@ class XrdFileSystem(FileSystem):
         return ret
 
     def checksum_cmd(self, filename):
-        cmd = self.cmd_base_
+        cmd= []
+        cmd.extend(self.cmd_base_)
         cmd.extend(['query', 'checksum', filename])
         return cmd
   
     def checksum_parse(self, results):
         return results[0].split()[1]
 
-    def copy_cmd(self, source, target):
-        return ['xrdcp', file_name_wprotocol(source), file_name_wprotocol(target)]
+    def copy_cmd(self, source, target, options=[]):
+        ret = ['xrdcp']
+        ret.extend(options)
+        ret.extend([file_name_wprotocol(source), file_name_wprotocol(target)])
+        return ret
 
 class LocalFileSystem(FileSystem):
     def __init__(self, protocol) -> None:
@@ -194,8 +202,13 @@ class LocalFileSystem(FileSystem):
     def checksum_parse(self, results):
         return results[0].split()[0]
     
-    def copy_cmd(self, source, target):
-        return ['cp', source, target]
+    def copy_cmd(self, source, target, options=[]):
+        if '--continue' in options:
+            options.remove('continue')
+        ret = ['cp']
+        ret.extend(options)
+        ret.extend([source, target])
+        return ret
 
 
 
@@ -248,8 +261,11 @@ def listFiles(input_dir, match='.root', recursive=True, debug=0):
 def stage_files(files_to_stage):
     ret_files = []
     for file_name in files_to_stage:
-        copy_ret = copy_from_eos(os.path.dirname(file_name), os.path.basename(file_name), os.path.basename(file_name))
-        print(f'copy of file {file_name}, returned: {copy_ret}')
+        copy_ok = copy_from_eos(os.path.dirname(file_name), os.path.basename(file_name), os.path.basename(file_name))
+        print(f'copy of file {file_name}, returned: {copy_ok}')
+        if not copy_ok:
+            print('  copy of file {file_name} failed, skipping')
+            continue
         # FIXME: this is a very loose check...
         if os.path.isfile(os.path.basename(file_name)):
             ret_files.append(os.path.basename(file_name))
