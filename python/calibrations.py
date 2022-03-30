@@ -524,7 +524,7 @@ def rate_pt_wps_selections(wps, obj):
     # gen_selections = []
     sm = selections.SelectionManager()
     if obj.name in wps.keys():
-        print(wps[obj.name])
+     #    print(wps[obj.name])
         for obj_sel_name, pt_wps in wps[obj.name].items():
             # print(f'WPS for {obj_sel_name}:')
             for rate, pt_cut in wps[obj.name][obj_sel_name].items():
