@@ -323,6 +323,7 @@ def cl3d_fixtures(clusters):
     # print(clusters.columns)
     # for backward compatibility
     if clusters.empty:
+        # return
         return clusters
 
     clusters.rename(columns={'clusters_id': 'clusters',
@@ -337,6 +338,11 @@ def cl3d_fixtures(clusters):
 
         clusters['bdt_pi'] = rnptmva.evaluate_reader(
             classifiers.mva_pi_classifier_builder(), 'BDT', clusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
+    
+    clusters['pt_em'] = clusters.apply(lambda x: x.ipt[x.name[1]][1], axis=1)
+    clusters.drop('ipt', axis=1, inplace=True)
+    clusters.drop('ienergy', axis=1, inplace=True)
+    # return
     return clusters
 
 
@@ -1432,6 +1438,18 @@ decTk = DFCollection(
         prefix='pfdtk', entry_block=entry_block),
     fixture_function=decodedTk_fixtures,
     debug=0)
+
+
+hgc_cl3d = DFCollection(
+    name='HGCCl3d', label='HGC Cl3d',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='Cl3D', entry_block=entry_block, fallback='HMvDR'),
+    fixture_function=lambda clusters: cl3d_fixtures(clusters),
+    read_entry_block=500,
+    debug=0,
+    print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'phi', 'quality', 'pt_em']].sort_values(by='pt', ascending=False))
+# hgc_cl3d.activate()
+
 
 
 class TPSet:

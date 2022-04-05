@@ -228,6 +228,9 @@ class DecTkPlotter(GenericDataFrameLazyPlotter):
     def __init__(self, tk_set, tk_selections=[selections.Selection('all')]):
         super(DecTkPlotter, self).__init__(histos.DecTkHistos, tk_set, tk_selections)
 
+class Cl3DPlotter(GenericDataFrameLazyPlotter):
+    def __init__(self, data_set, data_selections=[selections.Selection('all')]):
+        super(Cl3DPlotter, self).__init__(histos.Cluster3DHistos, data_set, data_selections)
 
 class TPPlotter(BasePlotter):
     def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
