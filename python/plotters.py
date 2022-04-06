@@ -721,6 +721,21 @@ class EGGenMatchPtWPSPlotter(GenericGenMatchPlotter):
         GenericGenMatchPlotter.book_histos(self)
 
 
+class HGCCl3DGenMatchPtWPSPlotter(GenericGenMatchPlotter):
+    def __init__(self, data_set, gen_set, gen_selections):
+        super(HGCCl3DGenMatchPtWPSPlotter, self).__init__(
+            histos.Cluster3DHistos, histos.ResoHistos,
+            data_set, gen_set,
+            [], gen_selections)
+
+    def book_histos(self):
+        calib_mgr = calib.CalibManager()
+        rate_pt_wps = calib_mgr.get_pt_wps()
+        self.data_selections = calib.rate_pt_wps_selections(
+            rate_pt_wps, self.data_set, 'pt_em')
+        GenericGenMatchPlotter.book_histos(self)
+
+
 class EGGenMatchPlotter(GenericGenMatchPlotter):
     def __init__(self, data_set, gen_set,
                  data_selections=[selections.Selection('all')],

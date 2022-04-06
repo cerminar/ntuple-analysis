@@ -519,7 +519,7 @@ def get_calib_factors():
 # get_layer_pt_calibv9
 
 
-def rate_pt_wps_selections(wps, obj):
+def rate_pt_wps_selections(wps, obj, pt_var='pt'):
     data_selections = []
     # gen_selections = []
     sm = selections.SelectionManager()
@@ -530,7 +530,7 @@ def rate_pt_wps_selections(wps, obj):
             for rate, pt_cut in wps[obj.name][obj_sel_name].items():
                 # print(f'   rate: {rate}kHz, pt cut: {pt_cut}GeV')
                 pt_sel = selections.Selection(
-                    f'@{rate}kHz', f'p_{{T}}^{{TOBJ}}>={pt_cut}GeV (@{rate}kHz)', f'pt >= {pt_cut}')
+                    f'@{rate}kHz', f'p_{{T}}^{{TOBJ}}>={pt_cut}GeV (@{rate}kHz)', f'{pt_var} >= {pt_cut}')
                 obj_sel = selections.Selector(f'^{obj_sel_name}$', sm.selections)()[0]
 
                 # print(obj_sel*pt_sel)

@@ -31,3 +31,9 @@ hgc_tp_rate = [
     plotters.HGCCl3DRatePlotter(
         collections.hgc_cl3d, hgc_tp_rate_selections),
 ]
+
+hgc_tp_rate_pt_wps = [
+    plotters.HGCCl3DGenMatchPtWPSPlotter(
+        collections.hgc_cl3d, collections.sim_parts, 
+        gen_ee_selections)
+]
