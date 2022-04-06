@@ -123,6 +123,31 @@ class RatePlotter(BasePlotter):
             self.fill_histos(debug)
 
 
+class HGCCl3DRatePlotter(BasePlotter):
+    def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
+        self.h_rate = {}
+        super(HGCCl3DRatePlotter, self).__init__(tp_set, tp_selections)
+
+    def book_histos(self):
+        self.tp_set.activate()
+        tp_name = self.tp_set.name
+        for selection in self.tp_selections:
+            self.h_rate[selection.name] = histos.RateHistos(name='{}_{}'.format(tp_name,
+                                                                                selection.name))
+
+    def fill_histos(self, debug=0):
+        # print '------------------'
+        # print self.tp_set.name
+        for selection in self.tp_selections:
+            sel_clusters = self.tp_set.query(selection)
+            self.h_rate[selection.name].fill_many(sel_clusters.loc[sel_clusters['pt_em'].groupby(level='entry', group_keys=False).nlargest(n=1).index, ['pt_em']])
+            self.h_rate[selection.name].fill_norm(self.tp_set.new_read_nentries)
+
+    def fill_histos_event(self, idx, debug=0):
+        if self.data_set.new_read:
+            self.fill_histos(debug)
+
+
 class GenericDataFrameLazyPlotter(BasePlotter):
     def __init__(self, HistoClass, data_set, selections=[selections.Selection('all')]):
         self.HistoClass = HistoClass

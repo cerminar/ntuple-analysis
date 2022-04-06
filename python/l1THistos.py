@@ -336,7 +336,14 @@ class RateHistos(BaseHistos):
             self.h_ptVabseta.Scale(norm/nev)
 
     def fill_many(self, data):
-        ROOT.fill1D_rate(self.h_pt, data.pt.values)
+        if 'pt_em' in data.columns:
+            # for HGC clusters we use only the EM interpretation of the pT
+            ROOT.fill1D_rate(self.h_pt, data.pt_em.values)
+            # print('[RateHistos::fill_many] using pt_em')
+        else:
+            ROOT.fill1D_rate(self.h_pt, data.pt.values)
+            # print('[RateHistos::fill_many] using pt')
+
 
 
 class TCHistos(BaseHistos):

@@ -28,6 +28,6 @@ hgc_tp_genmatched = [
 
 
 hgc_tp_rate = [
-    plotters.RatePlotter(
+    plotters.HGCCl3DRatePlotter(
         collections.hgc_cl3d, hgc_tp_rate_selections),
 ]
