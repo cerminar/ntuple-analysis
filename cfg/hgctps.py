@@ -10,9 +10,9 @@ gen_ee_selections = (selections.Selector('GEN$')*('Ee')*('^Eta[BC]+[CD]$|^Eta[A-
 
 
 
-hgc_tp_selections = (selections.Selector('^EgBdt*|^Em|all'))()
+hgc_tp_selections = (selections.Selector('^EgBdt*|^Em|all')*('PUId|all'))()
 # hgc_tp_selections = (selections.Selector('^Eta[BC]+[CD]$|^Eta[A]$|all'))()
-hgc_tp_rate_selections = (selections.Selector('^EgBdt*|^Em|all')*('^Eta[ABC]+[CD]$|all'))()
+hgc_tp_rate_selections = (selections.Selector('^EgBdt*|^Em|all')*('PUId|all')*('^Eta[ABC]+[CD]$|all'))()
 
 # print('\n'.join([str(sel) for sel in hgc_tp_rate_selections]))
 hgc_tp_unmatched = [

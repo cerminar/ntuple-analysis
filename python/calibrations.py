@@ -523,11 +523,11 @@ def rate_pt_wps_selections(wps, obj, pt_var='pt'):
     data_selections = []
     # gen_selections = []
     sm = selections.SelectionManager()
-    if obj.name in wps.keys():
-     #    print(wps[obj.name])
-        for obj_sel_name, pt_wps in wps[obj.name].items():
+    if obj in wps.keys():
+     #    print(wps[obj])
+        for obj_sel_name, pt_wps in wps[obj].items():
             # print(f'WPS for {obj_sel_name}:')
-            for rate, pt_cut in wps[obj.name][obj_sel_name].items():
+            for rate, pt_cut in wps[obj][obj_sel_name].items():
                 # print(f'   rate: {rate}kHz, pt cut: {pt_cut}GeV')
                 pt_sel = selections.Selection(
                     f'@{rate}kHz', f'p_{{T}}^{{TOBJ}}>={pt_cut}GeV (@{rate}kHz)', f'{pt_var} >= {pt_cut}')

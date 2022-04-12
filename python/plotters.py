@@ -717,7 +717,7 @@ class EGGenMatchPtWPSPlotter(GenericGenMatchPlotter):
         calib_mgr = calib.CalibManager()
         rate_pt_wps = calib_mgr.get_pt_wps()
         self.data_selections = calib.rate_pt_wps_selections(
-            rate_pt_wps, self.data_set)
+            rate_pt_wps, self.data_set.name)
         GenericGenMatchPlotter.book_histos(self)
 
 
@@ -732,7 +732,7 @@ class HGCCl3DGenMatchPtWPSPlotter(GenericGenMatchPlotter):
         calib_mgr = calib.CalibManager()
         rate_pt_wps = calib_mgr.get_pt_wps()
         self.data_selections = calib.rate_pt_wps_selections(
-            rate_pt_wps, self.data_set, 'pt_em')
+            rate_pt_wps, self.data_set.name, 'pt_em')
         GenericGenMatchPlotter.book_histos(self)
 
 

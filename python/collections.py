@@ -330,12 +330,16 @@ def cl3d_fixtures(clusters):
                              'clusters_n': 'nclu'},
                     inplace=True)
 
-    clusters['ptem'] = clusters.pt/(1+clusters.hoe)
-    clusters['eem'] = clusters.energy/(1+clusters.hoe)
-    if False:
-        clusters['bdt_pu'] = rnptmva.evaluate_reader(
-            classifiers.mva_pu_classifier_builder(), 'BDT', clusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
+    # clusters['ptem'] = clusters.pt/(1+clusters.hoe)
+    # clusters['eem'] = clusters.energy/(1+clusters.hoe)
+    clusters['emax'] = clusters.emaxe*clusters.energy
 
+    clusters['bdt_pu'] = rnptmva.evaluate_reader(
+            classifiers.mva_pu_classifier_builder(), 
+            'BDT', 
+            clusters[['emax', 'emaxe', 'spptot', 'srrtot', 'ntc90']])
+
+    if False:
         clusters['bdt_pi'] = rnptmva.evaluate_reader(
             classifiers.mva_pi_classifier_builder(), 'BDT', clusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
     
@@ -1447,7 +1451,7 @@ hgc_cl3d = DFCollection(
     fixture_function=lambda clusters: cl3d_fixtures(clusters),
     read_entry_block=500,
     debug=0,
-    print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'phi', 'quality', 'pt_em']].sort_values(by='pt', ascending=False))
+    print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'phi', 'quality', 'pt_em', 'bdt_pu']].sort_values(by='pt', ascending=False))
 # hgc_cl3d.activate()
 
 
