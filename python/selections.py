@@ -440,10 +440,10 @@ tracks_pt_sels = [Selection('all'),
 
 pfinput_regions = [
     Selection('all'),
-    Selection('PFinBRL', 'Barrel', 'eta_reg_4 | eta_reg_5 | eta_reg_6'),  # 4 5 6
-    Selection('PFinHGC', 'HgCal', 'eta_reg_3 | eta_reg_7'),  # 3 7
-    Selection('PFinHGCNoTk', 'HgCalNoTk', 'eta_reg_2 | eta_reg_8'),  # 2 8
-    Selection('PFinHF', 'HF', 'eta_reg_0 | eta_reg_1 | eta_reg_9 | eta_reg_10'),  # 0 1 9 10
+    Selection('PFinBRL', 'Barrel', 'eta_reg_4 | eta_reg_5 | eta_reg_6 | eta_reg_7 | eta_reg_8 | eta_reg_9'),  # 4 5 6 7 8 9 
+    Selection('PFinHGC', 'HgCal', 'eta_reg_3 | eta_reg_10'),  # 3 10
+    Selection('PFinHGCNoTk', 'HgCalNoTk', 'eta_reg_2 | eta_reg_11'),  # 2 11
+    Selection('PFinHF', 'HF', 'eta_reg_0 | eta_reg_1 | eta_reg_12 | eta_reg_13'),  # 0 1 12 13
     ]
 
 pftkinput_quality = [

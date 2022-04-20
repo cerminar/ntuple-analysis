@@ -304,26 +304,26 @@ ttower_genmatched_plotters = [
         [selections.Selection('all')], selections.gen_ee_selections)
 ]
 
-correlator_occupancy_plotters = [
-    plotters.CorrOccupancyPlotter(
-        collections.tk_pfinputs, selections.pftkinput_selections),
-    plotters.CorrOccupancyPlotter(
-        collections.egs_EE_pf_reg, selections.pfinput_regions),
-    plotters.CorrOccupancyPlotter(
-        collections.tkeles_EE_pf_reg, selections.pfinput_regions),
-    plotters.CorrOccupancyPlotter(
-        collections.tkeles_EB_pf_reg, selections.pfinput_regions),
-    plotters.CorrOccupancyPlotter(
-        collections.tkem_EE_pf_reg, selections.pfinput_regions),
-    plotters.CorrOccupancyPlotter(
-        collections.tkem_EB_pf_reg, selections.pfinput_regions),
-    plotters.CorrOccupancyPlotter(
-        collections.eg_EE_pfinputs, selections.pfeg_ee_input_selections),
-    plotters.CorrOccupancyPlotter(
-        collections.eg_EB_pfinputs, selections.pfeg_eb_input_selections),
-    plotters.CorrOccupancyPlotter(
-        collections.cl3d_hm_pfinputs, selections.pfeg_tp_input_selections),
-]
+# correlator_occupancy_plotters = [
+#     plotters.CorrOccupancyPlotter(
+#         collections.tk_pfinputs, selections.pftkinput_selections),
+#     plotters.CorrOccupancyPlotter(
+#         collections.egs_EE_pf_reg, selections.pfinput_regions),
+#     plotters.CorrOccupancyPlotter(
+#         collections.tkeles_EE_pf_reg, selections.pfinput_regions),
+#     plotters.CorrOccupancyPlotter(
+#         collections.tkeles_EB_pf_reg, selections.pfinput_regions),
+#     plotters.CorrOccupancyPlotter(
+#         collections.tkem_EE_pf_reg, selections.pfinput_regions),
+#     plotters.CorrOccupancyPlotter(
+#         collections.tkem_EB_pf_reg, selections.pfinput_regions),
+#     plotters.CorrOccupancyPlotter(
+#         collections.eg_EE_pfinputs, selections.pfeg_ee_input_selections),
+#     plotters.CorrOccupancyPlotter(
+#         collections.eg_EB_pfinputs, selections.pfeg_eb_input_selections),
+#     plotters.CorrOccupancyPlotter(
+#         collections.cl3d_hm_pfinputs, selections.pfeg_tp_input_selections),
+# ]
 
 pftrack_plotters = [
     plotters.TrackPlotter(collections.tk_pfinputs, selections.pftkinput_selections)]

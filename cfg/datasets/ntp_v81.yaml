@@ -59,10 +59,10 @@ samples:
     # input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v47/191105_135050/0000/
     events_per_job: 300
   # 
-  # ttbar_PU200:
-  #   input_sample_dir: TT_TuneCP5_14TeV-powheg-pythia8/TT_PU200_v64D/
-  #   events_per_job: 200
-  # 
+  ttbar_PU200:
+    input_sample_dir: TT_TuneCP5_14TeV-powheg-pythia8/TT_PU200_v81C/
+    events_per_job: 200
+  
   # zprime_ee_PU200:
   #   input_sample_dir: ZprimeToEE_M-6000_TuneCP5_14TeV-pythia8/ZPrimeEE_PU200_v64C/
   #   events_per_job: 200

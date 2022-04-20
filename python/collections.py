@@ -1247,6 +1247,17 @@ EGStaEE = DFCollection(
     debug=0)
 
 
+EGStaEB = DFCollection(
+    name='EGStaEB', label='EG EB',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='EGStaEB', entry_block=entry_block),
+    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
+    fixture_function=barrel_quality,
+    # read_entry_block=200,
+    debug=0)
+
+
+
 tkeles_EE = DFCollection(
     name='tkEleEE', label='TkEle EE (sim)',
     filler_function=lambda event, entry_block: event.getDataFrame(
@@ -1454,6 +1465,19 @@ hgc_cl3d = DFCollection(
     print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'phi', 'quality', 'pt_em', 'bdt_pu']].sort_values(by='pt', ascending=False))
 # hgc_cl3d.activate()
 
+hgc_cl3d_pfinputs = DFCollection(
+    name='HGCCl3dPfIN', label='HGC Cl3d L1TC IN',
+    filler_function=lambda event, entry_block: hgc_cl3d.df,
+    fixture_function=mapcalo2pfregions_in,
+    depends_on=[hgc_cl3d],
+    debug=0)
+
+EGStaEB_pfinputs = DFCollection(
+    name='EGStaEBPFin', label='EG EB  L1TC IN',
+    filler_function=lambda event, entry_block: EGStaEB.df,
+    fixture_function=mapcalo2pfregions_in,
+    depends_on=[EGStaEB],
+    debug=0)
 
 
 class TPSet:

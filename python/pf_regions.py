@@ -4,7 +4,7 @@ import math
 class PFRegionizer(object):
     def __init__(self):
         # setup the regions
-        self.eta_boundaries_fiducial_ = [-5, -4, -3, -2.5, -1.5, -0.5, 0.5, 1.5, 2.5, 3, 4, 5]
+        self.eta_boundaries_fiducial_ = [-5, -4, -3, -2.5, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.5, 3, 4, 5]
         eta_overlap = 0.25
         phi_overlap = 0.25
         phiSlices = 9
