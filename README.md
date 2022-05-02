@@ -17,9 +17,7 @@ This stetp needs to be done **only once** for your account and can be done with 
 
 For some reason the current `CMSSW` scrips seems to deliver an inconsistent setup of `virtualenv` and `virtualenvwrapper`, for this reason we force a new installation in `~/.local` using:
 
-`pip install --ignore-installed --user virtualenv`
-
-`pip install --ignore-installed --user virtualenvwrapper`
+`pip install --ignore-installed --user virtualenv==15.1.0 virtualenvwrapper`
 
 For a more complete overview of the procedure you can refer to
 `virtualenvwrapper` [installation instructions](https://virtualenvwrapper.readthedocs.io/en/latest/install.html) 
@@ -37,15 +35,13 @@ The **first time** you will have to create the actual instance of the `virtualen
 ``mkvirtualenv --system-site-packages
  -p `which python3.8` -r requirements_py3.8.txt <venvname>``
 
-The requirements for the virtualenv setup are in are in the file:
-
-[requirements.txt](requirements.txt)
+[requirements_py3.8.txt](requirements_py3.8.txt)
 
 and 
 
-[requirements_py3.8.txt](requirements_py3.8.txt)
+[requirements_py3.8.txt](requirements_py3.10.txt)
 
-for python 2.7 and 3.8 respectively.
+for python 3.8 and 3.10 respectively.
 
 You can use the file directly using for example:
 
@@ -85,7 +81,7 @@ The main script is `analyzeHgcalL1Tntuple.py`:
 
 An example of how to run it:
 
-`python analyzeHgcalL1Tntuple.py -f cfg/default.yaml -i cfg/datasets/ntp_v68C.yaml -c single_empart_guns_egvalid -s doubleele_flat1to100_PU200 -n 300 -d 2`
+`python analyzeHgcalL1Tntuple.py -f cfg/hgctps.yaml -i cfg/datasets/ntp_v81.yaml -c tps -s doubleele_flat1to100_PU200 -n 1000 -d 0`
 
 ### Configuration file
 The configuration is handled by 2 yaml files. 
