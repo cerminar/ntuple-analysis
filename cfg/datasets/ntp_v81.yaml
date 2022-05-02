@@ -1,0 +1,73 @@
+# NOTE: fix of track extrapolation (digitized tracks with bitwise extrapolation)
+# branch:
+
+samples:
+  input_dir:  /eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/ntuples/
+  calib_version: calib-v134C
+  version: 81A
+
+  # tree_name: hgcalTriggerNtuplizer/HGCalTriggerNtuple
+  tree_name: l1EGTriggerNtuplizer_l1tCorr/L1TEGTriggerNtuple
+  rate_pt_wps: data/rate_pt_wps_v151C.81A.json
+  # tree_name: l1CaloTriggerNtuplizer/HGCalTriggerNtuple
+
+  # doubleele_flat1to100_PU0:
+  #   input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU0_v64E/
+  #   events_per_job : 500
+  #   # gen_selections: !!python/name:python.selections.genpart_photon_selections
+
+  doubleele_flat1to100_PU200:
+    input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU200_v81A/
+    events_per_job : 200
+
+  doublephoton_flat1to100_PU200:
+    input_sample_dir: DoublePhoton_FlatPt-1To100/DoublePhoton_FlatPt-1To100_PU200_v81B/
+    events_per_job : 200
+
+  # ele_flat2to100_PU0:
+  #   input_sample_dir: SingleElectron_PT2to200/SingleE_FlatPt-2to200_PU0_v60G2/
+  #   events_per_job : 500
+  #   # gen_selections: !!python/name:python.selections.genpart_photon_selections
+  # 
+  # ele_flat2to100_PU200:
+  #   input_sample_dir: SingleElectron_PT2to200/SingleE_FlatPt-2to200_PU200_v60G2/
+  #   events_per_job : 200
+  # 
+  # photon_flat8to150_PU0:
+  #   input_sample_dir: SinglePhoton_PT2to200/SinglePhoton_FlatPt-2to200_PU0_v60D/
+  #   events_per_job : 500
+  # 
+  # photon_flat8to150_PU200:
+  #   input_sample_dir: SinglePhoton_PT2to200/SinglePhoton_FlatPt-2to200_PU200_v60D/
+  #   events_per_job : 200
+  # 
+  # pion_flat2to100_PU0:
+  #   input_sample_dir: SinglePion_FlatPt-2to100/SinglePion_FlatPt-2to100_PU0_v33/190911_081445/0000/
+  #   events_per_job : 500
+  # 
+  # pion_flat2to100_PU200:
+  #   input_sample_dir: SinglePion_FlatPt-2to100/SinglePion_FlatPt-2to100_PU200_v33/190911_081546/0000/
+  #   events_per_job : 200
+  # #
+  # nugun_alleta_pu0:
+  #   input_sample_dir: SingleNeutrino/NuGunAllEta_PU0_v14/190123_172948/0000/
+  #   events_per_job: 500
+
+  nugun_alleta_pu200:
+    input_sample_dir: MinBias_TuneCP5_14TeV-pythia8/NuGunAllEta_PU200_v81B/
+    # input_sample_dir: NuGunAllEta_PU200/NTP/v80A/
+    # input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v47/191105_135050/0000/
+    events_per_job: 300
+  # 
+  ttbar_PU200:
+    input_sample_dir: TT_TuneCP5_14TeV-powheg-pythia8/TT_PU200_v81C/
+    events_per_job: 200
+  
+  # zprime_ee_PU200:
+  #   input_sample_dir: ZprimeToEE_M-6000_TuneCP5_14TeV-pythia8/ZPrimeEE_PU200_v64C/
+  #   events_per_job: 200
+  #
+  # dyll_PU200:
+  #   input_sample_dir: DYToLL_M-50_14TeV_TuneCP5_pythia8/DYToLL_PU200_v48/200210_133300/0000/
+  #   # input_sample_dir: DYToLL_M-50_14TeV_TuneCP5_pythia8/DYToLL_PU200_v45/191105_102403/0000/
+  #   events_per_job: 200

@@ -80,14 +80,14 @@ def submit(batch_cfg_dir,
         print(f'will now hadd files for sample: {sample.name}')
         hadded_file = os.path.join(batch_work_dir, sample.name, f'{sample.output_filename_base}l.root')
         print(f' target file: {hadded_file}')
-        cmd = ['hadd', '-a', '-j', str(n_workers), '-k', hadded_file] + hadd_files[sample.name]
-        # print(cmd)
+        cmd = ['hadd', '-k', hadded_file] + hadd_files[sample.name]
+        print(cmd)
         hadd_proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         hadd_proc.wait()
         out_file_name = os.path.join(sample.output_dir, f'{sample.output_filename_base}l.root')
         if hadd_proc.returncode == 0:
             print(f'   hadd succeded: copy file to : {out_file_name}')
-            # print(hadd_proc.stdout.readlines())
+            print(hadd_proc.stdout.readlines())
             shutil.copyfile(hadded_file, out_file_name)
 
     #     index += 1

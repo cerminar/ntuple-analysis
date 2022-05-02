@@ -30,63 +30,62 @@ tdrsim_eg_genmatched = [
 
 # FIXME: should become in newer versions
 # l1tc_match_ee_selections = (selections.Selector('^EGq[1,3]$')*('^Pt[1-2][0]$|all'))()
-l1tc_match_ee_selections = (selections.Selector('^EGq[1,2]$')*('^Pt[1-2][0]$|all'))()
+l1tc_match_ee_selections = (selections.Selector('^EGq[1,3]$')*('^Pt[1-2][0]$|all'))()
 
 l1tc_eg_genmatched = [
     plotters.EGGenMatchPlotter(
-        collections.egs_EE_pfnf, collections.gen_parts,
+        collections.EGStaEE, collections.sim_parts,
         l1tc_match_ee_selections, gen_ee_selections),
     plotters.EGGenMatchPlotter(
-        collections.tkeles_EE_pfnf, collections.gen_parts,
+        collections.TkEleEE, collections.sim_parts,
         l1tc_match_ee_selections, gen_ee_tk_selections),
     plotters.EGGenMatchPlotter(
-        collections.tkeles_EB_pfnf, collections.gen_parts,
+        collections.TkEleEB, collections.sim_parts,
         selections.eg_id_pt_eb_selections, selections.gen_eb_selections),
     plotters.EGGenMatchPlotter(
-        collections.tkem_EE_pfnf, collections.gen_parts,
+        collections.TkEmEE, collections.sim_parts,
         l1tc_match_ee_selections, gen_ee_tk_selections),
     plotters.EGGenMatchPlotter(
-        collections.tkem_EB_pfnf, collections.gen_parts,
+        collections.TkEmEB, collections.sim_parts,
         selections.eg_id_pt_eb_selections, selections.gen_eb_selections),
-
 ]
 
 # FIXME: this one can be dropped in newer versions
 l1tc_fw_match_ee_selections = (selections.Selector('^EGq[2,4]or[3,5]$')*('^Pt[1-2][0]$|all'))()
 
 l1tc_fw_eg_genmatched = [
-    plotters.EGGenMatchPlotter(
-        collections.egs_EE_pfnf, collections.gen_parts,
-        l1tc_fw_match_ee_selections, gen_ee_selections),
-    plotters.EGGenMatchPlotter(
-        collections.tkeles_EE_pfnf, collections.gen_parts,
-        l1tc_fw_match_ee_selections, gen_ee_tk_selections),
+    # plotters.EGGenMatchPlotter(
+    #     collections.egs_EE_pfnf, collections.gen_parts,
+    #     l1tc_fw_match_ee_selections, gen_ee_selections),
+    # plotters.EGGenMatchPlotter(
+    #     collections.tkeles_EE_pfnf, collections.gen_parts,
+    #     l1tc_fw_match_ee_selections, gen_ee_tk_selections),
     plotters.EGGenMatchPlotter(
         collections.tkeles_EB_pfnf, collections.gen_parts,
         selections.eg_id_pt_eb_selections, selections.gen_eb_selections),
-    plotters.EGGenMatchPlotter(
-        collections.tkem_EE_pfnf, collections.gen_parts,
-        l1tc_fw_match_ee_selections, gen_ee_tk_selections),
-    plotters.EGGenMatchPlotter(
-        collections.tkem_EB_pfnf, collections.gen_parts,
-        selections.eg_id_pt_eb_selections, selections.gen_eb_selections),
+    # plotters.EGGenMatchPlotter(
+    #     collections.tkem_EE_pfnf, collections.gen_parts,
+    #     l1tc_fw_match_ee_selections, gen_ee_tk_selections),
+    # plotters.EGGenMatchPlotter(
+    #     collections.tkem_EB_pfnf, collections.gen_parts,
+    #     selections.eg_id_pt_eb_selections, selections.gen_eb_selections),
 
 ]
 
 l1tc_rate_pt_wps = [
     plotters.EGGenMatchPtWPSPlotter(
-        collections.egs_EE_pfnf, collections.gen_parts,
+        collections.EGStaEE, collections.sim_parts,
         gen_ee_selections),
     plotters.EGGenMatchPtWPSPlotter(
-        collections.tkeles_EE_pfnf, collections.gen_parts,
+        collections.TkEleEE, collections.sim_parts,
         gen_ee_tk_selections),
     plotters.EGGenMatchPtWPSPlotter(
-        collections.tkeles_EB_pfnf, collections.gen_parts,
+        collections.TkEleEB, collections.sim_parts,
         selections.gen_eb_selections),
     plotters.EGGenMatchPtWPSPlotter(
-        collections.tkem_EE_pfnf, collections.gen_parts,
+        collections.TkEmEE, collections.sim_parts,
         gen_ee_tk_selections),
     plotters.EGGenMatchPtWPSPlotter(
-        collections.tkem_EB_pfnf, collections.gen_parts,
+        collections.TkEmEB, collections.sim_parts,
         selections.gen_eb_selections),
 ]

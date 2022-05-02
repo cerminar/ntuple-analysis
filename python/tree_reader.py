@@ -1,7 +1,7 @@
 import pandas as pd
 import datetime
 import resource
-
+import gc
 
 class TreeReader(object):
     def __init__(self, entry_range, max_events):
@@ -67,6 +67,23 @@ class TreeReader(object):
             self.n_tot_entries,
             datetime.datetime.now(),
             resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1E6))
+        # self.dump_garbage()
+    
+    def dump_garbage(self):
+        """
+        show us what's the garbage about
+        """
+            
+        # force collection
+        print ("\nGARBAGE:")
+        gc.collect()
+
+        print ("\nGARBAGE OBJECTS:")
+        for x in gc.garbage:
+            s = str(x)
+            if len(s) > 80: s = s[:80]
+            print (type(x),"\n  ", s)
+
 
     def getDataFrame(self, prefix, entry_block, fallback=None):
         branches = [br for br in self._branches
@@ -83,5 +100,5 @@ class TreeReader(object):
         # FIXME: stride needs to be set somehow
         df = self.tree.arrays(branches, library='pd', entry_start=self.file_entry, entry_stop=self.file_entry+entry_block)
         df.rename(columns=name_map, inplace=True)
-
+        
         return df

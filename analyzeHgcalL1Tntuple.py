@@ -28,7 +28,7 @@ import traceback
 import platform
 # import tracemalloc
 
-import root_numpy as rnp
+# import root_numpy as rnp
 import pandas as pd
 import uproot4 as up
 
@@ -116,6 +116,13 @@ def analyze(params, batch_idx=-1):
 
     files_with_protocol = [fm.get_eos_protocol(file_name)+file_name for file_name in input_files]
 
+
+    calib_manager = calibs.CalibManager()
+    calib_manager.set_calibration_version(params.calib_version)
+    if params.rate_pt_wps:
+        calib_manager.set_pt_wps_version(params.rate_pt_wps)
+
+
     output = ROOT.TFile(params.output_filename, "RECREATE")
     output.cd()
     hm = histos.HistoManager()
@@ -135,10 +142,6 @@ def analyze(params, batch_idx=-1):
     if params.weight_file is not None:
         collection_manager.read_weight_file(params.weight_file)
 
-    calib_manager = calibs.CalibManager()
-    calib_manager.set_calibration_version(params.calib_version)
-    if params.rate_pt_wps:
-        calib_manager.set_pt_wps_version(params.rate_pt_wps)
     # -------------------------------------------------------
     # event loop
 
@@ -215,7 +218,7 @@ def analyze(params, batch_idx=-1):
 if __name__ == "__main__":
 
     tic = 0
-    if '3.8' in platform.python_version():
+    if '3.8' in platform.python_version() or '3.9' in platform.python_version() or '3.10' in platform.python_version():
         timecounter.counter.start()
 
     nevents = 0

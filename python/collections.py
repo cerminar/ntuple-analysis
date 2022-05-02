@@ -182,7 +182,11 @@ class DFCollection(object):
         # print (f'Coll: {self.name} fill for entry: {event.file_entry}')
         if event.file_entry == 0 or event.file_entry == self.next_entry_read or event.global_entry == event.entry_range[0]:
             # print ([self.read_entry_block, (event.entry_range[1]-event.global_entry), (event.tree.num_entries - event.file_entry)])
-            stride = min([self.read_entry_block, (1+event.entry_range[1]-event.global_entry), (event.tree.num_entries - event.file_entry)])
+            if event.entry_range[1] != -1:
+                stride = min([self.read_entry_block, (1+event.entry_range[1]-event.global_entry), (event.tree.num_entries - event.file_entry)])
+            else:
+                stride = min([self.read_entry_block, (event.tree.num_entries - event.file_entry)])
+            # print(f'[fill] stride: {stride}')
             if stride == 0:
                 print('ERROR Last event????')
                 self.new_read = False
@@ -319,20 +323,30 @@ def cl3d_fixtures(clusters):
     # print(clusters.columns)
     # for backward compatibility
     if clusters.empty:
+        # return
         return clusters
 
     clusters.rename(columns={'clusters_id': 'clusters',
                              'clusters_n': 'nclu'},
                     inplace=True)
 
-    clusters['ptem'] = clusters.pt/(1+clusters.hoe)
-    clusters['eem'] = clusters.energy/(1+clusters.hoe)
-    if False:
-        clusters['bdt_pu'] = rnptmva.evaluate_reader(
-            classifiers.mva_pu_classifier_builder(), 'BDT', clusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
+    # clusters['ptem'] = clusters.pt/(1+clusters.hoe)
+    # clusters['eem'] = clusters.energy/(1+clusters.hoe)
+    clusters['emax'] = clusters.emaxe*clusters.energy
 
+    clusters['bdt_pu'] = rnptmva.evaluate_reader(
+            classifiers.mva_pu_classifier_builder(), 
+            'BDT', 
+            clusters[['emax', 'emaxe', 'spptot', 'srrtot', 'ntc90']])
+
+    if False:
         clusters['bdt_pi'] = rnptmva.evaluate_reader(
             classifiers.mva_pi_classifier_builder(), 'BDT', clusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
+    
+    clusters['pt_em'] = clusters.apply(lambda x: x.ipt[x.name[1]][1], axis=1)
+    clusters.drop('ipt', axis=1, inplace=True)
+    clusters.drop('ienergy', axis=1, inplace=True)
+    # return
     return clusters
 
 
@@ -741,6 +755,19 @@ gen = DFCollection(
     fixture_function=mc_fixtures,
     debug=0)
 
+sim_parts = DFCollection(
+    name='GEN', label='GEN particles',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='simpart', entry_block=entry_block),
+    fixture_function=lambda gen_parts: gen_fixtures(gen_parts, gen),
+    # read_entry_block=10,
+    depends_on=[gen],
+    debug=0,
+    # print_function=lambda df: df[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'ovz', 'pid', 'gen', 'reachedEE', 'firstmother_pdgid']],
+    print_function=lambda df: df[['gen', 'pid', 'eta', 'phi', 'pt', 'mother', 'ovz', 'dvz', 'reachedEE']].sort_values(by='mother', ascending=False),
+    # print_function=lambda df: df.columns,
+    weight_function=gen_part_pt_weights)
+
 gen_parts = DFCollection(
     name='GEN', label='GEN particles',
     filler_function=lambda event, entry_block: event.getDataFrame(
@@ -753,6 +780,7 @@ gen_parts = DFCollection(
     print_function=lambda df: df[['gen', 'pid', 'eta', 'phi', 'pt', 'mother', 'ovz', 'dvz', 'reachedEE']].sort_values(by='mother', ascending=False),
     # print_function=lambda df: df.columns,
     weight_function=gen_part_pt_weights)
+
 
 tcs = DFCollection(
     name='TC', label='Trigger Cells',
@@ -1208,6 +1236,28 @@ egs_EE_pfnf = DFCollection(
     fixture_function=fake_endcap_quality,
     debug=0)
 
+
+EGStaEE = DFCollection(
+    name='EGStaEE', label='EG EE',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='EGStaEE', entry_block=entry_block),
+    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
+    # fixture_function=mapcalo2pfregions,
+    fixture_function=fake_endcap_quality,
+    debug=0)
+
+
+EGStaEB = DFCollection(
+    name='EGStaEB', label='EG EB',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='EGStaEB', entry_block=entry_block),
+    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
+    fixture_function=barrel_quality,
+    # read_entry_block=200,
+    debug=0)
+
+
+
 tkeles_EE = DFCollection(
     name='tkEleEE', label='TkEle EE (sim)',
     filler_function=lambda event, entry_block: event.getDataFrame(
@@ -1249,6 +1299,21 @@ tkeles_EB_pfnf = DFCollection(
         prefix='PFNFtkEleEB', entry_block=entry_block),
     fixture_function=tkele_fixture_eb,
     debug=0)
+
+TkEleEE = DFCollection(
+    name='TkEleEE', label='TkEle EE',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='TkEleEE', entry_block=entry_block),
+    fixture_function=tkele_fixture_ee,
+    debug=0)
+
+TkEleEB = DFCollection(
+    name='TkEleEB', label='TkEle EB',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='TkEleEB', entry_block=entry_block),
+    fixture_function=tkele_fixture_eb,
+    debug=0)
+
 
 # --------
 
@@ -1295,8 +1360,24 @@ tkem_EB_pfnf = DFCollection(
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='PFNFtkEmEB', entry_block=entry_block),
     fixture_function=barrel_quality,
+    read_entry_block=500,
+    debug=0)
+
+TkEmEE = DFCollection(
+    name='TkEmEE', label='TkEm EE',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='TkEmEE', entry_block=entry_block),
+    fixture_function=fake_endcap_quality,
+    debug=0)
+
+TkEmEB = DFCollection(
+    name='TkEmEB', label='TkEm EB',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='TkEmEB', entry_block=entry_block),
+    fixture_function=barrel_quality,
     read_entry_block=200,
     debug=0)
+
 
 egs_EE_pf_reg = DFCollection(
     name='PFOutEgEE', label='EG EE (old EMU)',
@@ -1371,6 +1452,31 @@ decTk = DFCollection(
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='pfdtk', entry_block=entry_block),
     fixture_function=decodedTk_fixtures,
+    debug=0)
+
+
+hgc_cl3d = DFCollection(
+    name='HGCCl3d', label='HGC Cl3d',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='Cl3D', entry_block=entry_block, fallback='HMvDR'),
+    fixture_function=lambda clusters: cl3d_fixtures(clusters),
+    read_entry_block=500,
+    debug=0,
+    print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'phi', 'quality', 'pt_em', 'bdt_pu']].sort_values(by='pt', ascending=False))
+# hgc_cl3d.activate()
+
+hgc_cl3d_pfinputs = DFCollection(
+    name='HGCCl3dPfIN', label='HGC Cl3d L1TC IN',
+    filler_function=lambda event, entry_block: hgc_cl3d.df,
+    fixture_function=mapcalo2pfregions_in,
+    depends_on=[hgc_cl3d],
+    debug=0)
+
+EGStaEB_pfinputs = DFCollection(
+    name='EGStaEBPFin', label='EG EB  L1TC IN',
+    filler_function=lambda event, entry_block: EGStaEB.df,
+    fixture_function=mapcalo2pfregions_in,
+    depends_on=[EGStaEB],
     debug=0)
 
 

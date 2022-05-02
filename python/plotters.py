@@ -123,6 +123,31 @@ class RatePlotter(BasePlotter):
             self.fill_histos(debug)
 
 
+class HGCCl3DRatePlotter(BasePlotter):
+    def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
+        self.h_rate = {}
+        super(HGCCl3DRatePlotter, self).__init__(tp_set, tp_selections)
+
+    def book_histos(self):
+        self.tp_set.activate()
+        tp_name = self.tp_set.name
+        for selection in self.tp_selections:
+            self.h_rate[selection.name] = histos.RateHistos(name='{}_{}'.format(tp_name,
+                                                                                selection.name))
+
+    def fill_histos(self, debug=0):
+        # print '------------------'
+        # print self.tp_set.name
+        for selection in self.tp_selections:
+            sel_clusters = self.tp_set.query(selection)
+            self.h_rate[selection.name].fill_many(sel_clusters.loc[sel_clusters['pt_em'].groupby(level='entry', group_keys=False).nlargest(n=1).index, ['pt_em']])
+            self.h_rate[selection.name].fill_norm(self.tp_set.new_read_nentries)
+
+    def fill_histos_event(self, idx, debug=0):
+        if self.data_set.new_read:
+            self.fill_histos(debug)
+
+
 class GenericDataFrameLazyPlotter(BasePlotter):
     def __init__(self, HistoClass, data_set, selections=[selections.Selection('all')]):
         self.HistoClass = HistoClass
@@ -228,6 +253,9 @@ class DecTkPlotter(GenericDataFrameLazyPlotter):
     def __init__(self, tk_set, tk_selections=[selections.Selection('all')]):
         super(DecTkPlotter, self).__init__(histos.DecTkHistos, tk_set, tk_selections)
 
+class Cl3DPlotter(GenericDataFrameLazyPlotter):
+    def __init__(self, data_set, data_selections=[selections.Selection('all')]):
+        super(Cl3DPlotter, self).__init__(histos.Cluster3DHistos, data_set, data_selections)
 
 class TPPlotter(BasePlotter):
     def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
@@ -689,7 +717,22 @@ class EGGenMatchPtWPSPlotter(GenericGenMatchPlotter):
         calib_mgr = calib.CalibManager()
         rate_pt_wps = calib_mgr.get_pt_wps()
         self.data_selections = calib.rate_pt_wps_selections(
-            rate_pt_wps, self.data_set)
+            rate_pt_wps, self.data_set.name)
+        GenericGenMatchPlotter.book_histos(self)
+
+
+class HGCCl3DGenMatchPtWPSPlotter(GenericGenMatchPlotter):
+    def __init__(self, data_set, gen_set, gen_selections):
+        super(HGCCl3DGenMatchPtWPSPlotter, self).__init__(
+            histos.Cluster3DHistos, histos.ResoHistos,
+            data_set, gen_set,
+            [], gen_selections)
+
+    def book_histos(self):
+        calib_mgr = calib.CalibManager()
+        rate_pt_wps = calib_mgr.get_pt_wps()
+        self.data_selections = calib.rate_pt_wps_selections(
+            rate_pt_wps, self.data_set.name, 'pt_em')
         GenericGenMatchPlotter.book_histos(self)
 
 
@@ -996,11 +1039,11 @@ class CorrOccupancyPlotter(BasePlotter):
                     selection.name))
 
     def fill_histos(self, debug=0):
-        # print '------------------'
-        # print self.tp_set.name
-        for selection in self.tp_selections:
-            sel_clusters = self.tp_set.query(selection)
+        pass
 
+    def fill_histos_event(self, idx, debug=0):
+        for selection in self.tp_selections:
+            sel_clusters = self.tp_set.query_event(selection, idx)
             if not sel_clusters.empty:
                 # print trigger_clusters.iloc[0]
                 self.h_occ[selection.name].fill(sel_clusters)

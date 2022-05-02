@@ -21,14 +21,14 @@ def mva_pu_classifier_builder():
     global mva_pu_classifier
     if mva_pu_classifier is None:
         mva_pu_classifier = book_MVA_classifier(model='BDT',
-                                                weight_file='data/MVAnalysis_Bkg_BDTvsPU.weights.xml',
-                                                variables=['pt_cl',
-                                                           'eta_cl',
-                                                           'maxLayer_cl',
-                                                           'hOverE_cl',
-                                                           'eMaxOverE_cl',
-                                                           'sigmaZZ_cl'])
+                                                weight_file='data/Photon_Pion_vs_Neutrino_BDTweights_1116.xml',
+                                                variables=['eMax',
+                                                           'eMaxOverE',
+                                                           'sigmaPhiPhiTot',
+                                                           'sigmaRRTot',
+                                                           'triggerCells90percent'])
     return mva_pu_classifier
+
 
 
 mva_pi_classifier = None

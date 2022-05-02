@@ -407,7 +407,7 @@ gen_part_fbrem_sel = [
 
 eg_eta_eb_sel = [
     Selection('all'),
-    # Selection('EtaF', '|#eta^{TOBJ}| <= 1.479', 'abs(eta) <= 1.479')
+    Selection('EtaF', '|#eta^{TOBJ}| <= 1.479', 'abs(eta) <= 1.479')
     ]
 eg_eta_sel = [
     Selection('all'),
@@ -440,10 +440,10 @@ tracks_pt_sels = [Selection('all'),
 
 pfinput_regions = [
     Selection('all'),
-    Selection('PFinBRL', 'Barrel', 'eta_reg_4 | eta_reg_5 | eta_reg_6'),  # 4 5 6
-    Selection('PFinHGC', 'HgCal', 'eta_reg_3 | eta_reg_7'),  # 3 7
-    Selection('PFinHGCNoTk', 'HgCalNoTk', 'eta_reg_2 | eta_reg_8'),  # 2 8
-    Selection('PFinHF', 'HF', 'eta_reg_0 | eta_reg_1 | eta_reg_9 | eta_reg_10'),  # 0 1 9 10
+    Selection('PFinBRL', 'Barrel', 'eta_reg_4 | eta_reg_5 | eta_reg_6 | eta_reg_7 | eta_reg_8 | eta_reg_9'),  # 4 5 6 7 8 9 
+    Selection('PFinHGC', 'HgCal', 'eta_reg_3 | eta_reg_10'),  # 3 10
+    Selection('PFinHGCNoTk', 'HgCalNoTk', 'eta_reg_2 | eta_reg_11'),  # 2 11
+    Selection('PFinHF', 'HF', 'eta_reg_0 | eta_reg_1 | eta_reg_12 | eta_reg_13'),  # 0 1 12 13
     ]
 
 pftkinput_quality = [
@@ -476,6 +476,52 @@ iso_sel = [
     Selection('Iso0p1', 'Iso0p1', 'tkIso <= 0.1'),
     Selection('Iso0p3', 'Iso0p3', 'tkIso <= 0.3'),
     ]
+
+
+working_points_histomax = {
+        "v10_3151": [
+                # Low eta
+                {
+                #  '900': 0.9903189,
+                #  '950': 0.9646683,
+                 '975': 0.8292287,
+                 '995': -0.7099538,
+                },
+                # High eta
+                {
+                #  '900': 0.9932326,
+                #  '950': 0.9611762,
+                 '975': 0.7616282,
+                 '995': -0.9163715,
+                }
+             ]
+        }
+
+
+tight_wp = ['975', '900']
+loose_wp = ['995', '950']
+
+version = 'v10_3151'
+
+wps = working_points_histomax[version]
+labels = ['LE', 'HE']
+wls = zip(wps, labels)
+# for i,
+tphgc_egbdt_sel = []
+
+for wps,lab in wls:
+    for wp,cut in wps.items():
+        tphgc_egbdt_sel.append(
+            Selection(
+                f'EgBdt{lab}{wp}', 
+                f'BDT^{{eg}}_{{{lab}}}@{wp}%', 
+                f'bdteg > {cut}'))
+
+tphgc_pubdt_sel = [
+    Selection('PUId', 'PUId', 'bdt_pu > 0.15')
+]
+
+# print(tphgc_egbdt_sel)
 
 sm = SelectionManager()
 Selector.selection_primitives = sm.selections.copy()
@@ -525,7 +571,7 @@ egid_ee_pfnf_selections = (Selector('^EGq[1-2]$'))()
 
 eg_id_iso_sel = [
     Selection('all'),
-    # Selection('LooseTkID', 'LooseTkID', 'looseTkID'),
+    Selection('LooseTkID', 'LooseTkID', 'looseTkID'),
     # Selection('Iso0p1', 'Iso0p1', '((tkIso <= 0.1) & (abs(eta) <= 1.479)) | ((tkIso <= 0.125) & (abs(eta) > 1.479))'),
     ]
 

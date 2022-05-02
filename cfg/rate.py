@@ -5,7 +5,7 @@ import python.selections as selections
 
 
 simeg_rate_ee_selections = (selections.Selector('^EGq[4-5]$')*('^Eta[^DA][BC]*[BCD]$|all'))()
-emueg_rate_ee_selections = (selections.Selector('^^EGq[1,2]$')*('^Eta[^DA][BC]*[BCD]$|all'))()
+emueg_rate_ee_selections = (selections.Selector('^^EGq[1,3]$')*('^Eta[^DA][BC]*[BCD]$|all'))()
 emueg_fw_rate_ee_selections = (selections.Selector('^^EGq[1,3]$')*('^Eta[^DA][BC]*[BCD]$|all'))()
 
 # sim_eg_match_ee_selections = (selections.Selector('^EGq[4-5]$')*('^Pt[1-3][0]$|all'))()
@@ -36,13 +36,13 @@ eg_tdrsim_plotters = [
 
 eg_emu_plotters = [
     plotters.RatePlotter(
-        collections.tkem_EE_pfnf, emueg_rate_ee_selections),
-    # plotters.RatePlotter(
-    #     collections.tkem_EB_pfnf, selections.barrel_rate_selections),
+        collections.TkEmEE, emueg_rate_ee_selections),
     plotters.RatePlotter(
-        collections.tkeles_EE_pfnf, emueg_rate_ee_selections),
-    # plotters.RatePlotter(
-    #     collections.tkeles_EB_pfnf, selections.barrel_rate_selections),
+        collections.TkEmEB, selections.barrel_rate_selections),
+    plotters.RatePlotter(
+        collections.TkEleEE, emueg_rate_ee_selections),
+    plotters.RatePlotter(
+        collections.TkEleEB, selections.barrel_rate_selections),
     # plotters.RatePlotter(
     #     collections.tkem_EE_pfnf, selections.eg_id_iso_eta_ee_selections),
     # plotters.RatePlotter(

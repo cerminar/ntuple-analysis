@@ -7,7 +7,7 @@ common:
     triolet: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v150A
+  plot_version: v151A
   run_clustering: False
   run_density_computation: False
 # +AccountingGroup = "group_u_CMS.u_zh.users"
@@ -110,7 +110,7 @@ collections:
     plotters:
       # - !!python/name:cfg.egvalid.l1tc_eg_genmatched
       - !!python/name:cfg.egvalid.l1tc_fw_eg_genmatched      
-      - !!python/name:cfg.egvalid.l1tc_rate_pt_wps
+      # - !!python/name:cfg.egvalid.l1tc_rate_pt_wps
     htc_jobflavor:
       microcentury
     priorities:
