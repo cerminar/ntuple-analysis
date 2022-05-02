@@ -108,3 +108,10 @@ ENV/
 
 batch*/
 plots*s
+plots1/.histos_nugun_alleta_pu200_v47_54.root.~5c759e8
+plots1/histos_ele_flat2to100_PU0_v51_1.r
+plots1/pippo.txt
+plots1/selection.yaml
+plots1/t3.txt
+plots1/test.txt
+plots1/xemacs.csh
