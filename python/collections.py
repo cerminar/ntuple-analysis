@@ -676,6 +676,25 @@ def tkele_fixture_eb(electrons):
     return electrons
 
 
+def quality_flags(objs):
+    hwqual = pd.to_numeric(objs['hwQual'], downcast='integer')
+    mask_tight_sta = 0b0001
+    mask_tight_ele = 0b0010
+    mask_tight_pho = 0b0100
+    mask_no_brem = 0b1000
+    objs['IDTightSTA'] = np.bitwise_and(hwqual.values, mask_tight_sta) > 0
+    objs['IDTightEle'] = np.bitwise_and(hwqual.values, mask_tight_ele) > 0
+    objs['IDTightPho'] = np.bitwise_and(hwqual.values, mask_tight_pho) > 0
+    objs['IDNoBrem'] = np.bitwise_and(hwqual.values, mask_no_brem) > 0
+    objs['IDBrem'] = np.bitwise_and(hwqual.values, mask_no_brem) == 0
+
+    return objs
+
+def quality_ele_fixtures(objs):
+    objs['dpt'] = objs.tkPt - objs.pt
+    return quality_flags(objs)
+
+
 def print_columns(df):
     print(df.columns)
     return df
@@ -1243,7 +1262,7 @@ EGStaEE = DFCollection(
         prefix='EGStaEE', entry_block=entry_block),
     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
     # fixture_function=mapcalo2pfregions,
-    fixture_function=fake_endcap_quality,
+    fixture_function=quality_flags,
     debug=0)
 
 
@@ -1252,7 +1271,7 @@ EGStaEB = DFCollection(
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='EGStaEB', entry_block=entry_block),
     # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
-    fixture_function=barrel_quality,
+    fixture_function=quality_flags,
     # read_entry_block=200,
     debug=0)
 
@@ -1304,14 +1323,14 @@ TkEleEE = DFCollection(
     name='TkEleEE', label='TkEle EE',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='TkEleEE', entry_block=entry_block),
-    fixture_function=tkele_fixture_ee,
+    fixture_function=quality_ele_fixtures,
     debug=0)
 
 TkEleEB = DFCollection(
     name='TkEleEB', label='TkEle EB',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='TkEleEB', entry_block=entry_block),
-    fixture_function=tkele_fixture_eb,
+    fixture_function=quality_ele_fixtures,
     debug=0)
 
 
@@ -1367,17 +1386,30 @@ TkEmEE = DFCollection(
     name='TkEmEE', label='TkEm EE',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='TkEmEE', entry_block=entry_block),
-    fixture_function=fake_endcap_quality,
+    fixture_function=quality_flags,
     debug=0)
 
 TkEmEB = DFCollection(
     name='TkEmEB', label='TkEm EB',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='TkEmEB', entry_block=entry_block),
-    fixture_function=barrel_quality,
+    fixture_function=quality_flags,
     read_entry_block=200,
     debug=0)
 
+TkEmL2 = DFCollection(
+    name='TkEmL2', label='TkEm L2',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='L2TkEm', entry_block=entry_block),
+    fixture_function=quality_flags,
+    debug=0)
+
+TkEleL2 = DFCollection(
+    name='TkEleL2', label='TkEle L2',
+    filler_function=lambda event, entry_block : event.getDataFrame(
+        prefix='L2TkEle', entry_block=entry_block),
+    fixture_function=quality_ele_fixtures,
+    debug=0)
 
 egs_EE_pf_reg = DFCollection(
     name='PFOutEgEE', label='EG EE (old EMU)',

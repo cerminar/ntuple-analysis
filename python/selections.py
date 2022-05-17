@@ -341,6 +341,9 @@ other_selections = [
     Selection('EtaE', '|#eta^{TOBJ}| > 2.8', 'abs(eta) > 2.8'),
     Selection('EtaAB', '1.49 < |#eta^{TOBJ}| <= 1.7', '1.49 < abs(eta) <= 1.7'),
     Selection('EtaABC', '1.49 < |#eta^{TOBJ}| <= 2.4', '1.49 < abs(eta) <= 2.4'),
+    Selection('EtaABCD', '1.49 < |#eta^{TOBJ}| <= 2.8', '1.49 < abs(eta) <= 2.8'),
+    Selection('EtaFABCD', '|#eta^{TOBJ}| <= 2.8', 'abs(eta) <= 2.8'),
+    Selection('EtaFABC', '|#eta^{TOBJ}| <= 2.4', 'abs(eta) <= 2.4'),
     Selection('EtaBCDE', '1.52 < |#eta^{TOBJ}|', '1.52 < abs(eta)')
 ]
 
@@ -470,6 +473,17 @@ pfeg_ee_input_qual = [
 eg_id_eb_sel = [
     Selection('all'),
     Selection('LooseTkID', 'LooseTkID', 'looseTkID')]
+
+eg_id_sel = [
+    Selection('all'),
+    Selection('IDTightS', 'Tight-STA', 'IDTightSTA'),
+    Selection('IDTightE', 'Tight-TkEle', 'IDTightEle'),
+    Selection('IDTightP', 'Tight-TkEm', 'IDTightPho'),
+    Selection('IDNoBrem', 'NoBrem', 'IDNoBrem'),
+    Selection('IDBrem', 'Brem', 'IDNoBrem == False'),
+    ]
+
+
 
 iso_sel = [
     Selection('Iso0p2', 'Iso0p2', 'tkIso <= 0.2'),
@@ -657,7 +671,7 @@ else:
 
 
 if __name__ == "__main__":
-
+    from cfg import *
     print('enter selection name: ')
     selec_name = input()
     sel_list = []

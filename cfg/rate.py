@@ -5,8 +5,12 @@ import python.selections as selections
 
 
 simeg_rate_ee_selections = (selections.Selector('^EGq[4-5]$')*('^Eta[^DA][BC]*[BCD]$|all'))()
-emueg_rate_ee_selections = (selections.Selector('^^EGq[1,3]$')*('^Eta[^DA][BC]*[BCD]$|all'))()
-emueg_fw_rate_ee_selections = (selections.Selector('^^EGq[1,3]$')*('^Eta[^DA][BC]*[BCD]$|all'))()
+emueg_rate_ee_selections = (selections.Selector('^EGq[1,3]$')*('^Eta[^DA][BC]*[BCD]$|all'))()
+emueg_fw_rate_ee_selections = (selections.Selector('^EGq[1,3]$')*('^Eta[^DA][BC]*[BCD]$|all'))()
+
+
+
+# print(egid_eta_selections)
 
 # sim_eg_match_ee_selections = (selections.Selector('^EGq[4-5]$')*('^Pt[1-3][0]$|all'))()
 # gen_ee_tk_selections = (selections.Selector('GEN$')*('Ee$')*('^Eta[A-C]$|EtaBC$|all')+selections.Selector('GEN$')*('Ee$')*('Pt15|Pt30'))()
@@ -63,4 +67,41 @@ eg_emufw_plotters = [
     # plotters.RatePlotter(
     #     collections.tkem_EB_pfnf, selections.barrel_rate_selections),
 
+]
+
+egid_eta_selections = (selections.Selector('^IDTightS')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[CD]$'))()
+egid_etatk_selections = (selections.Selector('^IDTight[EP]')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[C]$'))()
+egid_iso_etatk_selections = (selections.Selector('^IDTight[EP]')*selections.Selector('^Iso|all')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[C]$'))()
+
+egid_eta_ee_selections = (selections.Selector('^IDTightS')*selections.Selector('^Eta[A][BCD]*[CD]$'))()
+egid_eta_eetk_selections = (selections.Selector('^IDTight[EP]')*selections.Selector('^Eta[A][BCD]*[C]$'))()
+egid_iso_eta_eetk_selections = (selections.Selector('^IDTight[EP]')*selections.Selector('^Iso|all')*selections.Selector('^Eta[A][BCD]*[C]$'))()
+
+egid_eta_eb_selections = (selections.Selector('^IDTight[EP]')*selections.Selector('^Eta[F]$|all'))()
+egid_iso_eta_eb_selections = (selections.Selector('^IDTight[EP]')*selections.Selector('^Iso|all')*selections.Selector('^Eta[F]$|all'))()
+
+
+for sel in egid_iso_etatk_selections:
+    print(sel)
+
+eg_emuCTl1_plotters = [
+    plotters.RatePlotter(
+        collections.EGStaEE, egid_eta_ee_selections),
+    plotters.RatePlotter(
+        collections.EGStaEB, egid_eta_eb_selections),
+    plotters.RatePlotter(
+        collections.TkEmEE, egid_iso_eta_eetk_selections),
+    plotters.RatePlotter(
+        collections.TkEmEB, egid_iso_eta_eb_selections),
+    plotters.RatePlotter(
+        collections.TkEleEE, egid_iso_eta_eetk_selections),
+    plotters.RatePlotter(
+        collections.TkEleEB, egid_iso_eta_eb_selections),
+]
+
+eg_emuCTl2_plotters = [
+    plotters.RatePlotter(
+        collections.TkEmL2, egid_iso_etatk_selections),
+    plotters.RatePlotter(
+        collections.TkEleL2, egid_iso_etatk_selections),
 ]

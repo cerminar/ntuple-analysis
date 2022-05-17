@@ -7,7 +7,7 @@ common:
     triolet: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v151A
+  plot_version: v152A
   run_clustering: False
   run_density_computation: False
 # +AccountingGroup = "group_u_CMS.u_zh.users"
@@ -64,7 +64,9 @@ collections:
     samples:
       - nugun_alleta_pu200
     plotters:
-      - !!python/name:cfg.rate.eg_emu_plotters
+      # - !!python/name:cfg.rate.eg_emu_plotters
+      - !!python/name:cfg.rate.eg_emuCTl1_plotters
+      - !!python/name:cfg.rate.eg_emuCTl2_plotters
     htc_jobflavor:
       microcentury
     priorities:
