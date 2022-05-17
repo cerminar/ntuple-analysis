@@ -81,8 +81,8 @@ egid_eta_eb_selections = (selections.Selector('^IDTight[EP]')*selections.Selecto
 egid_iso_eta_eb_selections = (selections.Selector('^IDTight[EP]')*selections.Selector('^Iso|all')*selections.Selector('^Eta[F]$|all'))()
 
 
-for sel in egid_iso_etatk_selections:
-    print(sel)
+# for sel in egid_iso_etatk_selections:
+#     print(sel)
 
 eg_emuCTl1_plotters = [
     plotters.RatePlotter(
