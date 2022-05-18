@@ -69,16 +69,16 @@ eg_emufw_plotters = [
 
 ]
 
-egid_eta_selections = (selections.Selector('^IDTightS')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[CD]$'))()
-egid_etatk_selections = (selections.Selector('^IDTight[EP]')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[C]$'))()
-egid_iso_etatk_selections = (selections.Selector('^IDTight[EP]')*selections.Selector('^Iso|all')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[C]$'))()
+egid_eta_selections = (selections.Selector('^IDTightS|all')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[CD]$'))()
+egid_etatk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[C]$'))()
+egid_iso_etatk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Iso|all')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[C]$'))()
 
-egid_eta_ee_selections = (selections.Selector('^IDTightS')*selections.Selector('^Eta[A][BCD]*[CD]$'))()
-egid_eta_eetk_selections = (selections.Selector('^IDTight[EP]')*selections.Selector('^Eta[A][BCD]*[C]$'))()
-egid_iso_eta_eetk_selections = (selections.Selector('^IDTight[EP]')*selections.Selector('^Iso|all')*selections.Selector('^Eta[A][BCD]*[C]$'))()
+egid_eta_ee_selections = (selections.Selector('^IDTightS|all')*selections.Selector('^Eta[A][BCD]*[CD]$'))()
+egid_eta_eetk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Eta[A][BCD]*[C]$'))()
+egid_iso_eta_eetk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Iso|all')*selections.Selector('^Eta[A][BCD]*[C]$'))()
 
-egid_eta_eb_selections = (selections.Selector('^IDTight[EP]')*selections.Selector('^Eta[F]$|all'))()
-egid_iso_eta_eb_selections = (selections.Selector('^IDTight[EP]')*selections.Selector('^Iso|all')*selections.Selector('^Eta[F]$|all'))()
+egid_eta_eb_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Eta[F]$|all'))()
+egid_iso_eta_eb_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Iso|all')*selections.Selector('^Eta[F]$|all'))()
 
 
 # for sel in egid_iso_etatk_selections:
