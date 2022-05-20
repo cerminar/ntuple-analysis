@@ -139,12 +139,12 @@ collections:
         - !!python/name:cfg.egvalid.l1tc_emu_genmatched
         - !!python/name:cfg.egvalid.l1tc_emu_rate_pt_wps
       htc_jobflavor:
-        workday
+        longlunch
       priorities:
         doubleele_flat1to100_PU0: 2
         doubleele_flat1to100_PU200: 7
         doublephoton_flat1to100_PU200: 6
       events_per_job:
         doubleele_flat1to100_PU0: 10000
-        doubleele_flat1to100_PU200: 10000
-        doublephoton_flat1to100_PU200: 10000
+        doubleele_flat1to100_PU200: 5000
+        doublephoton_flat1to100_PU200: 5000
