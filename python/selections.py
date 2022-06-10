@@ -11,7 +11,7 @@ from __future__ import print_function
 import json
 import os
 import re
-
+import python.pf_regions as pf_regions
 
 class PID:
     electron = 11
@@ -443,10 +443,10 @@ tracks_pt_sels = [Selection('all'),
 
 pfinput_regions = [
     Selection('all'),
-    Selection('PFinBRL', 'Barrel', 'eta_reg_4 | eta_reg_5 | eta_reg_6 | eta_reg_7 | eta_reg_8 | eta_reg_9'),  # 4 5 6 7 8 9 
-    Selection('PFinHGC', 'HgCal', 'eta_reg_3 | eta_reg_10'),  # 3 10
-    Selection('PFinHGCNoTk', 'HgCalNoTk', 'eta_reg_2 | eta_reg_11'),  # 2 11
-    Selection('PFinHF', 'HF', 'eta_reg_0 | eta_reg_1 | eta_reg_12 | eta_reg_13'),  # 0 1 12 13
+    Selection('PFinBRL', 'Barrel', ' | '.join([f'eta_reg_{r}' for r in pf_regions.regions['BRL']])),  # 4 5 6 7 8 9 
+    Selection('PFinHGC', 'HgCal', ' | '.join([f'eta_reg_{r}' for r in pf_regions.regions['HGC']])),  # 3 10
+    Selection('PFinHGCNoTk', 'HgCalNoTk', ' | '.join([f'eta_reg_{r}' for r in pf_regions.regions['HGCNoTk']])),  # 2 11
+    Selection('PFinHF', 'HF', ' | '.join([f'eta_reg_{r}' for r in pf_regions.regions['HF']])),  # 0 1 12 13
     ]
 
 pftkinput_quality = [

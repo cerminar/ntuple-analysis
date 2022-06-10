@@ -7,7 +7,7 @@ common:
     triolet: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v151D
+  plot_version: v152A
   run_clustering: False
   run_density_computation: False
 # +AccountingGroup = "group_u_CMS.u_zh.users"
@@ -27,4 +27,4 @@ collections:
     priorities:
       ttbar_PU200: 7
     events_per_job:
-      ttbar_PU200: 10000
+      ttbar_PU200: 4000

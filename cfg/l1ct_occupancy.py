@@ -4,9 +4,9 @@ import python.collections as collections
 import python.selections as selections
 
 
-pfin_hgc_tp_selections = (selections.Selector('^PFinH|all')*('^EgBdt*|^Em|all')*('PUId|all')*('^Pt[1,2,5]$|all'))()
-pfin_eb_selections = (selections.Selector('^PFinB|all')*('^Pt[1,2,5]$'))()
-pfin_tk_selections = (selections.Selector('^PFinBRL|^PFinHGC$|all')*('^TkPt'))()
+pfin_hgc_tp_selections = (selections.Selector('^EgBdtLE|^Em|all')*('PUId|all')*('^Pt[1,2,5]$|all'))()
+pfin_eb_selections = (selections.Selector('^Pt[1,2,5]$'))()
+pfin_tk_selections = (selections.Selector('^TkPt'))()
 
 
 # pfeg_tp_input_selections = (Selector('^PFinH')*('^Pt[1,2,5]$|all')*('^Em$|all'))()
@@ -23,7 +23,7 @@ l1tcorr_input_occ = [
         pfin_eb_selections),
     plotters.CorrOccupancyPlotter(
         collections.tk_pfinputs, 
-        selections.pftkinput_selections),
+        pfin_tk_selections),
 ]
 
 

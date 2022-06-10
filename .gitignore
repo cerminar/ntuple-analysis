@@ -115,3 +115,5 @@ plots1/selection.yaml
 plots1/t3.txt
 plots1/test.txt
 plots1/xemacs.csh
+.vscode/settings.json
+.vscode/tasks.json

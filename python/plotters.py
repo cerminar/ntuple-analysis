@@ -1043,10 +1043,12 @@ class CorrOccupancyPlotter(BasePlotter):
 
     def fill_histos_event(self, idx, debug=0):
         for selection in self.tp_selections:
-            sel_clusters = self.tp_set.query_event(selection, idx)
-            if not sel_clusters.empty:
+            sel_objs = self.tp_set.query_event(selection, idx)
+            # print(f'sel: {selection.name}:')
+            # print(sel_objs)
+            if not sel_objs.empty:
                 # print trigger_clusters.iloc[0]
-                self.h_occ[selection.name].fill(sel_clusters)
+                self.h_occ[selection.name].fill(sel_objs)
 
 
 class ClusterTCGenMatchPlotter(BasePlotter):

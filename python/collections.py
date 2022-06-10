@@ -1509,6 +1509,7 @@ EGStaEB_pfinputs = DFCollection(
     filler_function=lambda event, entry_block: EGStaEB.df,
     fixture_function=mapcalo2pfregions_in,
     depends_on=[EGStaEB],
+    print_function=lambda df: df.loc[~(df.eta_reg_4 | df.eta_reg_5 | df.eta_reg_6 | df.eta_reg_7 | df.eta_reg_8 | df.eta_reg_9), ['eta', 'phi', 'eta_reg_0', 'eta_reg_1', 'eta_reg_2', 'eta_reg_3', 'eta_reg_4', 'eta_reg_5', 'eta_reg_6', 'eta_reg_7', 'eta_reg_8', 'eta_reg_9', 'eta_reg_10', 'eta_reg_11', 'eta_reg_12', 'eta_reg_13']].sort_values(by='eta', ascending=False),
     debug=0)
 
 

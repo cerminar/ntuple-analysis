@@ -1566,7 +1566,34 @@ class CalibrationHistos(BaseTuples):
         self.t_values.Fill(array('f', values_fill))
 
 
+
+
+
 class CorrOccupancyHistos(BaseHistos):
+    class CorrBoardOccupancyHistos(object):
+        def __init__(self, name, board):
+            self.h_totOcc = ROOT.TH1F(f'{name}_{board}totOcc', f'{board} total occupancy; {board} total occ.', 500, 0, 500)
+            self.h_regOcc = ROOT.TH1F(f'{name}_{board}regOcc', f'{board} reg occupancy; {board} reg. occ.', 100, 0, 100)
+            self.h_maxOcc = ROOT.TH1F(f'{name}_{board}maxOcc', f'{board} max occupancy; {board} max occ.', 100, 0, 100)
+            
+            self.eta_regions_idx = pf_regions.regions[board]
+            self.max_count = 0
+            self.tot_count = 0
+
+        def fillRegion(self, ieta, occupancy):
+            if(ieta in self.eta_regions_idx):
+                if occupancy > self.max_count:
+                    self.max_count = occupancy
+                self.tot_count += occupancy
+                self.h_regOcc.Fill(occupancy)
+
+        def fillBoard(self):
+            self.h_maxOcc.Fill(self.max_count)
+            self.h_totOcc.Fill(self.tot_count)
+            self.max_count = 0
+            self.tot_count = 0
+
+
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
 
@@ -1578,36 +1605,49 @@ class CorrOccupancyHistos(BaseHistos):
                 pf_regions.regionizer.n_phi_regions(),
                 array('d', pf_regions.regionizer.phi_boundaries_fiducial_))
 
-            self.h_maxOcc = ROOT.TH1F(name+'_maxOcc', 'max occupancy;', 100, 0, 100)
-            self.h_totOcc = ROOT.TH1F(name+'_totOcc', 'total occupancy;', 500, 0, 500)
-            self.h_regOcc = ROOT.TH1F(name+'_regOcc', 'reg occupancy;', 100, 0, 100)
-
-            self.eta_regions_idx = range(0, pf_regions.regionizer.n_eta_regions())
-            for key in ['all', 'BRL', 'HGCNoTk', 'HGC', 'HF']:
-                if key in name:
-                    self.eta_regions_idx = pf_regions.regions[key]
+            self.board_histos = []
+            for board in ['ALL', 'BRL', 'HGCNoTk', 'HGC']:
+                bhs = CorrOccupancyHistos.CorrBoardOccupancyHistos(name, board)
+                setattr(self, f'h_{board}totOcc', bhs.h_totOcc)
+                setattr(self, f'h_{board}regOcc', bhs.h_regOcc)
+                setattr(self, f'h_{board}maxOcc', bhs.h_maxOcc)
+                self.board_histos.append(bhs)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, objects):
-        max_count = 0
-        tot_count = 0
-        for ieta in self.eta_regions_idx:
+        for ieta in range(0, pf_regions.regionizer.n_eta_regions()):
             for iphi in range(0, pf_regions.regionizer.n_phi_regions()):
                 occupancy = len(objects[objects['eta_reg_{}'.format(ieta)] & objects['phi_reg_{}'.format(iphi)]].index)
-
-                # print occupancy
                 self.h_avgOcc.Fill(pf_regions.regionizer.eta_centers[ieta],
                                    pf_regions.regionizer.phi_centers[iphi],
                                    occupancy)
-                self.h_regOcc.Fill(occupancy)
-                if occupancy > max_count:
-                    max_count = occupancy
-                tot_count += occupancy
-        # print objects[:10]
-        # print max_count
-        self.h_maxOcc.Fill(max_count)
-        self.h_totOcc.Fill(tot_count)
+                for bhs in self.board_histos:
+                    bhs.fillRegion(ieta, occupancy)
+                        
+        for bhs in self.board_histos:
+            bhs.fillBoard()
+            
+
+# for convenience we define some sets
+class HistoSetOccupancy():
+    def __init__(self, name, root_file=None, debug=False):
+        self.htc = TCHistos('h_tc_'+name, root_file, debug)
+        self.hcl2d = ClusterHistos('h_cl2d_'+name, root_file, debug)
+        self.hcl3d = Cluster3DHistos('h_cl3d_'+name, root_file, debug)
+        # if not root_file:
+        #     self.htc.annotateTitles(name)
+        #     self.hcl2d.annotateTitles(name)
+        #     self.hcl3d.annotateTitles(name)
+
+    def fill(self, tcs, cl2ds, cl3ds):
+        self.htc.fill(tcs)
+        self.hcl2d.fill(cl2ds)
+        self.hcl3d.fill(cl3ds)
+
+
+
+
 
 
 class TCClusterMatchHistos(BaseHistos):

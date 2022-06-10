@@ -75,9 +75,12 @@ class PFRegionizer(object):
 regionizer = PFRegionizer()
 
 regions = {
-    'all': range(0, regionizer.n_eta_regions()),
-    'BRL': [4, 5, 6],
-    'HGC': [3, 7],
-    'HGCNoTk': [2, 8],
-    'HF': [0, 1, 9, 10]
+    'ALL': range(0, regionizer.n_eta_regions()),
+    'BRL': [4, 5, 6, 7, 8, 9],
+    'HGC': [3, 10],
+    'HGCNoTk': [2, 11],
+    'HF': [0, 1, 12, 13]
 }
+
+if __name__ == "__main__":
+    print(' | '.join([f'eta_reg_{r}' for r in regions['HGC']]))
