@@ -23,8 +23,8 @@ collections:
     plotters:
       - !!python/name:cfg.l1ct_occupancy.l1tcorr_input_occ
     htc_jobflavor:
-      microcentury
+      workday
     priorities:
       ttbar_PU200: 7
     events_per_job:
-      ttbar_PU200: 4000
+      ttbar_PU200: 10000
