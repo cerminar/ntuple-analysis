@@ -41,4 +41,4 @@ collections:
     priorities:
       ttbar_PU200: 7
     events_per_job:
-      ttbar_PU200: 10000
+      ttbar_PU200: 5000
