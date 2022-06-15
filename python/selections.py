@@ -459,6 +459,18 @@ pftkinput_quality = [
     Selection('TkPt10', 'p_{T}^{TOBJ} > 10GeV', '(pt > 10)'),
     ]
 
+pf_matchedtk_input_quality = [
+    Selection('all'),
+    Selection('MTkPt2Chi2', 'p_{T}^{Tk} > 2GeV & #Chi^{2}_{norm} < 15', '(tkpt > 2) & (tkchi2red < 15)'),
+    Selection('MTkPt2', 'p_{T}^{Tk} > 2GeV', '(tkpt > 2)'),
+    Selection('MTkPt2Chi2Pt5', '(p_{T}^{Tk} > 2GeV & #Chi^{2}_{norm} < 15) | p_{T}^{Tk} > 5GeV ', '((tkpt > 2) & (tkchi2red < 15) | (tkpt > 5))'),
+    # Selection('MTkPt2Chi2Pt10', '(p_{T}^{Tk} > 2GeV & #Chi^{2}_{norm} < 15) | p_{T}^{Tk} > 10GeV ', '((tkpt > 2) & (tkchi2red < 15) | (tkpt > 10))'),
+    Selection('MTkPt5', 'p_{T}^{Tk} > 5GeV', '(tkpt > 5)'),
+    # Selection('MTkPt10', 'p_{T}^{Tk} > 10GeV', '(tkpt > 10)'),
+    ]
+
+
+
 pfeginput_pt = [
     Selection('all'),
     Selection('Pt1', 'p_{T}^{TOBJ}>=1GeV', 'pt >= 1'),

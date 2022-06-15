@@ -5,6 +5,7 @@ import python.selections as selections
 
 
 pfin_hgc_tp_selections = (selections.Selector('^EgBdtLE|^Em|all')*('PUId|all')*('^Pt[1,2,5]$|all'))()
+pfin_tkcl3dmatch_selections = (selections.Selector('PUId')*('^EgBdtLE|all')*('^Pt[1,2,5]$|all')*('^MTkPt[1,2,5]|all'))()
 pfin_eb_selections = (selections.Selector('^Pt[1,2,5]$'))()
 pfin_tk_selections = (selections.Selector('^TkPt'))()
 
@@ -28,7 +29,21 @@ l1tcorr_input_occ = [
 
 
 
+l1tcorr_tkcl3dmatch_input_occ = [
+    plotters.CorrOccupancyPlotter(
+        collections.tkCl3DMatch, 
+        pfin_tkcl3dmatch_selections),
+    plotters.CorrOccupancyPlotter(
+        collections.hgc_cl3d_pfinputs, 
+        pfin_hgc_tp_selections),
+    plotters.CorrOccupancyPlotter(
+        collections.tk_pfinputs, 
+        pfin_tk_selections),
+]
 
+
+# for sel in pfin_tkcl3dmatch_selections:
+#     print(sel)
 
 # # print('\n'.join([str(sel) for sel in hgc_tp_rate_selections]))
 # hgc_tp_unmatched = [

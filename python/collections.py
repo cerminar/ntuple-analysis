@@ -30,6 +30,7 @@ from python.mp_pool import POOL
 import python.classifiers as classifiers
 import python.calibrations as calib
 import python.pf_regions as pf_regions
+from scipy.spatial import cKDTree    
 
 
 class WeightFile(object):
@@ -493,9 +494,71 @@ def get_merged_cl3d(triggerClusters, pool, debug=0):
 
 
 def get_trackmatched_egs(egs, tracks, debug=0):
-    newcolumns = ['pt', 'energy', 'eta', 'phi', 'hwQual']
-    newcolumns.extend(['tkpt', 'tketa', 'tkphi', 'tkz0', 'tkchi2', 'tkchi2Red', 'tknstubs', 'deta', 'dphi', 'dr'])
-    matched_egs = pd.DataFrame(columns=newcolumns)
+    entries = tracks.df.index.get_level_values('entry').union(egs.df.index.get_level_values('entry')).unique()
+    
+    data = []
+    index = []
+    for entry in entries:
+        subentry = 0
+        kd_tree1 = cKDTree(egs.df.loc[entry][['eta', 'phi']])
+        kd_tree2 = cKDTree(tracks.df.loc[entry][['caloeta', 'calophi']])
+        sdm = kd_tree1.sparse_distance_matrix(kd_tree2, 0.2)
+        for key,dr in sdm.items():
+            eg_match = egs.df.loc[(entry, key[0])]
+            tk_match = tracks.df.loc[(entry, key[1])]
+            index.append((entry, subentry))
+            data_entry=[
+                eg_match.pt_em, 
+                eg_match.eta, 
+                eg_match.phi, 
+                eg_match.quality, 
+                eg_match.bdteg, 
+                eg_match.bdt_pu, 
+                tk_match.pt,
+                tk_match.eta,
+                tk_match.phi,
+                tk_match.caloeta,
+                tk_match.calophi,
+                tk_match.z0,
+                tk_match.chi2,
+                tk_match.chi2Red,
+                dr,
+                key[0],
+                key[1]]
+
+            data.append(data_entry)
+            subentry += 1
+    
+    newcolumns = ['pt', 'eta', 'phi', 'quality', 'bdteg', 'bdt_pu']
+    newcolumns.extend(['tkpt', 'tketa', 'tkphi', 'tkcaloeta', 'tkcalophi', 'tkz0', 'tkchi2', 'tkchi2red', 'dr', 'clidx', 'tkidx'])
+    
+    newindex = pd.MultiIndex.from_tuples(index, names=egs.df.index.names)
+    matched_egs = pd.DataFrame(data=data, columns=newcolumns, index=newindex)
+
+    return matched_egs
+    # print(entries)
+
+
+
+    #      self.entries = self.df.index.get_level_values('entry').unique()
+    #     if debug > 2:
+    #         print(f'read coll. {self.name} from entry: {event.file_entry} to entry: {event.file_entry+stride} (stride: {stride}), # rows: {self.df.shape[0]}, # entries: {len(self.entries)}')
+
+    # def query(self, selection):
+    #     self.n_queries += 1
+    #     if selection.all or self.df.empty:
+    #         return self.df
+    #     if selection.selection not in self.cached_queries:
+    #         ret = self.df.query(selection.selection)
+    #         self.cached_queries[sys.intern(selection.selection)] = ret
+    #         entries = ret.index.get_level_values('entry').unique()
+    #         self.cached_entries[selection.hash] = entries
+    #         return ret
+    #     return self.cached_queries[selection.selection]
+
+    # def query_event(self, selection, idx):
+    #     self.n_queries += 1
+    
     # FIXME: need to be ported to uproot multiindexing
     #
     #
@@ -506,7 +569,7 @@ def get_trackmatched_egs(egs, tracks, debug=0):
     #                                               tracks['pt'],
     #                                               deltaR=0.1)
     # for bestmatch_idxes in best_match_indexes.iteritems():
-    #     bestmatch_eg = egs.loc[bestmatch_idxes[0]]
+    # #     bestmatch_eg = egs.loc[bestmatch_idxes[0]]
     #     bestmatch_tk = tracks.loc[bestmatch_idxes[1]]
     #     matched_egs = matched_egs.append({'pt': bestmatch_eg.pt,
     #                                       'energy': bestmatch_eg.energy,
@@ -1168,16 +1231,12 @@ tkisoeles = DFCollection(
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='tkIsoEle', entry_block=entry_block))
 
-tkegs = DFCollection(
-    name='TkEG', label='TkEG',
-    filler_function=lambda event, entry_block: get_trackmatched_egs(egs=egs.df, tracks=tracks.df),
-    depends_on=[egs, tracks],
-    debug=0)
+
 
 tkegs_shape_calib = DFCollection(
     name='TkEGshapeCalib', label='TkEGshapecalib',
     filler_function=lambda event, entry_block: get_trackmatched_egs(egs=cl3d_hm_shape_calib.df, tracks=tracks.df),
-    fixture_function=tkeg_fromcluster_fixture,
+    # fixture_function=tkeg_fromcluster_fixture,
     depends_on=[cl3d_hm_shape_calib, tracks],
     debug=0)
 # tkegs_shape_calib.activate()
@@ -1452,10 +1511,10 @@ tkem_EB_pf_reg = DFCollection(
     debug=0)
 
 tk_pfinputs = DFCollection(
-    name='L1Trk', label='L1Track',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='l1Trk', entry_block=entry_block),
+    name='L1TrkPfIn', label='L1Track Input',
+    filler_function=lambda event, entry_block: tracks.df,
     fixture_function=maptk2pfregions_in,
+    depends_on=[tracks],
     debug=0)
 
 eg_EE_pfinputs = DFCollection(
@@ -1492,7 +1551,7 @@ hgc_cl3d = DFCollection(
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='Cl3D', entry_block=entry_block, fallback='HMvDR'),
     fixture_function=lambda clusters: cl3d_fixtures(clusters),
-    read_entry_block=500,
+    # read_entry_block=500,
     debug=0,
     print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'phi', 'quality', 'pt_em', 'bdt_pu']].sort_values(by='pt', ascending=False))
 # hgc_cl3d.activate()
@@ -1511,6 +1570,15 @@ EGStaEB_pfinputs = DFCollection(
     depends_on=[EGStaEB],
     print_function=lambda df: df.loc[~(df.eta_reg_4 | df.eta_reg_5 | df.eta_reg_6 | df.eta_reg_7 | df.eta_reg_8 | df.eta_reg_9), ['eta', 'phi', 'eta_reg_0', 'eta_reg_1', 'eta_reg_2', 'eta_reg_3', 'eta_reg_4', 'eta_reg_5', 'eta_reg_6', 'eta_reg_7', 'eta_reg_8', 'eta_reg_9', 'eta_reg_10', 'eta_reg_11', 'eta_reg_12', 'eta_reg_13']].sort_values(by='eta', ascending=False),
     debug=0)
+
+tkCl3DMatch = DFCollection(
+    name='TkCl3DMatch', label='TkCl3DMatch',
+    filler_function=lambda event, entry_block: get_trackmatched_egs(egs=hgc_cl3d, tracks=tracks),
+    fixture_function=mapcalo2pfregions_in,    
+    depends_on=[hgc_cl3d, tracks],
+    debug=0)
+# tkCl3DMatch.activate()
+
 
 
 class TPSet:
