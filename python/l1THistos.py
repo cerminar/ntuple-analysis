@@ -1575,23 +1575,28 @@ class CorrOccupancyHistos(BaseHistos):
             self.h_totOcc = ROOT.TH1F(f'{name}_{board}totOcc', f'{board} total occupancy; {board} total occ.', 500, 0, 500)
             self.h_regOcc = ROOT.TH1F(f'{name}_{board}regOcc', f'{board} reg occupancy; {board} reg. occ.', 100, 0, 100)
             self.h_maxOcc = ROOT.TH1F(f'{name}_{board}maxOcc', f'{board} max occupancy; {board} max occ.', 100, 0, 100)
-            
+            self.h_maxMult = ROOT.TH1F(f'{name}_{board}maxMult', f'{board} max multiplicity per cluster; {board} max mult. per cluster', 100, 0, 100)
             self.eta_regions_idx = pf_regions.regions[board]
             self.max_count = 0
             self.tot_count = 0
+            self.max_mult_percluster = 0
 
-        def fillRegion(self, ieta, occupancy):
+        def fillRegion(self, ieta, occupancy, multpercluster):
             if(ieta in self.eta_regions_idx):
                 if occupancy > self.max_count:
                     self.max_count = occupancy
                 self.tot_count += occupancy
                 self.h_regOcc.Fill(occupancy)
+                if multpercluster > self.max_mult_percluster:
+                    self.max_mult_percluster = multpercluster
 
         def fillBoard(self):
             self.h_maxOcc.Fill(self.max_count)
             self.h_totOcc.Fill(self.tot_count)
+            self.h_maxMult.Fill(self.max_mult_percluster)
             self.max_count = 0
             self.tot_count = 0
+            self.max_mult_percluster = 0
 
 
     def __init__(self, name, root_file=None, debug=False):
@@ -1611,6 +1616,7 @@ class CorrOccupancyHistos(BaseHistos):
                 setattr(self, f'h_{board}totOcc', bhs.h_totOcc)
                 setattr(self, f'h_{board}regOcc', bhs.h_regOcc)
                 setattr(self, f'h_{board}maxOcc', bhs.h_maxOcc)
+                setattr(self, f'h_{board}maxMult', bhs.h_maxMult)
                 self.board_histos.append(bhs)
 
         BaseHistos.__init__(self, name, root_file, debug)
@@ -1618,12 +1624,17 @@ class CorrOccupancyHistos(BaseHistos):
     def fill(self, objects):
         for ieta in range(0, pf_regions.regionizer.n_eta_regions()):
             for iphi in range(0, pf_regions.regionizer.n_phi_regions()):
-                occupancy = len(objects[objects['eta_reg_{}'.format(ieta)] & objects['phi_reg_{}'.format(iphi)]].index)
+                objs_in_region = objects[objects['eta_reg_{}'.format(ieta)] & objects['phi_reg_{}'.format(iphi)]]
+                nmatch_percluster = 0
+                if 'clidx' in objs_in_region.columns and not objs_in_region.empty:
+                    nmatch_percluster = objs_in_region.clidx.value_counts().iloc[0]
+                occupancy = objs_in_region.shape[0]
+                
                 self.h_avgOcc.Fill(pf_regions.regionizer.eta_centers[ieta],
                                    pf_regions.regionizer.phi_centers[iphi],
                                    occupancy)
                 for bhs in self.board_histos:
-                    bhs.fillRegion(ieta, occupancy)
+                    bhs.fillRegion(ieta, occupancy, nmatch_percluster)
                         
         for bhs in self.board_histos:
             bhs.fillBoard()
