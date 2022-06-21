@@ -638,6 +638,7 @@ class GenericGenMatchPlotter(BasePlotter):
     def book_histos(self):
         self.gen_set.activate()
         self.data_set.activate()
+        # print(f'# data sel: {len(self.data_selections)} x # gen sel: {len(self.gen_selections)} = {len(self.data_selections)*len(self.gen_selections)}')
         for tp_sel in self.data_selections:
             for gen_sel in self.gen_selections:
                 histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
