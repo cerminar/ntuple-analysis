@@ -140,7 +140,24 @@ class XrdFileSystem(FileSystem):
         for line in lines:
             line = line.decode('utf-8')
             parts = line.split()
-            ret.append(FileEntry(parts[4], f'{parts[1]} {parts[2]}', parts[0], '', '', parts[2]))
+            if len(parts) == 7:
+                ret.append(
+                    FileEntry(
+                        name=parts[6], 
+                        date=f'{parts[3]} {parts[4]}', 
+                        attributes=parts[0], 
+                        owner=parts[1], 
+                        group=parts[2], 
+                        size=parts[3]))
+            else:
+                ret.append(
+                    FileEntry(
+                        name=parts[4], 
+                        date=f'{parts[1]} {parts[2]}', 
+                        attributes=parts[0], 
+                        owner='', 
+                        group='', 
+                        size=parts[2]))
         return ret
 
     def checksum_cmd(self, filename):
@@ -461,9 +478,14 @@ if __name__ == "__main__":
     rfiles = [f.name for f in local_fs.list_dir(path=dir) if '.root' in f.name]
     print (f'# files: {len(rfiles)}')
     
+
     print(f'Checksum file: {rfiles[0]}: {local_fs.checksum(rfiles[0])}')
 
+    print ('List eos dir: /eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/ntuples/TT_TuneCP5_14TeV-powheg-pythia8/TT_PU200_v81C/')
     xrd_fs = XrdFileSystem(protocol='root://eoscms.cern.ch')
+    res =  xrd_fs.list_dir(path=u'/eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/ntuples/TT_TuneCP5_14TeV-powheg-pythia8/TT_PU200_v81C/')
+    print([f.name for f in res])
+
     for f in xrd_fs.list_dir(path=u'/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v53/'):
         print(f)
 
