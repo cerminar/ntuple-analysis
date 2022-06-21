@@ -993,11 +993,11 @@ class ResoHistos(BaseResoHistos):
         reference_pt, reference_energy, reference_eta = \
             reference.pt, reference.energy, reference.eta
 
-        self.h_ptRes.Fill((target_pt - reference_pt)/reference_pt)
-        # self.h_energyRes.Fill(target_energy - reference.energy)
-        self.h_ptResVeta.Fill(reference_eta, target_pt - reference_pt)
-        self.h_ptResVpt.Fill(reference_pt, target_pt - reference_pt)
-        # self.h_energyResVeta.Fill(reference_eta, (target_energy - reference_energy)/reference_energy)
+        # self.h_ptRes.Fill((target_pt - reference_pt)/reference_pt)
+        # # self.h_energyRes.Fill(target_energy - reference.energy)
+        # self.h_ptResVeta.Fill(reference_eta, target_pt - reference_pt)
+        # self.h_ptResVpt.Fill(reference_pt, target_pt - reference_pt)
+        # # self.h_energyResVeta.Fill(reference_eta, (target_energy - reference_energy)/reference_energy)
         # self.h_energyResVenergy.Fill(reference_energy, (target_energy - reference_energy)/reference_energy)
         # self.h_energyResVnclu.Fill(target.nclu, target_energy - reference.energy)
         # self.h_ptResVnclu.Fill(target.nclu, target_pt - reference_pt)
