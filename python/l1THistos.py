@@ -984,11 +984,10 @@ class ResoHistos(BaseResoHistos):
     def fill(self, reference, target):
         target_line = target.iloc[0]
         target_pt = target_line.pt
-        target_ptem = target_line.pt_em
-        target_energy = target_line.energy
+        # target_energy = target_line.energy
         target_eta = target_line.eta
         target_phi = target_line.phi
-        target_nclu = target_line.nclu
+        # target_nclu = target_line.nclu
 
         reference_pt, reference_energy, reference_eta = \
             reference.pt, reference.energy, reference.eta
@@ -1008,8 +1007,11 @@ class ResoHistos(BaseResoHistos):
         # self.h_ptRespVnclu.Fill(target_nclu, target_pt/reference_pt)
         # self.h_ptRespVetaVptL1.Fill(abs(target_eta), target_pt, target_pt/reference_pt)
 
-        self.h_ptemResp.Fill(target_ptem/reference_pt)
-        self.h_ptemRespVpt.Fill(reference_pt, target_ptem/reference_pt)
+        if 'pt_em' in target:
+            target_ptem = target_line.pt_em
+
+            self.h_ptemResp.Fill(target_ptem/reference_pt)
+            self.h_ptemRespVpt.Fill(reference_pt, target_ptem/reference_pt)
 
         # if 'energyCore' in target:
         #     self.h_coreEnergyRes.Fill(target_energyCore - reference.energy)

@@ -14,6 +14,9 @@ hgc_tp_selections = (selections.Selector('^EgBdt*|^Em|all')*('PUId|all'))()
 # hgc_tp_selections = (selections.Selector('^Eta[BC]+[CD]$|^Eta[A]$|all'))()
 hgc_tp_rate_selections = (selections.Selector('^EgBdt*|^Em|all')*('PUId|all')*('^Eta[ABC]+[CD]$|all'))()
 
+tkcl3dmatch_selections = (selections.Selector('PUId')*('^EgBdtLE|all')*('^Pt[1,2,5]$|all')*('^Eta[ABC]+[CD]$|all')*('^MTkPt[1,2,5]|all'))()
+
+
 # print('\n'.join([str(sel) for sel in hgc_tp_rate_selections]))
 hgc_tp_unmatched = [
     plotters.Cl3DPlotter(collections.hgc_cl3d, hgc_tp_selections)
@@ -37,3 +40,10 @@ hgc_tp_rate_pt_wps = [
         collections.hgc_cl3d, collections.sim_parts, 
         gen_ee_selections)
 ]
+
+hgc_tp_tkmatch_genmatched = [
+    plotters.Cl3DGenMatchPlotter(
+        collections.tkCl3DMatch, collections.sim_parts,
+        tkcl3dmatch_selections, gen_ee_selections)                                 
+]
+
