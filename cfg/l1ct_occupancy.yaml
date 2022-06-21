@@ -34,11 +34,14 @@ collections:
       l1ctmatch
     samples:
       - ttbar_PU200
+      - doubleele_flat1to100_PU200
     plotters:
       - !!python/name:cfg.l1ct_occupancy.l1tcorr_tkcl3dmatch_input_occ
     htc_jobflavor:
       workday
     priorities:
       ttbar_PU200: 7
+      doubleele_flat1to100_PU200: 6
     events_per_job:
       ttbar_PU200: 5000
+      doubleele_flat1to100_PU200: 5000
