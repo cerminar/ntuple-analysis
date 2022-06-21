@@ -57,7 +57,7 @@ collections:
     plotters:
       - !!python/name:cfg.hgctps.hgc_tp_tkmatch_genmatched
     htc_jobflavor:
-      microcentury
+      longlunch
     priorities:
       doubleele_flat1to100_PU0: 2
       doubleele_flat1to100_PU200: 7
