@@ -451,7 +451,10 @@ pfinput_regions = [
 
 pftkinput_quality = [
     Selection('all'),
-    Selection('TkPt2Chi2', 'p_{T}^{TOBJ} > 2GeV & #Chi^{2}_{norm} < 15', '(pt > 2) & (chi2Red < 15) & (nStubs >= 4)'),
+    Selection('TkPt2Chi2', 'p_{T}^{TOBJ} > 2GeV & #Chi^{2}_{norm} < 15', '(pt > 2) & (chi2Red < 15)'),
+    Selection('TkPt3Chi2', 'p_{T}^{TOBJ} > 3GeV & #Chi^{2}_{norm} < 15', '(pt > 3) & (chi2Red < 15)'),
+    Selection('TkPt4Chi2', 'p_{T}^{TOBJ} > 4GeV & #Chi^{2}_{norm} < 15', '(pt > 4) & (chi2Red < 15)'),
+    Selection('TkPt5Chi2', 'p_{T}^{TOBJ} > 5GeV & #Chi^{2}_{norm} < 15', '(pt > 5) & (chi2Red < 15)'),
     Selection('TkPt2', 'p_{T}^{TOBJ} > 2GeV', '(pt > 2) & (nStubs >= 4)'),
     Selection('TkPt2Chi2Pt5', '(p_{T}^{TOBJ} > 2GeV & #Chi^{2}_{norm} < 15) | p_{T}^{TOBJ} > 5GeV ', '((pt > 2) & (chi2Red < 15) | (pt > 5))  & (nStubs >= 4)'),
     Selection('TkPt2Chi2Pt10', '(p_{T}^{TOBJ} > 2GeV & #Chi^{2}_{norm} < 15) | p_{T}^{TOBJ} > 10GeV ', '((pt > 2) & (chi2Red < 15) | (pt > 10)) & (nStubs >= 4)'),
@@ -462,6 +465,9 @@ pftkinput_quality = [
 pf_matchedtk_input_quality = [
     Selection('all'),
     Selection('MTkPt2Chi2', 'p_{T}^{Tk} > 2GeV & #Chi^{2}_{norm} < 15', '(tkpt > 2) & (tkchi2red < 15)'),
+    Selection('MTkPt3Chi2', 'p_{T}^{Tk} > 3GeV & #Chi^{2}_{norm} < 15', '(tkpt > 3) & (tkchi2red < 15)'),
+    Selection('MTkPt4Chi2', 'p_{T}^{Tk} > 4GeV & #Chi^{2}_{norm} < 15', '(tkpt > 4) & (tkchi2red < 15)'),
+    Selection('MTkPt5Chi2', 'p_{T}^{Tk} > 5GeV & #Chi^{2}_{norm} < 15', '(tkpt > 5) & (tkchi2red < 15)'),
     Selection('MTkPt2', 'p_{T}^{Tk} > 2GeV', '(tkpt > 2)'),
     Selection('MTkPt2Chi2Pt5', '(p_{T}^{Tk} > 2GeV & #Chi^{2}_{norm} < 15) | p_{T}^{Tk} > 5GeV ', '((tkpt > 2) & (tkchi2red < 15) | (tkpt > 5))'),
     # Selection('MTkPt2Chi2Pt10', '(p_{T}^{Tk} > 2GeV & #Chi^{2}_{norm} < 15) | p_{T}^{Tk} > 10GeV ', '((tkpt > 2) & (tkchi2red < 15) | (tkpt > 10))'),
