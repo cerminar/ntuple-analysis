@@ -41,8 +41,8 @@ hgc_tp_rate_pt_wps = [
         gen_ee_selections)
 ]
 
-for sel in tkcl3dmatch_selections:
-    print(sel)
+# for sel in tkcl3dmatch_selections:
+#     print(sel)
 
 hgc_tp_tkmatch_genmatched = [
     plotters.Cl3DGenMatchPlotter(

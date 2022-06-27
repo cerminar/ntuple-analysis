@@ -64,7 +64,7 @@ collections:
       doublephoton_flat1to100_PU200: 6
     events_per_job:
       doubleele_flat1to100_PU0: 10000
-      doubleele_flat1to100_PU200: 1000
+      doubleele_flat1to100_PU200: 4000
       doublephoton_flat1to100_PU200: 5000
 
 
