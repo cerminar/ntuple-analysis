@@ -133,6 +133,42 @@ l1tc_emu_genmatched = [
 ]
 
 
+l1tc_l1emu_eb_genmatched = [
+    # plotters.EGGenMatchPlotter(
+    #     collections.EGStaEB, collections.sim_parts,
+    #     egid_sta_selections, selections.gen_eb_selections),
+    plotters.EGGenMatchPlotter(
+        collections.TkEleEB, collections.sim_parts,
+        egid_iso_tkele_selections, selections.gen_eb_selections),
+    plotters.EGGenMatchPlotter(
+        collections.TkEmEB, collections.sim_parts,
+        egid_iso_tkpho_selections, selections.gen_eb_selections),
+]
+
+l1tc_l1emu_ee_genmatched = [
+    # plotters.EGGenMatchPlotter(
+    #     collections.EGStaEE, collections.sim_parts,
+    #     egid_sta_selections, gen_ee_selections),
+    plotters.EGGenMatchPlotter(
+        collections.TkEleEE, collections.sim_parts,
+        egid_iso_tkele_selections, gen_ee_tk_selections),
+    plotters.EGGenMatchPlotter(
+        collections.TkEmEE, collections.sim_parts,
+        egid_iso_tkpho_selections, gen_ee_tk_selections),
+]
+
+l1tc_l2emu_genmatched = [
+    plotters.EGGenMatchPlotter(
+        collections.TkEmL2, collections.sim_parts,
+        egid_iso_tkpho_selections, selections.gen_selections),
+    plotters.EGGenMatchPlotter(
+        collections.TkEleL2, collections.sim_parts,
+        egid_iso_tkele_selections, selections.gen_selections),   
+]
+
+
+
+
 l1tc_emu_rate_pt_wps = [
     # plotters.EGGenMatchPtWPSPlotter(
     #     collections.EGStaEE, collections.sim_parts,
