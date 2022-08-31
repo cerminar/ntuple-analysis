@@ -137,7 +137,35 @@ collections:
         # - dyll_PU200
       plotters:
         - !!python/name:cfg.egvalid.l1tc_emu_genmatched
-        - !!python/name:cfg.egvalid.l1tc_emu_rate_pt_wps
+        # - !!python/name:cfg.egvalid.l1tc_emu_rate_pt_wps
+      htc_jobflavor:
+        longlunch
+      priorities:
+        doubleele_flat1to100_PU0: 2
+        doubleele_flat1to100_PU200: 7
+        doublephoton_flat1to100_PU200: 6
+      events_per_job:
+        doubleele_flat1to100_PU0: 10000
+        doubleele_flat1to100_PU200: 5000
+        doublephoton_flat1to100_PU200: 5000
+
+
+  egvalid_l1tc_l1emu:
+      file_label:
+        eg
+      samples:
+        # - ele_flat2to100_PU0
+        # - ele_flat2to100_PU200
+        # - doubleele_flat1to100_PU0
+        - doublephoton_flat1to100_PU200
+        - doubleele_flat1to100_PU200
+        # - photon_flat8to150_PU0
+        # - photon_flat8to150_PU200
+        # - dyll_PU200
+      plotters:
+        - !!python/name:cfg.egvalid.l1tc_l1emu_eb_genmatched
+        # - !!python/name:cfg.egvalid.l1tc_l1emu_ee_genmatched
+        # - !!python/name:cfg.egvalid.l1tc_emu_rate_pt_wps
       htc_jobflavor:
         longlunch
       priorities:
