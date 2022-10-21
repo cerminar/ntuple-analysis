@@ -91,9 +91,9 @@ l1tc_rate_pt_wps = [
 ]
 
 
-egid_sta_selections = (selections.Selector('^IDTightS|all')*('^Pt[1-4][0]$|all'))()
-egid_iso_tkele_selections = (selections.Selector('^IDTight[E]|all')*('^Pt[1-4][0]$|all'))()
-egid_iso_tkpho_selections = (selections.Selector('^IDTight[P]|all')*('^Pt[1-4][0]$|all'))()
+egid_sta_selections = (selections.Selector('^IDTightS|all')*('^Pt[1-3][0]$|all'))()
+egid_iso_tkele_selections = (selections.Selector('^IDTight[E]|all')*('^Pt[1-3][0]$|all')*('^Iso0p[1-2]|all'))()
+egid_iso_tkpho_selections = (selections.Selector('^IDTight[P]|all')*('^Pt[1-3][0]$|all')*('^Iso0p[1-2]|all'))()
 
 
 gen_selections = (selections.Selector('GEN$')*('^Eta[F]$|^Eta[AF][ABCD]*[C]$|all')+selections.Selector('GEN$')*('^Ee|all')*('^Pt15|^Pt30'))()
