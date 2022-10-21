@@ -67,6 +67,8 @@ class TreeReader(object):
             self.n_tot_entries,
             datetime.datetime.now(),
             resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1E6))
+        # print(self.tree.keys())
+        # print(self.tree.arrays(['run', 'lumi', 'event'], library='pd', entry_start=self.file_entry, entry_stop=self.file_entry+1))
         # self.dump_garbage()
     
     def dump_garbage(self):

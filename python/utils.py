@@ -1,6 +1,7 @@
 from __future__ import print_function
 import math as m
 import numpy as np
+import pandas as pd
 from scipy.spatial import cKDTree
 
 
@@ -62,10 +63,15 @@ def match_etaphi(ref_etaphi, trigger_etaphi, trigger_pt, deltaR=0.2, return_posi
     return best_match_indices, all_matches_indices
 
 
-def debugPrintOut(level, name, toCount, toPrint):
+def debugPrintOut(level, name, toCount, toPrint, max_lines=-1):
     if level == 0:
         return
     if level >= 3:
         print(('# {}: {}'.format(name, len(toCount))))
     if level >= 4 and not toPrint.empty:
-        print(toPrint)
+        print(max_lines)
+        if max_lines != -1:
+            with pd.option_context('display.max_rows', max_lines, 'display.max_columns', None,):
+                print(toPrint)
+        else:
+            print(toPrint)

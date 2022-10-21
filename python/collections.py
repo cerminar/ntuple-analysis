@@ -129,6 +129,7 @@ class DFCollection(object):
                  depends_on=[],
                  debug=0,
                  print_function=lambda df: df,
+                 max_print_lines=-1,
                  weight_function=None):
         self.df = None
         self.name = name
@@ -139,6 +140,7 @@ class DFCollection(object):
         self.depends_on = depends_on
         self.debug = debug
         self.print_function = print_function
+        self.max_print_lines = max_print_lines
         self.weight_function = weight_function
         self.n_queries = 0
         self.cached_queries = dict()
@@ -205,7 +207,8 @@ class DFCollection(object):
                 df_print = self.df.loc[event.file_entry]
             debugPrintOut(max(debug, self.debug), self.label,
                           toCount=df_print,
-                          toPrint=self.print_function(df_print))
+                          toPrint=self.print_function(df_print),
+                          max_lines=self.max_print_lines)
 
     def fill_real(self, event, stride, weight_file=None, debug=0):
         self.clear_query_cache(debug)
@@ -831,14 +834,16 @@ def decodedTk_fixtures(objects):
 calib_mgr = calib.CalibManager()
 
 gen = DFCollection(
-    name='MC', label='MC particles',
+    name='GEN', label='GEN particles',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='gen', entry_block=entry_block),
     fixture_function=mc_fixtures,
+    print_function=lambda df: df[['pdgid', 'pt', 'eta', 'phi', 'daughters']],
+    max_print_lines=None,
     debug=0)
 
 sim_parts = DFCollection(
-    name='GEN', label='GEN particles',
+    name='SIM', label='SIM particles',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='simpart', entry_block=entry_block),
     fixture_function=lambda gen_parts: gen_fixtures(gen_parts, gen),
@@ -846,7 +851,8 @@ sim_parts = DFCollection(
     depends_on=[gen],
     debug=0,
     # print_function=lambda df: df[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'ovz', 'pid', 'gen', 'reachedEE', 'firstmother_pdgid']],
-    print_function=lambda df: df[['gen', 'pid', 'eta', 'phi', 'pt', 'mother', 'ovz', 'dvz', 'reachedEE']].sort_values(by='mother', ascending=False),
+    print_function=lambda df: df[['gen', 'pid', 'pt', 'eta', 'phi', 'mother', 'reachedEE', 'ovz', 'dvz', ]],
+    max_print_lines=None,
     # print_function=lambda df: df.columns,
     weight_function=gen_part_pt_weights)
 
@@ -859,7 +865,8 @@ gen_parts = DFCollection(
     depends_on=[gen],
     debug=0,
     # print_function=lambda df: df[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'ovz', 'pid', 'gen', 'reachedEE', 'firstmother_pdgid']],
-    print_function=lambda df: df[['gen', 'pid', 'eta', 'phi', 'pt', 'mother', 'ovz', 'dvz', 'reachedEE']].sort_values(by='mother', ascending=False),
+    print_function=lambda df: df[['gen', 'pid',  'pt', 'eta', 'phi', 'mother', 'ovz', 'dvz', 'reachedEE']].sort_values(by='mother', ascending=False),
+    max_print_lines=None,
     # print_function=lambda df: df.columns,
     weight_function=gen_part_pt_weights)
 
