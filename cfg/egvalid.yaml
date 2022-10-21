@@ -159,6 +159,7 @@ collections:
         # - doubleele_flat1to100_PU0
         - doublephoton_flat1to100_PU200
         - doubleele_flat1to100_PU200
+        # - zprime_ee_PU200
         # - photon_flat8to150_PU0
         # - photon_flat8to150_PU200
         # - dyll_PU200
@@ -172,7 +173,9 @@ collections:
         doubleele_flat1to100_PU0: 2
         doubleele_flat1to100_PU200: 7
         doublephoton_flat1to100_PU200: 6
+        zprime_ee_PU200: 5
       events_per_job:
         doubleele_flat1to100_PU0: 10000
         doubleele_flat1to100_PU200: 5000
         doublephoton_flat1to100_PU200: 5000
+        zprime_ee_PU200: 5000
