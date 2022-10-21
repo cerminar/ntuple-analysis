@@ -177,7 +177,7 @@ collections:
         zprime_ee_PU200: 5
       events_per_job:
         doubleele_flat1to100_PU0: 10000
-        doubleele_flat1to100_PU200: 5000
-        doublephoton_flat1to100_PU200: 5000
+        doubleele_flat1to100_PU200: 2000
+        doublephoton_flat1to100_PU200: 2000
         zprime_ee_PU200: 5000
         
