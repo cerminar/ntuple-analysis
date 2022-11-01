@@ -35,7 +35,7 @@ collections:
     samples:
       - nugun_alleta_pu200
     plotters:
-      - !!python/name:cfg.rate.eg_tdrsim_plotters
+      # - !!python/name:cfg.rate.eg_tdrsim_plotters
       - !!python/name:cfg.rate.eg_emu_plotters
     htc_jobflavor:
       microcentury
@@ -43,6 +43,23 @@ collections:
       nugun_alleta_pu200: 6
     events_per_job:
       nugun_alleta_pu200: 20000
+
+  eg_rate_oldID:
+    file_label:
+      rate
+    samples:
+      - nugun_alleta_pu200
+    plotters:
+      # - !!python/name:cfg.rate.eg_tdrsim_plotters
+      - !!python/name:cfg.rate.eg_emu_oldID_plotters
+    htc_jobflavor:
+      microcentury
+    priorities:
+      nugun_alleta_pu200: 6
+    events_per_job:
+      nugun_alleta_pu200: 20000
+
+
 
   eg_rate_sim:
     file_label:

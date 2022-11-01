@@ -1448,6 +1448,35 @@ tkem_EB_pfnf = DFCollection(
     read_entry_block=500,
     debug=0)
 
+TkEmEEOldID = DFCollection(
+    name='TkEmEE', label='TkEm EE',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='TkEmEE', entry_block=entry_block),
+    fixture_function=fake_endcap_quality,
+    debug=0)
+
+TkEmEBOldID = DFCollection(
+    name='TkEmEB', label='TkEm EB',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='TkEmEB', entry_block=entry_block),
+    fixture_function=barrel_quality,
+    read_entry_block=500,
+    debug=0)
+
+TkEleEEOldID = DFCollection(
+    name='TkEleEE', label='TkEle EE',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='TkEleEE', entry_block=entry_block),
+    fixture_function=tkele_fixture_ee,
+    debug=0)
+
+TkEleEBOldID = DFCollection(
+    name='TkEleEB', label='TkEle EB',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='TkEleEB', entry_block=entry_block),
+    fixture_function=tkele_fixture_eb,
+    debug=0)
+
 TkEmEE = DFCollection(
     name='TkEmEE', label='TkEm EE',
     filler_function=lambda event, entry_block: event.getDataFrame(

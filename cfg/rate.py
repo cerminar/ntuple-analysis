@@ -5,9 +5,10 @@ import python.selections as selections
 
 
 simeg_rate_ee_selections = (selections.Selector('^EGq[4-5]$')*('^Eta[^DA][BC]*[BCD]$|all'))()
-emueg_rate_ee_selections = (selections.Selector('^EGq[1,3]$')*('^Eta[^DA][BC]*[BCD]$|all'))()
-emueg_fw_rate_ee_selections = (selections.Selector('^EGq[1,3]$')*('^Eta[^DA][BC]*[BCD]$|all'))()
+emueg_rate_ee_selections = (selections.Selector('^EGq[1,3]$')*('^Eta[A][BC]*[C]$')*('^Iso|all'))()
 
+emueg_fw_rate_ee_selections = (selections.Selector('^EGq[1,3]$')*('^Eta[A][BC]*[BCD]$|all')*('^Iso|all'))()
+emueg_rate_eb_selections = (selections.Selector('^LooseTkID$|all')*('^Eta[F]$')*('^Iso|all'))()
 
 
 # print(egid_eta_selections)
@@ -53,6 +54,22 @@ eg_emu_plotters = [
     #     collections.tkem_EB_pfnf, selections.barrel_rate_selections),
 ]
 
+eg_emu_oldID_plotters = [
+    plotters.RatePlotter(
+        collections.TkEmEEOldID, emueg_rate_ee_selections),
+    plotters.RatePlotter(
+        collections.TkEmEBOldID, emueg_rate_eb_selections),
+    plotters.RatePlotter(
+        collections.TkEleEEOldID, emueg_rate_ee_selections),
+    plotters.RatePlotter(
+        collections.TkEleEBOldID, emueg_rate_eb_selections),
+    # plotters.RatePlotter(
+    #     collections.tkem_EE_pfnf, selections.eg_id_iso_eta_ee_selections),
+    # plotters.RatePlotter(
+    #     collections.tkem_EB_pfnf, selections.barrel_rate_selections),
+]
+
+
 eg_emufw_plotters = [
     plotters.RatePlotter(
         collections.tkem_EE_pfnf, emueg_fw_rate_ee_selections),
@@ -71,7 +88,7 @@ eg_emufw_plotters = [
 
 egid_eta_selections = (selections.Selector('^IDTightS|all')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[CD]$'))()
 egid_etatk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[C]$'))()
-egid_iso_etatk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Iso|all')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[C]$'))()
+egid_iso_etatk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[C]$')*selections.Selector('^Iso|all'))()
 
 egid_eta_ee_selections = (selections.Selector('^IDTightS|all')*selections.Selector('^Eta[A][BCD]*[CD]$'))()
 egid_eta_eetk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Eta[A][BCD]*[C]$'))()
