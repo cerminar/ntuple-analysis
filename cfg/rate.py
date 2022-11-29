@@ -88,7 +88,7 @@ eg_emufw_plotters = [
 
 egid_eta_selections = (selections.Selector('^IDTightS|all')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[CD]$'))()
 egid_etatk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[C]$'))()
-egid_iso_etatk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[C]$')*selections.Selector('^Iso|all'))()
+egid_iso_etatk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Iso|all')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[C]$'))()
 
 egid_eta_ee_selections = (selections.Selector('^IDTightS|all')*selections.Selector('^Eta[A][BCD]*[CD]$'))()
 egid_eta_eetk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Eta[A][BCD]*[C]$'))()

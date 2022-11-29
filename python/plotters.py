@@ -182,6 +182,10 @@ class GenericDataFrameLazyPlotter(BasePlotter):
     def fill_histos_event(self, idx, debug=0):
         if self.data_set.new_read:
             self.fill_histos(debug)
+        if hasattr(self.HistoClass, 'fill_event'):
+            for selection in self.data_selections:
+                objects = self.data_set.query_event(selection, idx)
+                self.h_set[selection.name].fill_event(objects)
 
 
 class GenericDataFramePlotter(BasePlotter):
@@ -1216,6 +1220,22 @@ class IsoTuplePlotter(BasePlotter):
                                      h_resoset,
                                      self.data_set.name,
                                      debug)
+
+
+class QuantizationPlotter(GenericDataFramePlotter):
+# class QuantizationPlotter(GenericDataFrameLazyPlotter):
+    def __init__(self, data_set, data_selections, features):
+        self.features = features
+        super(QuantizationPlotter, self).__init__(histos.QuantizationHistos, data_set, data_selections)
+
+    def book_histos(self):
+        self.data_set.activate()
+        data_name = self.data_set.name
+        for selection in self.data_selections:
+            self.h_set[selection.name] = self.HistoClass(
+                name='{}_{}_nomatch'.format(data_name, selection.name),
+                features=self.features)
+
 
 
 if __name__ == "__main__":

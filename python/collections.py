@@ -337,7 +337,8 @@ def cl3d_fixtures(clusters):
     # clusters['ptem'] = clusters.pt/(1+clusters.hoe)
     # clusters['eem'] = clusters.energy/(1+clusters.hoe)
     clusters['emax'] = clusters.emaxe*clusters.energy
-
+    clusters.loc[clusters.hoe == -1, ['hoe']] = 999
+    # print(clusters[clusters.hoe == -1][['hoe']])
     clusters['bdt_pu'] = rnptmva.evaluate_reader(
             classifiers.mva_pu_classifier_builder(), 
             'BDT', 
@@ -350,6 +351,7 @@ def cl3d_fixtures(clusters):
     clusters['pt_em'] = clusters.apply(lambda x: x.ipt[x.name[1]][1], axis=1)
     clusters.drop('ipt', axis=1, inplace=True)
     clusters.drop('ienergy', axis=1, inplace=True)
+    clusters['meanz_scaled'] = np.abs(clusters.meanz) - 320
     # return
     return clusters
 

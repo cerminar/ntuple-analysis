@@ -23,7 +23,7 @@ class HistoLazyFiller(object):
 
         if not self.manager.knowsSelection(sel_name):
             print("*** [HistoLazyFiller] ERROR: selection: {} not known!".format(sel_name))
-            raise ValueError('[HistoLazyFiller] selection {} nott known'.format(sel_name))
+            raise ValueError('[HistoLazyFiller] selection {} not known'.format(sel_name))
 
         self.manager.add_1Dhisto(histo, col_name, sel_name)
 
@@ -329,6 +329,7 @@ class RateHistos(BaseHistos):
 
     def normalize(self, norm):
         nev = self.h_norm.GetBinContent(1)
+        # print(f' .      # ev: {nev}')
         if(nev != norm):
             print('normalize to {}'.format(norm))
             self.h_norm.Scale(norm/nev)
@@ -509,6 +510,7 @@ class EGHistos(BaseHistos):
             self.h_pfIso = ROOT.TH1F(name+'_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
             self.h_tkIsoPV = ROOT.TH1F(name+'_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2)
             self.h_pfIsoPV = ROOT.TH1F(name+'_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
+            self.h_n = ROOT.TH1F(name+'_n', '# objects per event', 100, 0, 100)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
@@ -541,6 +543,12 @@ class EGHistos(BaseHistos):
         if 'tkIsoPV' in filler.columns:
             filler.fill1d_lazy(self.h_tkIsoPV, 'tkIsoPV', sel_name)
             filler.fill1d_lazy(self.h_pfIsoPV, 'pfIsoPV', sel_name)
+
+    def fill_event(self, objects):
+        if objects.empty:
+            self.h_n.Fill(0)
+        else:
+            self.h_n.Fill(objects.pt.count())
 
     def add_histos(self):
         self.h_pt.Add(self.h_pt_temp.GetValue())
@@ -1773,6 +1781,47 @@ class TCClusterMatchHistos(BaseHistos):
         rnp.fill_hist(self.h_dtVdu, tcs[['dt', 'du']])
         rnp.fill_hist(self.h_dtVdu2, tcs[['dt', 'du']], tcs['ef'])
         # self.h_fbremVabseta.Fill(cluster.abseta, cluster.fbrem)
+
+
+
+class QuantizationHistos(BaseHistos):
+    def __init__(self, name, features=None, root_file=None, debug=False):
+        if not root_file:
+            self.features = features
+            self.h_features = ROOT.TH2F(
+                name+'_features', 
+                'features; feature; value',
+                 len(self.features), 0, len(self.features),
+                 1000, -1000, 1000)
+            self.h_featuresLog2 = ROOT.TH2F(
+                name+'_featuresLog2', 
+                'featuresLog2; features; log_{2}(value)',
+                 len(self.features), 0, len(self.features),
+                 64, -32, 32)
+            for bin,ft in enumerate(features):
+                self.h_features.GetXaxis().SetBinLabel(bin+1, ft)
+                self.h_featuresLog2.GetXaxis().SetBinLabel(bin+1, ft)
+
+        BaseHistos.__init__(self, name, root_file, debug)
+
+    def fill(self, df):
+        fill = df
+        print(df.columns)
+        for bin,ft in enumerate(self.features):
+            fill[f'{ft}_bin'] = bin
+            fill[f'{ft}_log2'] = np.log2(fill[[ft]])
+            rnp.fill_hist(self.h_features, fill[[f'{ft}_bin', ft]]) 
+            rnp.fill_hist(self.h_featuresLog2, fill[[f'{ft}_bin', f'{ft}_log2']]) 
+
+
+    def fill_lazy(self, filler, sel_name):
+        for bin,ft in enumerate(self.features):
+            # print(ft)
+            filler.df[f'{ft}_bin'] = bin
+            filler.df[f'{ft}_log2'] = np.log2(filler.df[[ft]])
+            # print(filler.df[[ft, f'{ft}_log2', f'{ft}_bin']])
+            filler.fill2d_lazy(self.h_features, f'{ft}_bin', ft, sel_name)
+            filler.fill2d_lazy(self.h_features, f'{ft}_bin',  f'{ft}_log2', sel_name)
 
 # if __name__ == "__main__":
 #     import sys
