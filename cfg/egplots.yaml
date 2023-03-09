@@ -4,9 +4,10 @@ common:
     default: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
     matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
     Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
+    triolet: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v150A
+  plot_version: v152B
   run_clustering: False
   run_density_computation: False
 # +AccountingGroup = "group_u_CMS.u_zh.users"
@@ -14,7 +15,7 @@ common:
 
 collections:
       
-  simple_plots:
+  tkele_plots:
     file_label:
       egplots
     samples:
@@ -23,6 +24,7 @@ collections:
       # - doubleele_flat1to100_PU0
       - doublephoton_flat1to100_PU200
       - doubleele_flat1to100_PU200
+      - nugun_alleta_pu200
       # - photon_flat8to150_PU0
       # - photon_flat8to150_PU200
       # - dyll_PU200
@@ -34,7 +36,38 @@ collections:
       doubleele_flat1to100_PU0: 2
       doubleele_flat1to100_PU200: 7
       doublephoton_flat1to100_PU200: 6
+      nugun_alleta_pu200: 6
     events_per_job:
       doubleele_flat1to100_PU0: 10000
-      doubleele_flat1to100_PU200: 5000
-      doublephoton_flat1to100_PU200: 5000
+      doubleele_flat1to100_PU200: 10000
+      doublephoton_flat1to100_PU200: 10000
+      nugun_alleta_pu200: 10000
+
+
+  quantization_plots:
+    file_label:
+      egplots
+    samples:
+      # - ele_flat2to100_PU0
+      # - ele_flat2to100_PU200
+      # - doubleele_flat1to100_PU0
+      - doublephoton_flat1to100_PU200
+      - doubleele_flat1to100_PU200
+      - nugun_alleta_pu200
+      # - photon_flat8to150_PU0
+      # - photon_flat8to150_PU200
+      # - dyll_PU200
+    plotters:
+      - !!python/name:cfg.egplots.quantization_plotters
+    htc_jobflavor:
+      microcentury
+    priorities:
+      doubleele_flat1to100_PU0: 2
+      doubleele_flat1to100_PU200: 7
+      doublephoton_flat1to100_PU200: 6
+      nugun_alleta_pu200: 6
+    events_per_job:
+      doubleele_flat1to100_PU0: 10000
+      doubleele_flat1to100_PU200: 10000
+      doublephoton_flat1to100_PU200: 10000
+      nugun_alleta_pu200: 10000
