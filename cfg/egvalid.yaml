@@ -167,7 +167,7 @@ collections:
         - !!python/name:cfg.egvalid.l1tc_l1emu_eb_genmatched
         - !!python/name:cfg.egvalid.l1tc_l1emu_ee_genmatched
         - !!python/name:cfg.egvalid.l1tc_l2emu_genmatched
-        # - !!python/name:cfg.egvalid.l1tc_emu_rate_pt_wps
+        - !!python/name:cfg.egvalid.l1tc_emu_rate_pt_wps
       htc_jobflavor:
         longlunch
       priorities:
