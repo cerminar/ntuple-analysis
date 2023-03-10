@@ -17,11 +17,11 @@ samples:
   #   # gen_selections: !!python/name:python.selections.genpart_photon_selections
 
   doubleele_flat1to100_PU200:
-    input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU200_v90A/
+    input_sample_dir: DoubleElectron_FlatPt-1To100-gun/DoubleElectron_FlatPt-1To100_PU200_v90A/
     events_per_job : 200
 
   doublephoton_flat1to100_PU200:
-    input_sample_dir: DoublePhoton_FlatPt-1To100/DoublePhoton_FlatPt-1To100_PU200_v90A/
+    input_sample_dir: DoublePhoton_FlatPt-1To100-gun/DoublePhoton_FlatPt-1To100_PU200_v90A/
     events_per_job : 200
 
   # ele_flat2to100_PU0:
