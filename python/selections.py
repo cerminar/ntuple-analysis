@@ -504,9 +504,9 @@ eg_id_sel = [
 
 
 iso_sel = [
-    Selection('Iso0p2', 'Iso0p2', 'tkIso <= 0.2'),
-    Selection('Iso0p1', 'Iso0p1', 'tkIso <= 0.1'),
-    Selection('Iso0p3', 'Iso0p3', 'tkIso <= 0.3'),
+    Selection('Iso0p2', 'iso_{tk}<=0.2', 'tkIso <= 0.2'),
+    Selection('Iso0p1', 'iso_{tk}<=0.1', 'tkIso <= 0.1'),
+    Selection('Iso0p3', 'iso_{tk}<=0.3', 'tkIso <= 0.3'),
     ]
 
 

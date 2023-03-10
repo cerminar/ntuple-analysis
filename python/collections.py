@@ -580,7 +580,7 @@ def get_trackmatched_egs(egs, tracks, debug=0):
     #                                       'energy': bestmatch_eg.energy,
     #                                       'eta': bestmatch_eg.eta,
     #                                       'phi': bestmatch_eg.phi,
-    #                                       'hwQual': bestmatch_eg.hwQual,
+    #                                       'hwQual: bestmatch_eg.hwQual,
     #                                       'tkpt': bestmatch_tk.pt,
     #                                       'tketa': bestmatch_tk.eta,
     #                                       'tkphi': bestmatch_tk.phi,
@@ -1328,7 +1328,7 @@ EGStaEE = DFCollection(
     name='EGStaEE', label='EG EE',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='EGStaEE', entry_block=entry_block),
-    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
+    print_function=lambda df: df.loc[(abs(df.eta) > 2.4), ['energy', 'pt', 'eta', 'phi','hwQual']].sort_values(by='pt', ascending=False)[:10],
     # fixture_function=mapcalo2pfregions,
     fixture_function=quality_flags,
     debug=0)
@@ -1483,6 +1483,7 @@ TkEmEE = DFCollection(
     name='TkEmEE', label='TkEm EE',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='TkEmEE', entry_block=entry_block),
+    print_function=lambda df: df.loc[(abs(df.eta) > 2.4), ['energy', 'pt', 'eta', 'phi','hwQual']].sort_values(by='pt', ascending=False)[:10],
     fixture_function=quality_flags,
     debug=0)
 
