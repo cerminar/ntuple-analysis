@@ -511,6 +511,7 @@ class EGHistos(BaseHistos):
             self.h_tkIsoPV = ROOT.TH1F(name+'_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2)
             self.h_pfIsoPV = ROOT.TH1F(name+'_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
             self.h_n = ROOT.TH1F(name+'_n', '# objects per event', 100, 0, 100)
+            self.h_compBdt = ROOT.TH1F(name+'_compBdt', 'BDT Score Comp ID', 100, -4, 4)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
@@ -543,6 +544,8 @@ class EGHistos(BaseHistos):
         if 'tkIsoPV' in filler.columns:
             filler.fill1d_lazy(self.h_tkIsoPV, 'tkIsoPV', sel_name)
             filler.fill1d_lazy(self.h_pfIsoPV, 'pfIsoPV', sel_name)
+        if 'compBDTScore' in filler.columns:
+            filler.fill1d_lazy(self.h_compBdt, 'compBDTScore', sel_name)
 
     def fill_event(self, objects):
         if objects.empty:
