@@ -157,7 +157,7 @@ collections:
         # - ele_flat2to100_PU0
         # - ele_flat2to100_PU200
         # - doubleele_flat1to100_PU0
-        - doublephoton_flat1to100_PU200
+        # - doublephoton_flat1to100_PU200
         - doubleele_flat1to100_PU200
         # - zprime_ee_PU200
         # - photon_flat8to150_PU0
