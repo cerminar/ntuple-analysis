@@ -20,9 +20,9 @@ samples:
     input_sample_dir: DoubleElectron_FlatPt-1To100-gun/DoubleElectron_FlatPt-1To100_PU200_v91E/
     events_per_job : 200
 
-  # doublephoton_flat1to100_PU200:
-  #   input_sample_dir: DoublePhoton_FlatPt-1To100-gun/DoublePhoton_FlatPt-1To100_PU200_v91E/
-  #   events_per_job : 200
+  doublephoton_flat1to100_PU200:
+    input_sample_dir: DoublePhoton_FlatPt-1To100-gun/DoublePhoton_FlatPt-1To100_PU200_v91E/
+    events_per_job : 200
 
   # ele_flat2to100_PU0:
   #   input_sample_dir: SingleElectron_PT2to200/SingleE_FlatPt-2to200_PU0_v60G2/
