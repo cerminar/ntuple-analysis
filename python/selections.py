@@ -502,20 +502,14 @@ eg_id_sel = [
     ]
 
 comp_id_sel = [
-    Selection('IDCompWP995', 'CompID WP 0.995', 'compBDTScore > -2.2683321626602533'), #, epsilon_b = 0.3483
-    Selection('IDCompWP980', 'CompID WP 0.980', 'compBDTScore >  -1.516316002643422'), #, epsilon_b = 0.1868
-    Selection('IDCompWP975', 'CompID WP 0.975', 'compBDTScore > -1.2557648318519765'), #, epsilon_b = 0.1581
-    Selection('IDCompWP970', 'CompID WP 0.970', 'compBDTScore >  -1.0878749011941053'), #, epsilon_b = 0.1418
-    Selection('IDCompWP965', 'CompID WP 0.965', 'compBDTScore > -0.9636625355716952'), #, epsilon_b = 0.1268
-    Selection('IDCompWP960', 'CompID WP 0.960', 'compBDTScore > -0.8326743633862106'), #, epsilon_b = 0.1110
     Selection('IDCompWP955', 'CompID WP 0.955', 'compBDTScore > -0.7318549872638138'), #, epsilon_b = 0.0985
     # Selection('IDCompWP950', 'CompID WP 0.950', 'compBDTScore > -0.5871849', #, epsilon_b = 0.0917
     # Selection('IDCompWP940', 'CompID WP 0.940', 'compBDTScore > -0.4392925', #, epsilon_b = 0.0788
     # Selection('IDCompWP930', 'CompID WP 0.930', 'compBDTScore > -0.2919413', #, epsilon_b = 0.0638
     # Selection('IDCompWP920', 'CompID WP 0.920', 'compBDTScore > -0.1440416', #, epsilon_b = 0.0531
     # Selection('IDCompWP910', 'CompID WP 0.910', 'compBDTScore > 0.0825459', # epsilon_b = 0.0437
-    # Selection('IDCompWP900', 'CompID WP 0.900', 'compBDTScore > 0.2124904', # epsilon_b = 0.0373
-    # Selection('IDCompWP800', 'CompID WP 0.800', 'compBDTScore > 0.9347647', # epsilon_b = 0.0081
+    Selection('IDCompWP900', 'CompID WP 0.900', 'compBDTScore > 0.2157780720764229', # epsilon_b = 0.0373
+    Selection('IDCompWP800', 'CompID WP 0.800', 'compBDTScore > 1.694870131268548', # epsilon_b = 0.0081
     # Selection('IDCompWP700', 'CompID WP 0.700', 'compBDTScore > 0.9914881', # epsilon_b = 0.0034
     # Selection('IDCompWP650', 'CompID WP 0.650', 'compBDTScore > 0.9954325', # epsilon_b = 0.0021
     # Selection('IDCompWP600', 'CompID WP 0.600', 'compBDTScore > 0.9958264', # epsilon_b = 0.0017
