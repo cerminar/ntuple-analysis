@@ -502,13 +502,13 @@ eg_id_sel = [
     ]
 
 comp_id_sel = [
-    Selection('IDCompWP995', 'CompID WP 0.995', 'compBDTScore > -0.9788088'), #, epsilon_b = 0.3483
-    Selection('IDCompWP980', 'CompID WP 0.980', 'compBDTScore > -0.9080535'), #, epsilon_b = 0.1868
-    Selection('IDCompWP975', 'CompID WP 0.975', 'compBDTScore > -0.8498923'), #, epsilon_b = 0.1581
-    Selection('IDCompWP970', 'CompID WP 0.970', 'compBDTScore > -0.7961012'), #, epsilon_b = 0.1418
-    Selection('IDCompWP965', 'CompID WP 0.965', 'compBDTScore > -0.7459061'), #, epsilon_b = 0.1268
-    Selection('IDCompWP960', 'CompID WP 0.960', 'compBDTScore > -0.6819094'), #, epsilon_b = 0.1110
-    Selection('IDCompWP955', 'CompID WP 0.955', 'compBDTScore > -0.6241989'), #, epsilon_b = 0.0985
+    Selection('IDCompWP995', 'CompID WP 0.995', 'compBDTScore > -2.2683321626602533'), #, epsilon_b = 0.3483
+    Selection('IDCompWP980', 'CompID WP 0.980', 'compBDTScore >  -1.516316002643422'), #, epsilon_b = 0.1868
+    Selection('IDCompWP975', 'CompID WP 0.975', 'compBDTScore > -1.2557648318519765'), #, epsilon_b = 0.1581
+    Selection('IDCompWP970', 'CompID WP 0.970', 'compBDTScore >  -1.0878749011941053'), #, epsilon_b = 0.1418
+    Selection('IDCompWP965', 'CompID WP 0.965', 'compBDTScore > -0.9636625355716952'), #, epsilon_b = 0.1268
+    Selection('IDCompWP960', 'CompID WP 0.960', 'compBDTScore > -0.8326743633862106'), #, epsilon_b = 0.1110
+    Selection('IDCompWP955', 'CompID WP 0.955', 'compBDTScore > -0.7318549872638138'), #, epsilon_b = 0.0985
     # Selection('IDCompWP950', 'CompID WP 0.950', 'compBDTScore > -0.5871849', #, epsilon_b = 0.0917
     # Selection('IDCompWP940', 'CompID WP 0.940', 'compBDTScore > -0.4392925', #, epsilon_b = 0.0788
     # Selection('IDCompWP930', 'CompID WP 0.930', 'compBDTScore > -0.2919413', #, epsilon_b = 0.0638
