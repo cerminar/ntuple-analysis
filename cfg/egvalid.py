@@ -94,6 +94,7 @@ l1tc_rate_pt_wps = [
 egid_sta_selections = (selections.Selector('^IDTightS|all')*('^Pt[1-3][0]$|all'))()
 egid_iso_tkele_selections = (selections.Selector('^IDTight[E]|all')*('^Pt[1-3][0]$|all')*('^Iso0p[1-2]|all'))()
 egid_iso_tkpho_selections = (selections.Selector('^IDTight[P]|all')*('^Pt[1-3][0]$|all')*('^Iso0p[1-2]|all'))()
+egid_iso_tkele_comp_selections = (selections.Selector('^IDTight[E]|^IDComp|all')*('^Pt[1-3][0]$|all'))()
 
 
 gen_selections = (selections.Selector('GEN$')*('^Eta[F]$|^Eta[AF][ABCD]*[C]$|all')+selections.Selector('GEN$')*('^Ee|all')*('^Pt15|^Pt30'))()
@@ -151,7 +152,7 @@ l1tc_l1emu_ee_genmatched = [
         egid_sta_selections, gen_ee_selections),
     plotters.EGGenMatchPlotter(
         collections.TkEleEE, collections.sim_parts,
-        egid_iso_tkele_selections, gen_ee_tk_selections),
+        egid_iso_tkele_comp_selections, gen_ee_tk_selections),
     plotters.EGGenMatchPlotter(
         collections.TkEmEE, collections.sim_parts,
         egid_iso_tkpho_selections, gen_ee_tk_selections),

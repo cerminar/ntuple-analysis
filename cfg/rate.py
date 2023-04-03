@@ -94,6 +94,8 @@ egid_eta_ee_selections = (selections.Selector('^IDTightS|all')*selections.Select
 egid_eta_eetk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Eta[A][BCD]*[C]$'))()
 egid_iso_eta_eetk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Iso|all')*selections.Selector('^Eta[A][BCD]*[C]$'))()
 
+egid_iso_eta_eetk_selections_comp = (selections.Selector('^IDTight[E]|^IDCompWP|all')*selections.Selector('^Eta[A][BCD]*[C]$'))()
+
 egid_eta_eb_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Eta[F]$|all'))()
 egid_iso_eta_eb_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Iso|all')*selections.Selector('^Eta[F]$|all'))()
 
@@ -111,7 +113,7 @@ eg_emuCTl1_plotters = [
     plotters.RatePlotter(
         collections.TkEmEB, egid_iso_eta_eb_selections),
     plotters.RatePlotter(
-        collections.TkEleEE, egid_iso_eta_eetk_selections),
+        collections.TkEleEE, egid_iso_eta_eetk_selections_comp),
     plotters.RatePlotter(
         collections.TkEleEB, egid_iso_eta_eb_selections),
 ]
