@@ -84,6 +84,8 @@ collections:
       # - !!python/name:cfg.rate.eg_emu_plotters
       - !!python/name:cfg.rate.eg_emuCTl1_plotters
       - !!python/name:cfg.rate.eg_emuCTl2_plotters
+      - !!python/name:cfg.rate.eg_emuCTl1_ell_plotters
+      - !!python/name:cfg.rate.eg_emuCTl2_ell_plotters
     htc_jobflavor:
       microcentury
     priorities:

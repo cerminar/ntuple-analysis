@@ -124,3 +124,16 @@ eg_emuCTl2_plotters = [
     plotters.RatePlotter(
         collections.TkEleL2, egid_iso_etatk_selections),
 ]
+
+eg_emuCTl1_ell_plotters = [
+    plotters.RatePlotter(
+        collections.TkEleEllEE, egid_iso_eta_eetk_selections_comp),
+]
+
+
+eg_emuCTl2_ell_plotters = [
+    plotters.RatePlotter(
+        collections.TkEmL2Ell, egid_iso_etatk_selections),
+    plotters.RatePlotter(
+        collections.TkEleL2Ell, egid_iso_etatk_selections),
+]

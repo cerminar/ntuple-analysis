@@ -1401,6 +1401,13 @@ TkEleEB = DFCollection(
     fixture_function=quality_ele_fixtures,
     debug=0)
 
+TkEleEllEE = DFCollection(
+    name='TkEleEllEE', label='TkEle EE (Ell.)',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='TkEleEllEE', entry_block=entry_block),
+    fixture_function=quality_ele_fixtures,
+    debug=0)
+
 
 # --------
 
@@ -1504,6 +1511,20 @@ TkEmL2 = DFCollection(
 
 TkEleL2 = DFCollection(
     name='TkEleL2', label='TkEle L2',
+    filler_function=lambda event, entry_block : event.getDataFrame(
+        prefix='L2TkEle', entry_block=entry_block),
+    fixture_function=quality_ele_fixtures,
+    debug=0)
+
+TkEmL2Ell = DFCollection(
+    name='TkEmL2Ell', label='TkEm L2 (ell.)',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='L2TkEm', entry_block=entry_block),
+    fixture_function=quality_flags,
+    debug=0)
+
+TkEleL2Ell = DFCollection(
+    name='TkEleL2Ell', label='TkEle L2 (ell.)',
     filler_function=lambda event, entry_block : event.getDataFrame(
         prefix='L2TkEle', entry_block=entry_block),
     fixture_function=quality_ele_fixtures,

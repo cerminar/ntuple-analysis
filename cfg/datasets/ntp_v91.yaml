@@ -4,7 +4,7 @@
 samples:
   input_dir:  /eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/ntuples/
   calib_version: calib-v134C
-  version: 91A
+  version: 91G
 
   # tree_name: hgcalTriggerNtuplizer/HGCalTriggerNtuple
   tree_name: l1EGTriggerNtuplizer_l1tCorr/L1TEGTriggerNtuple
@@ -17,11 +17,11 @@ samples:
   #   # gen_selections: !!python/name:python.selections.genpart_photon_selections
 
   doubleele_flat1to100_PU200:
-    input_sample_dir: DoubleElectron_FlatPt-1To100-gun/DoubleElectron_FlatPt-1To100_PU200_v91A/
+    input_sample_dir: DoubleElectron_FlatPt-1To100-gun/DoubleElectron_FlatPt-1To100_PU200_v91G/
     events_per_job : 200
 
   doublephoton_flat1to100_PU200:
-    input_sample_dir: DoublePhoton_FlatPt-1To100-gun/DoublePhoton_FlatPt-1To100_PU200_v91A/
+    input_sample_dir: DoublePhoton_FlatPt-1To100-gun/DoublePhoton_FlatPt-1To100_PU200_v91G/
     events_per_job : 200
 
   # ele_flat2to100_PU0:
@@ -54,7 +54,7 @@ samples:
   #   events_per_job: 500
 
   nugun_alleta_pu200:
-    input_sample_dir: MinBias_TuneCP5_14TeV-pythia8/NuGunAllEta_PU200_v91A/
+    input_sample_dir: MinBias_TuneCP5_14TeV-pythia8/NuGunAllEta_PU200_v91G/
     # input_sample_dir: NuGunAllEta_PU200/NTP/v80A/
     # input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v47/191105_135050/0000/
     events_per_job: 300
