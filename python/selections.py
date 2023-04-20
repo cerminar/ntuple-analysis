@@ -630,8 +630,8 @@ iso_sel = [
     Selection('Iso0p3', 'iso_{tk}<=0.3', 'tkIso <= 0.3'),
     Selection('IsoEleEB', 'iso_{tk}<=0.13', 'tkIso <= 0.13'),
     Selection('IsoEleEE', 'iso_{tk}<=0.28', 'tkIso <= 0.28'),
-    Selection('IsoPhoEB', 'iso_{tk}<=0.25', 'tkIso <= 0.13'),
-    Selection('IsoPhoEE', 'iso_{tk}<=0.205', 'tkIso <= 0.28'),
+    Selection('IsoPhoEB', 'iso_{tk}<=0.25', 'tkIso <= 0.25'),
+    Selection('IsoPhoEE', 'iso_{tk}<=0.205', 'tkIso <= 0.205'),
     # Selection('IsoEleMenu', 'iso_{tk}<=(0.13,0.28)', '((abs(eta) < 1.479) & (tkIso <= 0.13)) | ((abs(eta) > 1.479) & (tkIso <= 0.28))'),
     # Selection('IsoPhoMenu', 'iso_{tk}<=(0.25,0.205)', '((abs(eta) < 1.479) & (tkIso <= 0.25)) | ((abs(eta) > 1.479) & (tkIso <= 0.205))'),
     ]
