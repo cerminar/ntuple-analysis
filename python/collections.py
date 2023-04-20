@@ -833,6 +833,13 @@ def decodedTk_fixtures(objects):
     return objects
 
 
+def build_double_obj(obj):
+    ret = pd.concat([obj,obj], names=['leg'], keys=[0, 1])
+    ret = ret.swaplevel(0,1)
+    ret = ret.swaplevel(1,2)
+    return ret
+
+
 calib_mgr = calib.CalibManager()
 
 gen = DFCollection(
@@ -1519,16 +1526,31 @@ TkEleL2 = DFCollection(
 TkEmL2Ell = DFCollection(
     name='TkEmL2Ell', label='TkEm L2 (ell.)',
     filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='L2TkEm', entry_block=entry_block),
+        prefix='L2TkEmEll', entry_block=entry_block),
     fixture_function=quality_flags,
     debug=0)
 
 TkEleL2Ell = DFCollection(
     name='TkEleL2Ell', label='TkEle L2 (ell.)',
     filler_function=lambda event, entry_block : event.getDataFrame(
-        prefix='L2TkEle', entry_block=entry_block),
+        prefix='L2TkEleEll', entry_block=entry_block),
     fixture_function=quality_ele_fixtures,
     debug=0)
+
+DoubleTkEleL2 = DFCollection(
+    name='DoubleTkEleL2', label='DoubleTkEle L2',
+    filler_function=lambda event, entry_block: build_double_obj(obj=TkEleL2.df),
+    # fixture_function=,
+    depends_on=[TkEleL2],
+    debug=0)
+
+DoubleTkEmL2 = DFCollection(
+    name='DoubleTkEmL2', label='DoubleTkEm L2',
+    filler_function=lambda event, entry_block: build_double_obj(obj=TkEmL2.df),
+    # fixture_function=,
+    depends_on=[TkEmL2],
+    debug=0)
+
 
 egs_EE_pf_reg = DFCollection(
     name='PFOutEgEE', label='EG EE (old EMU)',

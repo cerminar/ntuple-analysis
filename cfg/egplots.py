@@ -9,7 +9,7 @@ import python.selections as selections
 simple_selections = [selections.Selection("all", '', ''),
                      selections.Selection('Pt10', 'p_{T}^{TOBJ}>=10GeV', 'pt >= 10'),]
 
-sta_selection = (selections.Selector('^IDTight[EPS]|all')*selections.Selector('^Pt5|all')*selections.Selector('^EtaABCDF$|all'))()
+sta_selection = (selections.Selector('^IDTight[EPS]|all')*selections.Selector('^Pt5|all')*selections.Selector('^EtaABC$|all'))()
 # print(f"simple_selections: {simple_selections}")
 
 egid_iso_etatk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Iso|all')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[C]$'))()
@@ -19,10 +19,12 @@ l1tc_simple_plotters = [
     # plotters.TkElePlotter(collections.TkEleEE, egid_iso_etatk_selections),
     # plotters.TkElePlotter(collections.TkEleEB, egid_iso_etatk_selections),
     # plotters.TkElePlotter(collections.TkEleL2, egid_iso_etatk_selections),
-    plotters.EGPlotter(collections.TkEmEE, sta_selection),
-    plotters.EGPlotter(collections.TkEmEB, sta_selection),
-    plotters.EGPlotter(collections.EGStaEE, sta_selection),
-    plotters.EGPlotter(collections.EGStaEB, sta_selection),
+    plotters.EGPlotter(collections.TkEleEE, sta_selection),
+
+    # plotters.EGPlotter(collections.TkEmEE, sta_selection),
+    # plotters.EGPlotter(collections.TkEmEB, sta_selection),
+    # plotters.EGPlotter(collections.EGStaEE, sta_selection),
+    # plotters.EGPlotter(collections.EGStaEB, sta_selection),
     ]
 
 quantization_plotters = [

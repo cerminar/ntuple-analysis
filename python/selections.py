@@ -88,28 +88,58 @@ class Selection:
         selection_manager = SelectionManager()
         selection_manager.registerSelection(self)
 
-    def __mul__(self, sel_obj):
-        return self.__add__(sel_obj)
-
-    def __add__(self, sel_obj):
+    def __and__(self, other):
         """ & operation """
-        if sel_obj.all:
+        if other.all:
             return self
         if self.all:
-            return sel_obj
-        new_label = '{}, {}'.format(self.label_, sel_obj.label_)
+            return other
+        new_label = '{}, {}'.format(self.label_, other.label_)
         if self.label_ == '':
-            new_label = sel_obj.label_
-        if sel_obj.label == '':
+            new_label = other.label_
+        if other.label == '':
             new_label = self.label_
         # obj_name = 'L1'
-        # if 'GEN' in sel_obj.name or 'GEN' in self.name:
+        # if 'GEN' in other.name or 'GEN' in self.name:
         #     obj_name = 'GEN'
         # new_label = new_label.replace('TOBJ', obj_name)
         return Selection(
-            name='{}{}'.format(self.name, sel_obj.name),
+            name='{}{}'.format(self.name, other.name),
             label=new_label,
-            selection='({}) & ({})'.format(self.selection, sel_obj.selection))
+            selection='({}) & ({})'.format(self.selection, other.selection))
+
+
+    def __or__(self, other):
+        """ | operation """
+        if other.all:
+            return other.all
+        if self.all:
+            return self.all
+        new_label = '{} or {}'.format(self.label_, other.label_)
+        if self.label_ == '':
+            new_label = other.label_
+        if other.label == '':
+            new_label = self.label_
+        # obj_name = 'L1'
+        # if 'GEN' in other.name or 'GEN' in self.name:
+        #     obj_name = 'GEN'
+        # new_label = new_label.replace('TOBJ', obj_name)
+        return Selection(
+            name='{}Or{}'.format(self.name, other.name),
+            label=new_label,
+            selection='({}) | ({})'.format(self.selection, other.selection))
+
+    def rename(self, new_name, new_label = None):
+        self.name = new_name
+        if new_label:
+            self.label_ = new_label
+        self.register()
+
+    def __mul__(self, other):
+        return self.__add__(other)
+
+    def __add__(self, other):
+        return self.__and__(other)
 
     def __str__(self):
         return 'n: {}, \n\t s: {}, \n\t l:{}'.format(
@@ -134,6 +164,20 @@ def multiply_selections(list1, list2):
             ret.append(sel1*sel2)
     return ret
 
+def and_selections(list1, list2):
+    ret = []
+    for sel1 in list1:
+        for sel2 in list2:
+            ret.append(sel1&sel2)
+    return ret
+
+def or_selections(list1, list2):
+    ret = []
+    for sel1 in list1:
+        for sel2 in list2:
+            ret.append(sel1|sel2)
+    return ret
+
 
 def prune(selection_list):
     sel_names = set()
@@ -143,6 +187,13 @@ def prune(selection_list):
             sel_names.add(sel.name)
             ret.append(sel)
     return ret
+
+
+def build_DiObj_selection(name, label, selection_leg0, selection_leg1):
+    return Selection(
+        name, 
+        label, 
+        f'((leg == 0) & ({selection_leg0.selection})) | ((leg == 1) & ({selection_leg1.selection}))')
 
 
 def fill_isowp_sel(sel_list, wps):
@@ -209,8 +260,27 @@ class Selector(object):
         if self.debug:
             print([sel.name for sel in self.selections])
 
-    def times(self, selector):
-        return self.__mul__(selector)
+    def __and__(self, match):
+        other = None
+        if match.__class__ == Selector:
+            other = match
+        else:
+            other = Selector(match)
+        self.selections = and_selections(self.selections, other.selections)
+        if self.debug:
+            print([sel.name for sel in self.selections])
+        return self
+
+    def __or__(self, match):
+        other = None
+        if match.__class__ == Selector:
+            other = match
+        else:
+            other = Selector(match)
+        self.selections = or_selections(self.selections, other.selections)
+        if self.debug:
+            print([sel.name for sel in self.selections])
+        return self
 
     def __mul__(self, match):
         other = None
@@ -243,6 +313,15 @@ class Selector(object):
     def __call__(self):
         return self.selections
 
+    def one(self, new_name=None, new_label=None):
+        if len(self.selections) != 1:
+            print(f'[Selector.one] ERROR: selector returns {len(self.selections)} object and one() called!')            
+            raise ValueError
+        sel = self.selections[0]
+        if new_name:
+            sel.rename(new_name, new_label)
+        return sel
+    
 
 def compare_selections(sel1, sel2):
     if len(sel1) != len(sel2):
@@ -415,8 +494,10 @@ eg_eta_eb_sel = [
 eg_eta_sel = [
     Selection('all'),
     Selection('EtaF', '|#eta^{TOBJ}| <= 1.479', 'abs(eta) <= 1.479'),
-    Selection('EtaA', '|#eta^{TOBJ}| <= 1.52', 'abs(eta) <= 1.52'),
-    Selection('EtaBC', '1.52 < |#eta^{TOBJ}| <= 2.4', '1.52 < abs(eta) <= 2.4')
+    Selection('EtaA', ' 1.479 < |#eta^{TOBJ}| <= 1.52', '(abs(eta) <= 1.52) & abs(eta) > 1.479'),
+    Selection('EtaBC', '1.52 < |#eta^{TOBJ}| <= 2.4', '1.52 < abs(eta) <= 2.4'),
+    Selection('EtaEB', '|#eta^{TOBJ}| <= 1.479', 'abs(eta) <= 1.479'),
+    Selection('EtaEE', '1.479 < |#eta^{TOBJ}| <= 2.4', '(abs(eta) > 1.479) & (abs(eta) <= 2.4)'),
 ]
 
 eg_id_ee_selections = [
@@ -484,6 +565,27 @@ pfeginput_pt = [
     Selection('Pt5', 'p_{T}^{TOBJ}>=5GeV', 'pt >= 5'),
 ]
 
+# FIXME: these should be done using the actual online to offline threshold scaling from turn-ons
+menu_thresh_pt = [
+    Selection('PtEleEB36', 'p_{T}^{TOBJ}>=36GeV', 'pt >= 29.8'),
+    Selection('PtEleEE36', 'p_{T}^{TOBJ}>=36GeV', 'pt >= 28.5'),
+    Selection('PtEleEB25', 'p_{T}^{TOBJ}>=25GeV', 'pt >= 20.3'),
+    Selection('PtEleEE25', 'p_{T}^{TOBJ}>=25GeV', 'pt >= 19.5'),
+    Selection('PtEleEB12', 'p_{T}^{TOBJ}>=12GeV', 'pt >= 9.1'),
+    Selection('PtEleEE12', 'p_{T}^{TOBJ}>=12GeV', 'pt >= 8.8'),
+
+    Selection('PtIsoEleEB28', 'p_{T}^{TOBJ}>=28GeV', 'pt >= 23.'),
+    Selection('PtIsoEleEE28', 'p_{T}^{TOBJ}>=28GeV', 'pt >= 22.1'),
+    Selection('PtIsoPhoEB36', 'p_{T}^{TOBJ}>=36GeV', 'pt >= 30.4'),
+    Selection('PtIsoPhoEE36', 'p_{T}^{TOBJ}>=36GeV', 'pt >= 29.0'),
+
+    Selection('PtIsoPhoEB22', 'p_{T}^{TOBJ}>=22GeV', 'pt >= 17.6'),
+    Selection('PtIsoPhoEE22', 'p_{T}^{TOBJ}>=22GeV', 'pt >= 15.9'),
+    Selection('PtIsoPhoEB12', 'p_{T}^{TOBJ}>=12GeV', 'pt >= 8.5'),
+    Selection('PtIsoPhoEE12', 'p_{T}^{TOBJ}>=12GeV', 'pt >= 6.'),
+]
+
+
 pfeg_ee_input_qual = [
     Selection('EGq1', 'hwQual 1', 'hwQual == 1'),
 ]
@@ -499,6 +601,9 @@ eg_id_sel = [
     Selection('IDTightP', 'Tight-TkEm', 'IDTightPho'),
     Selection('IDNoBrem', 'NoBrem', 'IDNoBrem'),
     Selection('IDBrem', 'Brem', 'IDNoBrem == False'),
+
+    Selection('IDEleH', 'TkEle ID (H)', ''),
+
     ]
 
 comp_id_sel = [
@@ -523,7 +628,14 @@ iso_sel = [
     Selection('Iso0p2', 'iso_{tk}<=0.2', 'tkIso <= 0.2'),
     Selection('Iso0p1', 'iso_{tk}<=0.1', 'tkIso <= 0.1'),
     Selection('Iso0p3', 'iso_{tk}<=0.3', 'tkIso <= 0.3'),
+    Selection('IsoEleEB', 'iso_{tk}<=0.13', 'tkIso <= 0.13'),
+    Selection('IsoEleEE', 'iso_{tk}<=0.28', 'tkIso <= 0.28'),
+    Selection('IsoPhoEB', 'iso_{tk}<=0.25', 'tkIso <= 0.13'),
+    Selection('IsoPhoEE', 'iso_{tk}<=0.205', 'tkIso <= 0.28'),
+    # Selection('IsoEleMenu', 'iso_{tk}<=(0.13,0.28)', '((abs(eta) < 1.479) & (tkIso <= 0.13)) | ((abs(eta) > 1.479) & (tkIso <= 0.28))'),
+    # Selection('IsoPhoMenu', 'iso_{tk}<=(0.25,0.205)', '((abs(eta) < 1.479) & (tkIso <= 0.25)) | ((abs(eta) > 1.479) & (tkIso <= 0.205))'),
     ]
+
 
 
 working_points_histomax = {
@@ -573,6 +685,30 @@ tphgc_pubdt_sel = [
 
 sm = SelectionManager()
 Selector.selection_primitives = sm.selections.copy()
+
+
+menu_sel = [
+    ((Selector('^EtaEB')&('^IsoEleEB'))|(Selector('^EtaEE')&('^IsoEleEE')&('^IDTightE'))).one('MenuEleIsoTight', 'Iso TightID'),
+    ((Selector('^EtaEB')&('^IsoEleEB'))|(Selector('^EtaEE')&('^IsoEleEE')&('^IDCompWP955'))).one('MenuEleIsoLoose', 'Iso LooseID'),
+    ((Selector('^EtaEB')&('^IDTightE'))|(Selector('^EtaEE')&('^IDTightE'))).one('MenuEleTight', 'TightID'),
+    ((Selector('^EtaEB')&('^IDTightE'))|(Selector('^EtaEE')&('^IDCompWP955'))).one('MenuEleLoose', 'LooseID'),
+    ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP'))).one('MenuPhoIso', 'Iso'),
+    # Rate selections
+    ((Selector('^EtaEB')&('^IsoEleEB')&('^PtIsoEleEB28'))|(Selector('^EtaEE')&('^IsoEleEE')&('^IDCompWP955')&('^PtIsoEleEE28'))).one('SingleIsoTkEle28', 'SingleIsoTkEle28'),
+    ((Selector('^EtaEB')&('^IsoEleEB')&('^PtIsoEleEB28'))|(Selector('^EtaEE')&('^IsoEleEE')&('^IDTightE')&('^PtIsoEleEE28'))).one('SingleIsoTkEle28Tight', 'SingleIsoTkEle28Tight'),
+    ((Selector('^EtaEB')&('^IDTightE')&('^PtEleEB36'))|(Selector('^EtaEE')&('^IDTightE')&('^PtEleEE36'))).one('SingleTkEle36', 'SingleTkEle36'),
+    ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE')&('^PtIsoPhoEB36'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE36'))).one('SingleIsoTkPho36', 'SingleIsoTkPho36'),
+    build_DiObj_selection('DoubleIsoTkPho22-12', 'DoubleIsoTkPho22-12',
+                          ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE')&('^PtIsoPhoEB22'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE22'))).one(),
+                          ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE')&('^PtIsoPhoEB12'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE12'))).one()),
+    build_DiObj_selection('DoubleTkEle25-12', 'DoubleTkEle25-12',
+                          ((Selector('^EtaEB')&('^IDTightE')&('^PtEleEB25'))|(Selector('^EtaEE')&('^IDCompWP955')&('^PtEleEE25'))).one(),
+                          ((Selector('^EtaEB')&('^IDTightE')&('^PtEleEB12'))|(Selector('^EtaEE')&('^IDCompWP955')&('^PtEleEE12'))).one())
+
+]
+# repeat the call: we want the menu selections to be avaialble via the selectors
+Selector.selection_primitives = sm.selections.copy()
+
 
 tp_rate_selections = (Selector('^Em|all')*('^Eta[^DA][BC]*[BCD]$|all'))()
 tp_match_selections = (Selector('^Em|all')*('^Pt[1-3]0$|all'))()

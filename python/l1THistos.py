@@ -346,6 +346,61 @@ class RateHistos(BaseHistos):
             # print('[RateHistos::fill_many] using pt')
 
 
+class RateHistoCounter(BaseHistos):
+    def __init__(self, name, root_file=None, debug=False):
+        if not root_file:
+            self.h_norm = ROOT.TH1F(name+'_norm', '# of events', 1, 1, 2)
+            self.h_rate = ROOT.TH1F(name+'_rate', '# passing events; rate [kHz];',  1, 1, 2)
+
+        BaseHistos.__init__(self, name, root_file, debug)
+
+        if root_file is not None or True:
+            for attr_1d in [attr for attr in dir(self) if (attr.startswith('h_') and 'TH1' in getattr(self, attr).ClassName())]:
+                setattr(self, attr_1d+'_graph', GraphBuilder(self, attr_1d))
+
+        if root_file is not None:
+            self.normalize(31000)
+            # self.h_simenergy = ROOT.TH1F(name+'_energy', 'Digi sim-energy (GeV)', 100, 0, 2)
+
+    def fill(self, count):
+        self.h_rate.Fill(1, count)
+    
+    def fill_norm(self, many=1):
+        # print (f' fill rate norm: {many}')
+        self.h_norm.Fill(1, many)
+
+    def normalize(self, norm):
+        nev = self.h_norm.GetBinContent(1)
+        # print(f' .      # ev: {nev}')
+        if(nev != norm):
+            print('normalize to {}'.format(norm))
+            self.h_norm.Scale(norm/nev)
+            self.h_rate.Scale(norm/nev)
+
+
+class SingleObjRateHistoCounter(RateHistoCounter):
+    def __init__(self, name, root_file=None, debug=False):
+        RateHistoCounter.__init__(self, name, root_file, debug)
+
+    def fill(self, df):
+        # print(f' .  # of surviving entries: ')
+        # print(df['pt'].groupby(level='entry', group_keys=False).nlargest(n=1).count())
+        RateHistoCounter.fill(self, df['pt'].groupby(level='entry', group_keys=False).nlargest(n=1).count())
+    
+
+class DoubleObjRateHistoCounter(RateHistoCounter):
+    def __init__(self, name, root_file=None, debug=False):
+        RateHistoCounter.__init__(self, name, root_file, debug)
+
+    def has_unique_pairs(entry):
+        unique_pairs = [(l1, l2) for l1 in entry.loc[entry.index.get_level_values('leg') == 0].index for l2 in entry.loc[entry.index.get_level_values('leg') == 1].index if ((l1[2] != l2[2]) and (l1[1] != l2[1]))]
+        return len(unique_pairs) > 0
+
+    def fill(self, df):
+        # print(f' .  # of surviving entries: ')
+        # print(df.groupby(level='entry').filter(DoubleObjRateHistoCounter.has_unique_pairs).index.unique('entry').size)
+        RateHistoCounter.fill(self, df.groupby(level='entry').filter(DoubleObjRateHistoCounter.has_unique_pairs).index.unique('entry').size)
+
 
 class TCHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):

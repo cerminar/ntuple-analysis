@@ -90,6 +90,15 @@ egid_eta_selections = (selections.Selector('^IDTightS|all')*selections.Selector(
 egid_etatk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[C]$'))()
 egid_iso_etatk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Iso|all')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[C]$'))()
 
+egid_menu_ele_selections = (selections.Selector('^MenuEle')*selections.Selector('^EtaE[BE]$|all'))()
+egid_menu_pho_selections = (selections.Selector('^MenuPho')*selections.Selector('^EtaE[BE]$|all'))()
+
+egid_menu_ele_rate_selections = (selections.Selector('^SingleIsoTkEle|^SingleTkEle')*selections.Selector('^EtaE[BE]$|all'))()
+egid_menu_pho_rate_selections = (selections.Selector('^SingleIsoTkPho')*selections.Selector('^EtaE[BE]$|all'))()
+egid_menu_diele_rate_selections = (selections.Selector('^DoubleTkEle'))()
+egid_menu_dipho_rate_selections = (selections.Selector('^DoubleIsoTkPho'))()
+
+
 egid_eta_ee_selections = (selections.Selector('^IDTightS|all')*selections.Selector('^Eta[A][BCD]*[CD]$'))()
 egid_eta_eetk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Eta[A][BCD]*[C]$'))()
 egid_iso_eta_eetk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Iso|all')*selections.Selector('^Eta[A][BCD]*[C]$'))()
@@ -136,4 +145,34 @@ eg_emuCTl2_ell_plotters = [
         collections.TkEmL2Ell, egid_iso_etatk_selections),
     plotters.RatePlotter(
         collections.TkEleL2Ell, egid_iso_etatk_selections),
+]
+
+
+eg_menuCTl2_plotters = [
+    plotters.RatePlotter(
+        collections.TkEmL2, egid_menu_pho_selections),
+    plotters.RatePlotter(
+        collections.TkEleL2, egid_menu_ele_selections),
+]
+
+eg_menuCTl2_ell_plotters = [
+    plotters.RatePlotter(
+        collections.TkEmL2Ell, egid_menu_pho_selections),
+    plotters.RatePlotter(
+        collections.TkEleL2Ell, egid_menu_ele_selections),
+]
+
+
+
+eg_menuCTl2_rate = [
+    plotters.RateCounter(
+        collections.TkEmL2, egid_menu_pho_rate_selections),
+    plotters.RateCounter(
+        collections.TkEleL2, egid_menu_ele_rate_selections),
+    plotters.RateCounter(
+        collections.TkEleL2Ell, egid_menu_ele_rate_selections),
+    plotters.DoubleObjRateCounter(
+        collections.DoubleTkEleL2, egid_menu_diele_rate_selections),
+    plotters.DoubleObjRateCounter(
+        collections.DoubleTkEmL2, egid_menu_dipho_rate_selections)
 ]
