@@ -127,10 +127,7 @@ def editTemplate(infile, outfile, params):
 
 def parse_yaml(filename):
     with open(filename, 'r') as stream:
-        if '3.8' in platform.python_version():
-            cfgfile = yaml.load(stream, Loader=yaml.FullLoader)
-        else:
-            cfgfile = yaml.load(stream)
+        cfgfile = yaml.load(stream, Loader=yaml.FullLoader)
     return cfgfile
 
 
