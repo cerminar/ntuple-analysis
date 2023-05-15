@@ -1497,7 +1497,7 @@ class DecTkResoHistos(BaseResoHistos):
         self.h_caloPhiResVabseta.Fill(reference.abseta, target_line.calophi - reference.exphi)
         self.h_caloEtaResVeta.Fill(reference_eta, target_line.caloeta - reference.exeta)
         # self.h_caloPhiResVeta.Fill(reference_eta, target_line.calophi - reference.exphi)
-        self.h_dzRes.Fill(target.z0 - reference.ovz)
+        self.h_dzRes.Fill(target_line.z0 - reference.ovz)
 
     def fill_nMatch(self, n_matches):
         self.h_nMatch.Fill(n_matches)
@@ -1582,8 +1582,8 @@ class EGResoHistos(BaseResoHistos):
         self.h_exetaRes.Fill(target_eta - reference_exeta, reference_weight)
         self.h_exphiRes.Fill(target_phi - reference_exphi, reference_weight)
 
-        if 'tkZ0' in target.columns:
-            self.h_dzRes.Fill(target.tkZ0 - reference.ovz)
+        if 'tkZ0' in target_line.columns:
+            self.h_dzRes.Fill(target_line.tkZ0 - reference.ovz)
 
 
 class ClusterConeHistos(BaseHistos):
