@@ -126,7 +126,7 @@ collections:
 
   eg_rate_counter_menu:
       file_label:
-        rate
+        ratecount
       samples:
         - nugun_alleta_pu200
       plotters:

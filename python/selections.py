@@ -567,6 +567,8 @@ pfeginput_pt = [
 
 # FIXME: these should be done using the actual online to offline threshold scaling from turn-ons
 menu_thresh_pt = [
+    Selection('PtStaEB51', 'p_{T}^{TOBJ}>=51GeV', 'pt >= 40.7'),
+    Selection('PtStaEE51', 'p_{T}^{TOBJ}>=51GeV', 'pt >= 39.6'),
     Selection('PtEleEB36', 'p_{T}^{TOBJ}>=36GeV', 'pt >= 29.8'),
     Selection('PtEleEE36', 'p_{T}^{TOBJ}>=36GeV', 'pt >= 28.5'),
     Selection('PtEleEB25', 'p_{T}^{TOBJ}>=25GeV', 'pt >= 20.3'),
@@ -698,6 +700,7 @@ menu_sel = [
     ((Selector('^EtaEB')&('^IsoEleEB')&('^PtIsoEleEB28'))|(Selector('^EtaEE')&('^IsoEleEE')&('^IDTightE')&('^PtIsoEleEE28'))).one('SingleIsoTkEle28Tight', 'SingleIsoTkEle28Tight'),
     ((Selector('^EtaEB')&('^IDTightE')&('^PtEleEB36'))|(Selector('^EtaEE')&('^IDTightE')&('^PtEleEE36'))).one('SingleTkEle36', 'SingleTkEle36'),
     ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE')&('^PtIsoPhoEB36'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE36'))).one('SingleIsoTkPho36', 'SingleIsoTkPho36'),
+    ((Selector('^EtaEB')&('^IDTightE')&('^PtStaEB51'))|(Selector('^EtaEE')&('^IDTightP')&('^PtStaEE51'))).one('SingleEGEle51', 'SingleEGEle51'),
     build_DiObj_selection('DoubleIsoTkPho22-12', 'DoubleIsoTkPho22-12',
                           ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE')&('^PtIsoPhoEB22'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE22'))).one(),
                           ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE')&('^PtIsoPhoEB12'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE12'))).one()),

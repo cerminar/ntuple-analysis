@@ -94,7 +94,7 @@ egid_menu_ele_selections = (selections.Selector('^MenuEle')*selections.Selector(
 egid_menu_pho_selections = (selections.Selector('^MenuPho')*selections.Selector('^EtaE[BE]$|all'))()
 
 egid_menu_ele_rate_selections = (selections.Selector('^SingleIsoTkEle|^SingleTkEle')*selections.Selector('^EtaE[BE]$|all'))()
-egid_menu_pho_rate_selections = (selections.Selector('^SingleIsoTkPho')*selections.Selector('^EtaE[BE]$|all'))()
+egid_menu_pho_rate_selections = (selections.Selector('^SingleIsoTkPho|^SingleEGEle')*selections.Selector('^EtaE[BE]$|all'))()
 egid_menu_diele_rate_selections = (selections.Selector('^DoubleTkEle'))()
 egid_menu_dipho_rate_selections = (selections.Selector('^DoubleIsoTkPho'))()
 

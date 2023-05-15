@@ -101,7 +101,7 @@ egid_iso_tkele_comp_selections = (selections.Selector('^IDTight[E]|^IDComp|all')
 
 gen_selections = (selections.Selector('GEN$')*('^Eta[F]$|^Eta[AF][ABCD]*[C]$|all')+selections.Selector('GEN$')*('^Ee|all')*('^Pt15|^Pt30'))()
 
-# for sels in [l1tc_match_ee_selections, gen_ee_selections, egid_sta_selections, egid_iso_tkele_selections, egid_iso_tkpho_selections,gen_selections]:
+# for sels in [gen_selections, selections.gen_selections]:
 #     print('--------------------')
 #     print(f'# of sels: {len(sels)}')
 #     for sel in sels:
@@ -183,6 +183,20 @@ l1tc_l2emu_ell_genmatched = [
     plotters.EGGenMatchPlotter(
         collections.TkEleL2Ell, collections.sim_parts,
         egid_iso_tkele_selections, selections.gen_selections),   
+]
+
+
+egid_menu_ele_rate_selections = (selections.Selector('^SingleIsoTkEle|^SingleTkEle')*selections.Selector('^EtaE[BE]$|all'))()
+egid_menu_pho_rate_selections = (selections.Selector('^SingleIsoTkPho|^SingleEGEle')*selections.Selector('^EtaE[BE]$|all'))()
+
+
+l1tc_l2emu_singlelepton_genmatched = [
+    plotters.EGGenMatchPlotter(
+        collections.TkEmL2, collections.sim_parts,
+        egid_menu_pho_rate_selections, gen_selections),
+    plotters.EGGenMatchPlotter(
+        collections.TkEleL2, collections.sim_parts,
+        egid_menu_ele_rate_selections, gen_selections),   
 ]
 
 l1tc_emu_rate_pt_wps = [
