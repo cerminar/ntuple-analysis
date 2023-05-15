@@ -22,7 +22,7 @@ import ROOT
 import math
 import sys
 
-import root_numpy.tmva as rnptmva
+# import root_numpy.tmva as rnptmva
 
 from .utils import debugPrintOut
 import python.clusterTools as clAlgo
@@ -213,6 +213,7 @@ class DFCollection(object):
     def fill_real(self, event, stride, weight_file=None, debug=0):
         self.clear_query_cache(debug)
         self.df = self.filler_function(event, stride)
+        print(self.df)
         if self.fixture_function is not None:
             # FIXME: wouldn't this be more efficient
             # self.fixture_function(self.df)
@@ -339,10 +340,12 @@ def cl3d_fixtures(clusters):
     clusters['emax'] = clusters.emaxe*clusters.energy
     clusters.loc[clusters.hoe == -1, ['hoe']] = 999
     # print(clusters[clusters.hoe == -1][['hoe']])
-    clusters['bdt_pu'] = rnptmva.evaluate_reader(
-            classifiers.mva_pu_classifier_builder(), 
-            'BDT', 
-            clusters[['emax', 'emaxe', 'spptot', 'srrtot', 'ntc90']])
+    # FIXME: replace
+    clusters['bdt_pu'] = 0.5
+    # clusters['bdt_pu'] = rnptmva.evaluate_reader(
+    #         classifiers.mva_pu_classifier_builder(), 
+    #         'BDT', 
+    #         clusters[['emax', 'emaxe', 'spptot', 'srrtot', 'ntc90']])
 
     if False:
         clusters['bdt_pi'] = rnptmva.evaluate_reader(
@@ -367,6 +370,7 @@ def gen_fixtures(particles, mc_particles):
         if particle.gen == -1:
             return -1
         return mc_particles.df.loc[(particle.name[0], particle.gen-1)].firstmother_pdgid
+    # FIXME: temporary
     particles['firstmother_pdgid'] = particles.apply(func=lambda x: get_mother_pdgid(x, mc_particles), axis=1)
     return particles
 

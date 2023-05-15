@@ -2,6 +2,7 @@ import pandas as pd
 import datetime
 import resource
 import gc
+import awkward as ak
 
 class TreeReader(object):
     def __init__(self, entry_range, max_events):
@@ -93,14 +94,16 @@ class TreeReader(object):
                     not br == '{}_n'.format(prefix)]
         names = ['_'.join(br.split('_')[1:]) for br in branches]
         name_map = dict(zip(branches, names))
-
+        print(branches)
         if len(branches) == 0:
             if fallback is not None:
                 return self.getDataFrame(prefix=fallback, entry_block=entry_block)
             return pd.DataFrame()
-
+        print(self.file_entry, self.file_entry+entry_block)
+        print(self.tree.arrays(branches, library='ak', entry_start=self.file_entry, entry_stop=self.file_entry+entry_block))
         # FIXME: stride needs to be set somehow
-        df = self.tree.arrays(branches, library='pd', entry_start=self.file_entry, entry_stop=self.file_entry+entry_block)
+        df = ak.to_dataframe(self.tree.arrays(branches, library='ak', entry_start=self.file_entry, entry_stop=self.file_entry+entry_block), how="outer")
+        print(df)
         df.rename(columns=name_map, inplace=True)
         
         return df
