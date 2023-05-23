@@ -1582,7 +1582,7 @@ class EGResoHistos(BaseResoHistos):
         self.h_exetaRes.Fill(target_eta - reference_exeta, reference_weight)
         self.h_exphiRes.Fill(target_phi - reference_exphi, reference_weight)
 
-        if 'tkZ0' in target_line.columns:
+        if 'tkZ0' in target.columns:
             self.h_dzRes.Fill(target_line.tkZ0 - reference.ovz)
 
 

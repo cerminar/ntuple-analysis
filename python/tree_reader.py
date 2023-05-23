@@ -3,6 +3,7 @@ import datetime
 import resource
 import gc
 import awkward as ak
+import awkward_pandas as akpd
 
 class TreeReader(object):
     def __init__(self, entry_range, max_events):
@@ -27,7 +28,10 @@ class TreeReader(object):
                             'tc_cellu',
                             'tc_cellv',
                             'gen_PUNumInt',
-                            'gen_TrueNumInt']
+                            'gen_TrueNumInt',
+                            'gen_daughters', 
+                            'simpart_posx', 'simpart_posy', 'simpart_posz',
+                            ]
         if len(self._branches) == 0:
             self._branches = [br for br in self.tree.keys() if br not in branch_blacklist]
         print(f'open new tree file with # entries: {self.tree.num_entries}')
@@ -102,7 +106,8 @@ class TreeReader(object):
         print(self.file_entry, self.file_entry+entry_block)
         print(self.tree.arrays(branches, library='ak', entry_start=self.file_entry, entry_stop=self.file_entry+entry_block))
         # FIXME: stride needs to be set somehow
-        df = ak.to_dataframe(self.tree.arrays(branches, library='ak', entry_start=self.file_entry, entry_stop=self.file_entry+entry_block), how="outer")
+        df = ak.to_dataframe(self.tree.arrays(branches, library='ak', entry_start=self.file_entry, entry_stop=self.file_entry+entry_block))
+        # df = akpd.from_awkward(self.tree.arrays(branches, library='ak', entry_start=self.file_entry, entry_stop=self.file_entry+entry_block))
         print(df)
         df.rename(columns=name_map, inplace=True)
         
