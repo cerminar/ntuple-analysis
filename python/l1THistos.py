@@ -6,52 +6,10 @@ from array import array
 # import pandas as pd
 import uproot4 as up
 import awkward as ak
-import hist
-from hist import Hist
 import python.boost_hist as bh
 import python.pf_regions as pf_regions
 
 stuff = []
-
-
-class HistoLazyFiller(object):
-    def __init__(self, dataframe):
-        self.df = dataframe
-        self.manager = ROOT.FillerManager()
-        self.columns = dataframe.fields
-
-    def fill1d_lazy(self, histo, col_name, sel_name):
-        if not self.manager.knowsVariable(col_name):
-            # print (" - add variable {}".format(col_name))
-            self.manager.addVariable(col_name, ak.flatten(self.df[col_name]))
-
-        if not self.manager.knowsSelection(sel_name):
-            print("*** [HistoLazyFiller] ERROR: selection: {} not known!".format(sel_name))
-            raise ValueError('[HistoLazyFiller] selection {} not known'.format(sel_name))
-
-        self.manager.add_1Dhisto(histo, col_name, sel_name)
-
-    def fill2d_lazy(self, histo, x_col_name, y_col_name, sel_name):
-        if not self.manager.knowsVariable(x_col_name):
-            # print (" - add variable {}".format(col_name))
-            self.manager.addVariable(x_col_name, ak.flatten(self.df[x_col_name]))
-
-        if not self.manager.knowsVariable(y_col_name):
-            # print (" - add variable {}".format(col_name))
-            self.manager.addVariable(y_col_name, ak.flatten(self.df[y_col_name]))
-
-        if not self.manager.knowsSelection(sel_name):
-            print("*** [HistoLazyFiller] ERROR: selection: {} not known!".format(sel_name))
-            raise ValueError('[HistoLazyFiller] selection {} not known'.format(sel_name))
-
-        self.manager.add_2Dhisto(histo, x_col_name, y_col_name, sel_name)
-
-    def add_selection(self, sel_name, sel_values):
-        self.manager.addFilter(sel_name, sel_values)
-
-    def fill(self):
-        self.manager.fill()
-
 
 class HistoManager(object):
     class __TheManager:
@@ -118,7 +76,7 @@ class BaseHistos():
             hm.addHistos(self)
 
     def write(self, upfile):
-        # pyroot_hist = ROOT.TH1F("h", "", 100, -3, 3)
+        # pyroot_hist = bh.TH1F("h", "", 100, -3, 3)
         # pyroot_hist.FillRandom("gaus", 100000)
         # upfile["from_pyroot"] = pyroot_hist
 
@@ -144,55 +102,6 @@ class BaseHistos():
 
     def __repr__(self):
         return '<{} {}>'.format(self.__class__.__name__, self.name_)
-
-
-class BaseBoostHistos():
-    def __init__(self, name, root_file=None, debug=False):
-        self.name_ = name
-        # print name
-        # print self.__class__.__name__
-        # # print 'BOOK histo: {}'.format(self)
-        if root_file is not None:
-            root_file.cd()
-            # print 'class: {}'.format(self.__class__.__name__)
-            # ROOT.gDirectory.pwd()
-            file_dir = root_file.GetDirectory(self.__class__.__name__)
-            # print '# keys in dir: {}'.format(len(file_dir.GetListOfKeys()))
-            # file_dir.cd()
-            selhistos = [(histo.ReadObj(), histo.GetName())
-                         for histo in file_dir.GetListOfKeys()
-                         if histo.GetName().startswith(name+'_')]
-            if debug:
-                print(selhistos)
-            for hinst, histo_name in selhistos:
-                attr_name = 'h_'+histo_name.split(name+'_')[1]
-                setattr(self, attr_name, hinst)
-#            self.h_test = root_file.Get('h_EleReso_ptRes')
-            # print 'XXXXXX'+str(self.h_test)
-        else:
-            for histo in [a for a in dir(self) if a.startswith('h_')]:
-                getattr(self, histo).Sumw2()
-            hm = HistoManager()
-            hm.addHistos(self)
-
-    def write(self):
-        if self.__class__.__name__ not in ROOT.gDirectory.GetListOfKeys():
-            ROOT.gDirectory.mkdir(self.__class__.__name__)
-        newdir = ROOT.gDirectory.GetDirectory(self.__class__.__name__)
-        newdir.cd()
-        for histo in [a for a in dir(self) if a.startswith('h_')]:
-            # print ("Writing {}".format(histo))
-            getattr(self, histo).Write("", ROOT.TObject.kOverwrite)
-        ROOT.gDirectory.cd('..')
-
-    # def normalize(self, norm):
-    #     className = self.__class__.__name__
-    #     ret = className()
-    #     return ret
-
-    def __repr__(self):
-        return '<{} {}>'.format(self.__class__.__name__, self.name_)
-
 
 
 class GraphBuilder:
@@ -292,13 +201,13 @@ class BaseTuples(BaseHistos):
 
 class GenPartHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
-        self.h_pt = ROOT.TH1F(name+'_pt', 'Gen Part Pt (GeV)', 100, 0, 100)
-        self.h_energy = ROOT.TH1F(name+'_energy', 'Gen Part Energy (GeV)', 100, 0, 1000)
+        self.h_pt = bh.TH1F(name+'_pt', 'Gen Part Pt (GeV)', 100, 0, 100)
+        self.h_energy = bh.TH1F(name+'_energy', 'Gen Part Energy (GeV)', 100, 0, 1000)
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, gps):
-        rnp.fill_hist(self.h_pt, gps.pt)
-        rnp.fill_hist(self.h_energy, gps.energy)
+        bh.fill_1Dhist(self.h_pt, gps.pt)
+        bh.fill_1Dhist(self.h_energy, gps.energy)
 
     def write(self):
         for histo in [a for a in dir(self) if a.startswith('h_')]:
@@ -321,9 +230,9 @@ class GenParticleHistos(BaseHistos):
             self.h_eta = bh.TH1F(name+'_eta', 'Gen Part eta; #eta^{GEN};', 50, -3, 3)
             self.h_abseta = bh.TH1F(name+'_abseta', 'Gen Part |eta|; |#eta^{GEN}|;', 40, 0, 4)
             # FIXME: address in hist migration
-            # self.h_pt = ROOT.TH1F(name+'_pt', 'Gen Part P_{T} (GeV); p_{T}^{GEN} [GeV];', n_pt_bins, array('d', pt_bins))
+            # self.h_pt = bh.TH1F(name+'_pt', 'Gen Part P_{T} (GeV); p_{T}^{GEN} [GeV];', n_pt_bins, array('d', pt_bins))
             self.h_pt = bh.TH1F(name+'_pt', 'Gen Part P_{T} (GeV); p_{T}^{GEN} [GeV];', 50, 0, 100)
-            # self.h_energy = ROOT.TH1F(name+'_energy', 'Gen Part Energy (GeV); E [GeV];', 100, 0, 1000)
+            # self.h_energy = bh.TH1F(name+'_energy', 'Gen Part Energy (GeV); E [GeV];', 100, 0, 1000)
             self.h_reachedEE = bh.TH1F(name+'_reachedEE', 'Gen Part reachedEE', 4, 0, 4)
             self.h_fBrem = bh.TH1F(name+'_fBrem', 'Brem. p_{T} fraction', 30, 0, 1)
 
@@ -349,36 +258,24 @@ class GenParticleHistos(BaseHistos):
                        array=particles.fbrem)
 
 
-
-
-
-    def fill_lazy(self, filler, sel_name):
-        filler.fill1d_lazy(self.h_eta, 'eta', sel_name)
-        filler.fill1d_lazy(self.h_abseta, 'abseta', sel_name)
-        filler.fill1d_lazy(self.h_pt, 'pt', sel_name)
-        # filler.fill1d_lazy(self.h_energy, 'energy', sel_name)
-        filler.fill1d_lazy(self.h_reachedEE, 'reachedEE', sel_name)
-        filler.fill1d_lazy(self.h_fBrem, 'fbrem', sel_name)
-
-
 class DigiHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_layer = ROOT.TH1F(name+'_layer', 'Digi layer #', 60, 0, 60)
-            # self.h_simenergy = ROOT.TH1F(name+'_energy', 'Digi sim-energy (GeV)', 100, 0, 2)
+            self.h_layer = bh.TH1F(name+'_layer', 'Digi layer #', 60, 0, 60)
+            # self.h_simenergy = bh.TH1F(name+'_energy', 'Digi sim-energy (GeV)', 100, 0, 2)
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, digis):
-        rnp.fill_hist(self.h_layer, digis.layer)
+        bh.fill_1Dhist(self.h_layer, digis.layer)
         # rnp.fill_hist(self.h_simenergy, digis.simenergy)
 
 
 class RateHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_norm = ROOT.TH1F(name+'_norm', '# of events', 1, 1, 2)
-            self.h_pt = ROOT.TH1F(name+'_pt', 'rate above p_{T} thresh.; p_{T} [GeV]; rate [kHz];', 100, 0, 100)
-            self.h_ptVabseta = ROOT.TH2F(name+'_ptVabseta', 'Candidate p_{T} vs |#eta|; |#eta|; p_{T} [GeV];', 34, 1.4, 3.1, 100, 0, 100)
+            self.h_norm = bh.TH1F(name+'_norm', '# of events', 1, 1, 2)
+            self.h_pt = bh.TH1F(name+'_pt', 'rate above p_{T} thresh.; p_{T} [GeV]; rate [kHz];', 100, 0, 100)
+            self.h_ptVabseta = bh.TH2F(name+'_ptVabseta', 'Candidate p_{T} vs |#eta|; |#eta|; p_{T} [GeV];', 34, 1.4, 3.1, 100, 0, 100)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
@@ -388,7 +285,7 @@ class RateHistos(BaseHistos):
 
         if root_file is not None:
             self.normalize(31000)
-            # self.h_simenergy = ROOT.TH1F(name+'_energy', 'Digi sim-energy (GeV)', 100, 0, 2)
+            # self.h_simenergy = bh.TH1F(name+'_energy', 'Digi sim-energy (GeV)', 100, 0, 2)
 
     def fill(self, pt, eta):
         for ptf in range(0, int(pt)+1):
@@ -421,8 +318,8 @@ class RateHistos(BaseHistos):
 class RateHistoCounter(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_norm = ROOT.TH1F(name+'_norm', '# of events', 1, 1, 2)
-            self.h_rate = ROOT.TH1F(name+'_rate', '# passing events; rate [kHz];',  1, 1, 2)
+            self.h_norm = bh.TH1F(name+'_norm', '# of events', 1, 1, 2)
+            self.h_rate = bh.TH1F(name+'_rate', '# passing events; rate [kHz];',  1, 1, 2)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
@@ -432,7 +329,7 @@ class RateHistoCounter(BaseHistos):
 
         if root_file is not None:
             self.normalize(31000)
-            # self.h_simenergy = ROOT.TH1F(name+'_energy', 'Digi sim-energy (GeV)', 100, 0, 2)
+            # self.h_simenergy = bh.TH1F(name+'_energy', 'Digi sim-energy (GeV)', 100, 0, 2)
 
     def fill(self, count):
         self.h_rate.Fill(1, count)
@@ -477,19 +374,19 @@ class DoubleObjRateHistoCounter(RateHistoCounter):
 class TCHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_energy = ROOT.TH1F(name+'_energy', 'TC energy (GeV)', 100, 0, 2)
-            self.h_subdet = ROOT.TH1F(name+'_subdet', 'TC subdet #', 8, 0, 8)
-            self.h_mipPt = ROOT.TH1F(name+'_mipPt', 'TC MIP Pt', 50, 0, 10)
+            self.h_energy = bh.TH1F(name+'_energy', 'TC energy (GeV)', 100, 0, 2)
+            self.h_subdet = bh.TH1F(name+'_subdet', 'TC subdet #', 8, 0, 8)
+            self.h_mipPt = bh.TH1F(name+'_mipPt', 'TC MIP Pt', 50, 0, 10)
 
             self.h_layer = ROOT.TProfile(name+'_layer', 'TC layer #', 60, 0, 60, 's')
-            self.h_absz = ROOT.TH1F(name+'_absz', 'TC z(cm)', 100, 300, 500)
-            self.h_wafertype = ROOT.TH1F(name+'_wafertype', 'Wafer type', 10, 0, 10)
-            self.h_layerVenergy = ROOT.TH2F(name+'_layerVenergy', "Energy (GeV) vs Layer #", 60, 0, 60, 100, 0, 2)
-            self.h_energyVeta = ROOT.TH2F(name+'_energyVeta', "Energy (GeV) vs Eta", 100, -3.5, 3.5, 100, 0, 2)
-            # self.h_energyVetaL1t5 = ROOT.TH2F(name+'_energyVetaL1t5', "Energy (GeV) vs Eta (layers 1 to 5)", 100, -3.5, 3.5, 100, 0, 2)
-            # self.h_energyVetaL6t10 = ROOT.TH2F(name+'_energyVetaL6t10', "Energy (GeV) vs Eta (layers 6 to 10)", 100, -3.5, 3.5, 100, 0, 2)
-            # self.h_energyVetaL11t20 = ROOT.TH2F(name+'_energyVetaL11t20', "Energy (GeV) vs Eta (layers 11 to 20)", 100, -3.5, 3.5, 100, 0, 2)
-            # self.h_energyVetaL21t60 = ROOT.TH2F(name+'_energyVetaL21t60', "Energy (GeV) vs Eta (layers 21 to 60)", 100, -3.5, 3.5, 100, 0, 2)
+            self.h_absz = bh.TH1F(name+'_absz', 'TC z(cm)', 100, 300, 500)
+            self.h_wafertype = bh.TH1F(name+'_wafertype', 'Wafer type', 10, 0, 10)
+            self.h_layerVenergy = bh.TH2F(name+'_layerVenergy', "Energy (GeV) vs Layer #", 60, 0, 60, 100, 0, 2)
+            self.h_energyVeta = bh.TH2F(name+'_energyVeta', "Energy (GeV) vs Eta", 100, -3.5, 3.5, 100, 0, 2)
+            # self.h_energyVetaL1t5 = bh.TH2F(name+'_energyVetaL1t5', "Energy (GeV) vs Eta (layers 1 to 5)", 100, -3.5, 3.5, 100, 0, 2)
+            # self.h_energyVetaL6t10 = bh.TH2F(name+'_energyVetaL6t10', "Energy (GeV) vs Eta (layers 6 to 10)", 100, -3.5, 3.5, 100, 0, 2)
+            # self.h_energyVetaL11t20 = bh.TH2F(name+'_energyVetaL11t20', "Energy (GeV) vs Eta (layers 11 to 20)", 100, -3.5, 3.5, 100, 0, 2)
+            # self.h_energyVetaL21t60 = bh.TH2F(name+'_energyVetaL21t60', "Energy (GeV) vs Eta (layers 21 to 60)", 100, -3.5, 3.5, 100, 0, 2)
             self.h_energyPetaVphi = ROOT.TProfile2D(name+'_energyPetaVphi', "Energy profile (GeV) vs Eta and Phi", 100, -3.5, 3.5, 100, -3.2, 3.2)
 
         BaseHistos.__init__(self, name, root_file, debug)
@@ -518,14 +415,14 @@ class TCHistos(BaseHistos):
 class ClusterHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_energy = ROOT.TH1F(name+'_energy', 'Cluster energy (GeV); E [GeV];', 100, 0, 30)
-            self.h_layer = ROOT.TH1F(name+'_layer', 'Cluster layer #; layer #;', 60, 0, 60)
-            # self.h_nCoreCells = ROOT.TH1F(name+'_nCoreCells', 'Cluster # cells (core)', 30, 0, 30)
+            self.h_energy = bh.TH1F(name+'_energy', 'Cluster energy (GeV); E [GeV];', 100, 0, 30)
+            self.h_layer = bh.TH1F(name+'_layer', 'Cluster layer #; layer #;', 60, 0, 60)
+            # self.h_nCoreCells = bh.TH1F(name+'_nCoreCells', 'Cluster # cells (core)', 30, 0, 30)
 
-            self.h_layerVenergy = ROOT.TH2F(name+'_layerVenergy', "Cluster Energy (GeV) vs Layer #; layer; E [GeV];", 50, 0, 50, 100, 0, 20)
-            self.h_ncells = ROOT.TH1F(name+'_ncells', 'Cluster # cells; # TC components;', 30, 0, 30)
-            self.h_layerVncells = ROOT.TH2F(name+'_layerVncells', "Cluster #cells vs Layer #; layer; # TC components;",  50, 0, 50, 30, 0, 30)
-            # self.h_layerVnCoreCells = ROOT.TH2F(name+'_layerVnCoreCells', "Cluster #cells vs Layer #",  50, 0, 50, 30, 0, 30)
+            self.h_layerVenergy = bh.TH2F(name+'_layerVenergy', "Cluster Energy (GeV) vs Layer #; layer; E [GeV];", 50, 0, 50, 100, 0, 20)
+            self.h_ncells = bh.TH1F(name+'_ncells', 'Cluster # cells; # TC components;', 30, 0, 30)
+            self.h_layerVncells = bh.TH2F(name+'_layerVncells', "Cluster #cells vs Layer #; layer; # TC components;",  50, 0, 50, 30, 0, 30)
+            # self.h_layerVnCoreCells = bh.TH2F(name+'_layerVnCoreCells', "Cluster #cells vs Layer #",  50, 0, 50, 30, 0, 30)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
@@ -544,30 +441,30 @@ class ClusterHistos(BaseHistos):
 class Cluster3DHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            # self.h_npt05 = ROOT.TH1F(
+            # self.h_npt05 = bh.TH1F(
             #     name+'_npt05', '# 3D Cluster Pt > 0.5 GeV; # 3D clusters in cone;', 1000, 0, 1000)
-            # self.h_npt20 = ROOT.TH1F(
+            # self.h_npt20 = bh.TH1F(
             #     name+'_npt20', '# 3D Cluster Pt > 2.0 GeV; # 3D clusters in cone;', 1000, 0, 1000)
-            self.h_pt = ROOT.TH1F(
+            self.h_pt = bh.TH1F(
                 name+'_pt', '3D Cluster Pt (GeV); p_{T} [GeV]', 100, 0, 100)
-            self.h_eta = ROOT.TH1F(name+'_eta', '3D Cluster eta; #eta;', 100, -4, 4)
-            # self.h_energy = ROOT.TH1F(name+'_energy', '3D Cluster energy (GeV); E [GeV]', 1000, 0, 1000)
-            # self.h_nclu = ROOT.TH1F(name+'_nclu', '3D Cluster # clusters; # 2D components;', 60, 0, 60)
-            # self.h_ncluVpt = ROOT.TH2F(name+'_ncluVpt', '3D Cluster # clusters vs pt; # 2D components; p_{T} [GeV]', 60, 0, 60, 100, 0, 100)
-            # self.h_showlenght = ROOT.TH1F(name+'_showlenght', '3D Cluster showerlenght', 60, 0, 60)
-            # self.h_firstlayer = ROOT.TH1F(name+'_firstlayer', '3D Cluster first layer', 30, 0, 30)
-            # self.h_sEtaEtaTot = ROOT.TH1F(name+'_sEtaEtaTot', '3D Cluster RMS Eta', 100, 0, 0.1)
-            # self.h_sEtaEtaMax = ROOT.TH1F(name+'_sEtaEtaMax', '3D Cluster RMS Eta (max)', 100, 0, 0.1)
-            # self.h_sPhiPhiTot = ROOT.TH1F(name+'_sPhiPhiTot', '3D Cluster RMS Phi', 100, 0, 2)
-            # self.h_sPhiPhiMax = ROOT.TH1F(name+'_sPhiPhiMax', '3D Cluster RMS Phi (max)', 100, 0, 2)
-            # self.h_sZZ = ROOT.TH1F(name+'_sZZ', '3D Cluster RMS Z ???', 100, 0, 10)
-            # self.h_eMaxOverE = ROOT.TH1F(name+'_eMaxOverE', '3D Cluster Emax/E', 100, 0, 1)
-            # self.h_HoE = ROOT.TH1F(name+'_HoE', '3D Cluster H/E', 20, 0, 2)
-            # self.h_iso0p2 = ROOT.TH1F(name+'_iso0p2', '3D Cluster iso DR 0.2(GeV); Iso p_{T} [GeV];', 100, 0, 100)
-            # self.h_isoRel0p2 = ROOT.TH1F(name+'_isoRel0p2', '3D Cluster relative iso DR 0.2; Rel. Iso;', 100, 0, 1)
-            # self.h_bdtPU = ROOT.TH1F(name+'_bdtPU', '3D Cluster bdt PU out; BDT-PU out;', 100, -1, 1)
-            # self.h_bdtPi = ROOT.TH1F(name+'_bdtPi', '3D Cluster bdt Pi out; BDT-Pi out;', 100, -1, 1)
-            self.h_bdtEg = ROOT.TH1F(name+'_bdtEg', '3D Cluster bdt Pi out; BDT-EG out;', 100, -1, 1)
+            self.h_eta = bh.TH1F(name+'_eta', '3D Cluster eta; #eta;', 100, -4, 4)
+            # self.h_energy = bh.TH1F(name+'_energy', '3D Cluster energy (GeV); E [GeV]', 1000, 0, 1000)
+            # self.h_nclu = bh.TH1F(name+'_nclu', '3D Cluster # clusters; # 2D components;', 60, 0, 60)
+            # self.h_ncluVpt = bh.TH2F(name+'_ncluVpt', '3D Cluster # clusters vs pt; # 2D components; p_{T} [GeV]', 60, 0, 60, 100, 0, 100)
+            # self.h_showlenght = bh.TH1F(name+'_showlenght', '3D Cluster showerlenght', 60, 0, 60)
+            # self.h_firstlayer = bh.TH1F(name+'_firstlayer', '3D Cluster first layer', 30, 0, 30)
+            # self.h_sEtaEtaTot = bh.TH1F(name+'_sEtaEtaTot', '3D Cluster RMS Eta', 100, 0, 0.1)
+            # self.h_sEtaEtaMax = bh.TH1F(name+'_sEtaEtaMax', '3D Cluster RMS Eta (max)', 100, 0, 0.1)
+            # self.h_sPhiPhiTot = bh.TH1F(name+'_sPhiPhiTot', '3D Cluster RMS Phi', 100, 0, 2)
+            # self.h_sPhiPhiMax = bh.TH1F(name+'_sPhiPhiMax', '3D Cluster RMS Phi (max)', 100, 0, 2)
+            # self.h_sZZ = bh.TH1F(name+'_sZZ', '3D Cluster RMS Z ???', 100, 0, 10)
+            # self.h_eMaxOverE = bh.TH1F(name+'_eMaxOverE', '3D Cluster Emax/E', 100, 0, 1)
+            # self.h_HoE = bh.TH1F(name+'_HoE', '3D Cluster H/E', 20, 0, 2)
+            # self.h_iso0p2 = bh.TH1F(name+'_iso0p2', '3D Cluster iso DR 0.2(GeV); Iso p_{T} [GeV];', 100, 0, 100)
+            # self.h_isoRel0p2 = bh.TH1F(name+'_isoRel0p2', '3D Cluster relative iso DR 0.2; Rel. Iso;', 100, 0, 1)
+            # self.h_bdtPU = bh.TH1F(name+'_bdtPU', '3D Cluster bdt PU out; BDT-PU out;', 100, -1, 1)
+            # self.h_bdtPi = bh.TH1F(name+'_bdtPi', '3D Cluster bdt Pi out; BDT-Pi out;', 100, -1, 1)
+            self.h_bdtEg = bh.TH1F(name+'_bdtEg', '3D Cluster bdt Pi out; BDT-EG out;', 100, -1, 1)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
@@ -575,55 +472,28 @@ class Cluster3DHistos(BaseHistos):
         # self.h_npt05.Fill(len(cl3ds[cl3ds.pt > 0.5].index))
         # self.h_npt20.Fill(len(cl3ds[cl3ds.pt > 2.0].index))
 
-        rnp.fill_hist(self.h_pt, cl3ds.pt)
-        rnp.fill_hist(self.h_eta, cl3ds.eta)
-        # rnp.fill_hist(self.h_energy, cl3ds.energy)
-        # rnp.fill_hist(self.h_nclu, cl3ds.nclu)
-        # rnp.fill_hist(self.h_ncluVpt, cl3ds[['nclu', 'pt']])
-        # rnp.fill_hist(self.h_showlenght, cl3ds.showerlength)
-        # rnp.fill_hist(self.h_firstlayer, cl3ds.firstlayer)
-        # rnp.fill_hist(self.h_sEtaEtaTot, cl3ds.seetot)
-        # rnp.fill_hist(self.h_sEtaEtaMax, cl3ds.seemax)
-        # rnp.fill_hist(self.h_sPhiPhiTot, cl3ds.spptot)
-        # rnp.fill_hist(self.h_sPhiPhiMax, cl3ds.sppmax)
-        # rnp.fill_hist(self.h_sZZ, cl3ds.szz)
-        # rnp.fill_hist(self.h_eMaxOverE, cl3ds.emaxe)
-        # rnp.fill_hist(self.h_HoE, cl3ds.hoe)
-        # if 'iso0p2' in cl3ds.columns:
-        #     rnp.fill_hist(self.h_iso0p2, cl3ds.iso0p2)
-        #     rnp.fill_hist(self.h_isoRel0p2, cl3ds.isoRel0p2)
-        # if 'bdt_pu' in cl3ds.columns:
-        #     rnp.fill_hist(self.h_bdtPU, cl3ds.bdt_pu)
-        # if 'bdt_pi' in cl3ds.columns:
-        #     rnp.fill_hist(self.h_bdtPi, cl3ds.bdt_pi)
-        rnp.fill_hist(self.h_bdtEg, cl3ds.bdteg)
-
-    def fill_lazy(self, filler, sel_name):
-        # self.h_npt05.Fill(len(cl3ds[cl3ds.pt > 0.5].index))
-        # self.h_npt20.Fill(len(cl3ds[cl3ds.pt > 2.0].index))
-
-        filler.fill1d_lazy(self.h_pt, 'pt', sel_name)
-        filler.fill1d_lazy(self.h_eta, 'eta', sel_name)
-        # filler.fill1d_lazy(self.h_energy, 'energy', sel_name)
-        # filler.fill1d_lazy(self.h_nclu, 'nclu', sel_name)
-        # # filler.fill2d_lazy(self.h_ncluVpt, cl3ds[['nclu', 'pt']], sel_name)
-        # filler.fill1d_lazy(self.h_showlenght, 'showerlength', sel_name)
-        # filler.fill1d_lazy(self.h_firstlayer, 'firstlayer', sel_name)
-        # filler.fill1d_lazy(self.h_sEtaEtaTot, 'seetot', sel_name)
-        # filler.fill1d_lazy(self.h_sEtaEtaMax, 'seemax', sel_name)
-        # filler.fill1d_lazy(self.h_sPhiPhiTot, 'spptot', sel_name)
-        # filler.fill1d_lazy(self.h_sPhiPhiMax, 'sppmax', sel_name)
-        # filler.fill1d_lazy(self.h_sZZ, 'szz', sel_name)
-        # filler.fill1d_lazy(self.h_eMaxOverE, 'emaxe', sel_name)
-        # filler.fill1d_lazy(self.h_HoE, 'hoe', sel_name)
-        # if 'iso0p2' in filler.columns:
-        #     filler.fill1d_lazy(self.h_iso0p2, 'iso0p2', sel_name)
-        #     filler.fill1d_lazy(self.h_isoRel0p2, 'isoRel0p2', sel_name)
-        # if 'bdt_pu' in filler.columns:
-        #     filler.fill1d_lazy(self.h_bdtPU, 'bdt_pu', sel_name)
-        # if 'bdt_pi' in filler.columns:
-        #     filler.fill1d_lazy(self.h_bdtPi, 'bdt_pi', sel_name)
-        filler.fill1d_lazy(self.h_bdtEg, 'bdteg', sel_name)
+        bh.fill_1Dhist(self.h_pt, cl3ds.pt)
+        bh.fill_1Dhist(self.h_eta, cl3ds.eta)
+        # bh.fill_1Dhist(self.h_energy, cl3ds.energy)
+        # bh.fill_1Dhist(self.h_nclu, cl3ds.nclu)
+        # bh.fill_2Dhist(self.h_ncluVpt, cl3ds[['nclu', 'pt']])
+        # bh.fill_1Dhist(self.h_showlenght, cl3ds.showerlength)
+        # bh.fill_1Dhist(self.h_firstlayer, cl3ds.firstlayer)
+        # bh.fill_1Dhist(self.h_sEtaEtaTot, cl3ds.seetot)
+        # bh.fill_1Dhist(self.h_sEtaEtaMax, cl3ds.seemax)
+        # bh.fill_1Dhist(self.h_sPhiPhiTot, cl3ds.spptot)
+        # bh.fill_1Dhist(self.h_sPhiPhiMax, cl3ds.sppmax)
+        # bh.fill_1Dhist(self.h_sZZ, cl3ds.szz)
+        # bh.fill_1Dhist(self.h_eMaxOverE, cl3ds.emaxe)
+        # bh.fill_1Dhist(self.h_HoE, cl3ds.hoe)
+        # if 'iso0p2' in cl3ds.fields:
+        #     bh.fill_1Dhist(self.h_iso0p2, cl3ds.iso0p2)
+        #     bh.fill_1Dhist(self.h_isoRel0p2, cl3ds.isoRel0p2)
+        # if 'bdt_pu' in cl3ds.fields:
+        #     bh.fill_1Dhist(self.h_bdtPU, cl3ds.bdt_pu)
+        # if 'bdt_pi' in cl3ds.fields:
+        #     bh.fill_1Dhist(self.h_bdtPi, cl3ds.bdt_pi)
+        bh.fill_1Dhist(self.h_bdtEg, cl3ds.bdteg)
 
 
 class EGHistos(BaseHistos):
@@ -660,20 +530,6 @@ class EGHistos(BaseHistos):
         if 'compBDTScore' in egs.fields:
             bh.fill_1Dhist(hist=self.h_compBdt, array=egs.compBDTScore, weights=weight)
 
-    def fill_lazy(self, filler, sel_name):
-        filler.fill1d_lazy(self.h_pt, 'pt', sel_name)
-        filler.fill1d_lazy(self.h_eta, 'eta', sel_name)
-        filler.fill1d_lazy(self.h_energy, 'energy', sel_name)
-        filler.fill1d_lazy(self.h_hwQual, 'hwQual', sel_name)
-        if 'tkIso' in filler.columns:
-            filler.fill1d_lazy(self.h_tkIso, 'tkIso', sel_name)
-            filler.fill1d_lazy(self.h_pfIso, 'pfIso', sel_name)
-        if 'tkIsoPV' in filler.columns:
-            filler.fill1d_lazy(self.h_tkIsoPV, 'tkIsoPV', sel_name)
-            filler.fill1d_lazy(self.h_pfIsoPV, 'pfIsoPV', sel_name)
-        if 'compBDTScore' in filler.columns:
-            filler.fill1d_lazy(self.h_compBdt, 'compBDTScore', sel_name)
-
     # FIXME: [FIXME-AK] implement this in the normal fill
     # def fill_event(self, objects):
     #     print(objects.pt)
@@ -684,83 +540,83 @@ class EGHistos(BaseHistos):
         self.h_eta.Add(self.h_eta_temp.GetValue())
         self.h_energy.Add(self.h_energy_temp.GetValue())
         self.h_hwQual.Add(self.h_hwQual_temp.GetValue())
-        # self.h_tkIso = ROOT.TH1F(name+'_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2)
-        # self.h_pfIso = ROOT.TH1F(name+'_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
-        # self.h_tkIsoPV = ROOT.TH1F(name+'_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2)
-        # self.h_pfIsoPV = ROOT.TH1F(name+'_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
+        # self.h_tkIso = bh.TH1F(name+'_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2)
+        # self.h_pfIso = bh.TH1F(name+'_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
+        # self.h_tkIsoPV = bh.TH1F(name+'_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2)
+        # self.h_pfIsoPV = bh.TH1F(name+'_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
 
 
 class DecTkHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_pt = ROOT.TH1F(
+            self.h_pt = bh.TH1F(
                 name+'_pt',
                 'Pt (GeV); p_{T} [GeV]',
                 100, 0, 100)
-            self.h_deltaPt = ROOT.TH1F(
+            self.h_deltaPt = bh.TH1F(
                 name+'_deltaPt',
                 'Pt (GeV); p_{T}^{decoded}-p_{T}^{float}  [GeV]',
                 100, -10, 10)
-            self.h_deltaPtVeta = ROOT.TH2F(
+            self.h_deltaPtVeta = bh.TH2F(
                 name+'_deltaPtVeta',
                 'Pt (GeV); #eta^{float}; p_{T}^{decoded}-p_{T}^{float}  [GeV]',
                 50, -2.5, 2.5,
                 50, -0.25, 0.25)
-            self.h_deltaPtVabseta = ROOT.TH2F(
+            self.h_deltaPtVabseta = bh.TH2F(
                 name+'_deltaPtVabseta',
                 'Pt (GeV); |#eta^{float}|; p_{T}^{decoded}-p_{T}^{float}  [GeV]',
                 50, 0, 2.5,
                 50, -0.25, 0.25)
-            self.h_eta = ROOT.TH1F(
+            self.h_eta = bh.TH1F(
                 name+'_eta',
                 '#eta; #eta;',
                 100, -4, 4)
-            self.h_z0 = ROOT.TH1F(
+            self.h_z0 = bh.TH1F(
                 name+'_z0',
                 'z0; z_{0} [cm];',
                 100, -10, 10)
-            self.h_deltaZ0 = ROOT.TH1F(
+            self.h_deltaZ0 = bh.TH1F(
                 name+'_deltaZ0',
                 '#Delta z0; z0^{decoded}-z0^{float};',
                 50, -0.2, 0.2)
-            self.h_deltaZ0Veta = ROOT.TH2F(
+            self.h_deltaZ0Veta = bh.TH2F(
                 name+'_deltaZ0Veta',
                 '#Delta z0; #eta^{float}; z0^{decoded}-z0^{float};',
                 100, -2.5, 2.5,
                 50, -0.05, 0.05)
-            self.h_deltaEta = ROOT.TH1F(
+            self.h_deltaEta = bh.TH1F(
                 name+'_deltaEta',
                 '#Delta #eta_{@vtx}; #eta_{@vtx}^{decoded}-#eta_{@vtx}^{float};',
                 100, -1, 1)
-            self.h_deltaEtaVabseta = ROOT.TH2F(
+            self.h_deltaEtaVabseta = bh.TH2F(
                 name+'_deltaEtaVabseta',
                 '#Delta #eta_{@vtx} vs |#eta^{float}|; |#eta^{float}|; #eta_{@vtx}^{decoded}-#eta_{@vtx}^{float};',
                 25, 0, 2.5,
                 100, -0.004, 0.004)
-            self.h_deltaEtaVeta = ROOT.TH2F(
+            self.h_deltaEtaVeta = bh.TH2F(
                 name+'_deltaEtaVeta',
                 '#Delta #eta_{@vtx} vs #eta^{float}; #eta^{float}; #eta_{@vtx}^{decoded}-#eta_{@vtx}^{float};',
                 50, -2.5, 2.5,
                 50, -0.004, 0.004)
-            self.h_deltaCaloEta = ROOT.TH1F(
+            self.h_deltaCaloEta = bh.TH1F(
                 name+'_deltaCaloEta',
                 '#Delta #eta_{@calo}; #eta_{@calo}^{decoded}-#eta_{@calo}^{float};',
                 100, -1, 1)
-            self.h_deltaCaloEtaVabseta = ROOT.TH2F(
+            self.h_deltaCaloEtaVabseta = bh.TH2F(
                 name+'_deltaCaloEtaVabseta',
                 '#Delta #eta_{@calo} vs |#eta^{float}|; |#eta^{float}|; #eta_{@calo}^{decoded}-#eta_{@calo}^{float};',
                 50, 0, 2.5,
                 100, -0.04, 0.04)
-            self.h_deltaCaloEtaVeta = ROOT.TH2F(
+            self.h_deltaCaloEtaVeta = bh.TH2F(
                 name+'_deltaCaloEtaVeta',
                 '#Delta #eta_{@calo} vs #eta^{float}; #eta^{float}; #eta_{@calo}^{decoded}-#eta_{@calo}^{float};',
                 100, -2.5, 2.5,
                 100, -0.04, 0.04)
-            self.h_deltaCaloPhi = ROOT.TH1F(
+            self.h_deltaCaloPhi = bh.TH1F(
                 name+'_deltaCaloPhi',
                 '#Delta #phi_{@calo}; #phi_{@calo}^{decoded}-#phi_{@calo}^{float};',
                 100, -1, 1)
-            self.h_deltaCaloPhiVabseta = ROOT.TH2F(
+            self.h_deltaCaloPhiVabseta = bh.TH2F(
                 name+'_deltaCaloPhiVabseta',
                 '#Delta #phi_{@calo} vs |#eta^{float}|; |#phi^{float}|; #phi_{@calo}^{decoded}-#phi_{@calo}^{float};',
                 100, 0, 2.5,
@@ -769,127 +625,102 @@ class DecTkHistos(BaseHistos):
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, egs):
-        pass
-
-    def fill_lazy(self, filler, sel_name):
-        filler.fill1d_lazy(self.h_pt, 'pt', sel_name)
-        filler.fill1d_lazy(self.h_deltaPt, 'deltaPt', sel_name)
-        filler.fill2d_lazy(self.h_deltaPtVeta, 'simeta', 'deltaPt', sel_name)
-        filler.fill2d_lazy(self.h_deltaPtVabseta, 'simabseta', 'deltaPt', sel_name)
-        filler.fill1d_lazy(self.h_eta, 'eta', sel_name)
-        filler.fill1d_lazy(self.h_z0, 'z0', sel_name)
-        filler.fill1d_lazy(self.h_deltaZ0, 'deltaZ0', sel_name)
-        filler.fill2d_lazy(self.h_deltaZ0Veta, 'simeta', 'deltaZ0', sel_name)
-        filler.fill1d_lazy(self.h_deltaEta, 'deltaEta', sel_name)
-        filler.fill2d_lazy(self.h_deltaEtaVabseta, 'simabseta', 'deltaEta', sel_name)
-        filler.fill2d_lazy(self.h_deltaEtaVeta, 'simeta', 'deltaEta', sel_name)
-        filler.fill1d_lazy(self.h_deltaCaloEta, 'deltaCaloEta', sel_name)
-        filler.fill2d_lazy(self.h_deltaCaloEtaVabseta, 'simabseta', 'deltaCaloEta', sel_name)
-        filler.fill2d_lazy(self.h_deltaCaloEtaVeta, 'simeta', 'deltaCaloEta', sel_name)
-        filler.fill1d_lazy(self.h_deltaCaloPhi, 'deltaCaloPhi', sel_name)
-        filler.fill2d_lazy(self.h_deltaCaloPhiVabseta, 'simabseta', 'deltaCaloPhi', sel_name)
+        bh.fill_1Dhist(self.h_pt, egs.pt)
+        bh.fill_1Dhist(self.h_deltaPt, egs.deltaPt)
+        bh.fill_2Dhist(self.h_deltaPtVeta, egs.simeta, egs.deltaPt)
+        bh.fill_2Dhist(self.h_deltaPtVabseta, egs.simabseta, egs.deltaPt)
+        bh.fill_1Dhist(self.h_eta, egs.eta)
+        bh.fill_1Dhist(self.h_z0, egs.z0)
+        bh.fill_1Dhist(self.h_deltaZ0, egs.deltaZ0)
+        bh.fill_2Dhist(self.h_deltaZ0Veta, egs.simeta, egs.deltaZ0)
+        bh.fill_1Dhist(self.h_deltaEta, egs.deltaEta)
+        bh.fill_2Dhist(self.h_deltaEtaVabseta, egs.simabseta, egs.deltaEta)
+        bh.fill_2Dhist(self.h_deltaEtaVeta, egs.simeta, egs.deltaEta)
+        bh.fill_1Dhist(self.h_deltaCaloEta, egs.deltaCaloEta)
+        bh.fill_2Dhist(self.h_deltaCaloEtaVabseta, egs.simabseta, egs.deltaCaloEta)
+        bh.fill_2Dhist(self.h_deltaCaloEtaVeta, egs.simeta, egs.deltaCaloEta)
+        bh.fill_1Dhist(self.h_deltaCaloPhi, egs.deltaCaloPhi)
+        bh.fill_2Dhist(self.h_deltaCaloPhiVabseta, egs.simabseta, egs.deltaCaloPhi)
 
 
 class TkEleHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_pt = ROOT.TH1F(name+'_pt', 'Pt (GeV); p_{T} [GeV]', 100, 0, 100)
-            self.h_eta = ROOT.TH1F(name+'_eta', 'eta; #eta;', 100, -2.5, 2.5)
-            self.h_energy = ROOT.TH1F(name+'_energy', 'energy (GeV); E [GeV]', 1000, 0, 1000)
-            self.h_hwQual = ROOT.TH1F(name+'_hwQual', 'quality; hwQual', 10, 0, 10)
-            self.h_tkpt = ROOT.TH1F(name+'_tkpt', 'Tk Pt (GeV); p_{T}^{L1Tk} [GeV]', 100, 0, 100)
-            self.h_dpt = ROOT.TH1F(name+'_dpt', 'Delta Tk Pt (GeV); #Delta p_{T}^{L1Tk-Calo} [GeV]', 100, -50, 50)
-            self.h_tkchi2 = ROOT.TH1F(name+'_tkchi2', 'Tk chi2; #Chi^{2}', 1000, 0, 1000)
-            self.h_ptVtkpt = ROOT.TH2F(name+'_ptVtkpt', 'TkEG Pt (GeV) vs TkPt; p_{T}^{Tk} [GeV]; p_{T}^{EG} [GeV]', 100, 0, 100, 100, 0, 100)
-            self.h_tkIso = ROOT.TH1F(name+'_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2)
-            self.h_pfIso = ROOT.TH1F(name+'_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
+            self.h_pt = bh.TH1F(name+'_pt', 'Pt (GeV); p_{T} [GeV]', 100, 0, 100)
+            self.h_eta = bh.TH1F(name+'_eta', 'eta; #eta;', 100, -2.5, 2.5)
+            self.h_energy = bh.TH1F(name+'_energy', 'energy (GeV); E [GeV]', 1000, 0, 1000)
+            self.h_hwQual = bh.TH1F(name+'_hwQual', 'quality; hwQual', 10, 0, 10)
+            self.h_tkpt = bh.TH1F(name+'_tkpt', 'Tk Pt (GeV); p_{T}^{L1Tk} [GeV]', 100, 0, 100)
+            self.h_dpt = bh.TH1F(name+'_dpt', 'Delta Tk Pt (GeV); #Delta p_{T}^{L1Tk-Calo} [GeV]', 100, -50, 50)
+            self.h_tkchi2 = bh.TH1F(name+'_tkchi2', 'Tk chi2; #Chi^{2}', 1000, 0, 1000)
+            self.h_ptVtkpt = bh.TH2F(name+'_ptVtkpt', 'TkEG Pt (GeV) vs TkPt; p_{T}^{Tk} [GeV]; p_{T}^{EG} [GeV]', 100, 0, 100, 100, 0, 100)
+            self.h_tkIso = bh.TH1F(name+'_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2)
+            self.h_pfIso = bh.TH1F(name+'_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, tkegs):
-        rnp.fill_hist(self.h_pt, tkegs.pt)
-        rnp.fill_hist(self.h_eta, tkegs.eta)
-        rnp.fill_hist(self.h_energy, tkegs.energy)
-        rnp.fill_hist(self.h_hwQual, tkegs.hwQual)
-        rnp.fill_hist(self.h_tkpt, tkegs.tkPt)
-        rnp.fill_hist(self.h_dpt, tkegs.dpt)
-        rnp.fill_hist(self.h_tkchi2, tkegs.tkChi2)
-        # rnp.fill_hist(self.h_ptVtkpt, tkegs[['tkPt', 'pt']])
-        if 'tkIso' in tkegs.columns:
-            rnp.fill_hist(self.h_tkIso, tkegs.tkIso)
-            rnp.fill_hist(self.h_pfIso, tkegs.pfIso)
+        bh.fill_1Dhist(self.h_pt, tkegs.pt)
+        bh.fill_1Dhist(self.h_eta, tkegs.eta)
+        bh.fill_1Dhist(self.h_energy, tkegs.energy)
+        bh.fill_1Dhist(self.h_hwQual, tkegs.hwQual)
+        bh.fill_1Dhist(self.h_tkpt, tkegs.tkPt)
+        bh.fill_1Dhist(self.h_dpt, tkegs.dpt)
+        bh.fill_1Dhist(self.h_tkchi2, tkegs.tkChi2)
+        bh.fill_1Dhist(self.h_tkIso, tkegs.tkIso)
+        bh.fill_1Dhist(self.h_pfIso, tkegs.pfIso)
 
-    def fill_lazy(self, filler, sel_name):
-        filler.fill1d_lazy(self.h_pt, 'pt', sel_name)
-        filler.fill1d_lazy(self.h_eta, 'eta', sel_name)
-        filler.fill1d_lazy(self.h_energy, 'energy', sel_name)
-        filler.fill1d_lazy(self.h_hwQual, 'hwQual', sel_name)
-        filler.fill1d_lazy(self.h_tkpt, 'tkPt', sel_name)
-        filler.fill1d_lazy(self.h_dpt, 'dpt', sel_name)
-        filler.fill1d_lazy(self.h_tkchi2, 'tkChi2', sel_name)
-        filler.fill1d_lazy(self.h_tkIso, 'tkIso', sel_name)
-        filler.fill1d_lazy(self.h_pfIso, 'pfIso', sel_name)
 
 
 class TkEmHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_pt = ROOT.TH1F(name+'_pt', 'Pt (GeV); p_{T} [GeV]', 100, 0, 100)
-            self.h_eta = ROOT.TH1F(name+'_eta', 'eta; #eta;', 100, -2.5, 2.5)
-            self.h_energy = ROOT.TH1F(name+'_energy', 'energy (GeV); E [GeV]', 1000, 0, 1000)
-            self.h_hwQual = ROOT.TH1F(name+'_hwQual', 'quality; hwQual', 10, 0, 10)
-            self.h_tkIso = ROOT.TH1F(name+'_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2)
-            self.h_pfIso = ROOT.TH1F(name+'_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
-            self.h_tkIsoPV = ROOT.TH1F(name+'_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2)
-            self.h_pfIsoPV = ROOT.TH1F(name+'_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
+            self.h_pt = bh.TH1F(name+'_pt', 'Pt (GeV); p_{T} [GeV]', 100, 0, 100)
+            self.h_eta = bh.TH1F(name+'_eta', 'eta; #eta;', 100, -2.5, 2.5)
+            self.h_energy = bh.TH1F(name+'_energy', 'energy (GeV); E [GeV]', 1000, 0, 1000)
+            self.h_hwQual = bh.TH1F(name+'_hwQual', 'quality; hwQual', 10, 0, 10)
+            self.h_tkIso = bh.TH1F(name+'_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2)
+            self.h_pfIso = bh.TH1F(name+'_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
+            self.h_tkIsoPV = bh.TH1F(name+'_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2)
+            self.h_pfIsoPV = bh.TH1F(name+'_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, tkegs):
-        rnp.fill_hist(self.h_pt, tkegs.pt)
-        rnp.fill_hist(self.h_eta, tkegs.eta)
-        rnp.fill_hist(self.h_energy, tkegs.energy)
-        rnp.fill_hist(self.h_hwQual, tkegs.hwQual)
-        rnp.fill_hist(self.h_tkIso, tkegs.tkIso)
-        rnp.fill_hist(self.h_pfIso, tkegs.pfIso)
-        rnp.fill_hist(self.h_tkIsoPV, tkegs.tkIsoPV)
-        rnp.fill_hist(self.h_pfIsoPV, tkegs.pfIsoPV)
-
-    def fill_lazy(self, filler, sel_name):
-        filler.fill1d_lazy(self.h_pt, 'pt', sel_name)
-        filler.fill1d_lazy(self.h_eta, 'eta', sel_name)
-        filler.fill1d_lazy(self.h_energy, 'energy', sel_name)
-        filler.fill1d_lazy(self.h_hwQual, 'hwQual', sel_name)
-        filler.fill1d_lazy(self.h_tkIso, 'tkIso', sel_name)
-        filler.fill1d_lazy(self.h_pfIso, 'pfIso', sel_name)
-        filler.fill1d_lazy(self.h_tkIsoPV, 'tkIsoPV', sel_name)
-        filler.fill1d_lazy(self.h_pfIsoPV, 'pfIsoPV', sel_name)
+        bh.fill_1Dhist(self.h_pt, tkegs.pt)
+        bh.fill_1Dhist(self.h_eta, tkegs.eta)
+        bh.fill_1Dhist(self.h_energy, tkegs.energy)
+        bh.fill_1Dhist(self.h_hwQual, tkegs.hwQual)
+        bh.fill_1Dhist(self.h_tkIso, tkegs.tkIso)
+        bh.fill_1Dhist(self.h_pfIso, tkegs.pfIso)
+        bh.fill_1Dhist(self.h_tkIsoPV, tkegs.tkIsoPV)
+        bh.fill_1Dhist(self.h_pfIsoPV, tkegs.pfIsoPV)
 
 
 class TkEGHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_pt = ROOT.TH1F(name+'_pt', 'TkEG Pt (GeV); p_{T} [GeV]', 100, 0, 100)
-            self.h_eta = ROOT.TH1F(name+'_eta', 'TkEG eta; #eta;', 100, -4, 4)
-            self.h_energy = ROOT.TH1F(name+'_energy', 'TkEG energy (GeV); E [GeV]', 1000, 0, 1000)
-            self.h_hwQual = ROOT.TH1F(name+'_hwQual', 'TkEG energy (GeV); hwQual', 5, 0, 5)
+            self.h_pt = bh.TH1F(name+'_pt', 'TkEG Pt (GeV); p_{T} [GeV]', 100, 0, 100)
+            self.h_eta = bh.TH1F(name+'_eta', 'TkEG eta; #eta;', 100, -4, 4)
+            self.h_energy = bh.TH1F(name+'_energy', 'TkEG energy (GeV); E [GeV]', 1000, 0, 1000)
+            self.h_hwQual = bh.TH1F(name+'_hwQual', 'TkEG energy (GeV); hwQual', 5, 0, 5)
 
-            self.h_tkpt = ROOT.TH1F(name+'_tkpt', 'TkEG Pt (GeV); p_{T} [GeV]', 100, 0, 100)
-            self.h_tketa = ROOT.TH1F(name+'_tketa', 'TkEG eta; #eta;', 100, -4, 4)
-            self.h_tkchi2 = ROOT.TH1F(name+'_tkchi2', 'TkEG chi2; #Chi^{2}', 1000, 0, 1000)
-            self.h_tkchi2Red = ROOT.TH1F(name+'_tkchi2Red', 'TkEG chi2 red; reduced #Chi^{2}', 100, 0, 100)
-            self.h_tknstubs = ROOT.TH1F(name+'_tknstubs', 'TkEG # stubs; # stubs', 10, 0, 10)
-            self.h_tkz0 = ROOT.TH1F(name+'_tkz0', 'TkEG z0; z_{0} [cm]', 100, -10, 10)
-            self.h_tkchi2RedVeta = ROOT.TH2F(name+'_tkchi2RedVeta', 'TkEG chi2 red. v eta; #eta; red. #Chi^{2}', 100, -4, 4, 100, 0, 100)
-            self.h_tknstubsVeta = ROOT.TH2F(name+'_tknstubsVeta', 'TkEG # stubs vs eta; #eta; # stubs', 100, -4, 4, 10, 0, 10)
-            self.h_tkz0Veta = ROOT.TH2F(name+'_tkz0Veta', 'TkEG z0 vs eta; #eta; z_{0} [cm]', 100, -4, 4, 100, -10, 10)
-            self.h_dphi = ROOT.TH1F(name+'_dphi', 'TkEG #Delta #phi; #Delta #phi [rad]', 100, -0.2, 0.2)
-            self.h_dphiVpt = ROOT.TH2F(name+'_dphiVpt', 'TkEG #Delta #phi vs p_{T}^{EG}; p_{T}^{EG} [GeV]; #Delta #phi [rad]', 100, 0, 100, 100, -0.2, 0.2)
-            self.h_deta = ROOT.TH1F(name+'_deta', 'TkEG #Delta #eta; #Delta #eta', 100, -0.2, 0.2)
-            self.h_detaVpt = ROOT.TH2F(name+'_detaVpt', 'TkEG #Delta #eta vs p_{T}^{EG}; p_{T}^{EG} [GeV]; #Delta #eta', 100, 0, 100, 100, -0.2, 0.2)
+            self.h_tkpt = bh.TH1F(name+'_tkpt', 'TkEG Pt (GeV); p_{T} [GeV]', 100, 0, 100)
+            self.h_tketa = bh.TH1F(name+'_tketa', 'TkEG eta; #eta;', 100, -4, 4)
+            self.h_tkchi2 = bh.TH1F(name+'_tkchi2', 'TkEG chi2; #Chi^{2}', 1000, 0, 1000)
+            self.h_tkchi2Red = bh.TH1F(name+'_tkchi2Red', 'TkEG chi2 red; reduced #Chi^{2}', 100, 0, 100)
+            self.h_tknstubs = bh.TH1F(name+'_tknstubs', 'TkEG # stubs; # stubs', 10, 0, 10)
+            self.h_tkz0 = bh.TH1F(name+'_tkz0', 'TkEG z0; z_{0} [cm]', 100, -10, 10)
+            self.h_tkchi2RedVeta = bh.TH2F(name+'_tkchi2RedVeta', 'TkEG chi2 red. v eta; #eta; red. #Chi^{2}', 100, -4, 4, 100, 0, 100)
+            self.h_tknstubsVeta = bh.TH2F(name+'_tknstubsVeta', 'TkEG # stubs vs eta; #eta; # stubs', 100, -4, 4, 10, 0, 10)
+            self.h_tkz0Veta = bh.TH2F(name+'_tkz0Veta', 'TkEG z0 vs eta; #eta; z_{0} [cm]', 100, -4, 4, 100, -10, 10)
+            self.h_dphi = bh.TH1F(name+'_dphi', 'TkEG #Delta #phi; #Delta #phi [rad]', 100, -0.2, 0.2)
+            self.h_dphiVpt = bh.TH2F(name+'_dphiVpt', 'TkEG #Delta #phi vs p_{T}^{EG}; p_{T}^{EG} [GeV]; #Delta #phi [rad]', 100, 0, 100, 100, -0.2, 0.2)
+            self.h_deta = bh.TH1F(name+'_deta', 'TkEG #Delta #eta; #Delta #eta', 100, -0.2, 0.2)
+            self.h_detaVpt = bh.TH2F(name+'_detaVpt', 'TkEG #Delta #eta vs p_{T}^{EG}; p_{T}^{EG} [GeV]; #Delta #eta', 100, 0, 100, 100, -0.2, 0.2)
 
-            self.h_dr = ROOT.TH1F(name+'_dr', 'TkEG #Delta R; #Delta R', 100, 0, 0.2)
-            self.h_ptVtkpt = ROOT.TH2F(name+'_ptVtkpt', 'TkEG Pt (GeV) vs TkPt; p_{T}^{Tk} [GeV]; p_{T}^{EG} [GeV]', 100, 0, 100, 100, 0, 100)
+            self.h_dr = bh.TH1F(name+'_dr', 'TkEG #Delta R; #Delta R', 100, 0, 0.2)
+            self.h_ptVtkpt = bh.TH2F(name+'_ptVtkpt', 'TkEG Pt (GeV) vs TkPt; p_{T}^{Tk} [GeV]; p_{T}^{EG} [GeV]', 100, 0, 100, 100, 0, 100)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
@@ -918,18 +749,18 @@ class TkEGHistos(BaseHistos):
 class TrackHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_pt = ROOT.TH1F(name+'_pt', 'Track Pt (GeV); p_{T} [GeV]', 100, 0, 100)
-            self.h_eta = ROOT.TH1F(name+'_eta', 'Track eta; #eta;', 100, -4, 4)
-            self.h_chi2 = ROOT.TH1F(name+'_chi2', 'Track chi2; #Chi^{2}', 1000, 0, 1000)
-            self.h_chi2Red = ROOT.TH1F(name+'_chi2Red', 'Track chi2 red; red. #Chi^{2}', 100, 0, 100)
-            self.h_nstubs = ROOT.TH1F(name+'_nstubs', 'Track # stubs; # stubs', 10, 0, 10)
-            self.h_z0 = ROOT.TH1F(name+'_z0', 'Track z0; z_{0} [cm]', 100, -10, 10)
-            self.h_chi2RedVeta = ROOT.TH2F(name+'_chi2RedVeta', 'Track chi2 red. v eta; #eta; red. #Chi^{2}', 100, -4, 4, 100, 0, 100)
-            self.h_nstubsVeta = ROOT.TH2F(name+'_nstubsVeta', 'Track # stubs vs eta; #eta; # stubs', 100, -4, 4, 10, 0, 10)
-            self.h_z0Veta = ROOT.TH2F(name+'_z0Veta', 'Track z0 vs eta; #eta; z_{0} [cm]', 100, -4, 4, 100, -10, 10)
-            self.h_chi2RedVpt = ROOT.TH2F(name+'_chi2RedVpt', 'Track chi2 red. v pT; p_{T} [GeV]; red. #Chi^{2}', 100, 0, 100, 100, 0, 100)
-            self.h_nstubsVpt = ROOT.TH2F(name+'_nstubsVpt', 'Track # stubs vs pT; p_{T} [GeV]; # stubs', 100, 0, 100, 10, 0, 10)
-            self.h_z0Vpt = ROOT.TH2F(name+'_z0Vpt', 'Track z0 vs pT; p_{T} [GeV]; z_{0} [cm]', 100, 0, 100, 100, -10, 10)
+            self.h_pt = bh.TH1F(name+'_pt', 'Track Pt (GeV); p_{T} [GeV]', 100, 0, 100)
+            self.h_eta = bh.TH1F(name+'_eta', 'Track eta; #eta;', 100, -4, 4)
+            self.h_chi2 = bh.TH1F(name+'_chi2', 'Track chi2; #Chi^{2}', 1000, 0, 1000)
+            self.h_chi2Red = bh.TH1F(name+'_chi2Red', 'Track chi2 red; red. #Chi^{2}', 100, 0, 100)
+            self.h_nstubs = bh.TH1F(name+'_nstubs', 'Track # stubs; # stubs', 10, 0, 10)
+            self.h_z0 = bh.TH1F(name+'_z0', 'Track z0; z_{0} [cm]', 100, -10, 10)
+            self.h_chi2RedVeta = bh.TH2F(name+'_chi2RedVeta', 'Track chi2 red. v eta; #eta; red. #Chi^{2}', 100, -4, 4, 100, 0, 100)
+            self.h_nstubsVeta = bh.TH2F(name+'_nstubsVeta', 'Track # stubs vs eta; #eta; # stubs', 100, -4, 4, 10, 0, 10)
+            self.h_z0Veta = bh.TH2F(name+'_z0Veta', 'Track z0 vs eta; #eta; z_{0} [cm]', 100, -4, 4, 100, -10, 10)
+            self.h_chi2RedVpt = bh.TH2F(name+'_chi2RedVpt', 'Track chi2 red. v pT; p_{T} [GeV]; red. #Chi^{2}', 100, 0, 100, 100, 0, 100)
+            self.h_nstubsVpt = bh.TH2F(name+'_nstubsVpt', 'Track # stubs vs pT; p_{T} [GeV]; # stubs', 100, 0, 100, 10, 0, 10)
+            self.h_z0Vpt = bh.TH2F(name+'_z0Vpt', 'Track z0 vs pT; p_{T} [GeV]; z_{0} [cm]', 100, 0, 100, 100, -10, 10)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
@@ -951,21 +782,21 @@ class TrackHistos(BaseHistos):
 class TriggerTowerHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_pt = ROOT.TH1F(name+'_pt', 'Tower Pt (GeV); p_{T} [GeV];', 100, 0, 100)
-            self.h_etEm = ROOT.TH1F(name+'_etEm', 'Tower Et EM (GeV)', 100, 0, 100)
-            self.h_etHad = ROOT.TH1F(name+'_etHad', 'Tower Et Had (GeV)', 100, 0, 100)
-            self.h_HoE = ROOT.TH1F(name+'_HoE', 'Tower H/E', 20, 0, 2)
-            self.h_HoEVpt = ROOT.TH2F(name+'_HoEVpt', 'Tower H/E vs Pt (GeV); H/E;', 50, 0, 100, 20, 0, 2)
-            self.h_energy = ROOT.TH1F(name+'_energy', 'Tower energy (GeV)', 1000, 0, 1000)
-            self.h_eta = ROOT.TH1F(name+'_eta', 'Tower eta; #eta;', 75, -3.169, 3.169)
-            self.h_ieta = ROOT.TH1F(name+'_ieta', 'Tower eta; i#eta;', 18, 0, 18)
+            self.h_pt = bh.TH1F(name+'_pt', 'Tower Pt (GeV); p_{T} [GeV];', 100, 0, 100)
+            self.h_etEm = bh.TH1F(name+'_etEm', 'Tower Et EM (GeV)', 100, 0, 100)
+            self.h_etHad = bh.TH1F(name+'_etHad', 'Tower Et Had (GeV)', 100, 0, 100)
+            self.h_HoE = bh.TH1F(name+'_HoE', 'Tower H/E', 20, 0, 2)
+            self.h_HoEVpt = bh.TH2F(name+'_HoEVpt', 'Tower H/E vs Pt (GeV); H/E;', 50, 0, 100, 20, 0, 2)
+            self.h_energy = bh.TH1F(name+'_energy', 'Tower energy (GeV)', 1000, 0, 1000)
+            self.h_eta = bh.TH1F(name+'_eta', 'Tower eta; #eta;', 75, -3.169, 3.169)
+            self.h_ieta = bh.TH1F(name+'_ieta', 'Tower eta; i#eta;', 18, 0, 18)
 
-            self.h_ptVeta = ROOT.TH2F(name+'_ptVeta', 'Tower P_P{T} (GeV) vs #eta; #eta; p_{T} [GeV];',  75, -3.169, 3.169, 100, 0, 10)
-            self.h_etVieta = ROOT.TH2F(name+'_etVieta', 'Tower E_{T} (GeV) vs ieta; i#eta; E_{T} [GeV];',  18, 0, 18, 100, 0, 10)
-            self.h_etEmVieta = ROOT.TH2F(name+'_etEmVieta', 'Tower E_{T} EM (GeV) vs ieta; i#eta; E_{T}^{EM} [GeV];',  18, 0, 18, 100, 0, 10)
-            self.h_etHadVieta = ROOT.TH2F(name+'_etHadVieta', 'Tower E_{T} Had (GeV) vs ieta; i#eta; E_{T}^{HAD} [GeV];',  18, 0, 18, 100, 0, 10)
-            self.h_sumEt = ROOT.TH1F(name+'_sumEt', 'Tower SumEt (GeV); E_{T}^{TOT} [GeV];', 200, 0, 400)
-            self.h_sumEtCentral = ROOT.TH1F(name+'_sumEtCentral', 'Tower SumEt (GeV) (central); E_{T}^{TOT} [GeV];', 200, 0, 400)
+            self.h_ptVeta = bh.TH2F(name+'_ptVeta', 'Tower P_P{T} (GeV) vs #eta; #eta; p_{T} [GeV];',  75, -3.169, 3.169, 100, 0, 10)
+            self.h_etVieta = bh.TH2F(name+'_etVieta', 'Tower E_{T} (GeV) vs ieta; i#eta; E_{T} [GeV];',  18, 0, 18, 100, 0, 10)
+            self.h_etEmVieta = bh.TH2F(name+'_etEmVieta', 'Tower E_{T} EM (GeV) vs ieta; i#eta; E_{T}^{EM} [GeV];',  18, 0, 18, 100, 0, 10)
+            self.h_etHadVieta = bh.TH2F(name+'_etHadVieta', 'Tower E_{T} Had (GeV) vs ieta; i#eta; E_{T}^{HAD} [GeV];',  18, 0, 18, 100, 0, 10)
+            self.h_sumEt = bh.TH1F(name+'_sumEt', 'Tower SumEt (GeV); E_{T}^{TOT} [GeV];', 200, 0, 400)
+            self.h_sumEtCentral = bh.TH1F(name+'_sumEtCentral', 'Tower SumEt (GeV) (central); E_{T}^{TOT} [GeV];', 200, 0, 400)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
@@ -992,24 +823,24 @@ class TriggerTowerHistos(BaseHistos):
 class TriggerTowerResoHistos(BaseResoHistos):
     def __init__(self, name, root_file=None):
         if not root_file:
-            self.h_ptRes = ROOT.TH1F(name+'_ptRes', 'TT Pt reso (GeV); (p_{T}^{L1}-p_{T}^{GEN})/p_{T}^{GEN};', 100, -1, 2)
+            self.h_ptRes = bh.TH1F(name+'_ptRes', 'TT Pt reso (GeV); (p_{T}^{L1}-p_{T}^{GEN})/p_{T}^{GEN};', 100, -1, 2)
 
-            self.h_ptResVpt = ROOT.TH2F(name+'_ptResVpt', 'TT Pt reso (GeV) vs pt (GeV); p_{T}^{GEN} [GeV]; (p_{T}^{L1}-p_{T}^{GEN})/p_{T}^{GEN};', 50, 0, 100, 100, -1, 2)
-            self.h_ptResVeta = ROOT.TH2F(name+'_ptResVeta', 'TT Pt reso (GeV) vs eta; #eta^{GEN}; (p_{T}^{L1}-p_{T}^{GEN})/p_{T}^{GEN};', 100, -3.5, 3.5, 100, -1, 2)
+            self.h_ptResVpt = bh.TH2F(name+'_ptResVpt', 'TT Pt reso (GeV) vs pt (GeV); p_{T}^{GEN} [GeV]; (p_{T}^{L1}-p_{T}^{GEN})/p_{T}^{GEN};', 50, 0, 100, 100, -1, 2)
+            self.h_ptResVeta = bh.TH2F(name+'_ptResVeta', 'TT Pt reso (GeV) vs eta; #eta^{GEN}; (p_{T}^{L1}-p_{T}^{GEN})/p_{T}^{GEN};', 100, -3.5, 3.5, 100, -1, 2)
 
-            self.h_ptResp = ROOT.TH1F(name+'_ptResp', 'TT Pt resp.; p_{T}^{L1}/p_{T}^{GEN};', 100, 0, 2)
-            self.h_ptRespVpt = ROOT.TH2F(name+'_ptRespVpt', 'TT Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 2)
-            self.h_ptRespVeta = ROOT.TH2F(name+'_ptRespVeta', 'TT Pt resp. vs |#eta|; |#eta^{GEN}|; p_{T}^{L1}/p_{T}^{GEN};', 34, 1.4, 3.1, 100, 0, 2)
+            self.h_ptResp = bh.TH1F(name+'_ptResp', 'TT Pt resp.; p_{T}^{L1}/p_{T}^{GEN};', 100, 0, 2)
+            self.h_ptRespVpt = bh.TH2F(name+'_ptRespVpt', 'TT Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};', 50, 0, 100, 100, 0, 2)
+            self.h_ptRespVeta = bh.TH2F(name+'_ptRespVeta', 'TT Pt resp. vs |#eta|; |#eta^{GEN}|; p_{T}^{L1}/p_{T}^{GEN};', 34, 1.4, 3.1, 100, 0, 2)
 
-            self.h_energyRes = ROOT.TH1F(name+'_energyRes', 'TT Energy reso (GeV)', 200, -100, 100)
-            self.h_energyResVeta = ROOT.TH2F(name+'_energyResVeta', 'TT E reso (GeV) vs eta', 100, -3.5, 3.5, 200, -100, 100)
+            self.h_energyRes = bh.TH1F(name+'_energyRes', 'TT Energy reso (GeV)', 200, -100, 100)
+            self.h_energyResVeta = bh.TH2F(name+'_energyResVeta', 'TT E reso (GeV) vs eta', 100, -3.5, 3.5, 200, -100, 100)
             # FIXME: add corresponding Pt plots
-            self.h_etaRes = ROOT.TH1F(name+'_etaRes', 'TT eta reso; #eta^{L1}-#eta^{GEN}', 100, -0.4, 0.4)
-            self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'TT phi reso; #phi^{L1}-#phi^{GEN}', 100, -0.4, 0.4)
-            self.h_etalwRes = ROOT.TH1F(name+'_etalwRes', 'TT eta reso (lw)', 100, -0.4, 0.4)
-            self.h_philwRes = ROOT.TH1F(name+'_philwRes', 'TT phi reso (lw)', 100, -0.4, 0.4)
+            self.h_etaRes = bh.TH1F(name+'_etaRes', 'TT eta reso; #eta^{L1}-#eta^{GEN}', 100, -0.4, 0.4)
+            self.h_phiRes = bh.TH1F(name+'_phiRes', 'TT phi reso; #phi^{L1}-#phi^{GEN}', 100, -0.4, 0.4)
+            self.h_etalwRes = bh.TH1F(name+'_etalwRes', 'TT eta reso (lw)', 100, -0.4, 0.4)
+            self.h_philwRes = bh.TH1F(name+'_philwRes', 'TT phi reso (lw)', 100, -0.4, 0.4)
 
-            self.h_drRes = ROOT.TH1F(name+'_drRes', 'TT DR reso', 100, 0, 0.1)
+            self.h_drRes = bh.TH1F(name+'_drRes', 'TT DR reso', 100, 0, 0.1)
         BaseResoHistos.__init__(self, name, root_file)
 
     def fill(self, reference, target):
@@ -1037,41 +868,41 @@ class ResoHistos(BaseResoHistos):
     # @profile
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            # self.h_ptRes = ROOT.TH1F(
+            # self.h_ptRes = bh.TH1F(
             #     name+'_ptRes', '3D Cluster Pt reso (GeV); (p_{T}^{L1} - p_{T}^{GEN})/p_{T}^{GEN}',
             #     100, -1, 1)
-            # # self.h_energyRes = ROOT.TH1F(name+'_energyRes', '3D Cluster Energy reso (GeV); E^{L1} - E^{GEN} [GeV]', 200, -100, 100)
-            # self.h_ptResVeta = ROOT.TH2F(
+            # # self.h_energyRes = bh.TH1F(name+'_energyRes', '3D Cluster Energy reso (GeV); E^{L1} - E^{GEN} [GeV]', 200, -100, 100)
+            # self.h_ptResVeta = bh.TH2F(
             #     name+'_ptResVeta', '3D Cluster Pt reso (GeV) vs eta; #eta^{GEN}; p_{T}^{L1} - p_{T}^{GEN} [GeV];',
             #     50, -3.5, 3.5, 20, -40, 40)
-            # # self.h_energyResVenergy = ROOT.TH2F(
+            # # self.h_energyResVenergy = bh.TH2F(
             # #     name+'_energyResVenergy',
             # #     '3D Cluster E reso vs E; E^{GEN} [GeV]; (E^{L1} - E^{GEN})/E^{GEN};',
             # #     100, 0, 1000, 100, -1.5, 1.5)
-            # # self.h_energyResVeta = ROOT.TH2F(
+            # # self.h_energyResVeta = bh.TH2F(
             # #     name+'_energyResVeta',
             # #     '3D Cluster E reso (GeV) vs eta; #eta^{GEN}; (E^{L1} - E^{GEN})/E^{GEN};',
             # #     100, -3.5, 3.5, 100, -1.5, 1.5)
-            # # self.h_energyResVnclu = ROOT.TH2F(name+'_energyResVnclu', '3D Cluster E reso (GeV) vs # clusters; # 2D clus.; E^{L1} - E^{GEN} [GeV];', 50, 0, 50, 200, -100, 100)
-            # self.h_ptResVpt = ROOT.TH2F(
+            # # self.h_energyResVnclu = bh.TH2F(name+'_energyResVnclu', '3D Cluster E reso (GeV) vs # clusters; # 2D clus.; E^{L1} - E^{GEN} [GeV];', 50, 0, 50, 200, -100, 100)
+            # self.h_ptResVpt = bh.TH2F(
             #     name+'_ptResVpt',
             #     '3D Cluster Pt reso (GeV) vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1} - p_{T}^{GEN} [GeV];',
             #     50, 0, 100, 200, -40, 40)
-            # self.h_ptResVnclu = ROOT.TH2F(name+'_ptResVnclu', '3D Cluster Pt reso (GeV) vs # clusters; # 2D clus.; p_{T}^{L1} - p_{T}^{GEN} [GeV];', 50, 0, 50, 200, -40, 40)
+            # self.h_ptResVnclu = bh.TH2F(name+'_ptResVnclu', '3D Cluster Pt reso (GeV) vs # clusters; # 2D clus.; p_{T}^{L1} - p_{T}^{GEN} [GeV];', 50, 0, 50, 200, -40, 40)
 
-            self.h_ptResp = ROOT.TH1F(
+            self.h_ptResp = bh.TH1F(
                 name+'_ptResp',
                 '3D Cluster Pt resp.; p_{T}^{L1}/p_{T}^{GEN}',
                 100, 0, 2)
-            self.h_ptRespVpt = ROOT.TH2F(
+            self.h_ptRespVpt = bh.TH2F(
                 name+'_ptRespVpt',
                 '3D Cluster Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
                 50, 0, 100, 100, 0, 2)
-            self.h_ptRespVeta = ROOT.TH2F(
+            self.h_ptRespVeta = bh.TH2F(
                 name+'_ptRespVeta',
                 '3D Cluster Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};',
                 20, -4, 4, 50, 0, 2)
-            # self.h_ptRespVnclu = ROOT.TH2F(
+            # self.h_ptRespVnclu = bh.TH2F(
             #     name+'_ptRespVnclu',
             #     '3D Cluster Pt resp. vs # clus.; # 2D clust. ; p_{T}^{L1}/p_{T}^{GEN};',
             #     50, 0, 100, 100, 0, 2)
@@ -1080,39 +911,39 @@ class ResoHistos(BaseResoHistos):
             #     '3D Cluster Pt resp. vs #eta and vs pT; #eta^{L1}; p_{T}^{L1} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
             #     30, 1, 4, 50, 0, 100, 100, 0, 3)
 
-            # self.h_ptemResp = ROOT.TH1F(
+            # self.h_ptemResp = bh.TH1F(
             #     name+'_ptemResp',
             #     '3D Cluster Pt resp.; p_{T}^{L1}/p_{T}^{GEN}',
             #     100, 0, 3)
-            # self.h_ptemRespVpt = ROOT.TH2F(
+            # self.h_ptemRespVpt = bh.TH2F(
             #     name+'_ptemRespVpt',
             #     '3D Cluster Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
             #     50, 0, 100, 100, 0, 3)
 
-            # self.h_coreEnergyResVnclu = ROOT.TH2F(name+'_coreEnergyResVnclu', '3D Cluster E reso (GeV) vs # clusters', 50, 0, 50, 200, -100, 100)
-            # self.h_corePtResVnclu = ROOT.TH2F(name+'_corePtResVnclu', '3D Cluster Pt reso (GeV) vs # clusters', 50, 0, 50, 200, -40, 40)
+            # self.h_coreEnergyResVnclu = bh.TH2F(name+'_coreEnergyResVnclu', '3D Cluster E reso (GeV) vs # clusters', 50, 0, 50, 200, -100, 100)
+            # self.h_corePtResVnclu = bh.TH2F(name+'_corePtResVnclu', '3D Cluster Pt reso (GeV) vs # clusters', 50, 0, 50, 200, -40, 40)
             #
-            # self.h_coreEnergyRes = ROOT.TH1F(name+'_coreEnergyRes', '3D Cluster Energy reso CORE (GeV)', 200, -100, 100)
-            # self.h_corePtRes = ROOT.TH1F(name+'_corePtRes', '3D Cluster Pt reso CORE (GeV)', 200, -40, 40)
+            # self.h_coreEnergyRes = bh.TH1F(name+'_coreEnergyRes', '3D Cluster Energy reso CORE (GeV)', 200, -100, 100)
+            # self.h_corePtRes = bh.TH1F(name+'_corePtRes', '3D Cluster Pt reso CORE (GeV)', 200, -40, 40)
 
-            # self.h_centralEnergyRes = ROOT.TH1F(name+'_centralEnergyRes', '3D Cluster Energy reso CENTRAL (GeV)', 200, -100, 100)
-            self.h_etaRes = ROOT.TH1F(
+            # self.h_centralEnergyRes = bh.TH1F(name+'_centralEnergyRes', '3D Cluster Energy reso CENTRAL (GeV)', 200, -100, 100)
+            self.h_etaRes = bh.TH1F(
                 name+'_etaRes',
                 '3D Cluster eta reso; #eta^{L1}-#eta^{GEN}',
                 100, -0.15, 0.15)
-            self.h_phiRes = ROOT.TH1F(
+            self.h_phiRes = bh.TH1F(
                 name+'_phiRes',
                 '3D Cluster phi reso; #phi^{L1}-#phi^{GEN}',
                 100, -0.15, 0.15)
-            self.h_drRes = ROOT.TH1F(
+            self.h_drRes = bh.TH1F(
                 name+'_drRes',
                 '3D Cluster DR reso; #DeltaR^{L1}-#DeltaR^{GEN}',
                 100, 0, 0.1)
-            # self.h_n010 = ROOT.TH1F(
+            # self.h_n010 = bh.TH1F(
             #     name+'_n010',
             #     '# of 3D clus in 0.2 cone with pt>0.1GeV',
             #     10, 0, 10)
-            # self.h_n025 = ROOT.TH1F(
+            # self.h_n025 = bh.TH1F(
             #     name+'_n025',
             #     '# of 3D clus in 0.2 cone with pt>0.25GeV',
             #     10, 0, 10)
@@ -1174,13 +1005,13 @@ class ResoHistos(BaseResoHistos):
 class Reso2DHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            # self.h_etaRes = ROOT.TH1F(name+'_etaRes', 'Eta 2D cluster - GEN part', 100, -0.5, 0.5)
-            # self.h_phiRes = ROOT.TH1F(name+'_phiRes', 'Phi 2D cluster - GEN part', 100, -0.5, 0.5)
-            # self.h_phiPRes = ROOT.TH1F(name+'_phiPRes', 'Phi (+) 2D cluster - GEN part', 100, -0.5, 0.5)
-            # self.h_phiMRes = ROOT.TH1F(name+'_phiMRes', 'Phi (-) 2D cluster - GEN part', 100, -0.5, 0.5)
-            self.h_xResVlayer = ROOT.TH2F(name+'_xResVlayer', 'X resolution (cm) [(2D clus) - GEN]', 60, 0, 60, 100, -10, 10)
-            self.h_yResVlayer = ROOT.TH2F(name+'_yResVlayer', 'Y resolution (cm) [(2D clus) - GEN]', 60, 0, 60, 100, -10, 10)
-            # self.h_DRRes = ROOT.TH1F(name+'_DRRes', 'DR 2D cluster - GEN part', 100, -0.5, 0.5)
+            # self.h_etaRes = bh.TH1F(name+'_etaRes', 'Eta 2D cluster - GEN part', 100, -0.5, 0.5)
+            # self.h_phiRes = bh.TH1F(name+'_phiRes', 'Phi 2D cluster - GEN part', 100, -0.5, 0.5)
+            # self.h_phiPRes = bh.TH1F(name+'_phiPRes', 'Phi (+) 2D cluster - GEN part', 100, -0.5, 0.5)
+            # self.h_phiMRes = bh.TH1F(name+'_phiMRes', 'Phi (-) 2D cluster - GEN part', 100, -0.5, 0.5)
+            self.h_xResVlayer = bh.TH2F(name+'_xResVlayer', 'X resolution (cm) [(2D clus) - GEN]', 60, 0, 60, 100, -10, 10)
+            self.h_yResVlayer = bh.TH2F(name+'_yResVlayer', 'Y resolution (cm) [(2D clus) - GEN]', 60, 0, 60, 100, -10, 10)
+            # self.h_DRRes = bh.TH1F(name+'_DRRes', 'DR 2D cluster - GEN part', 100, -0.5, 0.5)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
@@ -1209,11 +1040,11 @@ class Reso2DHistos(BaseHistos):
 class GeomHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_maxNNDistVlayer = ROOT.TH2F(name+'_maxNNDistVlayer', 'Max dist between NN vs layer', 60, 0, 60, 100, 0, 10)
-            self.h_minNNDistVlayer = ROOT.TH2F(name+'_minNNDistVlayer', 'Max dist between NN vs layer', 60, 0, 60, 100, 0, 10)
+            self.h_maxNNDistVlayer = bh.TH2F(name+'_maxNNDistVlayer', 'Max dist between NN vs layer', 60, 0, 60, 100, 0, 10)
+            self.h_minNNDistVlayer = bh.TH2F(name+'_minNNDistVlayer', 'Max dist between NN vs layer', 60, 0, 60, 100, 0, 10)
 
-            self.h_nTCsPerLayer = ROOT.TH1F(name+'_nTCsPerLayer', '# of Trigger Cells per layer', 60, 0, 60)
-            self.h_radiusVlayer = ROOT.TH2F(name+'_radiusVlayer', '# of cells radius vs layer', 60, 0, 60, 200, 0, 200)
+            self.h_nTCsPerLayer = bh.TH1F(name+'_nTCsPerLayer', '# of Trigger Cells per layer', 60, 0, 60)
+            self.h_radiusVlayer = bh.TH2F(name+'_radiusVlayer', '# of cells radius vs layer', 60, 0, 60, 200, 0, 200)
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, tcs):
@@ -1230,8 +1061,8 @@ class GeomHistos(BaseHistos):
 class DensityHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_eDensityVlayer = ROOT.TH2F(name+'_eDensityVlayer', 'E (GeV) Density per layer', 60, 0, 60, 600, 0, 30)
-            self.h_nTCDensityVlayer = ROOT.TH2F(name+'_nTCDensityVlayer', '# TC Density per layer', 60, 0, 60, 20, 0, 20)
+            self.h_eDensityVlayer = bh.TH2F(name+'_eDensityVlayer', 'E (GeV) Density per layer', 60, 0, 60, 600, 0, 30)
+            self.h_nTCDensityVlayer = bh.TH2F(name+'_nTCDensityVlayer', '# TC Density per layer', 60, 0, 60, 20, 0, 20)
         elif 'v7' in root_file.GetName() and "NuGun" not in root_file.GetName():
             print("v7 hack")
             self.h_eDensityVlayer = root_file.Get(name+'eDensityVlayer')
@@ -1320,47 +1151,47 @@ class HistoSetEff():
 class TrackResoHistos(BaseResoHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_ptResVpt = ROOT.TH2F(
+            self.h_ptResVpt = bh.TH2F(
                 name+'_ptResVpt',
                 'Track Pt reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];',
                 50, 0, 100, 100, -20, 20)
-            self.h_ptResp = ROOT.TH1F(
+            self.h_ptResp = bh.TH1F(
                 name+'_ptResp',
                 'Track Pt resp.; p_{T}^{L1}/p_{T}^{GEN}',
                 100, 0, 3)
-            self.h_ptRespVpt = ROOT.TH2F(
+            self.h_ptRespVpt = bh.TH2F(
                 name+'_ptRespVpt',
                 'Track Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
                 50, 0, 100, 100, 0, 3)
-            self.h_ptRespVeta = ROOT.TH2F(
+            self.h_ptRespVeta = bh.TH2F(
                 name+'_ptRespVeta',
                 'Track Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};',
                 50, -4, 4, 100, 0, 3)
-            self.h_etaRes = ROOT.TH1F(
+            self.h_etaRes = bh.TH1F(
                 name+'_etaRes',
                 'Track eta reso',
                 100, -0.4, 0.4)
-            self.h_phiRes = ROOT.TH1F(
+            self.h_phiRes = bh.TH1F(
                 name+'_phiRes',
                 'Track phi reso',
                 100, -0.4, 0.4)
-            self.h_drRes = ROOT.TH1F(
+            self.h_drRes = bh.TH1F(
                 name+'_drRes',
                 'Track DR reso',
                 100, 0, 0.4)
-            self.h_nMatch = ROOT.TH1F(
+            self.h_nMatch = bh.TH1F(
                 name+'_nMatch',
                 '# matches',
                 100, 0, 100)
 
-            # self.h_pt2stResVpt = ROOT.TH2F(name+'_pt2stResVpt', 'EG Pt 2stubs reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];',
+            # self.h_pt2stResVpt = bh.TH2F(name+'_pt2stResVpt', 'EG Pt 2stubs reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];',
             #                                50, 0, 100, 100, -20, 20)
             #
-            # self.h_pt2stResp = ROOT.TH1F(name+'_pt2stResp', 'Track Pt resp.; p_{T}^{L1}/p_{T}^{GEN}',
+            # self.h_pt2stResp = bh.TH1F(name+'_pt2stResp', 'Track Pt resp.; p_{T}^{L1}/p_{T}^{GEN}',
             #                              100, 0, 3)
-            # self.h_pt2stRespVpt = ROOT.TH2F(name+'_pt2stRespVpt', 'Track Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
+            # self.h_pt2stRespVpt = bh.TH2F(name+'_pt2stRespVpt', 'Track Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
             #                                 50, 0, 100, 100, 0, 3)
-            # self.h_pt2stRespVeta = ROOT.TH2F(name+'_pt2stRespVeta', 'Track Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};',
+            # self.h_pt2stRespVeta = bh.TH2F(name+'_pt2stRespVeta', 'Track Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};',
             #                                  50, -4, 4, 100, 0, 3)
 
         BaseResoHistos.__init__(self, name, root_file, debug)
@@ -1400,86 +1231,86 @@ class TrackResoHistos(BaseResoHistos):
 class DecTkResoHistos(BaseResoHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_ptResVpt = ROOT.TH2F(
+            self.h_ptResVpt = bh.TH2F(
                 name+'_ptResVpt',
                 'Track Pt reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];',
                 50, 0, 100, 100, -20, 20)
-            self.h_ptResp = ROOT.TH1F(
+            self.h_ptResp = bh.TH1F(
                 name+'_ptResp',
                 'Track Pt resp.; p_{T}^{L1}/p_{T}^{GEN}',
                 100, 0, 3)
-            self.h_ptRespVpt = ROOT.TH2F(
+            self.h_ptRespVpt = bh.TH2F(
                 name+'_ptRespVpt',
                 'Track Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
                 50, 0, 100, 100, 0, 3)
-            self.h_ptRespVeta = ROOT.TH2F(
+            self.h_ptRespVeta = bh.TH2F(
                 name+'_ptRespVeta',
                 'Track Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};',
                 50, -4, 4, 100, 0, 3)
-            self.h_etaRes = ROOT.TH1F(
+            self.h_etaRes = bh.TH1F(
                 name+'_etaRes',
                 'Track eta reso',
                 100, -0.15, 0.15)
-            self.h_etaResVabseta = ROOT.TH2F(
+            self.h_etaResVabseta = bh.TH2F(
                 name+'_etaResVabseta',
                 '#eta_{@vtx} reso; |#eta^{GEN}|; #eta_{@vtx}^{L1} vs #eta_{@vtx}^{GEN}',
                 50, 0, 2.5,
                 100, -0.1, 0.1)
-            self.h_etaResVeta = ROOT.TH2F(
+            self.h_etaResVeta = bh.TH2F(
                 name+'_etaResVeta',
                 '#eta_{@vtx} reso; #eta^{GEN}; #eta_{@vtx}^{L1} vs #eta_{@vtx}^{GEN}',
                 200, -2.5, 2.5,
                 100, -0.1, 0.1)
-            self.h_phiRes = ROOT.TH1F(
+            self.h_phiRes = bh.TH1F(
                 name+'_phiRes',
                 'Track phi reso',
                 100, -0.4, 0.4)
-            self.h_caloEtaRes = ROOT.TH1F(
+            self.h_caloEtaRes = bh.TH1F(
                 name+'_caloEtaRes',
                 '#eta_{@calo} reso; #eta_{@calo}^{L1} vs #eta_{@calo}^{GEN}',
                 100, -0.15, 0.15)
-            self.h_caloEtaResVabseta = ROOT.TH2F(
+            self.h_caloEtaResVabseta = bh.TH2F(
                 name+'_caloEtaResVabseta',
                 '#eta_{@calo} reso; |#eta^{GEN}|; #eta_{@calo}^{L1} vs #eta_{@calo}^{GEN}',
                 50, 0, 2.5,
                 100, -0.1, 0.1)
-            self.h_caloEtaResVeta = ROOT.TH2F(
+            self.h_caloEtaResVeta = bh.TH2F(
                 name+'_caloEtaResVeta',
                 '#eta_{@calo} reso; #eta^{GEN}; #eta_{@calo}^{L1} vs #eta_{@calo}^{GEN}',
                 200, -2.5, 2.5,
                 100, -0.1, 0.1)
-            self.h_caloPhiRes = ROOT.TH1F(
+            self.h_caloPhiRes = bh.TH1F(
                 name+'_caloPhiRes',
                 '#phi_{@calo} reso; #phi_{@calo}^{L1} vs #phi_{@calo}^{GEN}',
                 100, -0.4, 0.4)
-            self.h_caloPhiResVabseta = ROOT.TH2F(
+            self.h_caloPhiResVabseta = bh.TH2F(
                 name+'_caloPhiResVabseta',
                 '#phi_{@calo} reso; |#eta^{GEN}|; #phi_{@calo}^{L1} vs #phi_{@calo}^{GEN}',
                 50, 0, 3,
                 100, -0.4, 0.4)
-            self.h_dzRes = ROOT.TH1F(
+            self.h_dzRes = bh.TH1F(
                 name+'_dzRes',
                 '#DeltaZ_{0} res; #DeltaZ_{0}^{L1}-#DeltaZ_{0}^{GEN}',
                 100, -10, 10)
 
-            # self.h_caloPhiResVeta = ROOT.TH2F(
+            # self.h_caloPhiResVeta = bh.TH2F(
             #     name+'_caloPhiResVabseta',
             #     '#phi_{@calo} reso; #eta^{GEN}; #phi_{@calo}^{L1} vs #phi_{@calo}^{GEN}',
             #     50, 0, 3,
             #     100, -0.4, 0.4)
-            self.h_nMatch = ROOT.TH1F(
+            self.h_nMatch = bh.TH1F(
                 name+'_nMatch',
                 '# matches',
                 100, 0, 100)
 
-            # self.h_pt2stResVpt = ROOT.TH2F(name+'_pt2stResVpt', 'EG Pt 2stubs reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];',
+            # self.h_pt2stResVpt = bh.TH2F(name+'_pt2stResVpt', 'EG Pt 2stubs reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];',
             #                                50, 0, 100, 100, -20, 20)
             #
-            # self.h_pt2stResp = ROOT.TH1F(name+'_pt2stResp', 'Track Pt resp.; p_{T}^{L1}/p_{T}^{GEN}',
+            # self.h_pt2stResp = bh.TH1F(name+'_pt2stResp', 'Track Pt resp.; p_{T}^{L1}/p_{T}^{GEN}',
             #                              100, 0, 3)
-            # self.h_pt2stRespVpt = ROOT.TH2F(name+'_pt2stRespVpt', 'Track Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
+            # self.h_pt2stRespVpt = bh.TH2F(name+'_pt2stRespVpt', 'Track Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
             #                                 50, 0, 100, 100, 0, 3)
-            # self.h_pt2stRespVeta = ROOT.TH2F(name+'_pt2stRespVeta', 'Track Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};',
+            # self.h_pt2stRespVeta = bh.TH2F(name+'_pt2stRespVeta', 'Track Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};',
             #                                  50, -4, 4, 100, 0, 3)
 
         BaseResoHistos.__init__(self, name, root_file, debug)
@@ -1598,15 +1429,15 @@ class EGResoHistos(BaseResoHistos):
 class ClusterConeHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_ptRel = ROOT.TH1F(name+'_ptRel',
+            self.h_ptRel = bh.TH1F(name+'_ptRel',
                                      'Pt best/Pt other; p_{T}^{best}/p_{T}^{other}', 100, 0, 5)
-            self.h_ptRelVpt = ROOT.TH2F(name+'_ptRelVpt', 'Pt best/Pt other vs pt (GeV); p_{T}^{best} [GeV]; p_{T}^{best}/p_{T}^{other};', 50, 0, 100, 100, 0, 5)
-            self.h_deltaEta = ROOT.TH1F(name+'_deltaEta', '#Delta eta; #eta^{best}-#eta^{other}', 100, -0.4, 0.4)
-            self.h_deltaPhi = ROOT.TH1F(name+'_deltaPhi', '#Delta phi; #phi^{best}-#phi^{other}', 100, -0.4, 0.4)
-            self.h_deltaPhiVq = ROOT.TH2F(name+'_deltaPhiVq', '#Delta phi; #phi^{best}-#phi^{other}; GEN charge;', 100, -0.4, 0.4, 3, -1, 2)
+            self.h_ptRelVpt = bh.TH2F(name+'_ptRelVpt', 'Pt best/Pt other vs pt (GeV); p_{T}^{best} [GeV]; p_{T}^{best}/p_{T}^{other};', 50, 0, 100, 100, 0, 5)
+            self.h_deltaEta = bh.TH1F(name+'_deltaEta', '#Delta eta; #eta^{best}-#eta^{other}', 100, -0.4, 0.4)
+            self.h_deltaPhi = bh.TH1F(name+'_deltaPhi', '#Delta phi; #phi^{best}-#phi^{other}', 100, -0.4, 0.4)
+            self.h_deltaPhiVq = bh.TH2F(name+'_deltaPhiVq', '#Delta phi; #phi^{best}-#phi^{other}; GEN charge;', 100, -0.4, 0.4, 3, -1, 2)
 
-            self.h_deltaR = ROOT.TH1F(name+'_deltaR', '#Delta R (best-other); #Delta R (best, other)', 100, 0, 0.4)
-            self.h_n = ROOT.TH1F(name+'_n', '# other clusters in cone; # others', 20, 0, 20)
+            self.h_deltaR = bh.TH1F(name+'_deltaR', '#Delta R (best-other); #Delta R (best, other)', 100, 0, 0.4)
+            self.h_n = bh.TH1F(name+'_n', '# other clusters in cone; # others', 20, 0, 20)
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, reference, target, charge):
@@ -1699,10 +1530,10 @@ class CalibrationHistos(BaseTuples):
 class CorrOccupancyHistos(BaseHistos):
     class CorrBoardOccupancyHistos(object):
         def __init__(self, name, board):
-            self.h_totOcc = ROOT.TH1F(f'{name}_{board}totOcc', f'{board} total occupancy; {board} total occ.', 500, 0, 500)
-            self.h_regOcc = ROOT.TH1F(f'{name}_{board}regOcc', f'{board} reg occupancy; {board} reg. occ.', 100, 0, 100)
-            self.h_maxOcc = ROOT.TH1F(f'{name}_{board}maxOcc', f'{board} max occupancy; {board} max occ.', 100, 0, 100)
-            self.h_maxMult = ROOT.TH1F(f'{name}_{board}maxMult', f'{board} max multiplicity per cluster; {board} max mult. per cluster', 100, 0, 100)
+            self.h_totOcc = bh.TH1F(f'{name}_{board}totOcc', f'{board} total occupancy; {board} total occ.', 500, 0, 500)
+            self.h_regOcc = bh.TH1F(f'{name}_{board}regOcc', f'{board} reg occupancy; {board} reg. occ.', 100, 0, 100)
+            self.h_maxOcc = bh.TH1F(f'{name}_{board}maxOcc', f'{board} max occupancy; {board} max occ.', 100, 0, 100)
+            self.h_maxMult = bh.TH1F(f'{name}_{board}maxMult', f'{board} max multiplicity per cluster; {board} max mult. per cluster', 100, 0, 100)
             self.eta_regions_idx = pf_regions.regions[board]
             self.max_count = 0
             self.tot_count = 0
@@ -1791,7 +1622,7 @@ class HistoSetOccupancy():
 class TCClusterMatchHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_dEtaVdPhi = ROOT.TH2F(
+            self.h_dEtaVdPhi = bh.TH2F(
                 name+'_dEtaVdPhi',
                 '#Delta#eta vs #Delta#phi; #Delta#phi [rad]; #Delta#eta;',
                 100, -0.1, 0.1, 100, -0.1, 0.1)
@@ -1819,53 +1650,53 @@ class TCClusterMatchHistos(BaseHistos):
                 name+'_dRhoRMSVpt',
                 'RMS(#Delta#rho) vs pt; p_{T} [GeV]; RMS(#Delta#rho);',
                 100, 0, 100)
-            self.h_dRho = ROOT.TH1F(
+            self.h_dRho = bh.TH1F(
                 name+'_dRho',
                 '#Delta#rho; #Delta#rho;',
                 100, 0, 0.1)
-            self.h_dRho2 = ROOT.TH1F(
+            self.h_dRho2 = bh.TH1F(
                 name+'_dRho2',
                 '#Delta#rho (E fraction weighted); #Delta#rho;',
                 100, 0, 0.1)
 
-            self.h_dRhoVlayer = ROOT.TH2F(
+            self.h_dRhoVlayer = bh.TH2F(
                 name+'_dRhoVlayer',
                 '#Delta#rho; layer #; #Delta#rho;',
                 60, 0, 60, 100, 0, 0.1)
-            self.h_dRhoVabseta = ROOT.TH2F(
+            self.h_dRhoVabseta = bh.TH2F(
                 name+'_dRhoVabseta',
                 '#Delta#rho; |#eta|; #Delta#rho;',
                 100, 1.4, 3.1, 100, 0, 0.1)
-            # self.h_dRhoVfbrem = ROOT.TH2F(name+'_dRhoVfbrem',
+            # self.h_dRhoVfbrem = bh.TH2F(name+'_dRhoVfbrem',
             #                         '#Delta#rho vs f_{brem}; f_{brem}; #Delta#rho;',
             #                         100, 0, 1, 100, 0, 0.1)
-            self.h_dtVlayer = ROOT.TH2F(
+            self.h_dtVlayer = bh.TH2F(
                 name+'_dtVlayer',
                 '#Deltat vs layer; layer #; #Deltat;',
                 60, 0, 60, 100, -0.05, 0.05)
-            self.h_duVlayer = ROOT.TH2F(
+            self.h_duVlayer = bh.TH2F(
                 name+'_duVlayer',
                 '#Delta#rho; layer #; #Deltau;',
                 60, 0, 60, 100, -0.05, 0.05)
 
-            self.h_dtVlayer2 = ROOT.TH2F(
+            self.h_dtVlayer2 = bh.TH2F(
                 name+'_dtVlayer2',
                 '#Deltat vs layer; layer #; #Deltat;',
                 60, 0, 60, 100, -0.05, 0.05)
-            self.h_duVlayer2 = ROOT.TH2F(
+            self.h_duVlayer2 = bh.TH2F(
                 name+'_duVlayer2',
                 '#Delta#rho; layer #; #Deltau;',
                 60, 0, 60, 100, -0.05, 0.05)
 
-            self.h_dtVdu = ROOT.TH2F(
+            self.h_dtVdu = bh.TH2F(
                 name+'_dtVdu',
                 '#Deltat vs #Deltau; #Deltat [cm]; #Deltau [cm];',
                 100, -0.05, 0.05, 100, -0.05, 0.05)
-            self.h_dtVdu2 = ROOT.TH2F(
+            self.h_dtVdu2 = bh.TH2F(
                 name+'_dtVdu2',
                 '#Deltat vs #Deltau (E fract. weighted); #Deltat [cm]; #Deltau [cm];',
                 100, -0.05, 0.05, 100, -0.05, 0.05)
-            # self.h_fbremVabseta = ROOT.TH2F(name+'_fbremVabseta',
+            # self.h_fbremVabseta = bh.TH2F(name+'_fbremVabseta',
             #                         'f_{brem} vs |#eta|; |#eta|; f_{brem};',
             #                         100, 1.4, 3.1, 100, 0, 1)
 
@@ -1904,12 +1735,12 @@ class QuantizationHistos(BaseHistos):
     def __init__(self, name, features=None, root_file=None, debug=False):
         if not root_file:
             self.features = features
-            self.h_features = ROOT.TH2F(
+            self.h_features = bh.TH2F(
                 name+'_features', 
                 'features; feature; value',
                  len(self.features), 0, len(self.features),
                  1000, -1000, 1000)
-            self.h_featuresLog2 = ROOT.TH2F(
+            self.h_featuresLog2 = bh.TH2F(
                 name+'_featuresLog2', 
                 'featuresLog2; features; log_{2}(value)',
                  len(self.features), 0, len(self.features),
@@ -1926,18 +1757,9 @@ class QuantizationHistos(BaseHistos):
         for bin,ft in enumerate(self.features):
             fill[f'{ft}_bin'] = bin
             fill[f'{ft}_log2'] = np.log2(fill[[ft]])
-            rnp.fill_hist(self.h_features, fill[[f'{ft}_bin', ft]]) 
-            rnp.fill_hist(self.h_featuresLog2, fill[[f'{ft}_bin', f'{ft}_log2']]) 
+            bh.fill_2Dhist(self.h_features, fill[[f'{ft}_bin', ft]]) 
+            bh.fill_2Dhist(self.h_featuresLog2, fill[[f'{ft}_bin', f'{ft}_log2']]) 
 
-
-    def fill_lazy(self, filler, sel_name):
-        for bin,ft in enumerate(self.features):
-            # print(ft)
-            filler.df[f'{ft}_bin'] = bin
-            filler.df[f'{ft}_log2'] = np.log2(filler.df[[ft]])
-            # print(filler.df[[ft, f'{ft}_log2', f'{ft}_bin']])
-            filler.fill2d_lazy(self.h_features, f'{ft}_bin', ft, sel_name)
-            filler.fill2d_lazy(self.h_features, f'{ft}_bin',  f'{ft}_log2', sel_name)
 
 # if __name__ == "__main__":
 #     import sys
