@@ -122,10 +122,9 @@ def analyze(params, batch_idx=-1):
     if params.rate_pt_wps:
         calib_manager.set_pt_wps_version(params.rate_pt_wps)
 
-
-    output = ROOT.TFile(params.output_filename, "RECREATE")
-    output.cd()
+    output = up.recreate(params.output_filename)
     hm = histos.HistoManager()
+    hm.file = output
 
     # instantiate all the plotters
     plotter_collection = []
@@ -180,7 +179,7 @@ def analyze(params, batch_idx=-1):
                 # if tree_reader.global_entry % 100 == 0:
                 #     tr.collect_stats()
 
-                if tree_reader.global_entry != 0 and tree_reader.global_entry % 1000 == 0:
+                if tree_reader.global_entry != 0 and tree_reader.global_entry % 10000 == 0:
                     print("Writing histos to file")
                     hm.writeHistos()
 
@@ -205,11 +204,8 @@ def analyze(params, batch_idx=-1):
     # print("Processed {} events/{} TOT events".format(nev, ntuple.nevents()))
 
     print("Writing histos to file {}".format(params.output_filename))
-
-    output.cd()
     hm.writeHistos()
-
-    output.Close()
+    output.close()
     # ROOT.ROOT.DisableImplicitMT()
 
     return tree_reader.n_tot_entries

@@ -12,6 +12,7 @@ import json
 import os
 import re
 import python.pf_regions as pf_regions
+import numpy as np
 
 class PID:
     electron = 11
@@ -70,10 +71,12 @@ class Selection:
         selection (string): see pandas.DataFrame.query syntax
     """
 
-    def __init__(self, name, label='', selection=''):
+    def __init__(self, name, label='', selection=None):
         self.name = name
         self.label_ = label
         self.selection = selection
+        if self.name == 'all':
+            self.selection = lambda ar: True;
         self.hash = hash(selection)
         self.register()
 
@@ -106,7 +109,7 @@ class Selection:
         return Selection(
             name='{}{}'.format(self.name, other.name),
             label=new_label,
-            selection='({}) & ({})'.format(self.selection, other.selection))
+            selection=lambda array : self.selection(array) & other.selection(array))
 
 
     def __or__(self, other):
@@ -127,7 +130,7 @@ class Selection:
         return Selection(
             name='{}Or{}'.format(self.name, other.name),
             label=new_label,
-            selection='({}) | ({})'.format(self.selection, other.selection))
+            selection=lambda array : self.selection(array) | other.selection(array))
 
     def rename(self, new_name, new_label = None):
         self.name = new_name
@@ -135,15 +138,15 @@ class Selection:
             self.label_ = new_label
         self.register()
 
-    def __mul__(self, other):
-        return self.__add__(other)
+    # def __mul__(self, other):
+    #     return self.__add__(other)
 
-    def __add__(self, other):
-        return self.__and__(other)
+    # def __add__(self, other):
+    #     return self.__and__(other)
 
     def __str__(self):
-        return 'n: {}, \n\t s: {}, \n\t l:{}'.format(
-            self.name, self.selection, self.label)
+        return 'n: {}, \n\t l:{}'.format(
+            self.name, self.label)
 
     def __repr__(self):
         return '<{} {}> '.format(
@@ -158,11 +161,7 @@ class Selection:
 
 
 def multiply_selections(list1, list2):
-    ret = []
-    for sel1 in list1:
-        for sel2 in list2:
-            ret.append(sel1*sel2)
-    return ret
+    return and_selections(list1, list2)
 
 def and_selections(list1, list2):
     ret = []
@@ -357,24 +356,26 @@ tp_pt_sel = [
     # Selection('Pt5to10', '5<=p_{T}^{TOBJ}<10GeV', '(pt >= 5) & (pt < 10)'),
     # Selection('Pt10to20', '10<=p_{T}^{TOBJ}<20GeV', '(pt >= 10) & (pt < 20)'),
     # Selection('Pt10', 'p_{T}^{TOBJ}>=10GeV', 'pt >= 10'),
-    Selection('Pt10', 'p_{T}^{TOBJ}>=10GeV', 'pt >= 10'),
-    Selection('Pt20', 'p_{T}^{TOBJ}>=20GeV', 'pt >= 20'),
-    # Selection('Pt25', 'p_{T}^{TOBJ}>=25GeV', 'pt >= 25'),
-    Selection('Pt30', 'p_{T}^{TOBJ}>=30GeV', 'pt >= 30')
+    Selection('Pt10', 'p_{T}^{TOBJ}>=10GeV', lambda array: array.pt >= 10),
+    Selection('Pt20', 'p_{T}^{TOBJ}>=20GeV', lambda array: array.pt >= 20),
+    Selection('Pt25', 'p_{T}^{TOBJ}>=25GeV', lambda array: array.pt >= 25),
+    Selection('Pt30', 'p_{T}^{TOBJ}>=30GeV', lambda array: array.pt >= 30)
 ]
 tp_pt_sel_ext = [
     Selection('all', '', ''),
-    Selection('Pt10', 'p_{T}^{TOBJ}>=10GeV', 'pt >= 10'),
-    Selection('Pt15', 'p_{T}^{TOBJ}>=15GeV', 'pt >= 15'),
-    Selection('Pt20', 'p_{T}^{TOBJ}>=20GeV', 'pt >= 20'),
-    Selection('Pt25', 'p_{T}^{TOBJ}>=25GeV', 'pt >= 25'),
-    Selection('Pt30', 'p_{T}^{TOBJ}>=30GeV', 'pt >= 30'),
-    Selection('Pt40', 'p_{T}^{TOBJ}>=40GeV', 'pt >= 40')
+    Selection('Pt2', 'p_{T}^{TOBJ}>=2GeV',  lambda array: array.pt >= 2),
+    Selection('Pt5', 'p_{T}^{TOBJ}>=5GeV',  lambda array: array.pt >= 5),
+    Selection('Pt10', 'p_{T}^{TOBJ}>=10GeV', lambda array: array.pt >= 10),
+    Selection('Pt15', 'p_{T}^{TOBJ}>=15GeV', lambda array: array.pt >= 15),
+    Selection('Pt20', 'p_{T}^{TOBJ}>=20GeV', lambda array: array.pt >= 20),
+    Selection('Pt25', 'p_{T}^{TOBJ}>=25GeV', lambda array: array.pt >= 25),
+    Selection('Pt30', 'p_{T}^{TOBJ}>=30GeV', lambda array: array.pt >= 30),
+    Selection('Pt40', 'p_{T}^{TOBJ}>=40GeV', lambda array: array.pt >= 40)
 ]
 
 tp_tccluster_match_selections = [Selection('all', '', ''),
-                                 Selection('Pt5to10', '5 <= p_{T}^{TOBJ} < 10GeV', '(pt < 10) & (pt >= 5)'),
-                                 Selection('Pt10to20', '10 <= p_{T}^{TOBJ} < 20GeV', '(pt < 20) & (pt >= 10)')
+                                 Selection('Pt5to10', '5 <= p_{T}^{TOBJ} < 10GeV', lambda array: (array.pt < 10) & (array.pt >= 5)),
+                                 Selection('Pt10to20', '10 <= p_{T}^{TOBJ} < 20GeV', lambda array: (array.pt < 20) & (array.pt >= 10))
                                  ]
 tp_eta_ee_sel = [
     Selection('all', '', ''),
@@ -386,21 +387,21 @@ tp_eta_ee_sel = [
     # Selection('EtaE', '|#eta^{TOBJ}| > 2.8', 'abs(eta) > 2.8'),
     # Selection('EtaAB', '|#eta^{TOBJ}| <= 1.7', 'abs(eta) <= 1.7'),
     # Selection('EtaABC', '|#eta^{TOBJ}| <= 2.4', 'abs(eta) <= 2.4'),
-    Selection('EtaBC', '1.52 < |#eta^{TOBJ}| <= 2.4', '1.52 < abs(eta) <= 2.4'),
-    Selection('EtaBCD', '1.52 < |#eta^{TOBJ}| <= 2.8', '1.52 < abs(eta) <= 2.8'),
+    Selection('EtaBC', '1.52 < |#eta^{TOBJ}| <= 2.4', lambda array: (1.52 < abs(array.eta)) &  (abs(array.eta) <= 2.4)),
+    Selection('EtaBCD', '1.52 < |#eta^{TOBJ}| <= 2.8', lambda array: (1.52 < abs(array.eta)) &  (abs(array.eta) <= 2.8)),
     # Selection('EtaBCDE', '1.52 < |#eta^{TOBJ}| < 3', '1.52 < abs(eta) < 3')
                      ]
 
 genpart_ele_selections = [
-    Selection('Ele', 'e^{#pm}', 'abs(pdgid) == {}'.format(PID.electron))]
+    Selection('Ele', 'e^{#pm}', lambda array: abs(array.pdgid) == PID.electron)]
 genpart_photon_selections = [
-    Selection('Phot', '#gamma', 'abs(pdgid) == {}'.format(PID.photon))]
+    Selection('Phot', '#gamma', lambda array: abs(array.pdgid) == PID.photon)]
 genpart_pion_selections = [
-    Selection('Pion', '#pi', 'abs(pdgid) == {}'.format(PID.pion))]
+    Selection('Pion', '#pi', lambda array: abs(array.pdgid) == PID.pion)]
 
 
 gen_ee_sel = [
-    Selection('Ee', '', 'reachedEE >0'),
+    Selection('Ee', '', lambda array: array.reachedEE > 0),
     # # FIXME: remove after test (or pick one)
     # Selection('R0', 'R0', 'reachedEE >0 ')
 ]
@@ -412,69 +413,71 @@ gen_ee_sel = [
 # ]
 
 other_selections = [
-    Selection('EtaA', '1.49 < |#eta^{TOBJ}| <= 1.52', '1.49 < abs(eta) <= 1.52'),
-    Selection('EtaB', '1.52 < |#eta^{TOBJ}| <= 1.7', '1.52 < abs(eta) <= 1.7'),
-    Selection('EtaC', '1.7 < |#eta^{TOBJ}| <= 2.4', '1.7 < abs(eta) <= 2.4'),
-    Selection('EtaD', '2.4 < |#eta^{TOBJ}| <= 2.8', '2.4 < abs(eta) <= 2.8'),
-    Selection('EtaDE', '2.4 < |#eta^{TOBJ}| <= 3.0', '2.4 < abs(eta) <= 3.0'),
-    Selection('EtaE', '|#eta^{TOBJ}| > 2.8', 'abs(eta) > 2.8'),
-    Selection('EtaAB', '1.49 < |#eta^{TOBJ}| <= 1.7', '1.49 < abs(eta) <= 1.7'),
-    Selection('EtaABC', '1.49 < |#eta^{TOBJ}| <= 2.4', '1.49 < abs(eta) <= 2.4'),
-    Selection('EtaABCD', '1.49 < |#eta^{TOBJ}| <= 2.8', '1.49 < abs(eta) <= 2.8'),
-    Selection('EtaFABCD', '|#eta^{TOBJ}| <= 2.8', 'abs(eta) <= 2.8'),
-    Selection('EtaFABC', '|#eta^{TOBJ}| <= 2.4', 'abs(eta) <= 2.4'),
-    Selection('EtaBCDE', '1.52 < |#eta^{TOBJ}|', '1.52 < abs(eta)')
+    Selection('EtaA', '1.49 < |#eta^{TOBJ}| <= 1.52', lambda array: (1.49 < abs(array.eta)) & (abs(array.eta) <= 1.52)),
+    Selection('EtaB', '1.52 < |#eta^{TOBJ}| <= 1.7', lambda array: (1.52 < abs(array.eta)) & (abs(array.eta) <= 1.7)),
+    Selection('EtaC', '1.7 < |#eta^{TOBJ}| <= 2.4', lambda array: (1.7 < abs(array.eta)) & (abs(array.eta) <= 2.4)),
+    Selection('EtaD', '2.4 < |#eta^{TOBJ}| <= 2.8', lambda array: (2.4 < abs(array.eta)) & (abs(array.eta) <= 2.8)),
+    Selection('EtaDE', '2.4 < |#eta^{TOBJ}| <= 3.0', lambda array: (2.4 < abs(array.eta)) & (abs(array.eta) <= 3.0)),
+    Selection('EtaE', '|#eta^{TOBJ}| > 2.8', lambda array: abs(array.eta) > 2.8),
+    Selection('EtaAB', '1.49 < |#eta^{TOBJ}| <= 1.7', lambda array: (1.49 < abs(array.eta)) & (abs(array.eta) <= 1.7)),
+    Selection('EtaABC', '1.49 < |#eta^{TOBJ}| <= 2.4', lambda array: (1.49 < abs(array.eta)) & (abs(array.eta) <= 2.4)),
+    Selection('EtaABCD', '1.49 < |#eta^{TOBJ}| <= 2.8', lambda array: (1.49 < abs(array.eta)) & (abs(array.eta) <= 2.8)),
+    Selection('EtaFABCD', '|#eta^{TOBJ}| <= 2.8', lambda array: abs(array.eta) <= 2.8),
+    Selection('EtaFABC', '|#eta^{TOBJ}| <= 2.4', lambda array: abs(array.eta) <= 2.4),
+    Selection('EtaBCDE', '1.52 < |#eta^{TOBJ}|', lambda array: 1.52 < abs(array.eta))
 ]
 
 
-# gen_ee_sel = [
-#     Selection('', '', 'reachedEE >0 ')]
-gen_eta_ee_sel = [
-    # Selection('EtaA', '|#eta^{TOBJ}| <= 1.52', 'abs(eta) <= 1.52'),
-    # Selection('EtaB', '1.52 < |#eta^{TOBJ}| <= 1.7', '1.52 < abs(eta) <= 1.7'),
-    # Selection('EtaC', '1.7 < |#eta^{TOBJ}| <= 2.4', '1.7 < abs(eta) <= 2.4'),
-    # Selection('EtaD', '2.4 < |#eta^{TOBJ}| <= 2.8', '2.4 < abs(eta) <= 2.8'),
-    # Selection('EtaDE', '2.4 < |#eta^{TOBJ}| <= 3.0', '2.4 < abs(eta) <= 3.0'),
-    # Selection('EtaE', '|#eta^{TOBJ}| > 2.8', 'abs(eta) > 2.8'),
-    # Selection('EtaAB', '|#eta^{TOBJ}| <= 1.7', 'abs(eta) <= 1.7'),
-    # Selection('EtaABC', '|#eta^{TOBJ}| <= 2.4', 'abs(eta) <= 2.4'),
-    Selection('EtaBC', '1.52 < |#eta^{TOBJ}| <= 2.4', '1.52 < abs(eta) <= 2.4'),
-    Selection('EtaBCD', '1.52 < |#eta^{TOBJ}| <= 2.8', '1.52 < abs(eta) <= 2.8'),
-    # Selection('EtaBCDE', '1.52 < |#eta^{TOBJ}|', '1.52 < abs(eta)')
-    ]
-gen_eta_eb_sel = [
-    Selection('EtaF', '|#eta^{TOBJ}| <= 1.479', 'abs(eta) <= 1.479')]
-gen_eta_sel = [
-    Selection('EtaF', '|#eta^{TOBJ}| <= 1.479', 'abs(eta) <= 1.479'),
-    Selection('EtaD', '2.4 < |#eta^{TOBJ}| <= 2.8', '2.4 < abs(eta) <= 2.8'),
-    Selection('EtaBC', '1.52 < |#eta^{TOBJ}| <= 2.4', '1.52 < abs(eta) <= 2.4'),
-    Selection('EtaBCD', '1.52 < |#eta^{TOBJ}| <= 2.8', '1.52 < abs(eta) <= 2.8')
-]
+# # gen_ee_sel = [
+# #     Selection('', '', 'reachedEE >0 ')]
+# gen_eta_ee_sel = [
+#     # Selection('EtaA', '|#eta^{TOBJ}| <= 1.52', 'abs(eta) <= 1.52'),
+#     # Selection('EtaB', '1.52 < |#eta^{TOBJ}| <= 1.7', '1.52 < abs(eta) <= 1.7'),
+#     # Selection('EtaC', '1.7 < |#eta^{TOBJ}| <= 2.4', '1.7 < abs(eta) <= 2.4'),
+#     # Selection('EtaD', '2.4 < |#eta^{TOBJ}| <= 2.8', '2.4 < abs(eta) <= 2.8'),
+#     # Selection('EtaDE', '2.4 < |#eta^{TOBJ}| <= 3.0', '2.4 < abs(eta) <= 3.0'),
+#     # Selection('EtaE', '|#eta^{TOBJ}| > 2.8', 'abs(eta) > 2.8'),
+#     # Selection('EtaAB', '|#eta^{TOBJ}| <= 1.7', 'abs(eta) <= 1.7'),
+#     # Selection('EtaABC', '|#eta^{TOBJ}| <= 2.4', 'abs(eta) <= 2.4'),
+#     Selection('EtaBC', '1.52 < |#eta^{TOBJ}| <= 2.4', '1.52 < abs(eta) <= 2.4'),
+#     Selection('EtaBCD', '1.52 < |#eta^{TOBJ}| <= 2.8', '1.52 < abs(eta) <= 2.8'),
+#     # Selection('EtaBCDE', '1.52 < |#eta^{TOBJ}|', '1.52 < abs(eta)')
+#     ]
+# gen_eta_eb_sel = [
+#     Selection('EtaF', '|#eta^{TOBJ}| <= 1.479', 'abs(eta) <= 1.479')]
+# gen_eta_sel = [
+#     Selection('EtaF', '|#eta^{TOBJ}| <= 1.479', 'abs(eta) <= 1.479'),
+#     Selection('EtaD', '2.4 < |#eta^{TOBJ}| <= 2.8', '2.4 < abs(eta) <= 2.8'),
+#     Selection('EtaBC', '1.52 < |#eta^{TOBJ}| <= 2.4', '1.52 < abs(eta) <= 2.4'),
+#     Selection('EtaBCD', '1.52 < |#eta^{TOBJ}| <= 2.8', '1.52 < abs(eta) <= 2.8')
+# ]
 
 
-gen_pt_sel = [
-    Selection('all'),
-    Selection('Pt15', 'p_{T}^{TOBJ}>=15GeV', 'pt >= 15'),
-    # Selection('Pt10to25', '10 #leq p_{T}^{TOBJ} < 25GeV', '(pt >= 10) & (pt < 25)'),
-    # Selection('Pt20', 'p_{T}^{TOBJ}>=20GeV', 'pt >= 20'),
-    Selection('Pt30', 'p_{T}^{TOBJ}>=30GeV', 'pt >= 30'),
-    # Selection('Pt35', 'p_{T}^{TOBJ}>=35GeV', 'pt >= 35'),
-    # Selection('Pt40', 'p_{T}^{TOBJ}>=40GeV', 'pt >= 40')
-]
-gen_pt_sel_red = [
-    Selection('all'),
-    Selection('Pt15', 'p_{T}^{TOBJ}>=15GeV', 'pt >= 15')
-]
+# gen_pt_sel = [
+#     Selection('all'),
+#     Selection('Pt15', 'p_{T}^{TOBJ}>=15GeV', 'pt >= 15'),
+#     # Selection('Pt10to25', '10 #leq p_{T}^{TOBJ} < 25GeV', '(pt >= 10) & (pt < 25)'),
+#     # Selection('Pt20', 'p_{T}^{TOBJ}>=20GeV', 'pt >= 20'),
+#     Selection('Pt30', 'p_{T}^{TOBJ}>=30GeV', 'pt >= 30'),
+#     # Selection('Pt35', 'p_{T}^{TOBJ}>=35GeV', 'pt >= 35'),
+#     # Selection('Pt40', 'p_{T}^{TOBJ}>=40GeV', 'pt >= 40')
+# ]
+# gen_pt_sel_red = [
+#     Selection('all'),
+#     Selection('Pt15', 'p_{T}^{TOBJ}>=15GeV', 'pt >= 15')
+# ]
 
-gen_pt_upper = [
-    Selection('', '', 'pt <= 100')
-]
+# gen_pt_upper = [
+#     Selection('', '', 'pt <= 100')
+# ]
 
 gen_pid_sel = [
-    Selection('GEN', '', '(((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})) | \
-                           ((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})))'.format(
-        PID.electron, PID.electron,
-        PID.photon, PID.photon))
+    Selection('GEN', '', 
+              lambda ar: ((np.abs(ar.pdgid) == PID.electron ) | (np.abs(ar.pdgid) == PID.photon)) & (ar.gen != -1))
+        #       '(((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})) | \
+        #                    ((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})))'.format(
+        # PID.electron, PID.electron,
+        # PID.photon, PID.photon))
 ]
 gen_ele_sel = [
     Selection('GEN11', '', '((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {}))'.format(
@@ -489,12 +492,12 @@ gen_part_fbrem_sel = [
 
 eg_eta_eb_sel = [
     Selection('all'),
-    Selection('EtaF', '|#eta^{TOBJ}| <= 1.479', 'abs(eta) <= 1.479')
+    Selection('EtaF', '|#eta^{TOBJ}| <= 1.479', lambda ar: abs(ar.eta) <= 1.479)
     ]
 eg_eta_sel = [
     Selection('all'),
-    Selection('EtaF', '|#eta^{TOBJ}| <= 1.479', 'abs(eta) <= 1.479'),
-    Selection('EtaA', ' 1.479 < |#eta^{TOBJ}| <= 1.52', '(abs(eta) <= 1.52) & abs(eta) > 1.479'),
+    # Selection('EtaF', '|#eta^{TOBJ}| <= 1.479', 'abs(eta) <= 1.479'),
+    # Selection('EtaA', ' 1.479 < |#eta^{TOBJ}| <= 1.52', '(abs(eta) <= 1.52) & abs(eta) > 1.479'),
     Selection('EtaBC', '1.52 < |#eta^{TOBJ}| <= 2.4', '1.52 < abs(eta) <= 2.4'),
     Selection('EtaEB', '|#eta^{TOBJ}| <= 1.479', 'abs(eta) <= 1.479'),
     Selection('EtaEE', '1.479 < |#eta^{TOBJ}| <= 2.4', '(abs(eta) > 1.479) & (abs(eta) <= 2.4)'),
@@ -517,10 +520,10 @@ eg_id_ee_selections = [
 
 tracks_quality_sels = [Selection('all'),
                        Selection('St4', '# stubs > 3', 'nStubs > 3')]
-tracks_pt_sels = [Selection('all'),
-                  Selection('Pt2', 'p_{T}^{TOBJ}>=2GeV', 'pt >= 2'),
-                  Selection('Pt5', 'p_{T}^{TOBJ}>=5GeV', 'pt >= 5'),
-                  Selection('Pt10', 'p_{T}^{TOBJ}>=10GeV', 'pt >= 10')]
+# tracks_pt_sels = [Selection('all'),
+#                   Selection('Pt2', 'p_{T}^{TOBJ}>=2GeV', 'pt >= 2'),
+#                   Selection('Pt5', 'p_{T}^{TOBJ}>=5GeV', 'pt >= 5'),
+#                   Selection('Pt10', 'p_{T}^{TOBJ}>=10GeV', 'pt >= 10')]
 
 pfinput_regions = [
     Selection('all'),
@@ -598,25 +601,25 @@ eg_id_eb_sel = [
 
 eg_id_sel = [
     Selection('all'),
-    Selection('IDTightS', 'Tight-STA', 'IDTightSTA'),
-    Selection('IDTightE', 'Tight-TkEle', 'IDTightEle'),
-    Selection('IDTightP', 'Tight-TkEm', 'IDTightPho'),
-    Selection('IDNoBrem', 'NoBrem', 'IDNoBrem'),
-    Selection('IDBrem', 'Brem', 'IDNoBrem == False'),
+    Selection('IDTightS', 'Tight-STA', lambda array: array.IDTightSTA),
+    Selection('IDTightE', 'Tight-TkEle', lambda array: array.IDTightEle),
+    Selection('IDTightP', 'Tight-TkEm', lambda array: array.IDTightPho),
+    Selection('IDNoBrem', 'NoBrem', lambda array: array.IDNoBrem),
+    Selection('IDBrem', 'Brem', lambda array: array.IDNoBrem == False),
 
     Selection('IDEleH', 'TkEle ID (H)', ''),
 
     ]
 
 comp_id_sel = [
-    Selection('IDCompWP955', 'CompID WP 0.955', 'compBDTScore > -0.7318549872638138'), #, epsilon_b = 0.0985
+    Selection('IDCompWP955', 'CompID WP 0.955', lambda ar: ar.compBDTScore > -0.7318549872638138), #, epsilon_b = 0.0985
     # Selection('IDCompWP950', 'CompID WP 0.950', 'compBDTScore > -0.5871849', #, epsilon_b = 0.0917
     # Selection('IDCompWP940', 'CompID WP 0.940', 'compBDTScore > -0.4392925', #, epsilon_b = 0.0788
     # Selection('IDCompWP930', 'CompID WP 0.930', 'compBDTScore > -0.2919413', #, epsilon_b = 0.0638
     # Selection('IDCompWP920', 'CompID WP 0.920', 'compBDTScore > -0.1440416', #, epsilon_b = 0.0531
     # Selection('IDCompWP910', 'CompID WP 0.910', 'compBDTScore > 0.0825459', # epsilon_b = 0.0437
-    Selection('IDCompWP900', 'CompID WP 0.900', 'compBDTScore > 0.2157780720764229'), # epsilon_b = 0.0373
-    Selection('IDCompWP800', 'CompID WP 0.800', 'compBDTScore > 1.694870131268548'), # epsilon_b = 0.0081
+    Selection('IDCompWP900', 'CompID WP 0.900', lambda ar: ar.compBDTScore > 0.2157780720764229), # epsilon_b = 0.0373
+    Selection('IDCompWP800', 'CompID WP 0.800', lambda ar: ar.compBDTScore > 1.694870131268548), # epsilon_b = 0.0081
     # Selection('IDCompWP700', 'CompID WP 0.700', 'compBDTScore > 0.9914881', # epsilon_b = 0.0034
     # Selection('IDCompWP650', 'CompID WP 0.650', 'compBDTScore > 0.9954325', # epsilon_b = 0.0021
     # Selection('IDCompWP600', 'CompID WP 0.600', 'compBDTScore > 0.9958264', # epsilon_b = 0.0017

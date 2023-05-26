@@ -18,6 +18,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 import pandas as pd
 import numpy as np
+import awkward as ak
 import ROOT
 import math
 import sys
@@ -125,7 +126,7 @@ class DFCollection(object):
     def __init__(self, name, label,
                  filler_function,
                  fixture_function=None,
-                 read_entry_block=1000,
+                 read_entry_block=10000,
                  depends_on=[],
                  debug=0,
                  print_function=lambda df: df,
@@ -142,11 +143,7 @@ class DFCollection(object):
         self.print_function = print_function
         self.max_print_lines = max_print_lines
         self.weight_function = weight_function
-        self.n_queries = 0
-        self.cached_queries = dict()
-        self.cached_entries = dict()
         self.entries = None
-        self.empty_df = None
         self.next_entry_read = 0
         self.read_entry_block = read_entry_block
         # print (f'Create collection: {self.name} with read_entry_block: {read_entry_block}')
@@ -202,7 +199,6 @@ class DFCollection(object):
             self.new_read = False
 
         if self.debug > 0:
-            df_print = self.empty_df
             if event.file_entry in self.df.index.get_level_values('entry'):
                 df_print = self.df.loc[event.file_entry]
             debugPrintOut(max(debug, self.debug), self.label,
@@ -211,64 +207,14 @@ class DFCollection(object):
                           max_lines=self.max_print_lines)
 
     def fill_real(self, event, stride, weight_file=None, debug=0):
-        self.clear_query_cache(debug)
         self.df = self.filler_function(event, stride)
-        print(self.df)
         if self.fixture_function is not None:
-            # FIXME: wouldn't this be more efficient
-            # self.fixture_function(self.df)
-            self.df = self.fixture_function(self.df)
+            self.fixture_function(self.df)
         if self.weight_function is not None:
             self.df = self.weight_function(self.df, weight_file)
-        self.empty_df = pd.DataFrame(columns=self.df.columns)
-        self.entries = self.df.index.get_level_values('entry').unique()
+        self.entries = range(0,1000)# FIXME: self.df.index.get_level_values('entry').unique()
         if debug > 2:
             print(f'read coll. {self.name} from entry: {event.file_entry} to entry: {event.file_entry+stride} (stride: {stride}), # rows: {self.df.shape[0]}, # entries: {len(self.entries)}')
-
-    def query(self, selection):
-        self.n_queries += 1
-        if selection.all or self.df.empty:
-            return self.df
-        if selection.selection not in self.cached_queries:
-            ret = self.df.query(selection.selection)
-            self.cached_queries[sys.intern(selection.selection)] = ret
-            entries = ret.index.get_level_values('entry').unique()
-            self.cached_entries[selection.hash] = entries
-            return ret
-        return self.cached_queries[selection.selection]
-
-    def query_event(self, selection, idx):
-        self.n_queries += 1
-        # print (f'coll: {self.name}, query selection: {selection.selection} for entry: {idx}')
-        if idx not in self.entries:
-            # print ('  enrty not in frame!')
-            return self.empty_df
-        if selection.all or self.df.empty:
-            # print ('  frame is empty')
-            return self.df.loc[idx]
-        if selection.selection not in self.cached_queries:
-            # print ('   query already cached')
-            ret = self.df.query(selection.selection)
-            self.cached_queries[sys.intern(selection.selection)] = ret
-            entries = ret.index.get_level_values('entry').unique()
-            self.cached_entries[selection.hash] = entries
-            if idx not in entries:
-                return self.empty_df
-            return ret.loc[idx]
-        # print ('    query not cached')
-        # print (f'     {self.cached_queries.keys()}')
-        entries = self.cached_entries[selection.hash]
-        if idx not in entries:
-            return self.empty_df
-        return self.cached_queries[selection.selection].loc[idx]
-
-    def clear_query_cache(self, debug=0):
-        if (debug > 5):
-            print('Coll: {} # queries: {} # unique queries: {}'.format(
-                self.name, self.n_queries, len(self.cached_queries.keys())))
-        self.n_queries = 0
-        self.cached_entries.clear()
-        self.cached_queries.clear()
 
 
 def tkeg_fromcluster_fixture(tkegs):
@@ -360,23 +306,19 @@ def cl3d_fixtures(clusters):
 
 
 def gen_fixtures(particles, mc_particles):
-    if particles.empty:
-        return particles
+    # if particles.empty:
+    #     return particles
     # print particles.columns
     particles['pdgid'] = particles.pid
     particles['abseta'] = np.abs(particles.eta)
-
-    def get_mother_pdgid(particle, mc_particles):
-        if particle.gen == -1:
-            return -1
-        return mc_particles.df.loc[(particle.name[0], particle.gen-1)].firstmother_pdgid
-    # FIXME: temporary
-    particles['firstmother_pdgid'] = particles.apply(func=lambda x: get_mother_pdgid(x, mc_particles), axis=1)
+    particles['firstmother_pdgid'] = mc_particles.df.pdgid[particles[particles.gen != -1].gen-1]
     return particles
 
 
 def mc_fixtures(particles):
-    particles['firstmother'] = particles.index.to_numpy()
+    # print(['mc_fixtures'])
+    # print(particles)
+    # # particles['firstmother'] = particles.index.to_numpy()
     particles['firstmother_pdgid'] = particles.pdgid
     return particles
     # FIXME: this is broken
@@ -749,20 +691,21 @@ def tkele_fixture_eb(electrons):
 
 
 def quality_flags(objs):
-    hwqual = pd.to_numeric(objs['hwQual'], downcast='integer')
+    print(objs.hwQual)
+    objs['hwQual'] = ak.values_astype(objs.hwQual, np.int32)
     mask_tight_sta = 0b0001
     mask_tight_ele = 0b0010
     mask_tight_pho = 0b0100
     mask_no_brem = 0b1000
-    objs['IDTightSTA'] = np.bitwise_and(hwqual.values, mask_tight_sta) > 0
-    objs['IDTightEle'] = np.bitwise_and(hwqual.values, mask_tight_ele) > 0
-    objs['IDTightPho'] = np.bitwise_and(hwqual.values, mask_tight_pho) > 0
-    objs['IDNoBrem'] = np.bitwise_and(hwqual.values, mask_no_brem) > 0
-    objs['IDBrem'] = np.bitwise_and(hwqual.values, mask_no_brem) == 0
-
+    objs['IDTightSTA'] = np.bitwise_and(objs.hwQual, mask_tight_sta) > 0
+    objs['IDTightEle'] = np.bitwise_and(objs.hwQual, mask_tight_ele) > 0
+    objs['IDTightPho'] = np.bitwise_and(objs.hwQual, mask_tight_pho) > 0
+    objs['IDNoBrem'] = np.bitwise_and(objs.hwQual, mask_no_brem) > 0
+    objs['IDBrem'] = np.bitwise_and(objs.hwQual, mask_no_brem) == 0
     return objs
 
 def quality_ele_fixtures(objs):
+    print(objs)
     objs['dpt'] = objs.tkPt - objs.pt
     return quality_flags(objs)
 
@@ -1510,7 +1453,7 @@ TkEmEB = DFCollection(
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='TkEmEB', entry_block=entry_block),
     fixture_function=quality_flags,
-    read_entry_block=200,
+    # read_entry_block=200,
     debug=0)
 
 TkEmL2 = DFCollection(

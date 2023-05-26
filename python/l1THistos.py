@@ -4,7 +4,11 @@ import ROOT
 import numpy as np
 from array import array
 # import pandas as pd
-
+import uproot4 as up
+import awkward as ak
+import hist
+from hist import Hist
+import python.boost_hist as bh
 import python.pf_regions as pf_regions
 
 stuff = []
@@ -14,12 +18,12 @@ class HistoLazyFiller(object):
     def __init__(self, dataframe):
         self.df = dataframe
         self.manager = ROOT.FillerManager()
-        self.columns = dataframe.columns
+        self.columns = dataframe.fields
 
     def fill1d_lazy(self, histo, col_name, sel_name):
         if not self.manager.knowsVariable(col_name):
             # print (" - add variable {}".format(col_name))
-            self.manager.addVariable(col_name, self.df[col_name].values)
+            self.manager.addVariable(col_name, ak.flatten(self.df[col_name]))
 
         if not self.manager.knowsSelection(sel_name):
             print("*** [HistoLazyFiller] ERROR: selection: {} not known!".format(sel_name))
@@ -30,11 +34,11 @@ class HistoLazyFiller(object):
     def fill2d_lazy(self, histo, x_col_name, y_col_name, sel_name):
         if not self.manager.knowsVariable(x_col_name):
             # print (" - add variable {}".format(col_name))
-            self.manager.addVariable(x_col_name, self.df[x_col_name].values)
+            self.manager.addVariable(x_col_name, ak.flatten(self.df[x_col_name]))
 
         if not self.manager.knowsVariable(y_col_name):
             # print (" - add variable {}".format(col_name))
-            self.manager.addVariable(y_col_name, self.df[y_col_name].values)
+            self.manager.addVariable(y_col_name, ak.flatten(self.df[y_col_name]))
 
         if not self.manager.knowsSelection(sel_name):
             print("*** [HistoLazyFiller] ERROR: selection: {} not known!".format(sel_name))
@@ -54,9 +58,12 @@ class HistoManager(object):
         def __init__(self):
             self.val = None
             self.histoList = list()
+            self.file = None
 
         def __str__(self):
             return 'self' + self.val
+
+
 
         def addHistos(self, histo):
             # print 'ADD histo: {}'.format(histo)
@@ -64,7 +71,7 @@ class HistoManager(object):
 
         def writeHistos(self):
             for histo in self.histoList:
-                histo.write()
+                histo.write(self.file)
 
     instance = None
 
@@ -104,20 +111,31 @@ class BaseHistos():
 #            self.h_test = root_file.Get('h_EleReso_ptRes')
             # print 'XXXXXX'+str(self.h_test)
         else:
-            for histo in [a for a in dir(self) if a.startswith('h_')]:
-                getattr(self, histo).Sumw2()
+            # for histo in [a for a in dir(self) if a.startswith('h_')]:
+                # FIXME
+                # getattr(self, histo).Sumw2()
             hm = HistoManager()
             hm.addHistos(self)
 
-    def write(self):
-        if self.__class__.__name__ not in ROOT.gDirectory.GetListOfKeys():
-            ROOT.gDirectory.mkdir(self.__class__.__name__)
-        newdir = ROOT.gDirectory.GetDirectory(self.__class__.__name__)
-        newdir.cd()
+    def write(self, upfile):
+        # pyroot_hist = ROOT.TH1F("h", "", 100, -3, 3)
+        # pyroot_hist.FillRandom("gaus", 100000)
+        # upfile["from_pyroot"] = pyroot_hist
+
+        dir_name = self.__class__.__name__
         for histo in [a for a in dir(self) if a.startswith('h_')]:
-            # print ("Writing {}".format(histo))
-            getattr(self, histo).Write("", ROOT.TObject.kOverwrite)
-        ROOT.gDirectory.cd('..')
+            writeable_hist = getattr(self, histo)
+            # print (f"Writing {histo} class {writeable_hist.__class__.__name__}")
+            if 'GraphBuilder' in writeable_hist.__class__.__name__ :
+                continue
+            elif 'TH1' in writeable_hist.__class__.__name__ or 'TH2' in writeable_hist.__class__.__name__:
+                # print('start')
+                # FIXME: this somehow fails randomply. ROOT not lining the right python???
+                upfile[f'{dir_name}/{writeable_hist.GetName()}'] = writeable_hist
+                # print('ok')
+            else:
+                up_writeable_hist = up.to_writable(writeable_hist)
+                upfile[f'{dir_name}/{writeable_hist.label}'] = up_writeable_hist
 
     # def normalize(self, norm):
     #     className = self.__class__.__name__
@@ -246,9 +264,9 @@ class BaseResoHistos(BaseHistos):
 
     def __init__(self, name, root_file=None, debug=False):
         BaseHistos.__init__(self, name, root_file, debug)
-        if root_file is not None or True:
+        if root_file is not None:
             # print dir(self)
-            for attr_2d in [attr for attr in dir(self) if (attr.startswith('h_') and 'TH2' in getattr(self, attr).ClassName())]:
+            for attr_2d in [attr for attr in dir(self) if (attr.startswith('h_') and 'TH2' in getattr(self, attr).__class__.__name__)]:
                 setattr(self, attr_2d+'_graph', GraphBuilder(self, attr_2d))
 
 
@@ -300,34 +318,39 @@ class GenParticleHistos(BaseHistos):
             # print ('bins: {}'.format(pt_bins))
             # print ("# bins: {}".format(n_pt_bins))
 
-            self.h_eta = ROOT.TH1F(name+'_eta', 'Gen Part eta; #eta^{GEN};', 50, -3, 3)
-            self.h_abseta = ROOT.TH1F(name+'_abseta', 'Gen Part |eta|; |#eta^{GEN}|;', 40, 0, 4)
-            self.h_pt = ROOT.TH1F(name+'_pt', 'Gen Part P_{T} (GeV); p_{T}^{GEN} [GeV];', n_pt_bins, array('d', pt_bins))
+            self.h_eta = bh.TH1F(name+'_eta', 'Gen Part eta; #eta^{GEN};', 50, -3, 3)
+            self.h_abseta = bh.TH1F(name+'_abseta', 'Gen Part |eta|; |#eta^{GEN}|;', 40, 0, 4)
+            # FIXME: address in hist migration
+            # self.h_pt = ROOT.TH1F(name+'_pt', 'Gen Part P_{T} (GeV); p_{T}^{GEN} [GeV];', n_pt_bins, array('d', pt_bins))
+            self.h_pt = bh.TH1F(name+'_pt', 'Gen Part P_{T} (GeV); p_{T}^{GEN} [GeV];', 50, 0, 100)
             # self.h_energy = ROOT.TH1F(name+'_energy', 'Gen Part Energy (GeV); E [GeV];', 100, 0, 1000)
-            self.h_reachedEE = ROOT.TH1F(name+'_reachedEE', 'Gen Part reachedEE', 4, 0, 4)
-            self.h_fBrem = ROOT.TH1F(name+'_fBrem', 'Brem. p_{T} fraction', 30, 0, 1)
+            self.h_reachedEE = bh.TH1F(name+'_reachedEE', 'Gen Part reachedEE', 4, 0, 4)
+            self.h_fBrem = bh.TH1F(name+'_fBrem', 'Brem. p_{T} fraction', 30, 0, 1)
+
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, particles):
-        particles_weight = particles.weight
-        rnp.fill_hist(hist=self.h_eta,
-                      array=particles.eta,
-                      weights=particles_weight)
-        rnp.fill_hist(hist=self.h_abseta,
-                      array=particles.abseta,
-                      weights=particles_weight)
-        rnp.fill_hist(hist=self.h_pt,
-                      array=particles.pt,
-                      weights=particles_weight)
-        # rnp.fill_hist(hist=self.h_energy,
+        weights = None
+        if 'weights' in particles.fields:
+            weights = particles.weights
+
+        bh.fill_1Dhist(hist=self.h_eta,
+                       array=particles.eta)
+        bh.fill_1Dhist(hist=self.h_abseta,
+                       array=particles.abseta)
+        bh.fill_1Dhist(hist=self.h_pt,
+                       array=particles.pt)
+        # bh.fill_1Dhist(hist=self.h_energy,
         #               array=particles.energy,
         #               weights=particles_weight)
-        rnp.fill_hist(hist=self.h_reachedEE,
-                      array=particles.reachedEE,
-                      weights=particles_weight)
-        rnp.fill_hist(hist=self.h_fBrem,
-                      array=particles.fbrem,
-                      weights=particles_weight)
+        bh.fill_1Dhist(hist=self.h_reachedEE,
+                       array=particles.reachedEE)
+        bh.fill_1Dhist(hist=self.h_fBrem,
+                       array=particles.fbrem)
+
+
+
+
 
     def fill_lazy(self, filler, sel_name):
         filler.fill1d_lazy(self.h_eta, 'eta', sel_name)
@@ -606,36 +629,36 @@ class Cluster3DHistos(BaseHistos):
 class EGHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_pt = ROOT.TH1F(name+'_pt', 'EG Pt (GeV); p_{T} [GeV]', 100, 0, 100)
-            self.h_eta = ROOT.TH1F(name+'_eta', 'EG eta; #eta;', 100, -4, 4)
-            self.h_energy = ROOT.TH1F(name+'_energy', 'EG energy (GeV); E [GeV]', 1000, 0, 1000)
-            self.h_hwQual = ROOT.TH1F(name+'_hwQual', 'EG energy (GeV); hwQual', 5, 0, 5)
-            self.h_tkIso = ROOT.TH1F(name+'_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2)
-            self.h_pfIso = ROOT.TH1F(name+'_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
-            self.h_tkIsoPV = ROOT.TH1F(name+'_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2)
-            self.h_pfIsoPV = ROOT.TH1F(name+'_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
-            self.h_n = ROOT.TH1F(name+'_n', '# objects per event', 100, 0, 100)
-            self.h_compBdt = ROOT.TH1F(name+'_compBdt', 'BDT Score Comp ID', 100, -4, 4)
+            self.h_pt = bh.TH1F(name+'_pt', 'EG Pt (GeV); p_{T} [GeV]', 100, 0, 100)
+            self.h_eta = bh.TH1F(name+'_eta', 'EG eta; #eta;', 100, -4, 4)
+            self.h_energy = bh.TH1F(name+'_energy', 'EG energy (GeV); E [GeV]', 1000, 0, 1000)
+            self.h_hwQual = bh.TH1F(name+'_hwQual', 'EG energy (GeV); hwQual', 5, 0, 5)
+            self.h_tkIso = bh.TH1F(name+'_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2)
+            self.h_pfIso = bh.TH1F(name+'_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
+            self.h_tkIsoPV = bh.TH1F(name+'_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2)
+            self.h_pfIsoPV = bh.TH1F(name+'_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
+            self.h_n = bh.TH1F(name+'_n', '# objects per event', 100, 0, 100)
+            self.h_compBdt = bh.TH1F(name+'_compBdt', 'BDT Score Comp ID', 100, -4, 4)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, egs):
         weight = None
-        if 'weight' in egs.columns:
+        if 'weight' in egs.fields:
             weight = egs.weight
-        else:
-            weight = np.ones(egs.shape[0])
 
-        rnp.fill_hist(hist=self.h_pt,     array=egs.pt,     weights=weight)
-        rnp.fill_hist(hist=self.h_eta,    array=egs.eta,    weights=weight)
-        rnp.fill_hist(hist=self.h_energy, array=egs.energy, weights=weight)
-        rnp.fill_hist(hist=self.h_hwQual, array=egs.hwQual, weights=weight)
-        if 'tkIso' in egs.columns:
-            rnp.fill_hist(hist=self.h_tkIso, array=egs.tkIso, weights=weight)
-            rnp.fill_hist(hist=self.h_pfIso, array=egs.pfIso, weights=weight)
-        if 'tkIsoPV' in egs.columns:
-            rnp.fill_hist(hist=self.h_tkIsoPV, array=egs.tkIsoPV, weights=weight)
-            rnp.fill_hist(hist=self.h_pfIsoPV, array=egs.pfIsoPV, weights=weight)
+        bh.fill_1Dhist(hist=self.h_pt,     array=egs.pt,     weights=weight)
+        bh.fill_1Dhist(hist=self.h_eta,    array=egs.eta,    weights=weight)
+        bh.fill_1Dhist(hist=self.h_energy, array=egs.energy, weights=weight)
+        bh.fill_1Dhist(hist=self.h_hwQual, array=egs.hwQual, weights=weight)
+        if 'tkIso' in egs.fields:
+            bh.fill_1Dhist(hist=self.h_tkIso, array=egs.tkIso, weights=weight)
+            bh.fill_1Dhist(hist=self.h_pfIso, array=egs.pfIso, weights=weight)
+        if 'tkIsoPV' in egs.fields:
+            bh.fill_1Dhist(hist=self.h_tkIsoPV, array=egs.tkIsoPV, weights=weight)
+            bh.fill_1Dhist(hist=self.h_pfIsoPV, array=egs.pfIsoPV, weights=weight)
+        if 'compBDTScore' in egs.fields:
+            bh.fill_1Dhist(hist=self.h_compBdt, array=egs.compBDTScore, weights=weight)
 
     def fill_lazy(self, filler, sel_name):
         filler.fill1d_lazy(self.h_pt, 'pt', sel_name)
@@ -651,11 +674,10 @@ class EGHistos(BaseHistos):
         if 'compBDTScore' in filler.columns:
             filler.fill1d_lazy(self.h_compBdt, 'compBDTScore', sel_name)
 
-    def fill_event(self, objects):
-        if objects.empty:
-            self.h_n.Fill(0)
-        else:
-            self.h_n.Fill(objects.pt.count())
+    # FIXME: [FIXME-AK] implement this in the normal fill
+    # def fill_event(self, objects):
+    #     print(objects.pt)
+    #     self.h_n.Fill(len(objects.pt))
 
     def add_histos(self):
         self.h_pt.Add(self.h_pt_temp.GetValue())
@@ -1507,50 +1529,49 @@ class EGResoHistos(BaseResoHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
 
-            self.h_ptResVpt = ROOT.TH2F(
+            self.h_ptResVpt = bh.TH2F(
                 name+'_ptResVpt',
                 'EG Pt reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];',
                 50, 0, 100,
                 100, -10, 10)
-            self.h_ptRes = ROOT.TH1F(
+            self.h_ptRes = bh.TH1F(
                 name+'_ptRes',
                 'EG Pt res.; (p_{T}^{L1}-p_{T}^{GEN})/p_{T}^{GEN}',
                 100, -1, 1)
-
-            self.h_ptResp = ROOT.TH1F(
+            self.h_ptResp = bh.TH1F(
                 name+'_ptResp',
                 'EG Pt resp.; p_{T}^{L1}/p_{T}^{GEN}',
                 100, 0, 3)
-            self.h_ptRespVpt = ROOT.TH2F(
+            self.h_ptRespVpt = bh.TH2F(
                 name+'_ptRespVpt',
                 'EG Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
                 50, 0, 100,
                 100, 0, 3)
-            self.h_ptRespVeta = ROOT.TH2F(
+            self.h_ptRespVeta = bh.TH2F(
                 name+'_ptRespVeta',
                 'EG Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};',
                 50, -4, 4,
                 100, 0, 3)
 
-            self.h_etaRes = ROOT.TH1F(
+            self.h_etaRes = bh.TH1F(
                 name+'_etaRes',
                 'EG eta reso; #eta^{L1}-#eta^{GEN}',
                 100, -0.1, 0.1)
-            self.h_phiRes = ROOT.TH1F(
+            self.h_phiRes = bh.TH1F(
                 name+'_phiRes',
                 'EG phi reso; #phi^{L1}-#phi^{GEN}',
                 100, -0.1, 0.1)
 
-            self.h_exetaRes = ROOT.TH1F(
+            self.h_exetaRes = bh.TH1F(
                 name+'_exetaRes',
                 'EG eta reso; #eta^{L1}-#eta^{GEN}_{calo}',
                 100, -0.1, 0.1)
-            self.h_exphiRes = ROOT.TH1F(
+            self.h_exphiRes = bh.TH1F(
                 name+'_exphiRes',
                 'EG phi reso; #phi^{L1}-#phi^{GEN}_{calo}',
                 100, -0.1, 0.1)
 
-            self.h_dzRes = ROOT.TH1F(
+            self.h_dzRes = bh.TH1F(
                 name+'_dzRes',
                 '#DeltaZ_{0} res; #DeltaZ_{0}^{L1}-#DeltaZ_{0}^{GEN}',
                 100, -10, 10)
@@ -1558,32 +1579,20 @@ class EGResoHistos(BaseResoHistos):
         BaseResoHistos.__init__(self, name, root_file, debug)
 
     def fill(self, reference, target):
-        # FIXME: reference is a series while target is a DF -> moving to a series saves a lot of time
-        target_line = target.iloc[0]
-        target_pt = target_line.pt
-        target_eta = target_line.eta
-        target_phi = target_line.phi
+        # FIXME: weights
 
-        reference_pt = reference.pt
-        reference_eta = reference.eta
-        reference_phi = reference.phi
-        reference_exeta = reference.exeta
-        reference_exphi = reference.exphi
-        reference_weight = reference.weight
+        bh.fill_1Dhist(self.h_ptRes, (target.pt-reference.pt)/reference.pt)
+        bh.fill_2Dhist(self.h_ptResVpt, reference.pt, target.pt-reference.pt)
+        bh.fill_1Dhist(self.h_ptResp, target.pt/reference.pt)
+        bh.fill_2Dhist(self.h_ptRespVeta, reference.eta, target.pt/reference.pt)
+        bh.fill_2Dhist(self.h_ptRespVpt, reference.pt, target.pt/reference.pt)
+        bh.fill_1Dhist(self.h_etaRes, target.eta - reference.eta)
+        bh.fill_1Dhist(self.h_phiRes, target.phi - reference.phi)
+        bh.fill_1Dhist(self.h_exetaRes, target.eta - reference.exeta)
+        bh.fill_1Dhist(self.h_exphiRes, target.phi - reference.exphi)
 
-        self.h_ptRes.Fill((target_pt-reference_pt)/reference_pt, reference_weight)
-        self.h_ptResVpt.Fill(reference_pt, target_pt-reference_pt, reference_weight)
-        self.h_ptResp.Fill(target_pt/reference_pt, reference_weight)
-        self.h_ptRespVeta.Fill(reference_eta, target_pt/reference_pt, reference_weight)
-        self.h_ptRespVpt.Fill(reference_pt, target_pt/reference_pt, reference_weight)
-        self.h_etaRes.Fill(target_eta - reference_eta, reference_weight)
-        self.h_phiRes.Fill(target_phi - reference_phi, reference_weight)
-
-        self.h_exetaRes.Fill(target_eta - reference_exeta, reference_weight)
-        self.h_exphiRes.Fill(target_phi - reference_exphi, reference_weight)
-
-        if 'tkZ0' in target.columns:
-            self.h_dzRes.Fill(target_line.tkZ0 - reference.ovz)
+        # if 'tkZ0' in target.columns:
+        #     self.h_dzRes.Fill(target_line.tkZ0 - reference.ovz)
 
 
 class ClusterConeHistos(BaseHistos):

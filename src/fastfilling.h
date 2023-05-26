@@ -193,8 +193,30 @@ void fill1D_rate(TH1* histo, const std::vector<float>& values) {
 //              break
 
 
-void fill_hist(TH1* hist, const std::vector<float>& array, const std::vector<float>& weights) {
+void fill_1Dhist(TH1* hist, const std::vector<float>& array, const std::vector<float>& weights) {
+  // FIXME: check sizes
+
+  for (unsigned i =0; i < array.size(); ++i)
+    hist->Fill(array[i], weights[i]);
+}
+
+void fill_1Dhist(TH1* hist, const std::vector<float>& array) {
+
   for (auto value: array)
     hist->Fill(value);
 }
 
+void fill_2Dhist(TH2* hist, const std::vector<float>& arrayX, const std::vector<float>& arrayY, const std::vector<float>& weights) {
+    // FIXME: check sizes
+
+  for(unsigned i =0; i < arrayX.size(); ++i) {
+    hist->Fill(arrayX[i], arrayY[i], weights[i]);
+  }
+}
+
+void fill_2Dhist(TH2* hist, const std::vector<float>& arrayX, const std::vector<float>& arrayY) {
+  // FIXME: check sizes
+  for(unsigned i =0; i < arrayX.size(); ++i) {
+    hist->Fill(arrayX[i], arrayY[i]);
+  }
+}
