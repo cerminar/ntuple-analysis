@@ -275,11 +275,11 @@ class RateHistos(BaseHistos):
         if not root_file:
             self.h_norm = bh.TH1F(name+'_norm', '# of events', 1, 1, 2)
             self.h_pt = bh.TH1F(name+'_pt', 'rate above p_{T} thresh.; p_{T} [GeV]; rate [kHz];', 100, 0, 100)
-            self.h_ptVabseta = bh.TH2F(name+'_ptVabseta', 'Candidate p_{T} vs |#eta|; |#eta|; p_{T} [GeV];', 34, 1.4, 3.1, 100, 0, 100)
+            # self.h_ptVabseta = bh.TH2F(name+'_ptVabseta', 'Candidate p_{T} vs |#eta|; |#eta|; p_{T} [GeV];', 34, 1.4, 3.1, 100, 0, 100)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
-        if root_file is not None or True:
+        if root_file is not None:
             for attr_1d in [attr for attr in dir(self) if (attr.startswith('h_') and 'TH1' in getattr(self, attr).ClassName())]:
                 setattr(self, attr_1d+'_graph', GraphBuilder(self, attr_1d))
 
@@ -287,32 +287,29 @@ class RateHistos(BaseHistos):
             self.normalize(31000)
             # self.h_simenergy = bh.TH1F(name+'_energy', 'Digi sim-energy (GeV)', 100, 0, 2)
 
-    def fill(self, pt, eta):
-        for ptf in range(0, int(pt)+1):
-            self.h_pt.Fill(ptf)
-        self.h_ptVabseta.Fill(abs(eta), pt)
+    def fill(self, data):
+        # print(self.h_pt.axes[0])
+        pt_max = ak.max(data.pt, axis=1)
+        for thr,bin_center in zip(self.h_pt.axes[0].edges, self.h_pt.axes[0].centers):
+        # for thr,bin_center in zip(self.h_pt.axes[0].edges[1:], self.h_pt.axes[0].centers):
+            self.h_pt.fill(bin_center, weight=ak.sum(pt_max>=thr))
+
+        # for ptf in range(0, int(pt)+1):
+        #     self.h_pt.Fill(ptf)
+        # self.h_ptVabseta.Fill(abs(eta), pt)
 
     def fill_norm(self, many=1):
         # print (f' fill rate norm: {many}')
-        self.h_norm.Fill(1, many)
+        self.h_norm.fill(1, weight=many)
 
     def normalize(self, norm):
         nev = self.h_norm.GetBinContent(1)
-        # print(f' .      # ev: {nev}')
+        print(f' .      # ev: {nev}')
         if(nev != norm):
             print('normalize to {}'.format(norm))
             self.h_norm.Scale(norm/nev)
             self.h_pt.Scale(norm/nev)
             self.h_ptVabseta.Scale(norm/nev)
-
-    def fill_many(self, data):
-        if 'pt_em' in data.columns:
-            # for HGC clusters we use only the EM interpretation of the pT
-            ROOT.fill1D_rate(self.h_pt, data.pt_em.values)
-            # print('[RateHistos::fill_many] using pt_em')
-        else:
-            ROOT.fill1D_rate(self.h_pt, data.pt.values)
-            # print('[RateHistos::fill_many] using pt')
 
 
 class RateHistoCounter(BaseHistos):

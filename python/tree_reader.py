@@ -58,11 +58,12 @@ class TreeReader(object):
         else:
             self.file_entry += 1
             self.global_entry += 1
-        self.n_tot_entries += 1
 
         # entry is the cursor in the file: when we open a new one (not the first) needs to be set to 0 again
-        if debug >= 2 or self.global_entry % 100 == 0:
+        if debug >= 2 or self.global_entry % 1000 == 0:
             self.printEntry()
+        
+        self.n_tot_entries += 1
         return True
 
     def printEntry(self):

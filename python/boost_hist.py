@@ -37,7 +37,7 @@ def TH2F(name, title, x_nbins, x_bin_low, x_bin_high, y_nbins, y_bin_low, y_bin_
 def fill_1Dhist(hist, array, weights=None):
     flar = ak.drop_none(ak.flatten(array))
     if weights is None:
-        hist.fill(flar)
+        hist.fill(flar, threads=None)
         # ROOT.fill_1Dhist(hist=hist, array=flar)
     else:
         hist.fill(flar, weights)
@@ -49,7 +49,7 @@ def fill_2Dhist(hist, arrayX, arrayY, weights=None):
 
     if weights is None:
         # ROOT.fill_2Dhist(hist=hist, arrayX=flar_x, arrayY=flar_y)
-        hist.fill(flar_x, flar_y)
+        hist.fill(flar_x, flar_y, threads=None)
     else:
         # ROOT.fill_2Dhist(hist=hist, arrayX=flar_x, arrayY=flar_y, weights=weights)
         hist.fill(flar_x, flar_y, weights)

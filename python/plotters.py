@@ -115,8 +115,13 @@ class RatePlotter(BasePlotter):
         # print '------------------'
         # print self.tp_set.name
         for selection in self.tp_selections:
-            sel_clusters = self.tp_set.query(selection)
-            self.h_rate[selection.name].fill_many(sel_clusters.loc[sel_clusters['pt'].groupby(level='entry', group_keys=False).nlargest(n=1).index, ['pt']])
+            sel_clusters = self.tp_set.df
+            if not selection.all:
+                # print(selection)
+                sel_clusters = self.tp_set.df[selection.selection(self.tp_set.df)]
+            # max_pt_index = ak.argmax(sel_clusters.pt, axis=1, keepdims=True)
+            # max_pt_per_event = sel_clusters[max_pt_index]
+            self.h_rate[selection.name].fill(sel_clusters)
             self.h_rate[selection.name].fill_norm(self.tp_set.new_read_nentries)
 
     def fill_histos_event(self, idx, debug=0):
@@ -598,7 +603,7 @@ class GenericGenMatchPlotter(BasePlotter):
         dr_match=match[match.dr2<0.01]
         for genid in np.unique(ak.flatten(dr_match.gen_idx)):                
             gen_match_id = dr_match[dr_match.gen_idx == genid]
-            dpt_min_index = ak.Array(ak.argmin(gen_match_id.dpt, axis=1, keepdims=True))
+            dpt_min_index = ak.argmin(gen_match_id.dpt, axis=1, keepdims=True)
             best_match_id = gen_match_id[dpt_min_index]
             matched_obj = objects[best_match_id.ele_idx]
             matched_gen = gen[best_match_id.gen_idx]

@@ -412,7 +412,7 @@ gen_ee_sel = [
 #     # Selection('R0', 'R0', 'reachedEE >0 ')
 # ]
 
-other_selections = [
+eta_sel = [
     Selection('EtaA', '1.49 < |#eta^{TOBJ}| <= 1.52', lambda array: (1.49 < abs(array.eta)) & (abs(array.eta) <= 1.52)),
     Selection('EtaB', '1.52 < |#eta^{TOBJ}| <= 1.7', lambda array: (1.52 < abs(array.eta)) & (abs(array.eta) <= 1.7)),
     Selection('EtaC', '1.7 < |#eta^{TOBJ}| <= 2.4', lambda array: (1.7 < abs(array.eta)) & (abs(array.eta) <= 2.4)),
@@ -630,13 +630,13 @@ comp_id_sel = [
     ]
 
 iso_sel = [
-    Selection('Iso0p2', 'iso_{tk}<=0.2', 'tkIso <= 0.2'),
-    Selection('Iso0p1', 'iso_{tk}<=0.1', 'tkIso <= 0.1'),
-    Selection('Iso0p3', 'iso_{tk}<=0.3', 'tkIso <= 0.3'),
-    Selection('IsoEleEB', 'iso_{tk}<=0.13', 'tkIso <= 0.13'),
-    Selection('IsoEleEE', 'iso_{tk}<=0.28', 'tkIso <= 0.28'),
-    Selection('IsoPhoEB', 'iso_{tk}<=0.25', 'tkIso <= 0.25'),
-    Selection('IsoPhoEE', 'iso_{tk}<=0.205', 'tkIso <= 0.205'),
+    Selection('Iso0p2', 'iso_{tk}<=0.2', lambda ar: ar.tkIso <= 0.2),
+    Selection('Iso0p1', 'iso_{tk}<=0.1', lambda ar: ar.tkIso <= 0.1),
+    Selection('Iso0p3', 'iso_{tk}<=0.3', lambda ar: ar.tkIso <= 0.3),
+    Selection('IsoEleEB', 'iso_{tk}<=0.13', lambda ar: ar.tkIso <= 0.13),
+    Selection('IsoEleEE', 'iso_{tk}<=0.28', lambda ar: ar.tkIso <= 0.28),
+    Selection('IsoPhoEB', 'iso_{tk}<=0.25', lambda ar: ar.tkIso <= 0.25),
+    Selection('IsoPhoEE', 'iso_{tk}<=0.205', lambda ar: ar.tkIso <= 0.205),
     # Selection('IsoEleMenu', 'iso_{tk}<=(0.13,0.28)', '((abs(eta) < 1.479) & (tkIso <= 0.13)) | ((abs(eta) > 1.479) & (tkIso <= 0.28))'),
     # Selection('IsoPhoMenu', 'iso_{tk}<=(0.25,0.205)', '((abs(eta) < 1.479) & (tkIso <= 0.25)) | ((abs(eta) > 1.479) & (tkIso <= 0.205))'),
     ]

@@ -214,13 +214,12 @@ class DFCollection(object):
             self.df = self.weight_function(self.df, weight_file)
         self.entries = range(0,1000)# FIXME: self.df.index.get_level_values('entry').unique()
         if debug > 2:
-            print(f'read coll. {self.name} from entry: {event.file_entry} to entry: {event.file_entry+stride} (stride: {stride}), # rows: {self.df.shape[0]}, # entries: {len(self.entries)}')
+            print(f'read coll. {self.name} from entry: {event.file_entry} to entry: {event.file_entry+stride} (stride: {stride}), # rows: {len(self.df)}, # entries: {len(self.entries)}')
 
 
 def tkeg_fromcluster_fixture(tkegs):
     # print tkegs
     tkegs.loc[tkegs.hwQual == 1, 'hwQual'] = 3
-    return tkegs
 
 
 # NOTE: scorporate the part wich computes the layer_weights
@@ -302,7 +301,7 @@ def cl3d_fixtures(clusters):
     clusters.drop('ienergy', axis=1, inplace=True)
     clusters['meanz_scaled'] = np.abs(clusters.meanz) - 320
     # return
-    return clusters
+    # return clusters
 
 
 def gen_fixtures(particles, mc_particles):
@@ -312,7 +311,7 @@ def gen_fixtures(particles, mc_particles):
     particles['pdgid'] = particles.pid
     particles['abseta'] = np.abs(particles.eta)
     particles['firstmother_pdgid'] = mc_particles.df.pdgid[particles[particles.gen != -1].gen-1]
-    return particles
+    # return particles
 
 
 def mc_fixtures(particles):
@@ -320,17 +319,15 @@ def mc_fixtures(particles):
     # print(particles)
     # # particles['firstmother'] = particles.index.to_numpy()
     particles['firstmother_pdgid'] = particles.pdgid
-    return particles
-    # FIXME: this is broken
-    # print(particles)
-
-    for particle in particles.itertuples():
-        print(particle.daughters)
-        if particle.daughters == [[], []]:
-            continue
-        particles.loc[particle.daughters, 'firstmother'] = particle.Index
-        particles.loc[particle.daughters, 'firstmother_pdgid'] = particle.pdgid
-    return particles
+    # return particles
+    # # FIXME: this is broken
+    # for particle in particles.itertuples():
+    #     print(particle.daughters)
+    #     if particle.daughters == [[], []]:
+    #         continue
+    #     particles.loc[particle.daughters, 'firstmother'] = particle.Index
+    #     particles.loc[particle.daughters, 'firstmother_pdgid'] = particle.pdgid
+    # return particles
 
 
 def tc_fixtures(tcs):
@@ -341,14 +338,14 @@ def tc_fixtures(tcs):
         tcs['abseta'] = np.abs(tcs.eta)
     # tcs['xproj'] = tcs.x/tcs.z
     # tcs['yproj'] = tcs.y/tcs.z
-    return tcs
+    # return tcs
 
 
 def cl2d_fixtures(clusters):
     clusters['ncells'] = 1
     if not clusters.empty:
         clusters['ncells'] = [len(x) for x in clusters.cells]
-    return clusters
+    # return clusters
 
 
 def tower_fixtures(towers):
@@ -676,7 +673,7 @@ def tkele_fixture_ee(electrons):
     electrons['looseTkID'] = True
     electrons['photonID'] = True
     electrons['dpt'] = electrons.tkPt - electrons.pt
-    return electrons
+    # return electrons
 
 
 def tkele_fixture_eb(electrons):
@@ -687,11 +684,11 @@ def tkele_fixture_eb(electrons):
     electrons['looseTkID'] = ((hwqual.values >> 1) & 1) > 0
     electrons['photonID'] = ((hwqual.values >> 2) & 1) > 0
     electrons['dpt'] = electrons.tkPt - electrons.pt
-    return electrons
+    # return electrons
 
 
 def quality_flags(objs):
-    print(objs.hwQual)
+    # print(objs.hwQual)
     objs['hwQual'] = ak.values_astype(objs.hwQual, np.int32)
     mask_tight_sta = 0b0001
     mask_tight_ele = 0b0010
@@ -702,16 +699,16 @@ def quality_flags(objs):
     objs['IDTightPho'] = np.bitwise_and(objs.hwQual, mask_tight_pho) > 0
     objs['IDNoBrem'] = np.bitwise_and(objs.hwQual, mask_no_brem) > 0
     objs['IDBrem'] = np.bitwise_and(objs.hwQual, mask_no_brem) == 0
-    return objs
+    # return objs
 
 def quality_ele_fixtures(objs):
-    print(objs)
+    # print(objs)
     objs['dpt'] = objs.tkPt - objs.pt
-    return quality_flags(objs)
+    quality_flags(objs)
 
 
 def print_columns(df):
-    print(df.columns)
+    print(df.fields)
     return df
 
 
