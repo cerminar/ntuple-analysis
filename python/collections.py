@@ -199,8 +199,7 @@ class DFCollection(object):
             self.new_read = False
 
         if self.debug > 0:
-            if event.file_entry in self.df.index.get_level_values('entry'):
-                df_print = self.df.loc[event.file_entry]
+            df_print = ak.to_dataframe(self.df[event.file_entry])
             debugPrintOut(max(debug, self.debug), self.label,
                           toCount=df_print,
                           toPrint=self.print_function(df_print),
@@ -1343,7 +1342,15 @@ TkEleEE = DFCollection(
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='TkEleEE', entry_block=entry_block),
     fixture_function=quality_ele_fixtures,
+    print_function=lambda df:df.columns,
     debug=0)
+
+# Index(['pt', 'energy', 'eta', 'phi', 'tkIso', 'pfIso', 'puppiIso', 'tkChi2',
+#        'tkPt', 'tkZ0', 'compBDTScore', 'compBdt', 'compHoe', 'compSrrtot',
+#        'compDeta', 'compDphi', 'compDpt', 'compMeanz', 'compNstubs',
+#        'compChi2RPhi', 'compChi2RZ', 'compChi2Bend', 'dpt', 'hwQual',
+#        'IDTightSTA', 'IDTightEle', 'IDTightPho', 'IDNoBrem', 'IDBrem'],
+#       dtype='object')
 
 TkEleEB = DFCollection(
     name='TkEleEB', label='TkEle EB',

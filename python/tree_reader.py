@@ -102,6 +102,8 @@ class TreeReader(object):
         if len(branches) == 0:
             if fallback is not None:
                 return self.getDataFrame(prefix=fallback, entry_block=entry_block)
+            prefs = set([br.split('_')[0] for br in self._branches])
+            print(f'stored branch prefixes are: {prefs}')
             raise ValueError(f'[TreeReader::getDataFrame] No branches with prefix: {prefix}')
         
         akarray = self.tree.arrays(names, 

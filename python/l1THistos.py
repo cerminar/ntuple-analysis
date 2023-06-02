@@ -284,7 +284,7 @@ class RateHistos(BaseHistos):
                 setattr(self, attr_1d+'_graph', GraphBuilder(self, attr_1d))
 
         if root_file is not None:
-            self.normalize(31000)
+            self.normalize(2760.0*11246/1000)
             # self.h_simenergy = bh.TH1F(name+'_energy', 'Digi sim-energy (GeV)', 100, 0, 2)
 
     def fill(self, data):
@@ -304,12 +304,11 @@ class RateHistos(BaseHistos):
 
     def normalize(self, norm):
         nev = self.h_norm.GetBinContent(1)
-        print(f' .      # ev: {nev}')
         if(nev != norm):
-            print('normalize to {}'.format(norm))
+            print(f'normalize # ev {nev} to {norm}')
             self.h_norm.Scale(norm/nev)
             self.h_pt.Scale(norm/nev)
-            self.h_ptVabseta.Scale(norm/nev)
+            # self.h_ptVabseta.Scale(norm/nev)
 
 
 class RateHistoCounter(BaseHistos):
@@ -746,34 +745,46 @@ class TkEGHistos(BaseHistos):
 class TrackHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_pt = bh.TH1F(name+'_pt', 'Track Pt (GeV); p_{T} [GeV]', 100, 0, 100)
-            self.h_eta = bh.TH1F(name+'_eta', 'Track eta; #eta;', 100, -4, 4)
-            self.h_chi2 = bh.TH1F(name+'_chi2', 'Track chi2; #Chi^{2}', 1000, 0, 1000)
-            self.h_chi2Red = bh.TH1F(name+'_chi2Red', 'Track chi2 red; red. #Chi^{2}', 100, 0, 100)
-            self.h_nstubs = bh.TH1F(name+'_nstubs', 'Track # stubs; # stubs', 10, 0, 10)
-            self.h_z0 = bh.TH1F(name+'_z0', 'Track z0; z_{0} [cm]', 100, -10, 10)
-            self.h_chi2RedVeta = bh.TH2F(name+'_chi2RedVeta', 'Track chi2 red. v eta; #eta; red. #Chi^{2}', 100, -4, 4, 100, 0, 100)
-            self.h_nstubsVeta = bh.TH2F(name+'_nstubsVeta', 'Track # stubs vs eta; #eta; # stubs', 100, -4, 4, 10, 0, 10)
-            self.h_z0Veta = bh.TH2F(name+'_z0Veta', 'Track z0 vs eta; #eta; z_{0} [cm]', 100, -4, 4, 100, -10, 10)
-            self.h_chi2RedVpt = bh.TH2F(name+'_chi2RedVpt', 'Track chi2 red. v pT; p_{T} [GeV]; red. #Chi^{2}', 100, 0, 100, 100, 0, 100)
-            self.h_nstubsVpt = bh.TH2F(name+'_nstubsVpt', 'Track # stubs vs pT; p_{T} [GeV]; # stubs', 100, 0, 100, 10, 0, 10)
-            self.h_z0Vpt = bh.TH2F(name+'_z0Vpt', 'Track z0 vs pT; p_{T} [GeV]; z_{0} [cm]', 100, 0, 100, 100, -10, 10)
+            self.h_pt = bh.TH1F(name+'_pt', 
+                                'Track Pt (GeV); p_{T} [GeV]', 100, 0, 100)
+            self.h_eta = bh.TH1F(name+'_eta', 
+                                 'Track eta; #eta;', 100, -4, 4)
+            self.h_chi2 = bh.TH1F(name+'_chi2', 
+                                  'Track chi2; #Chi^{2}', 1000, 0, 1000)
+            self.h_chi2Red = bh.TH1F(name+'_chi2Red', 
+                                     'Track chi2 red; red. #Chi^{2}', 100, 0, 100)
+            self.h_nstubs = bh.TH1F(name+'_nstubs', 
+                                    'Track # stubs; # stubs', 10, 0, 10)
+            self.h_z0 = bh.TH1F(name+'_z0', 
+                                'Track z0; z_{0} [cm]', 100, -10, 10)
+            self.h_chi2RedVeta = bh.TH2F(name+'_chi2RedVeta', 
+                                         'Track chi2 red. v eta; #eta; red. #Chi^{2}', 100, -4, 4, 100, 0, 100)
+            self.h_nstubsVeta = bh.TH2F(name+'_nstubsVeta', 
+                                        'Track # stubs vs eta; #eta; # stubs', 100, -4, 4, 10, 0, 10)
+            self.h_z0Veta = bh.TH2F(name+'_z0Veta', 
+                                    'Track z0 vs eta; #eta; z_{0} [cm]', 100, -4, 4, 100, -10, 10)
+            self.h_chi2RedVpt = bh.TH2F(name+'_chi2RedVpt', 
+                                        'Track chi2 red. v pT; p_{T} [GeV]; red. #Chi^{2}', 100, 0, 100, 100, 0, 100)
+            self.h_nstubsVpt = bh.TH2F(name+'_nstubsVpt', 
+                                       'Track # stubs vs pT; p_{T} [GeV]; # stubs', 100, 0, 100, 10, 0, 10)
+            self.h_z0Vpt = bh.TH2F(name+'_z0Vpt', 
+                                   'Track z0 vs pT; p_{T} [GeV]; z_{0} [cm]', 100, 0, 100, 100, -10, 10)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, tracks):
-        rnp.fill_hist(self.h_pt, tracks.pt)
-        rnp.fill_hist(self.h_eta, tracks.eta)
-        rnp.fill_hist(self.h_chi2, tracks.chi2)
-        rnp.fill_hist(self.h_chi2Red, tracks.chi2Red)
-        rnp.fill_hist(self.h_nstubs, tracks.nStubs)
-        rnp.fill_hist(self.h_z0, tracks.z0)
-        rnp.fill_hist(self.h_chi2RedVeta, tracks[['eta', 'chi2Red']])
-        rnp.fill_hist(self.h_nstubsVeta, tracks[['eta', 'nStubs']])
-        rnp.fill_hist(self.h_z0Veta, tracks[['eta', 'z0']])
-        rnp.fill_hist(self.h_chi2RedVpt, tracks[['pt', 'chi2Red']])
-        rnp.fill_hist(self.h_nstubsVpt, tracks[['pt', 'nStubs']])
-        rnp.fill_hist(self.h_z0Vpt, tracks[['pt', 'z0']])
+        bh.fill_1Dhist(self.h_pt, tracks.pt)
+        bh.fill_1Dhist(self.h_eta, tracks.eta)
+        bh.fill_1Dhist(self.h_chi2, tracks.chi2)
+        bh.fill_1Dhist(self.h_chi2Red, tracks.chi2Red)
+        bh.fill_1Dhist(self.h_nstubs, tracks.nStubs)
+        bh.fill_1Dhist(self.h_z0, tracks.z0)
+        bh.fill_2Dhist(self.h_chi2RedVeta, tracks.eta, tracks.chi2Red)
+        bh.fill_2Dhist(self.h_nstubsVeta, tracks.eta, tracks.nStubs)
+        bh.fill_2Dhist(self.h_z0Veta, tracks.eta, tracks.z0)
+        bh.fill_2Dhist(self.h_chi2RedVpt, tracks.pt, tracks.chi2Red)
+        bh.fill_2Dhist(self.h_nstubsVpt, tracks.pt, tracks.nStubs)
+        bh.fill_2Dhist(self.h_z0Vpt, tracks.pt, tracks.z0)
 
 
 class TriggerTowerHistos(BaseHistos):
@@ -1194,32 +1205,20 @@ class TrackResoHistos(BaseResoHistos):
         BaseResoHistos.__init__(self, name, root_file, debug)
 
     def fill(self, reference, target):
-        # target_pt, target_eta, target_phi = \
-        #     target[['pt', 'eta', 'phi']].values[0]
-        # reference_pt, reference_eta, reference_phi = \
-        #     reference[['pt', 'eta', 'phi']].values
-        target_line = target.iloc[0]
 
-        target_pt = target_line.pt
-        target_eta = target_line.eta
-        target_phi = target_line.phi
-        reference_pt = reference.pt
-        reference_eta = reference.eta
-        reference_phi = reference.phi
-
-        self.h_ptResVpt.Fill(reference_pt, target_pt-reference_pt)
-        self.h_ptResp.Fill(target_pt/reference_pt)
-        self.h_ptRespVeta.Fill(reference_eta, target_pt/reference_pt)
-        self.h_ptRespVpt.Fill(reference_pt, target_pt/reference_pt)
+        bh.fill_2Dhist(self.h_ptResVpt, reference.pt, target.pt-reference.pt)
+        bh.fill_1Dhist(self.h_ptResp, target.pt/reference.pt)
+        bh.fill_2Dhist(self.h_ptRespVeta, reference.eta, target.pt/reference.pt)
+        bh.fill_2Dhist(self.h_ptRespVpt, reference.pt, target.pt/reference.pt)
 
         # self.h_pt2stResVpt.Fill(reference.pt, target.pt2stubs-reference.pt)
         # self.h_pt2stResp.Fill(target.pt2stubs/reference.pt)
         # self.h_pt2stRespVeta.Fill(reference.eta, target.pt2stubs/reference.pt)
         # self.h_pt2stRespVpt.Fill(reference.pt, target.pt2stubs/reference.pt)
 
-        self.h_etaRes.Fill(target_eta - reference_eta)
-        self.h_phiRes.Fill(target_phi - reference_phi)
-        self.h_drRes.Fill(np.sqrt((reference_phi-target_phi)**2+(reference_eta-target_eta)**2))
+        bh.fill_1Dhist(self.h_etaRes, (target.eta - reference.eta))
+        bh.fill_1Dhist(self.h_phiRes, (target.phi - reference.phi))
+        bh.fill_1Dhist(self.h_drRes, np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
 
     def fill_nMatch(self, n_matches):
         self.h_nMatch.Fill(n_matches)

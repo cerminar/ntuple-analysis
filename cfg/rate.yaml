@@ -81,10 +81,11 @@ collections:
     samples:
       - nugun_alleta_pu200
     plotters:
-      # - !!python/name:cfg.rate.eg_emu_plotters
-      - !!python/name:cfg.rate.eg_emuCTl1_plotters
-      - !!python/name:cfg.rate.eg_emuCTl2_plotters
-      # - !!python/name:cfg.rate.eg_emuCTl1_ell_plotters
+      # - !!python/name:cfg.rate.eg_emuCTl1_sta_plotters
+      - !!python/name:cfg.rate.eg_emuCTl1_ele_plotters
+      # - !!python/name:cfg.rate.eg_emuCTl1_pho_plotters
+      # - !!python/name:cfg.rate.eg_emuCTl2_plotters
+      - !!python/name:cfg.rate.eg_emuCTl1_ell_plotters
       # - !!python/name:cfg.rate.eg_emuCTl2_ell_plotters
     htc_jobflavor:
       microcentury
@@ -110,7 +111,7 @@ collections:
 
   eg_rate_menu:
       file_label:
-        rate
+        ratemenu
       samples:
         - nugun_alleta_pu200
       plotters:

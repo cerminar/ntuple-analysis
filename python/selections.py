@@ -496,11 +496,8 @@ eg_eta_eb_sel = [
     ]
 eg_eta_sel = [
     Selection('all'),
-    # Selection('EtaF', '|#eta^{TOBJ}| <= 1.479', 'abs(eta) <= 1.479'),
-    # Selection('EtaA', ' 1.479 < |#eta^{TOBJ}| <= 1.52', '(abs(eta) <= 1.52) & abs(eta) > 1.479'),
-    Selection('EtaBC', '1.52 < |#eta^{TOBJ}| <= 2.4', '1.52 < abs(eta) <= 2.4'),
-    Selection('EtaEB', '|#eta^{TOBJ}| <= 1.479', 'abs(eta) <= 1.479'),
-    Selection('EtaEE', '1.479 < |#eta^{TOBJ}| <= 2.4', '(abs(eta) > 1.479) & (abs(eta) <= 2.4)'),
+    Selection('EtaEB', '|#eta^{TOBJ}| <= 1.479', lambda ar: abs(ar.eta) <= 1.479),
+    Selection('EtaEE', '1.479 < |#eta^{TOBJ}| <= 2.4', lambda ar: (abs(ar.eta) > 1.479) & (abs(ar.eta) <= 2.4)),
 ]
 
 eg_id_ee_selections = [
@@ -544,6 +541,7 @@ pftkinput_quality = [
     Selection('TkPt2Chi2Pt10', '(p_{T}^{TOBJ} > 2GeV & #Chi^{2}_{norm} < 15) | p_{T}^{TOBJ} > 10GeV ', '((pt > 2) & (chi2Red < 15) | (pt > 10)) & (nStubs >= 4)'),
     Selection('TkPt5', 'p_{T}^{TOBJ} > 5GeV', '(pt > 5)'),
     Selection('TkPt10', 'p_{T}^{TOBJ} > 10GeV', '(pt > 10)'),
+    Selection('TkCTL1', '(p_{T}^{TOBJ} > 2GeV & #Chi^{2}_{norm} < 15) | p_{T}^{TOBJ} > 5GeV ', lambda ar: ((ar.pt > 2) & (ar.chi2Red < 15) | (ar.pt > 5)))
     ]
 
 pf_matchedtk_input_quality = [
@@ -563,31 +561,31 @@ pf_matchedtk_input_quality = [
 
 pfeginput_pt = [
     Selection('all'),
-    Selection('Pt1', 'p_{T}^{TOBJ}>=1GeV', 'pt >= 1'),
-    Selection('Pt2', 'p_{T}^{TOBJ}>=2GeV', 'pt >= 2'),
-    Selection('Pt5', 'p_{T}^{TOBJ}>=5GeV', 'pt >= 5'),
+    Selection('Pt1', 'p_{T}^{TOBJ}>=1GeV', lambda ar: ar.pt >= 1),
+    Selection('Pt2', 'p_{T}^{TOBJ}>=2GeV', lambda ar: ar.pt >= 2),
+    Selection('Pt5', 'p_{T}^{TOBJ}>=5GeV', lambda ar: ar.pt >= 5),
 ]
 
 # FIXME: these should be done using the actual online to offline threshold scaling from turn-ons
 menu_thresh_pt = [
-    Selection('PtStaEB51', 'p_{T}^{TOBJ}>=51GeV', 'pt >= 40.7'),
-    Selection('PtStaEE51', 'p_{T}^{TOBJ}>=51GeV', 'pt >= 39.6'),
-    Selection('PtEleEB36', 'p_{T}^{TOBJ}>=36GeV', 'pt >= 29.8'),
-    Selection('PtEleEE36', 'p_{T}^{TOBJ}>=36GeV', 'pt >= 28.5'),
-    Selection('PtEleEB25', 'p_{T}^{TOBJ}>=25GeV', 'pt >= 20.3'),
-    Selection('PtEleEE25', 'p_{T}^{TOBJ}>=25GeV', 'pt >= 19.5'),
-    Selection('PtEleEB12', 'p_{T}^{TOBJ}>=12GeV', 'pt >= 9.1'),
-    Selection('PtEleEE12', 'p_{T}^{TOBJ}>=12GeV', 'pt >= 8.8'),
+    Selection('PtStaEB51', 'p_{T}^{TOBJ}>=51GeV', lambda ar: ar.pt >= 40.7),
+    Selection('PtStaEE51', 'p_{T}^{TOBJ}>=51GeV', lambda ar: ar.pt >= 39.6),
+    Selection('PtEleEB36', 'p_{T}^{TOBJ}>=36GeV', lambda ar: ar.pt >= 29.8),
+    Selection('PtEleEE36', 'p_{T}^{TOBJ}>=36GeV', lambda ar: ar.pt >= 28.5),
+    Selection('PtEleEB25', 'p_{T}^{TOBJ}>=25GeV', lambda ar: ar.pt >= 20.3),
+    Selection('PtEleEE25', 'p_{T}^{TOBJ}>=25GeV', lambda ar: ar.pt >= 19.5),
+    Selection('PtEleEB12', 'p_{T}^{TOBJ}>=12GeV', lambda ar: ar.pt >= 9.1),
+    Selection('PtEleEE12', 'p_{T}^{TOBJ}>=12GeV', lambda ar: ar.pt >= 8.8),
 
-    Selection('PtIsoEleEB28', 'p_{T}^{TOBJ}>=28GeV', 'pt >= 23.'),
-    Selection('PtIsoEleEE28', 'p_{T}^{TOBJ}>=28GeV', 'pt >= 22.1'),
-    Selection('PtIsoPhoEB36', 'p_{T}^{TOBJ}>=36GeV', 'pt >= 30.4'),
-    Selection('PtIsoPhoEE36', 'p_{T}^{TOBJ}>=36GeV', 'pt >= 29.0'),
-
-    Selection('PtIsoPhoEB22', 'p_{T}^{TOBJ}>=22GeV', 'pt >= 17.6'),
-    Selection('PtIsoPhoEE22', 'p_{T}^{TOBJ}>=22GeV', 'pt >= 15.9'),
-    Selection('PtIsoPhoEB12', 'p_{T}^{TOBJ}>=12GeV', 'pt >= 8.5'),
-    Selection('PtIsoPhoEE12', 'p_{T}^{TOBJ}>=12GeV', 'pt >= 6.'),
+    Selection('PtIsoEleEB28', 'p_{T}^{TOBJ}>=28GeV', lambda ar: ar.pt >= 23.),
+    Selection('PtIsoEleEE28', 'p_{T}^{TOBJ}>=28GeV', lambda ar: ar.pt >= 22.1),
+    Selection('PtIsoPhoEB36', 'p_{T}^{TOBJ}>=36GeV', lambda ar: ar.pt >= 30.4),
+    Selection('PtIsoPhoEE36', 'p_{T}^{TOBJ}>=36GeV', lambda ar: ar.pt >= 29.0),
+    
+    Selection('PtIsoPhoEB22', 'p_{T}^{TOBJ}>=22GeV', lambda ar: ar.pt >= 17.6),
+    Selection('PtIsoPhoEE22', 'p_{T}^{TOBJ}>=22GeV', lambda ar: ar.pt >= 15.9),
+    Selection('PtIsoPhoEB12', 'p_{T}^{TOBJ}>=12GeV', lambda ar: ar.pt >= 8.5),
+    Selection('PtIsoPhoEE12', 'p_{T}^{TOBJ}>=12GeV', lambda ar: ar.pt >= 6.),
 ]
 
 
@@ -693,6 +691,7 @@ Selector.selection_primitives = sm.selections.copy()
 
 
 menu_sel = [
+    ((Selector('^EtaEB')&('^IDTightE'))|(Selector('^EtaEE')&('^IDTightP'))).one('MenuSta', 'TightID'),
     ((Selector('^EtaEB')&('^IsoEleEB'))|(Selector('^EtaEE')&('^IsoEleEE')&('^IDTightE'))).one('MenuEleIsoTight', 'Iso TightID'),
     ((Selector('^EtaEB')&('^IsoEleEB'))|(Selector('^EtaEE')&('^IsoEleEE')&('^IDCompWP955'))).one('MenuEleIsoLoose', 'Iso LooseID'),
     ((Selector('^EtaEB')&('^IDTightE'))|(Selector('^EtaEE')&('^IDTightE'))).one('MenuEleTight', 'TightID'),
@@ -751,8 +750,6 @@ pfeg_ee_input_selections = (Selector('^PFinH')*('^Pt[1,2,5]$|all')*('^EGq[1]$|al
 pfeg_eb_input_selections = (Selector('^PFinB|all')*('^Pt[1,2,5]$'))()
 pftkinput_selections = (Selector('^PFinBRL|^PFinHGC$')*('^TkPt'))()
 
-dectk_selections = (Selector('^Eta[AB]*[BC]$|all')*('^Pt[1,2,5][0]$|all'))()
-dectk_match_selections = (Selector('^Pt5$|^Pt[1,2,5][0]$|all'))()
 
 egid_ee_selections = (Selector('^EGq[4-5]'))()
 egid_ee_pfnf_selections = (Selector('^EGq[1-2]$'))()
