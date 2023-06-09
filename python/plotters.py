@@ -630,7 +630,8 @@ class GenericGenMatchPlotter(BasePlotter):
 
     def fill_histos(self, debug=0):
         # FIXME: we need to reduce the # of jugged dimensions for the selection slicing to work in AWKWARD....
-        gen = self.gen_set.df[['eta', 'abseta', 'phi', 'pt', 'energy', 'exeta', 'exphi', 'fbrem', 'gen', 'pid', 'reachedEE', 'pdgid']]
+        # print(self.gen_set.df.fields)
+        gen = self.gen_set.df[['eta', 'abseta', 'phi', 'pt', 'energy', 'exeta', 'exphi', 'fbrem', 'gen', 'pid', 'reachedEE', 'pdgid', 'ovx', 'ovy', 'ovz']]
         for tp_sel in self.data_selections:
             # print(tp_sel)
             if tp_sel.all:
@@ -662,6 +663,16 @@ class GenericGenMatchPlotter(BasePlotter):
     def fill_histos_event(self, idx, debug=0):
         if self.data_set.new_read:
             self.fill_histos(debug)
+
+
+class TrackGenMatchPlotter(GenericGenMatchPlotter):
+    def __init__(self, data_set, gen_set,
+                 data_selections=[selections.Selection('all')],
+                 gen_selections=[selections.Selection('all')]):
+        super(TrackGenMatchPlotter, self).__init__(histos.TrackHistos, histos.TrackResoHistos,
+                                                   data_set, gen_set,
+                                                   data_selections, gen_selections,
+                                                   gen_eta_phi_columns=['eta', 'phi'])
 
 
 class TrackGenMatchPlotter(GenericGenMatchPlotter):
@@ -1219,6 +1230,19 @@ class QuantizationPlotter(GenericDataFramePlotter):
                 name='{}_{}_nomatch'.format(data_name, selection.name),
                 features=self.features)
 
+
+class CompTuplesPlotter(GenericDataFramePlotter):
+    def __init__(self, obj_set, obj_selections=[selections.Selection('all')]):
+        super(CompTuplesPlotter, self).__init__(histos.CompTuples, obj_set, obj_selections)
+
+
+class CompCatTuplePlotter(GenericGenMatchPlotter):
+    def __init__(self, data_set, gen_set,
+                 data_selections=[selections.Selection('all')],
+                 gen_selections=[selections.Selection('all')]):
+        super(CompCatTuplePlotter, self).__init__(histos.EGHistos, histos.CompCatTuples,
+                                                data_set, gen_set,
+                                                data_selections, gen_selections)
 
 
 if __name__ == "__main__":

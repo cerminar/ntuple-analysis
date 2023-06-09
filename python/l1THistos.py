@@ -76,10 +76,6 @@ class BaseHistos():
             hm.addHistos(self)
 
     def write(self, upfile):
-        # pyroot_hist = bh.TH1F("h", "", 100, -3, 3)
-        # pyroot_hist.FillRandom("gaus", 100000)
-        # upfile["from_pyroot"] = pyroot_hist
-
         dir_name = self.__class__.__name__
         for histo in [a for a in dir(self) if a.startswith('h_')]:
             writeable_hist = getattr(self, histo)
@@ -179,6 +175,40 @@ class BaseResoHistos(BaseHistos):
                 setattr(self, attr_2d+'_graph', GraphBuilder(self, attr_2d))
 
 
+class BaseUpTuples(BaseHistos):
+    def __init__(self, tuple_suffix, name, root_file=None, debug=False):
+        self.t_name = '{}_{}'.format(name, tuple_suffix)
+        self.init_ = False
+        # if not root_file:
+        #     self.t_name = '{}_{}'.format(name, tuple_suffix)
+        if root_file:
+            # print(root_file)
+            # print(root_file.GetName())
+            upfile = up.open(root_file.GetName(), num_workers=1)
+            # print(upfile.keys())
+            dir_name = self.__class__.__name__
+            self.tree = upfile[f'{dir_name}/{self.t_name}']
+        BaseHistos.__init__(self, name, root_file, debug)
+
+    def fill(self, data):
+        dir_name = self.__class__.__name__
+        hm = HistoManager()
+        obj_name = f'{dir_name}/{self.t_name}'
+        # print( hm.file.keys())
+        # print(f'OBJECT: {obj_name}')
+        if self.init_:
+            # print('extending')
+            hm.file[f'{dir_name}/{self.t_name}'].extend(data)
+        else:
+            # print('creating')
+            # hm.file.mktree(f'{dir_name}/{self.t_name}')
+            hm.file[f'{dir_name}/{self.t_name}'] = data
+            self.init_ = True
+
+    def write(self, upfile):
+        return
+
+
 class BaseTuples(BaseHistos):
     def __init__(self, tuple_suffix, tuple_variables,
                  name, root_file=None, debug=False):
@@ -199,6 +229,78 @@ class BaseTuples(BaseHistos):
         return
 
 
+class CompCatTuples(BaseUpTuples):
+    def __init__(self, name, root_file=None, debug=False):
+        BaseUpTuples.__init__(
+            self, "CompCatData", name, root_file, debug)
+
+    def fill(self, reference, target):
+        target_vars = [
+            'pt',
+            'eta',
+            'phi',
+            'compChi2RZ',
+            'compChi2RPhi',
+            'compChi2Bend',
+            'compNstubs',
+            'tkPt',
+            'compDphi',
+            'compDeta',
+            'compDpt',
+            'compSrrtot',
+            'compHoe',
+            'compMeanz',]
+        rference_vars = [
+            'pt',
+            'eta',
+            'phi',]
+        # FIXME: add dz0 gen-track
+        tree_data = {}
+        for var in target_vars:
+            tree_data[var] = ak.flatten(ak.drop_none(target[var]))
+        for var in rference_vars:
+            tree_data[f'gen_{var}'] = ak.flatten(ak.drop_none(reference[var]))
+        # print(reference.fields)
+        tree_data[f'gen_dz'] = ak.flatten(ak.drop_none(np.abs(reference.ovz-target.tkZ0)))
+        
+        BaseUpTuples.fill(self, tree_data)
+
+
+class CompTuples(BaseUpTuples):
+    def __init__(self, name, root_file=None, debug=False):
+        BaseUpTuples.__init__(
+            self, "CompData", name, root_file, debug)
+
+    def fill(self, data):
+# Index(['pt', 'energy', 'eta', 'phi', 'tkIso', 'pfIso', 'puppiIso', 'tkChi2',
+#        'tkPt', 'tkZ0', 'compBDTScore', 'compBdt', 'compHoe', 'compSrrtot',
+#        'compDeta', 'compDphi', 'compDpt', 'compMeanz', 'compNstubs',
+#        'compChi2RPhi', 'compChi2RZ', 'compChi2Bend', 'dpt', 'hwQual',
+#        'IDTightSTA', 'IDTightEle', 'IDTightPho', 'IDNoBrem', 'IDBrem'],
+#       dtype='object')
+        # FIXME: here we do the selection of the tree branches and other manipulations
+        vars = [
+            'pt',
+            'eta',
+            'phi',
+            'compChi2RZ',
+            'compChi2RPhi',
+            'compChi2Bend',
+            'compNstubs',
+            'tkPt',
+            'compDphi',
+            'compDeta',
+            'compDpt',
+            'compSrrtot',
+            'compHoe',
+            'compMeanz',]
+        tree_data = {}
+        for var in vars:
+            if var in data.fields:
+                tree_data[var] = data[var]
+        BaseUpTuples.fill(self, tree_data)
+
+
 class GenPartHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         self.h_pt = bh.TH1F(name+'_pt', 'Gen Part Pt (GeV)', 100, 0, 100)
@@ -209,9 +311,9 @@ class GenPartHistos(BaseHistos):
         bh.fill_1Dhist(self.h_pt, gps.pt)
         bh.fill_1Dhist(self.h_energy, gps.energy)
 
-    def write(self):
-        for histo in [a for a in dir(self) if a.startswith('h_')]:
-            getattr(self, histo).Write()
+    # def write(self):
+    #     for histo in [a for a in dir(self) if a.startswith('h_')]:
+    #         getattr(self, histo).Write()
 
 
 class GenParticleHistos(BaseHistos):
