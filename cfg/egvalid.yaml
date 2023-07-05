@@ -198,6 +198,7 @@ collections:
         # - dyll_PU200
       plotters:
         - !!python/name:cfg.egvalid.l1tc_l2emu_singlelepton_genmatched
+        - !!python/name:cfg.egvalid.l1tc_l2emu_singlelepton_rate_pt_wps
       htc_jobflavor:
         longlunch
       priorities:

@@ -20,8 +20,8 @@ l1tc_simple_plotters = [
     # plotters.TkElePlotter(collections.TkEleEB, egid_iso_etatk_selections),
     # plotters.TkElePlotter(collections.TkEleL2, egid_iso_etatk_selections),
 
-    plotters.EGPlotter(collections.TkEleEE, sta_selection),
-    # plotters.EGPlotter(collections.TkEleEE, simple_selections),
+    # plotters.EGPlotter(collections.TkEleEE, sta_selection),
+    plotters.EGPlotter(collections.TkEleEE, simple_selections),
 
     # plotters.EGPlotter(collections.TkEmEE, sta_selection),
     # plotters.EGPlotter(collections.TkEmEB, sta_selection),

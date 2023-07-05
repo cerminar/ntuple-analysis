@@ -186,8 +186,8 @@ l1tc_l2emu_ell_genmatched = [
 ]
 
 
-egid_menu_ele_rate_selections = (selections.Selector('^SingleIsoTkEle|^SingleTkEle')*selections.Selector('^EtaE[BE]$|all'))()
-egid_menu_pho_rate_selections = (selections.Selector('^SingleIsoTkPho|^SingleEGEle')*selections.Selector('^EtaE[BE]$|all'))()
+egid_menu_ele_rate_selections = (selections.Selector('^SingleIsoTkEle|^SingleTkEle|^MenuEle')*selections.Selector('^EtaE[BE]$|all'))()
+egid_menu_pho_rate_selections = (selections.Selector('^SingleIsoTkPho|^SingleEGEle|^MenuSta|^MenuPho')*selections.Selector('^EtaE[BE]$|all'))()
 
 
 l1tc_l2emu_singlelepton_genmatched = [
@@ -197,6 +197,16 @@ l1tc_l2emu_singlelepton_genmatched = [
     plotters.EGGenMatchPlotter(
         collections.TkEleL2, collections.sim_parts,
         egid_menu_ele_rate_selections, gen_selections),   
+]
+
+
+l1tc_l2emu_singlelepton_rate_pt_wps = [
+    plotters.EGGenMatchPtWPSPlotter(
+        collections.TkEmL2, collections.sim_parts,
+        gen_selections),
+    plotters.EGGenMatchPtWPSPlotter(
+        collections.TkEleL2, collections.sim_parts,
+        gen_selections),
 ]
 
 l1tc_emu_rate_pt_wps = [
@@ -228,3 +238,6 @@ l1tc_emu_rate_pt_wps = [
         collections.TkEleL2, collections.sim_parts,
         gen_selections),
 ]
+
+# for sel in egid_menu_pho_rate_selections:
+#     print(sel)

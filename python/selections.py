@@ -356,21 +356,25 @@ tp_pt_sel = [
     # Selection('Pt5to10', '5<=p_{T}^{TOBJ}<10GeV', '(pt >= 5) & (pt < 10)'),
     # Selection('Pt10to20', '10<=p_{T}^{TOBJ}<20GeV', '(pt >= 10) & (pt < 20)'),
     # Selection('Pt10', 'p_{T}^{TOBJ}>=10GeV', 'pt >= 10'),
-    Selection('Pt10', 'p_{T}^{TOBJ}>=10GeV', lambda array: array.pt >= 10),
-    Selection('Pt20', 'p_{T}^{TOBJ}>=20GeV', lambda array: array.pt >= 20),
-    Selection('Pt25', 'p_{T}^{TOBJ}>=25GeV', lambda array: array.pt >= 25),
-    Selection('Pt30', 'p_{T}^{TOBJ}>=30GeV', lambda array: array.pt >= 30)
+    Selection('Pt10', 'p_{T}^{TOBJ}#geq10GeV', lambda array: array.pt >= 10),
+    Selection('Pt20', 'p_{T}^{TOBJ}#geq20GeV', lambda array: array.pt >= 20),
+    Selection('Pt25', 'p_{T}^{TOBJ}#geq25GeV', lambda array: array.pt >= 25),
+    Selection('Pt30', 'p_{T}^{TOBJ}#geq30GeV', lambda array: array.pt >= 30)
 ]
 tp_pt_sel_ext = [
     Selection('all', '', ''),
-    Selection('Pt2', 'p_{T}^{TOBJ}>=2GeV',  lambda array: array.pt >= 2),
-    Selection('Pt5', 'p_{T}^{TOBJ}>=5GeV',  lambda array: array.pt >= 5),
-    Selection('Pt10', 'p_{T}^{TOBJ}>=10GeV', lambda array: array.pt >= 10),
-    Selection('Pt15', 'p_{T}^{TOBJ}>=15GeV', lambda array: array.pt >= 15),
-    Selection('Pt20', 'p_{T}^{TOBJ}>=20GeV', lambda array: array.pt >= 20),
-    Selection('Pt25', 'p_{T}^{TOBJ}>=25GeV', lambda array: array.pt >= 25),
-    Selection('Pt30', 'p_{T}^{TOBJ}>=30GeV', lambda array: array.pt >= 30),
-    Selection('Pt40', 'p_{T}^{TOBJ}>=40GeV', lambda array: array.pt >= 40)
+    Selection('Pt2', 'p_{T}^{TOBJ}#geq2GeV',  lambda array: array.pt >= 2),
+    Selection('Pt5', 'p_{T}^{TOBJ}#geq5GeV',  lambda array: array.pt >= 5),
+    Selection('Pt10', 'p_{T}^{TOBJ}#geq10GeV', lambda array: array.pt >= 10),
+    Selection('Pt15', 'p_{T}^{TOBJ}#geq15GeV', lambda array: array.pt >= 15),
+    Selection('Pt20', 'p_{T}^{TOBJ}#geq20GeV', lambda array: array.pt >= 20),
+
+    Selection('Pt23', 'p_{T}^{TOBJ}#geq23GeV', lambda array: array.pt >= 23),
+    Selection('Pt28', 'p_{T}^{TOBJ}#geq28GeV', lambda array: array.pt >= 28),
+    Selection('Pt24', 'p_{T}^{TOBJ}#geq23GeV', lambda array: array.pt >= 24),
+    Selection('Pt25', 'p_{T}^{TOBJ}#geq25GeV', lambda array: array.pt >= 25),
+    Selection('Pt30', 'p_{T}^{TOBJ}#geq30GeV', lambda array: array.pt >= 30),
+    Selection('Pt40', 'p_{T}^{TOBJ}#geq40GeV', lambda array: array.pt >= 40)
 ]
 
 tp_tccluster_match_selections = [Selection('all', '', ''),
@@ -387,8 +391,8 @@ tp_eta_ee_sel = [
     # Selection('EtaE', '|#eta^{TOBJ}| > 2.8', 'abs(eta) > 2.8'),
     # Selection('EtaAB', '|#eta^{TOBJ}| <= 1.7', 'abs(eta) <= 1.7'),
     # Selection('EtaABC', '|#eta^{TOBJ}| <= 2.4', 'abs(eta) <= 2.4'),
-    Selection('EtaBC', '1.52 < |#eta^{TOBJ}| <= 2.4', lambda array: (1.52 < abs(array.eta)) &  (abs(array.eta) <= 2.4)),
-    Selection('EtaBCD', '1.52 < |#eta^{TOBJ}| <= 2.8', lambda array: (1.52 < abs(array.eta)) &  (abs(array.eta) <= 2.8)),
+    Selection('EtaBC', '1.52 < |#eta^{TOBJ}| #leq 2.4', lambda array: (1.52 < abs(array.eta)) &  (abs(array.eta) <= 2.4)),
+    Selection('EtaBCD', '1.52 < |#eta^{TOBJ}| #leq 2.8', lambda array: (1.52 < abs(array.eta)) &  (abs(array.eta) <= 2.8)),
     # Selection('EtaBCDE', '1.52 < |#eta^{TOBJ}| < 3', '1.52 < abs(eta) < 3')
                      ]
 
@@ -413,17 +417,17 @@ gen_ee_sel = [
 # ]
 
 eta_sel = [
-    Selection('EtaA', '1.49 < |#eta^{TOBJ}| <= 1.52', lambda array: (1.49 < abs(array.eta)) & (abs(array.eta) <= 1.52)),
-    Selection('EtaB', '1.52 < |#eta^{TOBJ}| <= 1.7', lambda array: (1.52 < abs(array.eta)) & (abs(array.eta) <= 1.7)),
-    Selection('EtaC', '1.7 < |#eta^{TOBJ}| <= 2.4', lambda array: (1.7 < abs(array.eta)) & (abs(array.eta) <= 2.4)),
-    Selection('EtaD', '2.4 < |#eta^{TOBJ}| <= 2.8', lambda array: (2.4 < abs(array.eta)) & (abs(array.eta) <= 2.8)),
-    Selection('EtaDE', '2.4 < |#eta^{TOBJ}| <= 3.0', lambda array: (2.4 < abs(array.eta)) & (abs(array.eta) <= 3.0)),
+    Selection('EtaA', '1.49 < |#eta^{TOBJ}| #leq 1.52', lambda array: (1.49 < abs(array.eta)) & (abs(array.eta) <= 1.52)),
+    Selection('EtaB', '1.52 < |#eta^{TOBJ}| #leq 1.7', lambda array: (1.52 < abs(array.eta)) & (abs(array.eta) <= 1.7)),
+    Selection('EtaC', '1.7 < |#eta^{TOBJ}| #leq 2.4', lambda array: (1.7 < abs(array.eta)) & (abs(array.eta) <= 2.4)),
+    Selection('EtaD', '2.4 < |#eta^{TOBJ}| #leq 2.8', lambda array: (2.4 < abs(array.eta)) & (abs(array.eta) <= 2.8)),
+    Selection('EtaDE', '2.4 < |#eta^{TOBJ}| #leq 3.0', lambda array: (2.4 < abs(array.eta)) & (abs(array.eta) <= 3.0)),
     Selection('EtaE', '|#eta^{TOBJ}| > 2.8', lambda array: abs(array.eta) > 2.8),
-    Selection('EtaAB', '1.49 < |#eta^{TOBJ}| <= 1.7', lambda array: (1.49 < abs(array.eta)) & (abs(array.eta) <= 1.7)),
-    Selection('EtaABC', '1.49 < |#eta^{TOBJ}| <= 2.4', lambda array: (1.49 < abs(array.eta)) & (abs(array.eta) <= 2.4)),
-    Selection('EtaABCD', '1.49 < |#eta^{TOBJ}| <= 2.8', lambda array: (1.49 < abs(array.eta)) & (abs(array.eta) <= 2.8)),
-    Selection('EtaFABCD', '|#eta^{TOBJ}| <= 2.8', lambda array: abs(array.eta) <= 2.8),
-    Selection('EtaFABC', '|#eta^{TOBJ}| <= 2.4', lambda array: abs(array.eta) <= 2.4),
+    Selection('EtaAB', '1.49 < |#eta^{TOBJ}| #leq 1.7', lambda array: (1.49 < abs(array.eta)) & (abs(array.eta) <= 1.7)),
+    Selection('EtaABC', '1.49 < |#eta^{TOBJ}| #leq 2.4', lambda array: (1.49 < abs(array.eta)) & (abs(array.eta) <= 2.4)),
+    Selection('EtaABCD', '1.49 < |#eta^{TOBJ}| #leq 2.8', lambda array: (1.49 < abs(array.eta)) & (abs(array.eta) <= 2.8)),
+    Selection('EtaFABCD', '|#eta^{TOBJ}| #leq 2.8', lambda array: abs(array.eta) <= 2.8),
+    Selection('EtaFABC', '|#eta^{TOBJ}| #leq 2.4', lambda array: abs(array.eta) <= 2.4),
     Selection('EtaBCDE', '1.52 < |#eta^{TOBJ}|', lambda array: 1.52 < abs(array.eta))
 ]
 
@@ -561,31 +565,31 @@ pf_matchedtk_input_quality = [
 
 pfeginput_pt = [
     Selection('all'),
-    Selection('Pt1', 'p_{T}^{TOBJ}>=1GeV', lambda ar: ar.pt >= 1),
-    Selection('Pt2', 'p_{T}^{TOBJ}>=2GeV', lambda ar: ar.pt >= 2),
-    Selection('Pt5', 'p_{T}^{TOBJ}>=5GeV', lambda ar: ar.pt >= 5),
+    Selection('Pt1', 'p_{T}^{TOBJ}#geq1GeV', lambda ar: ar.pt >= 1),
+    Selection('Pt2', 'p_{T}^{TOBJ}#geq2GeV', lambda ar: ar.pt >= 2),
+    Selection('Pt5', 'p_{T}^{TOBJ}#geq5GeV', lambda ar: ar.pt >= 5),
 ]
 
 # FIXME: these should be done using the actual online to offline threshold scaling from turn-ons
 menu_thresh_pt = [
-    Selection('PtStaEB51', 'p_{T}^{TOBJ}>=51GeV', lambda ar: ar.pt >= 40.7),
-    Selection('PtStaEE51', 'p_{T}^{TOBJ}>=51GeV', lambda ar: ar.pt >= 39.6),
-    Selection('PtEleEB36', 'p_{T}^{TOBJ}>=36GeV', lambda ar: ar.pt >= 29.8),
-    Selection('PtEleEE36', 'p_{T}^{TOBJ}>=36GeV', lambda ar: ar.pt >= 28.5),
-    Selection('PtEleEB25', 'p_{T}^{TOBJ}>=25GeV', lambda ar: ar.pt >= 20.3),
-    Selection('PtEleEE25', 'p_{T}^{TOBJ}>=25GeV', lambda ar: ar.pt >= 19.5),
-    Selection('PtEleEB12', 'p_{T}^{TOBJ}>=12GeV', lambda ar: ar.pt >= 9.1),
-    Selection('PtEleEE12', 'p_{T}^{TOBJ}>=12GeV', lambda ar: ar.pt >= 8.8),
+    Selection('PtStaEB51', 'p_{T}^{TOBJ}#geq51GeV', lambda ar: ar.pt >= 40.7),
+    Selection('PtStaEE51', 'p_{T}^{TOBJ}#geq51GeV', lambda ar: ar.pt >= 39.6),
+    Selection('PtEleEB36', 'p_{T}^{TOBJ}#geq36GeV', lambda ar: ar.pt >= 29.8),
+    Selection('PtEleEE36', 'p_{T}^{TOBJ}#geq36GeV', lambda ar: ar.pt >= 28.5),
+    Selection('PtEleEB25', 'p_{T}^{TOBJ}#geq25GeV', lambda ar: ar.pt >= 20.3),
+    Selection('PtEleEE25', 'p_{T}^{TOBJ}#geq25GeV', lambda ar: ar.pt >= 19.5),
+    Selection('PtEleEB12', 'p_{T}^{TOBJ}#geq12GeV', lambda ar: ar.pt >= 9.1),
+    Selection('PtEleEE12', 'p_{T}^{TOBJ}#geq12GeV', lambda ar: ar.pt >= 8.8),
 
-    Selection('PtIsoEleEB28', 'p_{T}^{TOBJ}>=28GeV', lambda ar: ar.pt >= 23.),
-    Selection('PtIsoEleEE28', 'p_{T}^{TOBJ}>=28GeV', lambda ar: ar.pt >= 22.1),
-    Selection('PtIsoPhoEB36', 'p_{T}^{TOBJ}>=36GeV', lambda ar: ar.pt >= 30.4),
-    Selection('PtIsoPhoEE36', 'p_{T}^{TOBJ}>=36GeV', lambda ar: ar.pt >= 29.0),
+    Selection('PtIsoEleEB28', 'p_{T}^{TOBJ}#geq28GeV', lambda ar: ar.pt >= 23.),
+    Selection('PtIsoEleEE28', 'p_{T}^{TOBJ}#geq28GeV', lambda ar: ar.pt >= 22.1),
+    Selection('PtIsoPhoEB36', 'p_{T}^{TOBJ}#geq36GeV', lambda ar: ar.pt >= 30.4),
+    Selection('PtIsoPhoEE36', 'p_{T}^{TOBJ}#geq36GeV', lambda ar: ar.pt >= 29.0),
     
-    Selection('PtIsoPhoEB22', 'p_{T}^{TOBJ}>=22GeV', lambda ar: ar.pt >= 17.6),
-    Selection('PtIsoPhoEE22', 'p_{T}^{TOBJ}>=22GeV', lambda ar: ar.pt >= 15.9),
-    Selection('PtIsoPhoEB12', 'p_{T}^{TOBJ}>=12GeV', lambda ar: ar.pt >= 8.5),
-    Selection('PtIsoPhoEE12', 'p_{T}^{TOBJ}>=12GeV', lambda ar: ar.pt >= 6.),
+    Selection('PtIsoPhoEB22', 'p_{T}^{TOBJ}#geq22GeV', lambda ar: ar.pt >= 17.6),
+    Selection('PtIsoPhoEE22', 'p_{T}^{TOBJ}#geq22GeV', lambda ar: ar.pt >= 15.9),
+    Selection('PtIsoPhoEB12', 'p_{T}^{TOBJ}#geq12GeV', lambda ar: ar.pt >= 8.5),
+    Selection('PtIsoPhoEE12', 'p_{T}^{TOBJ}#geq12GeV', lambda ar: ar.pt >= 6.),
 ]
 
 

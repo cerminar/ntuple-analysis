@@ -4,10 +4,11 @@ import ROOT
 import numpy as np
 from array import array
 # import pandas as pd
-import uproot4 as up
+import uproot as up
 import awkward as ak
 import python.boost_hist as bh
 import python.pf_regions as pf_regions
+from scipy.special import expit
 
 stuff = []
 
@@ -235,6 +236,8 @@ class CompCatTuples(BaseUpTuples):
             self, "CompCatData", name, root_file, debug)
 
     def fill(self, reference, target):
+        # print(self.t_name)
+        # print(target.fields)
         target_vars = [
             'pt',
             'eta',
@@ -249,7 +252,8 @@ class CompCatTuples(BaseUpTuples):
             'compDpt',
             'compSrrtot',
             'compHoe',
-            'compMeanz',]
+            'compMeanz',
+            'compBDTScore']
         rference_vars = [
             'pt',
             'eta',
@@ -293,7 +297,8 @@ class CompTuples(BaseUpTuples):
             'compDpt',
             'compSrrtot',
             'compHoe',
-            'compMeanz',]
+            'compMeanz',
+            'compBDTScore']
         tree_data = {}
         for var in vars:
             if var in data.fields:
@@ -606,7 +611,7 @@ class EGHistos(BaseHistos):
             self.h_tkIsoPV = bh.TH1F(name+'_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2)
             self.h_pfIsoPV = bh.TH1F(name+'_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
             self.h_n = bh.TH1F(name+'_n', '# objects per event', 100, 0, 100)
-            self.h_compBdt = bh.TH1F(name+'_compBdt', 'BDT Score Comp ID', 100, -4, 4)
+            self.h_compBdt = bh.TH1F(name+'_compBdt', 'BDT Score Comp ID', 50, 0, 1)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
@@ -627,11 +632,15 @@ class EGHistos(BaseHistos):
             bh.fill_1Dhist(hist=self.h_pfIsoPV, array=egs.pfIsoPV, weights=weight)
         if 'compBDTScore' in egs.fields:
             bh.fill_1Dhist(hist=self.h_compBdt, array=egs.compBDTScore, weights=weight)
+        if 'idScore' in egs.fields:
+            bh.fill_1Dhist(hist=self.h_compBdt, array=expit(egs.idScore), weights=weight)
+        # print(ak.count(egs.pt, axis=1))
+        # print(egs.pt.type.show())
+        # print(ak.count(egs.pt, axis=1).type.show())
+        self.h_n.fill(ak.count(egs.pt, axis=1))
+        # bh.fill_1Dhist(hist=self.h_n, array=ak.count(egs.pt, axis=1), weights=weight)
+        # self.h_n.Fill()
 
-    # FIXME: [FIXME-AK] implement this in the normal fill
-    # def fill_event(self, objects):
-    #     print(objects.pt)
-    #     self.h_n.Fill(len(objects.pt))
 
     def add_histos(self):
         self.h_pt.Add(self.h_pt_temp.GetValue())

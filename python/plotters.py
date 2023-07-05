@@ -551,7 +551,8 @@ class GenericGenMatchPlotter(BasePlotter):
                  data_set, gen_set,
                  data_selections=[selections.Selection('all')],
                  gen_selections=[selections.Selection('all')],
-                 gen_eta_phi_columns=['exeta', 'exphi']):
+                 gen_eta_phi_columns=['exeta', 'exphi'],
+                 drcut=0.1):
         self.ObjectHistoClass = ObjectHistoClass
         self.ResoHistoClass = ResoHistoClass
         # self.data_set = data_set
@@ -569,6 +570,7 @@ class GenericGenMatchPlotter(BasePlotter):
             selections.multiply_selections(
                 gen_selections,
                 [selections.Selection('', '', lambda ar: ar.gen > 0)]))
+        self.dr2 = drcut*drcut
 
         # print self
         # print gen_selections
@@ -600,7 +602,7 @@ class GenericGenMatchPlotter(BasePlotter):
         dpt = np.abs(obj_pt - gen_pt)
         dr2 = (obj_eta-gen_eta)**2+(obj_phi-gen_phi)**2
         match = ak.Array(data={'ele_idx': obj_idx, 'gen_idx': gen_idx, 'dpt': dpt, 'dr2': dr2})
-        dr_match=match[match.dr2<0.01]
+        dr_match=match[match.dr2<self.dr2]
         for genid in np.unique(ak.flatten(dr_match.gen_idx)):                
             gen_match_id = dr_match[dr_match.gen_idx == genid]
             dpt_min_index = ak.argmin(gen_match_id.dpt, axis=1, keepdims=True)
@@ -1242,7 +1244,7 @@ class CompCatTuplePlotter(GenericGenMatchPlotter):
                  gen_selections=[selections.Selection('all')]):
         super(CompCatTuplePlotter, self).__init__(histos.EGHistos, histos.CompCatTuples,
                                                 data_set, gen_set,
-                                                data_selections, gen_selections)
+                                                data_selections, gen_selections, drcut=0.2)
 
 
 if __name__ == "__main__":

@@ -30,7 +30,7 @@ import platform
 
 # import root_numpy as rnp
 import pandas as pd
-import uproot4 as up
+import uproot as up
 
 from python.main import main
 import python.l1THistos as histos
@@ -155,7 +155,8 @@ def analyze(params, batch_idx=-1):
     for tree_file_name in files_with_protocol:
         if break_file_loop:
             break
-        tree_file = up.open(tree_file_name, num_workers=2)
+        # tree_file = up.open(tree_file_name, num_workers=2)
+        tree_file = up.open(tree_file_name, num_workers=1)
         print(f'opening file: {tree_file_name}')
         ttree = tree_file[params.tree_name.split('/')[0]][params.tree_name.split('/')[1]]
 
