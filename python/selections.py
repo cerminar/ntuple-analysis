@@ -192,7 +192,8 @@ def build_DiObj_selection(name, label, selection_leg0, selection_leg1):
     return Selection(
         name, 
         label, 
-        f'((leg == 0) & ({selection_leg0.selection})) | ((leg == 1) & ({selection_leg1.selection}))')
+        lambda array: selection_leg0.selection(array.leg0) & selection_leg1.selection(array.leg1))
+        # FIXME: it was (leg0 sel. | leg1 sel.) instead of &
 
 
 def fill_isowp_sel(sel_list, wps):
@@ -356,25 +357,25 @@ tp_pt_sel = [
     # Selection('Pt5to10', '5<=p_{T}^{TOBJ}<10GeV', '(pt >= 5) & (pt < 10)'),
     # Selection('Pt10to20', '10<=p_{T}^{TOBJ}<20GeV', '(pt >= 10) & (pt < 20)'),
     # Selection('Pt10', 'p_{T}^{TOBJ}>=10GeV', 'pt >= 10'),
-    Selection('Pt10', 'p_{T}^{TOBJ}#geq10GeV', lambda array: array.pt >= 10),
-    Selection('Pt20', 'p_{T}^{TOBJ}#geq20GeV', lambda array: array.pt >= 20),
-    Selection('Pt25', 'p_{T}^{TOBJ}#geq25GeV', lambda array: array.pt >= 25),
-    Selection('Pt30', 'p_{T}^{TOBJ}#geq30GeV', lambda array: array.pt >= 30)
+    Selection('Pt10', 'p_{T}^{TOBJ} #geq 10 GeV', lambda array: array.pt >= 10),
+    Selection('Pt20', 'p_{T}^{TOBJ} #geq 20 GeV', lambda array: array.pt >= 20),
+    Selection('Pt25', 'p_{T}^{TOBJ} #geq 25 GeV', lambda array: array.pt >= 25),
+    Selection('Pt30', 'p_{T}^{TOBJ} #geq 30 GeV', lambda array: array.pt >= 30)
 ]
 tp_pt_sel_ext = [
     Selection('all', '', ''),
-    Selection('Pt2', 'p_{T}^{TOBJ}#geq2GeV',  lambda array: array.pt >= 2),
-    Selection('Pt5', 'p_{T}^{TOBJ}#geq5GeV',  lambda array: array.pt >= 5),
-    Selection('Pt10', 'p_{T}^{TOBJ}#geq10GeV', lambda array: array.pt >= 10),
-    Selection('Pt15', 'p_{T}^{TOBJ}#geq15GeV', lambda array: array.pt >= 15),
-    Selection('Pt20', 'p_{T}^{TOBJ}#geq20GeV', lambda array: array.pt >= 20),
+    Selection('Pt2', 'p_{T}^{TOBJ} #geq 2GeV',  lambda array: array.pt >= 2),
+    Selection('Pt5', 'p_{T}^{TOBJ} #geq 5GeV',  lambda array: array.pt >= 5),
+    Selection('Pt10', 'p_{T}^{TOBJ} #geq 10 GeV', lambda array: array.pt >= 10),
+    Selection('Pt15', 'p_{T}^{TOBJ} #geq 15 GeV', lambda array: array.pt >= 15),
+    Selection('Pt20', 'p_{T}^{TOBJ} #geq 20 GeV', lambda array: array.pt >= 20),
 
-    Selection('Pt23', 'p_{T}^{TOBJ}#geq23GeV', lambda array: array.pt >= 23),
-    Selection('Pt28', 'p_{T}^{TOBJ}#geq28GeV', lambda array: array.pt >= 28),
-    Selection('Pt24', 'p_{T}^{TOBJ}#geq23GeV', lambda array: array.pt >= 24),
-    Selection('Pt25', 'p_{T}^{TOBJ}#geq25GeV', lambda array: array.pt >= 25),
-    Selection('Pt30', 'p_{T}^{TOBJ}#geq30GeV', lambda array: array.pt >= 30),
-    Selection('Pt40', 'p_{T}^{TOBJ}#geq40GeV', lambda array: array.pt >= 40)
+    Selection('Pt23', 'p_{T}^{TOBJ} #geq 23 GeV', lambda array: array.pt >= 23),
+    Selection('Pt28', 'p_{T}^{TOBJ} #geq 28 GeV', lambda array: array.pt >= 28),
+    Selection('Pt24', 'p_{T}^{TOBJ} #geq 23 GeV', lambda array: array.pt >= 24),
+    Selection('Pt25', 'p_{T}^{TOBJ} #geq 25 GeV', lambda array: array.pt >= 25),
+    Selection('Pt30', 'p_{T}^{TOBJ} #geq 30 GeV', lambda array: array.pt >= 30),
+    Selection('Pt40', 'p_{T}^{TOBJ} #geq 40 GeV', lambda array: array.pt >= 40)
 ]
 
 tp_tccluster_match_selections = [Selection('all', '', ''),
@@ -697,12 +698,12 @@ Selector.selection_primitives = sm.selections.copy()
 menu_sel = [
     ((Selector('^EtaEB')&('^IDTightE'))|(Selector('^EtaEE')&('^IDTightP'))).one('MenuSta', 'TightID'),
     ((Selector('^EtaEB')&('^IsoEleEB'))|(Selector('^EtaEE')&('^IsoEleEE')&('^IDTightE'))).one('MenuEleIsoTight', 'Iso TightID'),
-    ((Selector('^EtaEB')&('^IsoEleEB'))|(Selector('^EtaEE')&('^IsoEleEE')&('^IDCompWP955'))).one('MenuEleIsoLoose', 'Iso LooseID'),
+    ((Selector('^EtaEB')&('^IsoEleEB'))|(Selector('^EtaEE')&('^IsoEleEE'))).one('MenuEleIsoLoose', 'Iso LooseID'),
     ((Selector('^EtaEB')&('^IDTightE'))|(Selector('^EtaEE')&('^IDTightE'))).one('MenuEleTight', 'TightID'),
-    ((Selector('^EtaEB')&('^IDTightE'))|(Selector('^EtaEE')&('^IDCompWP955'))).one('MenuEleLoose', 'LooseID'),
+    ((Selector('^EtaEB')&('^IDTightE'))|(Selector('^EtaEE'))).one('MenuEleLoose', 'LooseID'),
     ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP'))).one('MenuPhoIso', 'Iso'),
     # Rate selections
-    ((Selector('^EtaEB')&('^IsoEleEB')&('^PtIsoEleEB28'))|(Selector('^EtaEE')&('^IsoEleEE')&('^IDCompWP955')&('^PtIsoEleEE28'))).one('SingleIsoTkEle28', 'SingleIsoTkEle28'),
+    ((Selector('^EtaEB')&('^IsoEleEB')&('^PtIsoEleEB28'))|(Selector('^EtaEE')&('^IsoEleEE')&('^PtIsoEleEE28'))).one('SingleIsoTkEle28', 'SingleIsoTkEle28'),
     ((Selector('^EtaEB')&('^IsoEleEB')&('^PtIsoEleEB28'))|(Selector('^EtaEE')&('^IsoEleEE')&('^IDTightE')&('^PtIsoEleEE28'))).one('SingleIsoTkEle28Tight', 'SingleIsoTkEle28Tight'),
     ((Selector('^EtaEB')&('^IDTightE')&('^PtEleEB36'))|(Selector('^EtaEE')&('^IDTightE')&('^PtEleEE36'))).one('SingleTkEle36', 'SingleTkEle36'),
     ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE')&('^PtIsoPhoEB36'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE36'))).one('SingleIsoTkPho36', 'SingleIsoTkPho36'),
@@ -711,8 +712,8 @@ menu_sel = [
                           ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE')&('^PtIsoPhoEB22'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE22'))).one(),
                           ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE')&('^PtIsoPhoEB12'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE12'))).one()),
     build_DiObj_selection('DoubleTkEle25-12', 'DoubleTkEle25-12',
-                          ((Selector('^EtaEB')&('^IDTightE')&('^PtEleEB25'))|(Selector('^EtaEE')&('^IDCompWP955')&('^PtEleEE25'))).one(),
-                          ((Selector('^EtaEB')&('^IDTightE')&('^PtEleEB12'))|(Selector('^EtaEE')&('^IDCompWP955')&('^PtEleEE12'))).one())
+                          ((Selector('^EtaEB')&('^IDTightE')&('^PtEleEB25'))|(Selector('^EtaEE')&('^PtEleEE25'))).one(),
+                          ((Selector('^EtaEB')&('^IDTightE')&('^PtEleEB12'))|(Selector('^EtaEE')&('^PtEleEE12'))).one())
 
 ]
 # repeat the call: we want the menu selections to be avaialble via the selectors
