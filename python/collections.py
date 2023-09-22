@@ -22,7 +22,9 @@ import awkward as ak
 import ROOT
 import math
 import sys
+import vector
 
+vector.register_awkward()
 # import root_numpy.tmva as rnptmva
 
 from .utils import debugPrintOut
@@ -32,7 +34,7 @@ import python.classifiers as classifiers
 import python.calibrations as calib
 import python.pf_regions as pf_regions
 from scipy.spatial import cKDTree    
-
+import python.selections as selections
 
 class WeightFile(object):
     def __init__(self, file_name):
@@ -777,9 +779,27 @@ def decodedTk_fixtures(objects):
 
 
 def build_double_obj(obj):
-    ret = pd.concat([obj,obj], names=['leg'], keys=[0, 1])
-    ret = ret.swaplevel(0,1)
-    ret = ret.swaplevel(1,2)
+    # we convert the ak.Array to ak.Record
+    # FIXME: this could be moved upstream for all collections!
+    obj['mass'] = 0.*obj.pt
+    data = {}
+    
+    # print(obj.fields)
+    for field in obj.fields:
+
+        if field in ['energy', 'exx', 'exy', 'weight',  'energy', 'dvx', 'dvy', 'dvz', 'ovx', 'ovy', 'ovz', 'mother', 'exphi', 'exeta', 'exx', 'exy', 'fbrem', 'fromBeamPipe','firstmother_pdgid']:
+            continue
+
+        data[field] = obj[field]
+        # print(field)
+        # print( obj[field])
+    obj_rec = vector.zip(data)
+    ret = ak.combinations(
+        array=obj_rec, 
+        n=2, 
+        axis=1,
+        fields=['leg0', 'leg1'])
+    # ret.show()
     return ret
 
 
@@ -790,7 +810,8 @@ gen = DFCollection(
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='gen', entry_block=entry_block),
     fixture_function=mc_fixtures,
-    print_function=lambda df: df[['pdgid', 'pt', 'eta', 'phi', 'daughters']],
+    print_function=lambda df: df[['pdgid', 'pt', 'eta', 'phi']],
+    # print_function=lambda df: df[(df.pdgid==23 | (abs(df.pdgid)==15))],
     max_print_lines=None,
     debug=0)
 
@@ -1501,6 +1522,37 @@ DoubleTkEmL2 = DFCollection(
     # fixture_function=,
     depends_on=[TkEmL2],
     debug=0)
+
+
+def dy_gen_selection(gen):
+    vec_bos = gen[gen.pdgid == 23]
+    print(vec_bos.status)
+    print(gen)
+
+
+selected_gen_parts = DFCollection(
+    name='SelectedSimParts', label='Double Sim e/g',
+    filler_function=lambda event, entry_block: dy_gen_selection(gen.df),
+    # fixture_function=,
+    depends_on=[gen],
+    debug=0)
+
+
+SelectedSimParts = DFCollection(
+    name='SelectedSimParts', label='Double Sim e/g',
+    filler_function=lambda event, entry_block: sim_parts.df[selections.Selector('^GEN$').one().selection(sim_parts.df)],
+    # fixture_function=,
+    depends_on=[sim_parts],
+    debug=0)
+
+
+DoubleSimEle = DFCollection(
+    name='DoubleSimEle', label='Double Sim e/g',
+    filler_function=lambda event, entry_block: build_double_obj(obj=selected_gen_parts),
+    # fixture_function=,
+    depends_on=[selected_gen_parts],
+    debug=0)
+
 
 
 egs_EE_pf_reg = DFCollection(

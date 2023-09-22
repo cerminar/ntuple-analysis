@@ -1,0 +1,70 @@
+
+common:
+  output_dir:
+    default: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
+    matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
+    Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
+    triolet: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
+  output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
+  output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
+  plot_version: v160A
+  run_clustering: False
+  run_density_computation: False
+# +AccountingGroup = "group_u_CMS.u_zh.users"
+# +AccountingGroup = "group_u_CMST3.all"
+
+collections:
+      
+  mass:
+    file_label:
+      mass
+    samples:
+      # - ele_flat2to100_PU0
+      # - ele_flat2to100_PU200
+      # - doubleele_flat1to100_PU0
+      # - doublephoton_flat1to100_PU200
+      # - doubleele_flat1to100_PU200
+      # - photon_flat8to150_PU0
+      # - photon_flat8to150_PU200
+      - dyll_PU200
+    plotters:
+      - !!python/name:cfg.reso.diobj_mass
+    htc_jobflavor:
+      microcentury
+    priorities:
+      doubleele_flat1to100_PU0: 2
+      doubleele_flat1to100_PU200: 7
+      doublephoton_flat1to100_PU200: 6
+      dyll_PU200: 7
+    events_per_job:
+      doubleele_flat1to100_PU0: 10000
+      doubleele_flat1to100_PU200: 5000
+      doublephoton_flat1to100_PU200: 5000
+      dyll_PU200: 50000
+
+  reso:
+    file_label:
+      reso
+    samples:
+      # - ele_flat2to100_PU0
+      # - ele_flat2to100_PU200
+      # - doubleele_flat1to100_PU0
+      # - doublephoton_flat1to100_PU200
+      - doubleele_flat1to100_PU200
+      # - photon_flat8to150_PU0
+      # - photon_flat8to150_PU200
+      # - dyll_PU200
+    plotters:
+      - !!python/name:cfg.reso.eg_resotuples_plotters
+    htc_jobflavor:
+      microcentury
+    priorities:
+      doubleele_flat1to100_PU0: 2
+      doubleele_flat1to100_PU200: 7
+      doublephoton_flat1to100_PU200: 6
+      dyll_PU200: 7
+    events_per_job:
+      doubleele_flat1to100_PU0: 10000
+      doubleele_flat1to100_PU200: 5000
+      doublephoton_flat1to100_PU200: 5000
+      dyll_PU200: 50000

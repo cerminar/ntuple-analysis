@@ -29,7 +29,7 @@ class TreeReader(object):
                             'tc_cellv',
                             'gen_PUNumInt',
                             'gen_TrueNumInt',
-                            'gen_daughters', 
+                            # 'gen_daughters', 
                             'simpart_posx', 'simpart_posy', 'simpart_posz',
                             ]
         if len(self._branches) == 0:
@@ -111,5 +111,8 @@ class TreeReader(object):
                                    aliases=name_map, 
                                    entry_start=self.file_entry, 
                                    entry_stop=self.file_entry+entry_block)
+        # FIXME: we should probably do an ak.Record using sometjhing along the lines of:
+        # ele_rec = ak.zip({'pt': tkele.pt, 'eta': tkele.eta, 'phi': tkele.phi}, with_name="pippo")
+        # this would allow to handle the records and assign behaviours....
         return akarray
         

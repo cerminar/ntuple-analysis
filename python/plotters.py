@@ -755,81 +755,91 @@ class TkEGGenMatchPlotter(GenericGenMatchPlotter):
                                                   data_selections, gen_selections)
 
 
-class ResoNtupleMatchPlotter(BasePlotter):
+class ResoNtupleMatchPlotter(GenericGenMatchPlotter):
     def __init__(self, data_set, gen_set,
-                 data_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
+                 data_selections=[selections.Selection('all')],
+                 gen_selections=[selections.Selection('all')]):
+        super(ResoNtupleMatchPlotter, self).__init__(histos.EGHistos, histos.ResoTuples,
+                                                data_set, gen_set,
+                                                data_selections, gen_selections, drcut=0.2)
 
-        self.h_calibration = {}
-        super(ResoNtupleMatchPlotter, self).__init__(
-            data_set,
-            data_selections,
-            gen_set,
-            selections.multiply_selections(
-                gen_selections,
-                [selections.Selection('', '', 'gen > 0')]))
 
-        # print self
-        # print gen_selections
 
-    def plotObjectMatch(self,
-                        genParticles,
-                        objects,
-                        h_calibration,
-                        algoname,
-                        debug):
-        best_match_indexes = {}
-        if not objects.empty:
-            best_match_indexes, allmatches = utils.match_etaphi(genParticles[['exeta', 'exphi']],
-                                                                objects[['eta', 'phi']],
-                                                                objects['pt'],
-                                                                deltaR=0.1)
+# class ResoNtupleMatchPlotter(BasePlotter):
+#     def __init__(self, data_set, gen_set,
+#                  data_selections=[selections.Selection('all')], gen_selections=[selections.Selection('all')]):
 
-        for idx, genParticle in genParticles.iterrows():
-            if idx in best_match_indexes.keys():
-                # print ('-----------------------')
-                #  print(genParticle)
-                obj_matched = objects.loc[[best_match_indexes[idx]]]
-                # print obj_matched
-                # print obj_matched.clusters
-                # print obj_matched.clusters[0]
-                # print algoname
-                # print obj_matched[['energy', 'layer_energy']]
-                h_calibration.fill(reference=genParticle, target=obj_matched)
+#         self.h_calibration = {}
+#         super(ResoNtupleMatchPlotter, self).__init__(
+#             data_set,
+#             data_selections,
+#             gen_set,
+#             selections.multiply_selections(
+#                 gen_selections,
+#                 [selections.Selection('', '', 'gen > 0')]))
 
-                if debug >= 4:
-                    print(('--- Dump match for algo {} ---------------'.format(algoname)))
-                    print(('GEN particle: idx: {}'.format(idx)))
-                    print(genParticle)
-                    print('Matched to track object:')
-                    print(obj_matched)
-            else:
-                if debug >= 5:
-                    print(('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx)))
-                    print(genParticle)
-                    print(objects)
+#         # print self
+#         # print gen_selections
 
-    def book_histos(self):
-        self.gen_set.activate()
-        self.data_set.activate()
-        for tp_sel in self.data_selections:
-            for gen_sel in self.gen_selections:
-                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
-                self.h_calibration[histo_name] = histos.ResoTuples(histo_name)
+#     def plotObjectMatch(self,
+#                         genParticles,
+#                         objects,
+#                         h_calibration,
+#                         algoname,
+#                         debug):
+#         best_match_indexes = {}
+#         if not objects.empty:
+#             best_match_indexes, allmatches = utils.match_etaphi(genParticles[['exeta', 'exphi']],
+#                                                                 objects[['eta', 'phi']],
+#                                                                 objects['pt'],
+#                                                                 deltaR=0.1)
 
-    def fill_histos(self, debug=0):
-        for tp_sel in self.data_selections:
-            objects = self.data_set.query(tp_sel)
-            for gen_sel in self.gen_selections:
-                genReference = self.gen_set.query(gen_sel)
-                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+#         for idx, genParticle in genParticles.iterrows():
+#             if idx in best_match_indexes.keys():
+#                 # print ('-----------------------')
+#                 #  print(genParticle)
+#                 obj_matched = objects.loc[[best_match_indexes[idx]]]
+#                 # print obj_matched
+#                 # print obj_matched.clusters
+#                 # print obj_matched.clusters[0]
+#                 # print algoname
+#                 # print obj_matched[['energy', 'layer_energy']]
+#                 h_calibration.fill(reference=genParticle, target=obj_matched)
 
-                h_calib = self.h_calibration[histo_name]
-                # print 'TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name)
-                self.plotObjectMatch(genReference,
-                                     objects,
-                                     h_calib,
-                                     self.data_set.name,
-                                     debug)
+#                 if debug >= 4:
+#                     print(('--- Dump match for algo {} ---------------'.format(algoname)))
+#                     print(('GEN particle: idx: {}'.format(idx)))
+#                     print(genParticle)
+#                     print('Matched to track object:')
+#                     print(obj_matched)
+#             else:
+#                 if debug >= 5:
+#                     print(('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx)))
+#                     print(genParticle)
+#                     print(objects)
+
+#     def book_histos(self):
+#         self.gen_set.activate()
+#         self.data_set.activate()
+#         for tp_sel in self.data_selections:
+#             for gen_sel in self.gen_selections:
+#                 histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+#                 self.h_calibration[histo_name] = histos.ResoTuples(histo_name)
+
+#     def fill_histos(self, debug=0):
+#         for tp_sel in self.data_selections:
+#             objects = self.data_set.query(tp_sel)
+#             for gen_sel in self.gen_selections:
+#                 genReference = self.gen_set.query(gen_sel)
+#                 histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+
+#                 h_calib = self.h_calibration[histo_name]
+#                 # print 'TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name)
+#                 self.plotObjectMatch(genReference,
+#                                      objects,
+#                                      h_calib,
+#                                      self.data_set.name,
+#                                      debug)
 
 
 class CalibrationPlotter(BasePlotter):
@@ -1245,6 +1255,11 @@ class CompCatTuplePlotter(GenericGenMatchPlotter):
         super(CompCatTuplePlotter, self).__init__(histos.EGHistos, histos.CompCatTuples,
                                                 data_set, gen_set,
                                                 data_selections, gen_selections, drcut=0.2)
+
+
+class DiObjMassPlotter(GenericDataFramePlotter):
+    def __init__(self, obj_set, obj_selections=[selections.Selection('all')]):
+        super(DiObjMassPlotter, self).__init__(histos.DiObjMassHistos, obj_set, obj_selections)
 
 
 if __name__ == "__main__":

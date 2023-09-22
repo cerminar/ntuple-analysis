@@ -1593,22 +1593,34 @@ class IsoTuples(BaseTuples):
         self.t_values.Fill(array('f', values_fill))
 
 
-class ResoTuples(BaseTuples):
+class ResoTuples(BaseUpTuples):
     def __init__(self, name, root_file=None, debug=False):
-        BaseTuples.__init__(
-            self, 'reso', 'e_gen:pt_gen:eta_gen:e:pt:eta',
-            name, root_file, debug)
+        BaseUpTuples.__init__(
+            self, "ResoData", name, root_file, debug)
 
     def fill(self, reference, target):
-        values_fill = []
-
-        values_fill.append(reference.energy)
-        values_fill.append(reference.pt)
-        values_fill.append(reference.eta)
-        values_fill.append(target.energy)
-        values_fill.append(target.pt)
-        values_fill.append(target.eta)
-        self.t_values.Fill(array('f', values_fill))
+        # print(self.t_name)
+        # print(target.fields)
+        target_vars = [
+            'pt',
+            'eta',
+            'phi',
+            'energy',
+            'hwQual']
+        rference_vars = [
+            'pt',
+            'eta',
+            'phi',
+            'energy']
+        tree_data = {}
+        for var in target_vars:
+            tree_data[var] = ak.flatten(ak.drop_none(target[var]))
+        for var in rference_vars:
+            tree_data[f'gen_{var}'] = ak.flatten(ak.drop_none(reference[var]))
+        # print(reference.fields)
+        # tree_data[f'gen_dz'] = ak.flatten(ak.drop_none(np.abs(reference.ovz-target.tkZ0)))
+        
+        BaseUpTuples.fill(self, tree_data)
 
 
 class CalibrationHistos(BaseTuples):
@@ -1866,6 +1878,26 @@ class QuantizationHistos(BaseHistos):
             fill[f'{ft}_log2'] = np.log2(fill[[ft]])
             bh.fill_2Dhist(self.h_features, fill[[f'{ft}_bin', ft]]) 
             bh.fill_2Dhist(self.h_featuresLog2, fill[[f'{ft}_bin', f'{ft}_log2']]) 
+
+
+class DiObjMassHistos(BaseHistos):
+    def __init__(self, name, root_file=None, debug=False):
+        if not root_file:
+            self.h_mass = bh.TH1F(name+'_mass', 'mass (GeV); M(ll) [GeV]', 100, 0, 200)
+        BaseHistos.__init__(self, name, root_file, debug)
+
+    def fill(self, obj_pairs):
+        weight = None
+        if 'weight' in obj_pairs.fields:
+            weight = obj_pairs.weight
+        objs_sum = obj_pairs.leg0+obj_pairs.leg1
+        # bh.fill_1Dhist(
+        #     hist=self.h_mass,     
+        #     array=objs_sum[ak.count((objs_sum).pt, axis=1) > 0][:, 0].mass,     
+        #     weights=weight)
+        self.h_mass.fill(objs_sum[ak.count((objs_sum).pt, axis=1) > 0][:, 0].mass)
+        
+
 
 
 # if __name__ == "__main__":
