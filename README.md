@@ -1,4 +1,4 @@
-# ntuple-tools
+# ntuple-analysis
 
 PYTHON framework for the analysis of [ROOT](https://root.cern/) `TTree` data using [uproot](https://uproot.readthedocs.io/en/latest/) for the IO and [awkward-array](https://awkward-array.org/doc/main/) for the columnar data analysis.
 
@@ -152,7 +152,7 @@ This is assumed in all the `plotters` and in the code to actually draw the histo
 
 Of course you can use your favorite set of tools. I use mine [plot-drawing-tools](https://github.com/cerminar/plot-drawing-tools), which is based on `jupyter notebooks`.
 
-`cd ntuple-tools`
+`cd ntuple-analysis`
 `git clone git@github.com:cerminar/plot-drawing-tools.git`
 `jupyter-notebook`
 
