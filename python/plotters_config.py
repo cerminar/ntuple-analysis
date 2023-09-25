@@ -219,26 +219,6 @@ ele_genmatched_plotters = [
                   ]
 
 
-eg_resotuples_plotters = [
-    plotters.ResoNtupleMatchPlotter(
-        collections.egs, collections.gen_parts,
-        selections.eg_id_ee_selections,
-        selections.gen_ee_selections),
-    # plotters.ResoNtupleMatchPlotter(
-    #     collections.egs_brl, collections.gen_parts,
-    #     selections.barrel_quality_selections,
-    #     selections.gen_eb_selections),
-    # plotters.ResoNtupleMatchPlotter(
-    #     collections.tkelesEL, collections.gen_parts,
-    #     selections.tkisoeg_selections,
-    #     selections.gen_ee_tk_selections),
-    # plotters.ResoNtupleMatchPlotter(
-    #     collections.tkelesEL_brl, collections.gen_parts,
-    #     selections.barrel_quality_selections,
-    #     selections.gen_eb_selections),
-    ]
-
-
 tp_resotuples_plotters = [
     plotters.ResoNtupleMatchPlotter(
         collections.tp_hm_vdr, collections.gen_parts,
@@ -364,18 +344,6 @@ eg_isotuples_plotters = [
         ),
 ]
 
-decTk_plotters = [
-    plotters.DecTkPlotter(
-        collections.decTk,
-        selections.dectk_selections
-    ),
-    plotters.DecTrackGenMatchPlotter(
-        collections.decTk,
-        collections.gen_parts,
-        selections.dectk_match_selections,
-        selections.gen_ee_tk_selections
-    )
-]
 
 
 

@@ -1,8 +1,13 @@
 # ntuple-tools
 
-The python scripts in this repository should help you get started analysing the [HGCAL L1 TP ntuples](https://github.com/PFCal-dev/cmssw/tree/hgc-tpg-devel-CMSSW_10_3_0_pre4/L1Trigger/L1THGCal/plugins/ntuples)
+PYTHON framework for the analysis of [ROOT](https://root.cern/) `TTree` data using [uproot](https://uproot.readthedocs.io/en/latest/) for the IO and [awkward-array](https://awkward-array.org/doc/main/) for the columnar data analysis.
+
+The tool is originally developed for the analysis of [L1T ntuples for Phase-2 e/g](https://github.com/cerminar/Phase2EGTriggerAnalysis) but should work with any kind of flat ntuples.
 
 ## Pre-requisites: first time setup
+
+The tool can be run on any private machines using just `python`, `pip` and `virtualenvwrapper`.
+If you plan to run it on lxplus you might want to look at the point `1` below.
 
 ### 1. lxplus setup
 
@@ -39,7 +44,7 @@ The **first time** you will have to create the actual instance of the `virtualen
 
 and 
 
-[requirements_py3.8.txt](requirements_py3.10.txt)
+[requirements_py3.10.txt](requirements_py3.10.txt)
 
 for python 3.8 and 3.10 respectively.
 
@@ -56,7 +61,6 @@ This step is `lxplus` specific, givin access to a more recent `python` and `root
 Edit/skip it accordingly for your specific system.
 
 `source setup_lxplus.sh`
-
 
 ### 2. setup `virtualenvwrapper`
 
@@ -75,16 +79,22 @@ After this initial (once in a time) setup is done you can just activate the virt
 
 ## Running the analysis
 
-The main script is `analyzeHgcalL1Tntuple.py`:
+The main script is `analyzeNtuples.py`:
 
-`python analyzeHgcalL1Tntuple.py --help`
+`python analyzeNtuples.py --help`
 
 An example of how to run it:
 
-`python analyzeHgcalL1Tntuple.py -f cfg/hgctps.yaml -i cfg/datasets/ntp_v81.yaml -c tps -s doubleele_flat1to100_PU200 -n 1000 -d 0`
+`python analyzeNtuples.py -f cfg/hgctps.yaml -i cfg/datasets/ntp_v81.yaml -c tps -s doubleele_flat1to100_PU200 -n 1000 -d 0`
+
+## General idea
+
+Data are read in `collections` of objects corresponding to an `array` and are processed by `plotters` which creates set of histograms for different `selections` of the data `collections`.
+
 
 ### Configuration file
 The configuration is handled by 2 yaml files. 
+
 One specifying    
    - output directories
    - versioning of the plots
@@ -94,12 +104,13 @@ The other prividing
    - details of the input samples (location of the ntuple files)
 
 Example of configuration file can be found in:
- - [cfg/default.yaml](cfg/default.yaml)
- - [cfg/datasets/ntp_v66.yaml](cfg/datasets/ntp_v66.yaml)
+ - [cfg/egplots.yaml](cfg/egplots.yaml)
+ - [cfg/datasets/ntp_v92.yaml](cfg/datasets/ntp_v92.yaml)
 
 
 ### Reading ntuple branches or creating derived ones
-The list of branches to be read and converted in pandas `DataFrame` format is specified in the module
+
+The list of branches to be read and converted to `Awkward Arrays` format is specified in the module
 
 [collections](python/collections.py)
 
@@ -111,7 +122,7 @@ Selections are defined as strings in the module:
 [selections](python/selections.py)
 
 Different collections are defined for different objects and/or different purposes. The selections have a `name` whcih is used for the histogram naming (see below). Selections are used by the plotters.
-
+Selections can be combined and retrieved via regular expressions in the configuration of the plotters.
 
 ### Adding a new plotter
 The actual functionality of accessing the objects, filtering them according to the `selections` and filling `histograms` is provided by the plotter classes defined in the module:
@@ -137,9 +148,22 @@ The histogram naming follows the convention:
 This is assumed in all the `plotters` and in the code to actually draw the histograms.
 
 
+## Histogram drawing
+
+Of course you can use your favorite set of tools. I use mine [plot-drawing-tools](https://github.com/cerminar/plot-drawing-tools), which is based on `jupyter notebooks`.
+
+`cd ntuple-tools`
+`git clone git@github.com:cerminar/plot-drawing-tools.git`
+`jupyter-notebook`
+
+## HELP
+
+I can't figure out how to do some manipulation using the `awkward array` or `uproot`....you can take a look at examples and play witht the arrays in:
+[plot-drawing-tools/blob/master/eventloop-uproot-ak.ipynb](https://github.com/cerminar/plot-drawing-tools/blob/master/eventloop-uproot-ak.ipynb)
+
 ## Submitting to the batch system
 
-Note that the script `analyzeHgcalL1Tntuple.py` can be used to submit the jobs to the HTCondor batch system invoking the `-b` option. A dag configuration is created and you can actually submit it following the script output.
+Note that the script `analyzeNtuples.py` can be used to submit the jobs to the HTCondor batch system invoking the `-b` option. A dag configuration is created and you can actually submit it following the script output.
 
 ### Note about hadd job.
 For each sample injected in the batch system a DAG is created. The DAG will submitt an `hadd` command once all the jobs will succeed.

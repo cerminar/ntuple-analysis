@@ -5,7 +5,7 @@
 // return corrArr.size();
 // }
 // 
-
+// #include <boost/histogram.hpp>
 
 class HistoFiller {
 public:
@@ -66,8 +66,9 @@ public:
   sourceX(sourceX),
   sourceY(sourceY) {
     // std::cout << "Add histo: " << histo->GetName() << ": " << histo << std::endl;
-    // std::cout << "# of events: " << source.size() << std::endl;
-    // std::cout << &source << std::endl;
+    // std::cout << "# of events: " << sourceX.size() << std::endl;
+    // std::cout << &sourceX << std::endl;
+  // std::cout << &sourceY << std::endl;
 
   }
 
@@ -82,7 +83,7 @@ public:
   
   void fill(unsigned int id) {
     // std::cout << "FILL histo: " << histo->GetName() << ": " << histo << std::endl;
-    // std::cout << "   entry: " << id << " value: " << source[id] << std::endl;
+    // std::cout << "   entry: " << id << " value X: " << sourceX[id] << " Y: " << sourceY[id] << std::endl;
     if(filter[id]) 
       histo->Fill(sourceX[id], sourceY[id]);
   }
@@ -190,3 +191,32 @@ void fill1D_rate(TH1* histo, const std::vector<float>& values) {
 //          if rateplot.GetBinContent(ix) <= rate:
 //              cut = rateplot.GetXaxis().GetBinLowEdge(ix)
 //              break
+
+
+void fill_1Dhist(TH1* hist, const std::vector<float>& array, const std::vector<float>& weights) {
+  // FIXME: check sizes
+
+  for (unsigned i =0; i < array.size(); ++i)
+    hist->Fill(array[i], weights[i]);
+}
+
+void fill_1Dhist(TH1* hist, const std::vector<float>& array) {
+
+  for (auto value: array)
+    hist->Fill(value);
+}
+
+void fill_2Dhist(TH2* hist, const std::vector<float>& arrayX, const std::vector<float>& arrayY, const std::vector<float>& weights) {
+    // FIXME: check sizes
+
+  for(unsigned i =0; i < arrayX.size(); ++i) {
+    hist->Fill(arrayX[i], arrayY[i], weights[i]);
+  }
+}
+
+void fill_2Dhist(TH2* hist, const std::vector<float>& arrayX, const std::vector<float>& arrayY) {
+  // FIXME: check sizes
+  for(unsigned i =0; i < arrayX.size(); ++i) {
+    hist->Fill(arrayX[i], arrayY[i]);
+  }
+}

@@ -7,61 +7,64 @@ common:
     triolet: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v160B
+  plot_version: v160A
   run_clustering: False
   run_density_computation: False
 # +AccountingGroup = "group_u_CMS.u_zh.users"
 # +AccountingGroup = "group_u_CMST3.all"
 
 collections:
-
-  decoded_tk:
+      
+  mass:
     file_label:
-      dtk
+      mass
     samples:
       # - ele_flat2to100_PU0
       # - ele_flat2to100_PU200
       # - doubleele_flat1to100_PU0
-      - doubleele_flat1to100_PU200
-      # - nugun_alleta_pu200
+      # - doublephoton_flat1to100_PU200
+      # - doubleele_flat1to100_PU200
       # - photon_flat8to150_PU0
       # - photon_flat8to150_PU200
-      # - dyll_PU200
+      - dyll_PU200
     plotters:
-      - !!python/name:cfg.decodedtk.decTk_plotters
-      - !!python/name:cfg.egvalid.l1tc_emu_genmatched
+      - !!python/name:cfg.reso.diobj_mass
     htc_jobflavor:
       microcentury
     priorities:
-      ele_flat2to100_PU0: 1
-      ele_flat2to100_PU200: 5
       doubleele_flat1to100_PU0: 2
       doubleele_flat1to100_PU200: 7
+      doublephoton_flat1to100_PU200: 6
+      dyll_PU200: 7
     events_per_job:
       doubleele_flat1to100_PU0: 10000
-      doubleele_flat1to100_PU200: 30000
+      doubleele_flat1to100_PU200: 5000
+      doublephoton_flat1to100_PU200: 5000
+      dyll_PU200: 50000
 
-  l1tk:
+  reso:
     file_label:
-      dtk
+      reso
     samples:
       # - ele_flat2to100_PU0
       # - ele_flat2to100_PU200
       # - doubleele_flat1to100_PU0
+      # - doublephoton_flat1to100_PU200
       - doubleele_flat1to100_PU200
-      # - nugun_alleta_pu200
       # - photon_flat8to150_PU0
       # - photon_flat8to150_PU200
       # - dyll_PU200
     plotters:
-      - !!python/name:cfg.decodedtk.tk_plotters
+      - !!python/name:cfg.reso.eg_resotuples_plotters
     htc_jobflavor:
       microcentury
     priorities:
-      ele_flat2to100_PU0: 1
-      ele_flat2to100_PU200: 5
       doubleele_flat1to100_PU0: 2
       doubleele_flat1to100_PU200: 7
+      doublephoton_flat1to100_PU200: 6
+      dyll_PU200: 7
     events_per_job:
       doubleele_flat1to100_PU0: 10000
-      doubleele_flat1to100_PU200: 30000
+      doubleele_flat1to100_PU200: 5000
+      doublephoton_flat1to100_PU200: 5000
+      dyll_PU200: 50000

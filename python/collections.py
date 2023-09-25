@@ -18,11 +18,14 @@ from __future__ import print_function
 from __future__ import absolute_import
 import pandas as pd
 import numpy as np
+import awkward as ak
 import ROOT
 import math
 import sys
+import vector
 
-import root_numpy.tmva as rnptmva
+vector.register_awkward()
+# import root_numpy.tmva as rnptmva
 
 from .utils import debugPrintOut
 import python.clusterTools as clAlgo
@@ -31,7 +34,7 @@ import python.classifiers as classifiers
 import python.calibrations as calib
 import python.pf_regions as pf_regions
 from scipy.spatial import cKDTree    
-
+import python.selections as selections
 
 class WeightFile(object):
     def __init__(self, file_name):
@@ -125,7 +128,7 @@ class DFCollection(object):
     def __init__(self, name, label,
                  filler_function,
                  fixture_function=None,
-                 read_entry_block=1000,
+                 read_entry_block=10000,
                  depends_on=[],
                  debug=0,
                  print_function=lambda df: df,
@@ -142,11 +145,7 @@ class DFCollection(object):
         self.print_function = print_function
         self.max_print_lines = max_print_lines
         self.weight_function = weight_function
-        self.n_queries = 0
-        self.cached_queries = dict()
-        self.cached_entries = dict()
         self.entries = None
-        self.empty_df = None
         self.next_entry_read = 0
         self.read_entry_block = read_entry_block
         # print (f'Create collection: {self.name} with read_entry_block: {read_entry_block}')
@@ -202,78 +201,26 @@ class DFCollection(object):
             self.new_read = False
 
         if self.debug > 0:
-            df_print = self.empty_df
-            if event.file_entry in self.df.index.get_level_values('entry'):
-                df_print = self.df.loc[event.file_entry]
+            df_print = ak.to_dataframe(self.df[event.file_entry])
             debugPrintOut(max(debug, self.debug), self.label,
                           toCount=df_print,
                           toPrint=self.print_function(df_print),
                           max_lines=self.max_print_lines)
 
     def fill_real(self, event, stride, weight_file=None, debug=0):
-        self.clear_query_cache(debug)
         self.df = self.filler_function(event, stride)
         if self.fixture_function is not None:
-            # FIXME: wouldn't this be more efficient
-            # self.fixture_function(self.df)
-            self.df = self.fixture_function(self.df)
+            self.fixture_function(self.df)
         if self.weight_function is not None:
             self.df = self.weight_function(self.df, weight_file)
-        self.empty_df = pd.DataFrame(columns=self.df.columns)
-        self.entries = self.df.index.get_level_values('entry').unique()
+        self.entries = range(0,1000)# FIXME: self.df.index.get_level_values('entry').unique()
         if debug > 2:
-            print(f'read coll. {self.name} from entry: {event.file_entry} to entry: {event.file_entry+stride} (stride: {stride}), # rows: {self.df.shape[0]}, # entries: {len(self.entries)}')
-
-    def query(self, selection):
-        self.n_queries += 1
-        if selection.all or self.df.empty:
-            return self.df
-        if selection.selection not in self.cached_queries:
-            ret = self.df.query(selection.selection)
-            self.cached_queries[sys.intern(selection.selection)] = ret
-            entries = ret.index.get_level_values('entry').unique()
-            self.cached_entries[selection.hash] = entries
-            return ret
-        return self.cached_queries[selection.selection]
-
-    def query_event(self, selection, idx):
-        self.n_queries += 1
-        # print (f'coll: {self.name}, query selection: {selection.selection} for entry: {idx}')
-        if idx not in self.entries:
-            # print ('  enrty not in frame!')
-            return self.empty_df
-        if selection.all or self.df.empty:
-            # print ('  frame is empty')
-            return self.df.loc[idx]
-        if selection.selection not in self.cached_queries:
-            # print ('   query already cached')
-            ret = self.df.query(selection.selection)
-            self.cached_queries[sys.intern(selection.selection)] = ret
-            entries = ret.index.get_level_values('entry').unique()
-            self.cached_entries[selection.hash] = entries
-            if idx not in entries:
-                return self.empty_df
-            return ret.loc[idx]
-        # print ('    query not cached')
-        # print (f'     {self.cached_queries.keys()}')
-        entries = self.cached_entries[selection.hash]
-        if idx not in entries:
-            return self.empty_df
-        return self.cached_queries[selection.selection].loc[idx]
-
-    def clear_query_cache(self, debug=0):
-        if (debug > 5):
-            print('Coll: {} # queries: {} # unique queries: {}'.format(
-                self.name, self.n_queries, len(self.cached_queries.keys())))
-        self.n_queries = 0
-        self.cached_entries.clear()
-        self.cached_queries.clear()
+            print(f'read coll. {self.name} from entry: {event.file_entry} to entry: {event.file_entry+stride} (stride: {stride}), # rows: {len(self.df)}, # entries: {len(self.entries)}')
 
 
 def tkeg_fromcluster_fixture(tkegs):
     # print tkegs
     tkegs.loc[tkegs.hwQual == 1, 'hwQual'] = 3
-    return tkegs
 
 
 # NOTE: scorporate the part wich computes the layer_weights
@@ -339,10 +286,12 @@ def cl3d_fixtures(clusters):
     clusters['emax'] = clusters.emaxe*clusters.energy
     clusters.loc[clusters.hoe == -1, ['hoe']] = 999
     # print(clusters[clusters.hoe == -1][['hoe']])
-    clusters['bdt_pu'] = rnptmva.evaluate_reader(
-            classifiers.mva_pu_classifier_builder(), 
-            'BDT', 
-            clusters[['emax', 'emaxe', 'spptot', 'srrtot', 'ntc90']])
+    # FIXME: replace
+    clusters['bdt_pu'] = 0.5
+    # clusters['bdt_pu'] = rnptmva.evaluate_reader(
+    #         classifiers.mva_pu_classifier_builder(), 
+    #         'BDT', 
+    #         clusters[['emax', 'emaxe', 'spptot', 'srrtot', 'ntc90']])
 
     if False:
         clusters['bdt_pi'] = rnptmva.evaluate_reader(
@@ -353,38 +302,33 @@ def cl3d_fixtures(clusters):
     clusters.drop('ienergy', axis=1, inplace=True)
     clusters['meanz_scaled'] = np.abs(clusters.meanz) - 320
     # return
-    return clusters
+    # return clusters
 
 
 def gen_fixtures(particles, mc_particles):
-    if particles.empty:
-        return particles
+    # if particles.empty:
+    #     return particles
     # print particles.columns
     particles['pdgid'] = particles.pid
     particles['abseta'] = np.abs(particles.eta)
-
-    def get_mother_pdgid(particle, mc_particles):
-        if particle.gen == -1:
-            return -1
-        return mc_particles.df.loc[(particle.name[0], particle.gen-1)].firstmother_pdgid
-    particles['firstmother_pdgid'] = particles.apply(func=lambda x: get_mother_pdgid(x, mc_particles), axis=1)
-    return particles
+    particles['firstmother_pdgid'] = mc_particles.df.pdgid[particles[particles.gen != -1].gen-1]
+    # return particles
 
 
 def mc_fixtures(particles):
-    particles['firstmother'] = particles.index.to_numpy()
-    particles['firstmother_pdgid'] = particles.pdgid
-    return particles
-    # FIXME: this is broken
+    # print(['mc_fixtures'])
     # print(particles)
-
-    for particle in particles.itertuples():
-        print(particle.daughters)
-        if particle.daughters == [[], []]:
-            continue
-        particles.loc[particle.daughters, 'firstmother'] = particle.Index
-        particles.loc[particle.daughters, 'firstmother_pdgid'] = particle.pdgid
-    return particles
+    # # particles['firstmother'] = particles.index.to_numpy()
+    particles['firstmother_pdgid'] = particles.pdgid
+    # return particles
+    # # FIXME: this is broken
+    # for particle in particles.itertuples():
+    #     print(particle.daughters)
+    #     if particle.daughters == [[], []]:
+    #         continue
+    #     particles.loc[particle.daughters, 'firstmother'] = particle.Index
+    #     particles.loc[particle.daughters, 'firstmother_pdgid'] = particle.pdgid
+    # return particles
 
 
 def tc_fixtures(tcs):
@@ -395,14 +339,14 @@ def tc_fixtures(tcs):
         tcs['abseta'] = np.abs(tcs.eta)
     # tcs['xproj'] = tcs.x/tcs.z
     # tcs['yproj'] = tcs.y/tcs.z
-    return tcs
+    # return tcs
 
 
 def cl2d_fixtures(clusters):
     clusters['ncells'] = 1
     if not clusters.empty:
         clusters['ncells'] = [len(x) for x in clusters.cells]
-    return clusters
+    # return clusters
 
 
 def tower_fixtures(towers):
@@ -730,7 +674,7 @@ def tkele_fixture_ee(electrons):
     electrons['looseTkID'] = True
     electrons['photonID'] = True
     electrons['dpt'] = electrons.tkPt - electrons.pt
-    return electrons
+    # return electrons
 
 
 def tkele_fixture_eb(electrons):
@@ -741,30 +685,31 @@ def tkele_fixture_eb(electrons):
     electrons['looseTkID'] = ((hwqual.values >> 1) & 1) > 0
     electrons['photonID'] = ((hwqual.values >> 2) & 1) > 0
     electrons['dpt'] = electrons.tkPt - electrons.pt
-    return electrons
+    # return electrons
 
 
 def quality_flags(objs):
-    hwqual = pd.to_numeric(objs['hwQual'], downcast='integer')
+    # print(objs.hwQual)
+    objs['hwQual'] = ak.values_astype(objs.hwQual, np.int32)
     mask_tight_sta = 0b0001
     mask_tight_ele = 0b0010
     mask_tight_pho = 0b0100
     mask_no_brem = 0b1000
-    objs['IDTightSTA'] = np.bitwise_and(hwqual.values, mask_tight_sta) > 0
-    objs['IDTightEle'] = np.bitwise_and(hwqual.values, mask_tight_ele) > 0
-    objs['IDTightPho'] = np.bitwise_and(hwqual.values, mask_tight_pho) > 0
-    objs['IDNoBrem'] = np.bitwise_and(hwqual.values, mask_no_brem) > 0
-    objs['IDBrem'] = np.bitwise_and(hwqual.values, mask_no_brem) == 0
-
-    return objs
+    objs['IDTightSTA'] = np.bitwise_and(objs.hwQual, mask_tight_sta) > 0
+    objs['IDTightEle'] = np.bitwise_and(objs.hwQual, mask_tight_ele) > 0
+    objs['IDTightPho'] = np.bitwise_and(objs.hwQual, mask_tight_pho) > 0
+    objs['IDNoBrem'] = np.bitwise_and(objs.hwQual, mask_no_brem) > 0
+    objs['IDBrem'] = np.bitwise_and(objs.hwQual, mask_no_brem) == 0
+    # return objs
 
 def quality_ele_fixtures(objs):
+    # print(objs)
     objs['dpt'] = objs.tkPt - objs.pt
-    return quality_flags(objs)
+    quality_flags(objs)
 
 
 def print_columns(df):
-    print(df.columns)
+    print(df.fields)
     return df
 
 
@@ -834,9 +779,27 @@ def decodedTk_fixtures(objects):
 
 
 def build_double_obj(obj):
-    ret = pd.concat([obj,obj], names=['leg'], keys=[0, 1])
-    ret = ret.swaplevel(0,1)
-    ret = ret.swaplevel(1,2)
+    # we convert the ak.Array to ak.Record
+    # FIXME: this could be moved upstream for all collections!
+    obj['mass'] = 0.*obj.pt
+    data = {}
+    
+    # print(obj.fields)
+    for field in obj.fields:
+
+        if field in ['energy', 'exx', 'exy', 'weight',  'energy', 'dvx', 'dvy', 'dvz', 'ovx', 'ovy', 'ovz', 'mother', 'exphi', 'exeta', 'exx', 'exy', 'fbrem', 'fromBeamPipe','firstmother_pdgid']:
+            continue
+
+        data[field] = obj[field]
+        # print(field)
+        # print( obj[field])
+    obj_rec = vector.zip(data)
+    ret = ak.combinations(
+        array=obj_rec, 
+        n=2, 
+        axis=1,
+        fields=['leg0', 'leg1'])
+    # ret.show()
     return ret
 
 
@@ -847,7 +810,8 @@ gen = DFCollection(
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='gen', entry_block=entry_block),
     fixture_function=mc_fixtures,
-    print_function=lambda df: df[['pdgid', 'pt', 'eta', 'phi', 'daughters']],
+    print_function=lambda df: df[['pdgid', 'pt', 'eta', 'phi']],
+    # print_function=lambda df: df[(df.pdgid==23 | (abs(df.pdgid)==15))],
     max_print_lines=None,
     debug=0)
 
@@ -1399,7 +1363,15 @@ TkEleEE = DFCollection(
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='TkEleEE', entry_block=entry_block),
     fixture_function=quality_ele_fixtures,
+    print_function=lambda df:df.columns,
     debug=0)
+
+# Index(['pt', 'energy', 'eta', 'phi', 'tkIso', 'pfIso', 'puppiIso', 'tkChi2',
+#        'tkPt', 'tkZ0', 'compBDTScore', 'compBdt', 'compHoe', 'compSrrtot',
+#        'compDeta', 'compDphi', 'compDpt', 'compMeanz', 'compNstubs',
+#        'compChi2RPhi', 'compChi2RZ', 'compChi2Bend', 'dpt', 'hwQual',
+#        'IDTightSTA', 'IDTightEle', 'IDTightPho', 'IDNoBrem', 'IDBrem'],
+#       dtype='object')
 
 TkEleEB = DFCollection(
     name='TkEleEB', label='TkEle EB',
@@ -1506,7 +1478,7 @@ TkEmEB = DFCollection(
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='TkEmEB', entry_block=entry_block),
     fixture_function=quality_flags,
-    read_entry_block=200,
+    # read_entry_block=200,
     debug=0)
 
 TkEmL2 = DFCollection(
@@ -1550,6 +1522,37 @@ DoubleTkEmL2 = DFCollection(
     # fixture_function=,
     depends_on=[TkEmL2],
     debug=0)
+
+
+def dy_gen_selection(gen):
+    vec_bos = gen[gen.pdgid == 23]
+    print(vec_bos.status)
+    print(gen)
+
+
+selected_gen_parts = DFCollection(
+    name='SelectedSimParts', label='Double Sim e/g',
+    filler_function=lambda event, entry_block: dy_gen_selection(gen.df),
+    # fixture_function=,
+    depends_on=[gen],
+    debug=0)
+
+
+SelectedSimParts = DFCollection(
+    name='SelectedSimParts', label='Double Sim e/g',
+    filler_function=lambda event, entry_block: sim_parts.df[selections.Selector('^GEN$').one().selection(sim_parts.df)],
+    # fixture_function=,
+    depends_on=[sim_parts],
+    debug=0)
+
+
+DoubleSimEle = DFCollection(
+    name='DoubleSimEle', label='Double Sim e/g',
+    filler_function=lambda event, entry_block: build_double_obj(obj=selected_gen_parts),
+    # fixture_function=,
+    depends_on=[selected_gen_parts],
+    debug=0)
+
 
 
 egs_EE_pf_reg = DFCollection(

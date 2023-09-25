@@ -2,6 +2,8 @@ import pandas as pd
 import datetime
 import resource
 import gc
+import awkward as ak
+import awkward_pandas as akpd
 
 class TreeReader(object):
     def __init__(self, entry_range, max_events):
@@ -26,7 +28,10 @@ class TreeReader(object):
                             'tc_cellu',
                             'tc_cellv',
                             'gen_PUNumInt',
-                            'gen_TrueNumInt']
+                            'gen_TrueNumInt',
+                            # 'gen_daughters', 
+                            'simpart_posx', 'simpart_posy', 'simpart_posz',
+                            ]
         if len(self._branches) == 0:
             self._branches = [br for br in self.tree.keys() if br not in branch_blacklist]
         print(f'open new tree file with # entries: {self.tree.num_entries}')
@@ -53,11 +58,12 @@ class TreeReader(object):
         else:
             self.file_entry += 1
             self.global_entry += 1
-        self.n_tot_entries += 1
 
         # entry is the cursor in the file: when we open a new one (not the first) needs to be set to 0 again
-        if debug >= 2 or self.global_entry % 100 == 0:
+        if debug >= 2 or self.global_entry % 1000 == 0:
             self.printEntry()
+        
+        self.n_tot_entries += 1
         return True
 
     def printEntry(self):
@@ -92,15 +98,21 @@ class TreeReader(object):
                     if br.startswith(prefix+'_') and
                     not br == '{}_n'.format(prefix)]
         names = ['_'.join(br.split('_')[1:]) for br in branches]
-        name_map = dict(zip(branches, names))
-
+        name_map = dict(zip(names, branches))
         if len(branches) == 0:
             if fallback is not None:
                 return self.getDataFrame(prefix=fallback, entry_block=entry_block)
-            return pd.DataFrame()
-
-        # FIXME: stride needs to be set somehow
-        df = self.tree.arrays(branches, library='pd', entry_start=self.file_entry, entry_stop=self.file_entry+entry_block)
-        df.rename(columns=name_map, inplace=True)
+            prefs = set([br.split('_')[0] for br in self._branches])
+            print(f'stored branch prefixes are: {prefs}')
+            raise ValueError(f'[TreeReader::getDataFrame] No branches with prefix: {prefix}')
         
-        return df
+        akarray = self.tree.arrays(names, 
+                                   library='ak', 
+                                   aliases=name_map, 
+                                   entry_start=self.file_entry, 
+                                   entry_stop=self.file_entry+entry_block)
+        # FIXME: we should probably do an ak.Record using sometjhing along the lines of:
+        # ele_rec = ak.zip({'pt': tkele.pt, 'eta': tkele.eta, 'phi': tkele.phi}, with_name="pippo")
+        # this would allow to handle the records and assign behaviours....
+        return akarray
+        

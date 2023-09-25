@@ -5,7 +5,7 @@ import os
 import time
 from unittest import result
 import subprocess as subproc
-import uproot4 as up
+import uproot as up
 import json
 import uuid
 from io import open

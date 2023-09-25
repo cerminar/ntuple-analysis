@@ -7,7 +7,7 @@ common:
     triolet: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v152B
+  plot_version: v160A
   run_clustering: False
   run_density_computation: False
 # +AccountingGroup = "group_u_CMS.u_zh.users"
@@ -25,6 +25,7 @@ collections:
       - doublephoton_flat1to100_PU200
       - doubleele_flat1to100_PU200
       - nugun_alleta_pu200
+      - ttbar_PU200
       # - photon_flat8to150_PU0
       # - photon_flat8to150_PU200
       # - dyll_PU200
@@ -37,11 +38,13 @@ collections:
       doubleele_flat1to100_PU200: 7
       doublephoton_flat1to100_PU200: 6
       nugun_alleta_pu200: 6
+      ttbar_PU200: 6
     events_per_job:
       doubleele_flat1to100_PU0: 10000
       doubleele_flat1to100_PU200: 10000
       doublephoton_flat1to100_PU200: 10000
       nugun_alleta_pu200: 10000
+      ttbar_PU200: 10000
 
 
   quantization_plots:

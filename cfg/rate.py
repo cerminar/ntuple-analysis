@@ -91,7 +91,7 @@ egid_etatk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Sele
 egid_iso_etatk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Iso|all')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[C]$'))()
 
 egid_menu_ele_selections = (selections.Selector('^MenuEle')*selections.Selector('^EtaE[BE]$|all'))()
-egid_menu_pho_selections = (selections.Selector('^MenuPho')*selections.Selector('^EtaE[BE]$|all'))()
+egid_menu_pho_selections = (selections.Selector('^MenuPho|^MenuSta')*selections.Selector('^EtaE[BE]$|all'))()
 
 egid_menu_ele_rate_selections = (selections.Selector('^SingleIsoTkEle|^SingleTkEle')*selections.Selector('^EtaE[BE]$|all'))()
 egid_menu_pho_rate_selections = (selections.Selector('^SingleIsoTkPho|^SingleEGEle')*selections.Selector('^EtaE[BE]$|all'))()
@@ -112,20 +112,32 @@ egid_iso_eta_eb_selections = (selections.Selector('^IDTight[EP]|all')*selections
 # for sel in egid_iso_etatk_selections:
 #     print(sel)
 
-eg_emuCTl1_plotters = [
+eg_emuCTl1_sta_plotters = [
     plotters.RatePlotter(
         collections.EGStaEE, egid_eta_ee_selections),
     plotters.RatePlotter(
         collections.EGStaEB, egid_eta_eb_selections),
+]
+
+eg_emuCTl1_pho_plotters = [
     plotters.RatePlotter(
         collections.TkEmEE, egid_iso_eta_eetk_selections),
     plotters.RatePlotter(
         collections.TkEmEB, egid_iso_eta_eb_selections),
+]
+
+eg_emuCTl1_ele_plotters = [
     plotters.RatePlotter(
         collections.TkEleEE, egid_iso_eta_eetk_selections_comp),
     plotters.RatePlotter(
         collections.TkEleEB, egid_iso_eta_eb_selections),
 ]
+
+eg_emuCTl1_plotters = []
+eg_emuCTl1_plotters.extend(eg_emuCTl1_sta_plotters)
+eg_emuCTl1_plotters.extend(eg_emuCTl1_pho_plotters)
+eg_emuCTl1_plotters.extend(eg_emuCTl1_ele_plotters)
+
 
 eg_emuCTl2_plotters = [
     plotters.RatePlotter(

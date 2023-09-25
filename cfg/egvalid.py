@@ -149,15 +149,15 @@ l1tc_l1emu_eb_genmatched = [
 ]
 
 l1tc_l1emu_ee_genmatched = [
-    plotters.EGGenMatchPlotter(
-        collections.EGStaEE, collections.sim_parts,
-        egid_sta_selections, gen_ee_selections),
+    # plotters.EGGenMatchPlotter(
+    #     collections.EGStaEE, collections.sim_parts,
+    #     egid_sta_selections, gen_ee_selections),
     plotters.EGGenMatchPlotter(
         collections.TkEleEE, collections.sim_parts,
         egid_iso_tkele_comp_selections, gen_ee_tk_selections),
-    plotters.EGGenMatchPlotter(
-        collections.TkEmEE, collections.sim_parts,
-        egid_iso_tkpho_selections, gen_ee_tk_selections),
+    # plotters.EGGenMatchPlotter(
+    #     collections.TkEmEE, collections.sim_parts,
+    #     egid_iso_tkpho_selections, gen_ee_tk_selections),
 ]
 
 l1tc_l1emu_ee_ell_genmatched = [
@@ -177,17 +177,17 @@ l1tc_l2emu_genmatched = [
 ]
 
 l1tc_l2emu_ell_genmatched = [
-    plotters.EGGenMatchPlotter(
-        collections.TkEmL2Ell, collections.sim_parts,
-        egid_iso_tkpho_selections, selections.gen_selections),
+    # plotters.EGGenMatchPlotter(
+    #     collections.TkEmL2Ell, collections.sim_parts,
+    #     egid_iso_tkpho_selections, selections.gen_selections),
     plotters.EGGenMatchPlotter(
         collections.TkEleL2Ell, collections.sim_parts,
         egid_iso_tkele_selections, selections.gen_selections),   
 ]
 
 
-egid_menu_ele_rate_selections = (selections.Selector('^SingleIsoTkEle|^SingleTkEle')*selections.Selector('^EtaE[BE]$|all'))()
-egid_menu_pho_rate_selections = (selections.Selector('^SingleIsoTkPho|^SingleEGEle')*selections.Selector('^EtaE[BE]$|all'))()
+egid_menu_ele_rate_selections = (selections.Selector('^SingleIsoTkEle|^SingleTkEle|^MenuEle')*selections.Selector('^EtaE[BE]$|all'))()
+egid_menu_pho_rate_selections = (selections.Selector('^SingleIsoTkPho|^SingleEGEle|^MenuSta|^MenuPho')*selections.Selector('^EtaE[BE]$|all'))()
 
 
 l1tc_l2emu_singlelepton_genmatched = [
@@ -197,6 +197,16 @@ l1tc_l2emu_singlelepton_genmatched = [
     plotters.EGGenMatchPlotter(
         collections.TkEleL2, collections.sim_parts,
         egid_menu_ele_rate_selections, gen_selections),   
+]
+
+
+l1tc_l2emu_singlelepton_rate_pt_wps = [
+    plotters.EGGenMatchPtWPSPlotter(
+        collections.TkEmL2, collections.sim_parts,
+        gen_selections),
+    plotters.EGGenMatchPtWPSPlotter(
+        collections.TkEleL2, collections.sim_parts,
+        gen_selections),
 ]
 
 l1tc_emu_rate_pt_wps = [
@@ -216,9 +226,18 @@ l1tc_emu_rate_pt_wps = [
     #     collections.TkEmEB, collections.sim_parts,
     #     selections.gen_eb_selections),
     plotters.EGGenMatchPtWPSPlotter(
+        collections.TkEleEE, collections.sim_parts,
+        gen_selections),
+    plotters.EGGenMatchPtWPSPlotter(
+        collections.TkEleEllEE, collections.sim_parts,
+        gen_selections),
+    plotters.EGGenMatchPtWPSPlotter(
         collections.TkEmL2, collections.sim_parts,
         gen_selections),
     plotters.EGGenMatchPtWPSPlotter(
         collections.TkEleL2, collections.sim_parts,
         gen_selections),
 ]
+
+# for sel in egid_menu_pho_rate_selections:
+#     print(sel)

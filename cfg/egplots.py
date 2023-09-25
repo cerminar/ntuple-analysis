@@ -6,8 +6,8 @@ import python.selections as selections
 
 # simple_selections = (selections.Selector('^EGq[4-5]$')*('^Pt[1-3][0]$|all'))()
 
-simple_selections = [selections.Selection("all", '', ''),
-                     selections.Selection('Pt10', 'p_{T}^{TOBJ}>=10GeV', 'pt >= 10'),]
+simple_selections = [selections.Selection("all", '', None),
+                     selections.Selection('Pt5', 'p_{T}^{TOBJ}>=5GeV', lambda array : array.pt >= 5),]
 
 sta_selection = (selections.Selector('^IDTight[EPS]|all')*selections.Selector('^Pt5|all')*selections.Selector('^EtaABC$|all'))()
 # print(f"simple_selections: {simple_selections}")
@@ -19,7 +19,9 @@ l1tc_simple_plotters = [
     # plotters.TkElePlotter(collections.TkEleEE, egid_iso_etatk_selections),
     # plotters.TkElePlotter(collections.TkEleEB, egid_iso_etatk_selections),
     # plotters.TkElePlotter(collections.TkEleL2, egid_iso_etatk_selections),
-    plotters.EGPlotter(collections.TkEleEE, sta_selection),
+
+    # plotters.EGPlotter(collections.TkEleEE, sta_selection),
+    plotters.EGPlotter(collections.TkEleEE, simple_selections),
 
     # plotters.EGPlotter(collections.TkEmEE, sta_selection),
     # plotters.EGPlotter(collections.TkEmEB, sta_selection),
