@@ -8,8 +8,8 @@
 # source ${CVMFS_TOOLS}/external/tbb/2017_U6/etc/profile.d/init.sh
 # source ${CVMFS_TOOLS}/external/xrootd/4.5.0/etc/profile.d/init.sh
 source /cvmfs/cms.cern.ch/cmsset_default.sh
-cd /cvmfs/cms.cern.ch/slc7_amd64_gcc820/cms/cmssw/CMSSW_11_1_2/src/
+cd /cvmfs/cms.cern.ch/slc7_amd64_gcc10/cms/cmssw/CMSSW_12_5_0/src/
 echo $?
 eval `scram runtime -sh`
 cd -
-source /cvmfs/cms.cern.ch/slc7_amd64_gcc820/lcg/root/6.22.03/bin/thisroot.sh
+source /cvmfs/cms.cern.ch/slc7_amd64_gcc10/lcg/root/6.22.08/bin/thisroot.sh

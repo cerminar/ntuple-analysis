@@ -38,19 +38,15 @@ For starting using virtualenvwrapper
 The **first time** you will have to create the actual instance of the `virtualenv`:
 
 ``mkvirtualenv --system-site-packages
- -p `which python3.8` -r requirements_py3.8.txt <venvname>``
+ -p `which python3.9` -r requirements.txt <venvname>``
 
-[requirements_py3.8.txt](requirements_py3.8.txt)
-
-and 
-
-[requirements_py3.10.txt](requirements_py3.10.txt)
-
-for python 3.8 and 3.10 respectively.
+[requirements.txt](requirements.txt)
 
 You can use the file directly using for example:
 
-`pip install -r requirements_py3.8.txt`
+`pip install -r requirements.txt`
+
+*NOTE*: `python > 3.9` is a requirement.
 
 
 ## Setup after first installation
