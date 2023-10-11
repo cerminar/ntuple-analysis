@@ -365,6 +365,8 @@ tp_pt_sel = [
 tp_pt_sel_ext = [
     Selection('all', '', ''),
     Selection('Pt2', 'p_{T}^{TOBJ} #geq 2GeV',  lambda array: array.pt >= 2),
+    Selection('Pt3', 'p_{T}^{TOBJ} #geq 3GeV',  lambda array: array.pt >= 3),
+    Selection('Pt4', 'p_{T}^{TOBJ} #geq 4GeV',  lambda array: array.pt >= 4),
     Selection('Pt5', 'p_{T}^{TOBJ} #geq 5GeV',  lambda array: array.pt >= 5),
     Selection('Pt10', 'p_{T}^{TOBJ} #geq 10 GeV', lambda array: array.pt >= 10),
     Selection('Pt15', 'p_{T}^{TOBJ} #geq 15 GeV', lambda array: array.pt >= 15),
