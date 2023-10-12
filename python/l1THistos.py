@@ -622,10 +622,11 @@ class EGHistos(BaseHistos):
 
         bh.fill_1Dhist(hist=self.h_pt,     array=egs.pt,     weights=weight)
         bh.fill_1Dhist(hist=self.h_eta,    array=egs.eta,    weights=weight)
-        bh.fill_1Dhist(hist=self.h_energy, array=egs.energy, weights=weight)
+        # bh.fill_1Dhist(hist=self.h_energy, array=egs.energy, weights=weight)
         bh.fill_1Dhist(hist=self.h_hwQual, array=egs.hwQual, weights=weight)
         if 'tkIso' in egs.fields:
             bh.fill_1Dhist(hist=self.h_tkIso, array=egs.tkIso, weights=weight)
+        if 'pfIso' in egs.fields:
             bh.fill_1Dhist(hist=self.h_pfIso, array=egs.pfIso, weights=weight)
         if 'tkIsoPV' in egs.fields:
             bh.fill_1Dhist(hist=self.h_tkIsoPV, array=egs.tkIsoPV, weights=weight)

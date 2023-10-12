@@ -10,27 +10,15 @@ gen_pid_ee_selections = (selections.Selector('GEN$')*('Ee$'))()
 
 plotters = [
     plotters.IsoTuplePlotter(
-        collections.tkeles_EE,
+        collections.TkEleEE,
         collections.gen_parts,
         egid_ee_selections,
         gen_pid_ee_selections
         ),
     plotters.IsoTuplePlotter(
-        collections.tkem_EE,
+        collections.TkEmEE,
         collections.gen_parts,
         egid_ee_selections,
-        gen_pid_ee_selections
-        ),
-    plotters.IsoTuplePlotter(
-        collections.tkeles_EE_pfnf,
-        collections.gen_parts,
-        egid_ee_pfnf_selections,
-        gen_pid_ee_selections
-        ),
-    plotters.IsoTuplePlotter(
-        collections.tkem_EE_pfnf,
-        collections.gen_parts,
-        egid_ee_pfnf_selections,
         gen_pid_ee_selections
         ),
 ]
