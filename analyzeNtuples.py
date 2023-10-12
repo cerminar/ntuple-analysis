@@ -158,7 +158,14 @@ def analyze(params, batch_idx=-1):
         # tree_file = up.open(tree_file_name, num_workers=2)
         tree_file = up.open(tree_file_name, num_workers=1)
         print(f'opening file: {tree_file_name}')
-        ttree = tree_file[params.tree_name.split('/')[0]][params.tree_name.split('/')[1]]
+        print(f' . tree name: {params.tree_name}')
+        def getUpTree(uprobj, name):
+            parts = name.split('/')
+            if len(parts) > 1:
+                return getTree(uprobj, '/'.join(parts[1:]))
+            return uprobj[name]
+
+        ttree = getUpTree(tree_file, params.tree_name)
 
         tree_reader.setTree(ttree)
 
