@@ -339,9 +339,6 @@ class GenParticleHistos(BaseHistos):
             # FIXME: address in hist migration
             # self.h_pt = bh.TH1F(name+'_pt', 'Gen Part P_{T} (GeV); p_{T}^{GEN} [GeV];', n_pt_bins, array('d', pt_bins))
             self.h_pt = bh.TH1F(name+'_pt', 'Gen Part P_{T} (GeV); p_{T}^{GEN} [GeV];', 50, 0, 100)
-            # self.h_energy = bh.TH1F(name+'_energy', 'Gen Part Energy (GeV); E [GeV];', 100, 0, 1000)
-            self.h_reachedEE = bh.TH1F(name+'_reachedEE', 'Gen Part reachedEE', 4, 0, 4)
-            self.h_fBrem = bh.TH1F(name+'_fBrem', 'Brem. p_{T} fraction', 30, 0, 1)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
@@ -356,13 +353,6 @@ class GenParticleHistos(BaseHistos):
                        array=particles.abseta)
         bh.fill_1Dhist(hist=self.h_pt,
                        array=particles.pt)
-        # bh.fill_1Dhist(hist=self.h_energy,
-        #               array=particles.energy,
-        #               weights=particles_weight)
-        bh.fill_1Dhist(hist=self.h_reachedEE,
-                       array=particles.reachedEE)
-        bh.fill_1Dhist(hist=self.h_fBrem,
-                       array=particles.fbrem)
 
 
 class DigiHistos(BaseHistos):
@@ -899,6 +889,24 @@ class TrackHistos(BaseHistos):
         bh.fill_2Dhist(self.h_z0Vpt, tracks.pt, tracks.z0)
 
 
+
+class JetHistos(BaseHistos):
+    def __init__(self, name, root_file=None, debug=False):
+        if not root_file:
+            self.h_pt = bh.TH1F(name+'_pt', 
+                                'Track Pt (GeV); p_{T} [GeV]', 100, 0, 100)
+            self.h_eta = bh.TH1F(name+'_eta', 
+                                 'Track eta; #eta;', 100, -4, 4)
+
+        BaseHistos.__init__(self, name, root_file, debug)
+
+    def fill(self, tracks):
+        bh.fill_1Dhist(self.h_pt, tracks.pt)
+        bh.fill_1Dhist(self.h_eta, tracks.eta)
+
+
+
+
 class TriggerTowerHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
@@ -1271,10 +1279,6 @@ class HistoSetEff():
 class TrackResoHistos(BaseResoHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_ptResVpt = bh.TH2F(
-                name+'_ptResVpt',
-                'Track Pt reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];',
-                50, 0, 100, 100, -20, 20)
             self.h_ptResp = bh.TH1F(
                 name+'_ptResp',
                 'Track Pt resp.; p_{T}^{L1}/p_{T}^{GEN}',
@@ -1317,8 +1321,6 @@ class TrackResoHistos(BaseResoHistos):
         BaseResoHistos.__init__(self, name, root_file, debug)
 
     def fill(self, reference, target):
-
-        bh.fill_2Dhist(self.h_ptResVpt, reference.pt, target.pt-reference.pt)
         bh.fill_1Dhist(self.h_ptResp, target.pt/reference.pt)
         bh.fill_2Dhist(self.h_ptRespVeta, reference.eta, target.pt/reference.pt)
         bh.fill_2Dhist(self.h_ptRespVpt, reference.pt, target.pt/reference.pt)
@@ -1328,6 +1330,52 @@ class TrackResoHistos(BaseResoHistos):
         # self.h_pt2stRespVeta.Fill(reference.eta, target.pt2stubs/reference.pt)
         # self.h_pt2stRespVpt.Fill(reference.pt, target.pt2stubs/reference.pt)
 
+        bh.fill_1Dhist(self.h_etaRes, (target.eta - reference.eta))
+        bh.fill_1Dhist(self.h_phiRes, (target.phi - reference.phi))
+        bh.fill_1Dhist(self.h_drRes, np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
+
+    def fill_nMatch(self, n_matches):
+        self.h_nMatch.Fill(n_matches)
+
+
+class JetResoHistos(BaseResoHistos):
+    def __init__(self, name, root_file=None, debug=False):
+        if not root_file:
+            self.h_ptResp = bh.TH1F(
+                name+'_ptResp',
+                'Track Pt resp.; p_{T}^{L1}/p_{T}^{GEN}',
+                100, 0, 3)
+            self.h_ptRespVpt = bh.TH2F(
+                name+'_ptRespVpt',
+                'Track Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
+                50, 0, 100, 100, 0, 3)
+            self.h_ptRespVeta = bh.TH2F(
+                name+'_ptRespVeta',
+                'Track Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};',
+                50, -4, 4, 100, 0, 3)
+            self.h_etaRes = bh.TH1F(
+                name+'_etaRes',
+                'Track eta reso',
+                100, -0.4, 0.4)
+            self.h_phiRes = bh.TH1F(
+                name+'_phiRes',
+                'Track phi reso',
+                100, -0.4, 0.4)
+            self.h_drRes = bh.TH1F(
+                name+'_drRes',
+                'Track DR reso',
+                100, 0, 0.4)
+            self.h_nMatch = bh.TH1F(
+                name+'_nMatch',
+                '# matches',
+                100, 0, 100)
+
+        BaseResoHistos.__init__(self, name, root_file, debug)
+
+    def fill(self, reference, target):
+        bh.fill_1Dhist(self.h_ptResp, target.pt/reference.pt)
+        bh.fill_2Dhist(self.h_ptRespVeta, reference.eta, target.pt/reference.pt)
+        bh.fill_2Dhist(self.h_ptRespVpt, reference.pt, target.pt/reference.pt)
         bh.fill_1Dhist(self.h_etaRes, (target.eta - reference.eta))
         bh.fill_1Dhist(self.h_phiRes, (target.phi - reference.phi))
         bh.fill_1Dhist(self.h_drRes, np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
@@ -1527,8 +1575,8 @@ class EGResoHistos(BaseResoHistos):
         bh.fill_2Dhist(self.h_ptRespVpt, reference.pt, target.pt/reference.pt)
         bh.fill_1Dhist(self.h_etaRes, target.eta - reference.eta)
         bh.fill_1Dhist(self.h_phiRes, target.phi - reference.phi)
-        bh.fill_1Dhist(self.h_exetaRes, target.eta - reference.exeta)
-        bh.fill_1Dhist(self.h_exphiRes, target.phi - reference.exphi)
+        bh.fill_1Dhist(self.h_exetaRes, target.eta - reference.caloeta)
+        bh.fill_1Dhist(self.h_exphiRes, target.phi - reference.calophi)
 
         # if 'tkZ0' in target.columns:
         #     self.h_dzRes.Fill(target_line.tkZ0 - reference.ovz)

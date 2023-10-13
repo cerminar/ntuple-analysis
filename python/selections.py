@@ -75,8 +75,10 @@ class Selection:
         self.name = name
         self.label_ = label
         self.selection = selection
-        if self.name == 'all':
+        self.all = False
+        if self.name == 'all' or selection is None:
             self.selection = lambda ar: True;
+            self.all = True
         self.hash = hash(selection)
         self.register()
 
@@ -93,23 +95,30 @@ class Selection:
 
     def __and__(self, other):
         """ & operation """
-        if other.all:
-            return self
-        if self.all:
-            return other
+        new_name = name='{}{}'.format(self.name, other.name)
+        if self.name == 'all':
+            new_name = other.name
+        if other.name == 'all':
+            new_name = self.name
+
         new_label = '{}, {}'.format(self.label_, other.label_)
         if self.label_ == '':
             new_label = other.label_
         if other.label == '':
             new_label = self.label_
-        # obj_name = 'L1'
-        # if 'GEN' in other.name or 'GEN' in self.name:
-        #     obj_name = 'GEN'
-        # new_label = new_label.replace('TOBJ', obj_name)
+
+        new_selection = None
+        if other.all and not self.all:
+            new_selection = self.selection
+        elif self.all and not other.all:
+            new_selection = other.selection
+        elif not self.all and not other.all:
+            new_selection = lambda array : self.selection(array) & other.selection(array)
+
         return Selection(
-            name='{}{}'.format(self.name, other.name),
+            name=new_name,
             label=new_label,
-            selection=lambda array : self.selection(array) & other.selection(array))
+            selection=new_selection)
 
 
     def __or__(self, other):
@@ -153,12 +162,7 @@ class Selection:
             self.__class__.__name__,
             self)
 
-    @property
-    def all(self):
-        if self.name == 'all':
-            return True
-        return False
-
+    
 
 def multiply_selections(list1, list2):
     return and_selections(list1, list2)
@@ -434,58 +438,21 @@ eta_sel = [
     Selection('EtaBCDE', '1.52 < |#eta^{TOBJ}|', lambda array: 1.52 < abs(array.eta))
 ]
 
-
-# # gen_ee_sel = [
-# #     Selection('', '', 'reachedEE >0 ')]
-# gen_eta_ee_sel = [
-#     # Selection('EtaA', '|#eta^{TOBJ}| <= 1.52', 'abs(eta) <= 1.52'),
-#     # Selection('EtaB', '1.52 < |#eta^{TOBJ}| <= 1.7', '1.52 < abs(eta) <= 1.7'),
-#     # Selection('EtaC', '1.7 < |#eta^{TOBJ}| <= 2.4', '1.7 < abs(eta) <= 2.4'),
-#     # Selection('EtaD', '2.4 < |#eta^{TOBJ}| <= 2.8', '2.4 < abs(eta) <= 2.8'),
-#     # Selection('EtaDE', '2.4 < |#eta^{TOBJ}| <= 3.0', '2.4 < abs(eta) <= 3.0'),
-#     # Selection('EtaE', '|#eta^{TOBJ}| > 2.8', 'abs(eta) > 2.8'),
-#     # Selection('EtaAB', '|#eta^{TOBJ}| <= 1.7', 'abs(eta) <= 1.7'),
-#     # Selection('EtaABC', '|#eta^{TOBJ}| <= 2.4', 'abs(eta) <= 2.4'),
-#     Selection('EtaBC', '1.52 < |#eta^{TOBJ}| <= 2.4', '1.52 < abs(eta) <= 2.4'),
-#     Selection('EtaBCD', '1.52 < |#eta^{TOBJ}| <= 2.8', '1.52 < abs(eta) <= 2.8'),
-#     # Selection('EtaBCDE', '1.52 < |#eta^{TOBJ}|', '1.52 < abs(eta)')
-#     ]
-# gen_eta_eb_sel = [
-#     Selection('EtaF', '|#eta^{TOBJ}| <= 1.479', 'abs(eta) <= 1.479')]
-# gen_eta_sel = [
-#     Selection('EtaF', '|#eta^{TOBJ}| <= 1.479', 'abs(eta) <= 1.479'),
-#     Selection('EtaD', '2.4 < |#eta^{TOBJ}| <= 2.8', '2.4 < abs(eta) <= 2.8'),
-#     Selection('EtaBC', '1.52 < |#eta^{TOBJ}| <= 2.4', '1.52 < abs(eta) <= 2.4'),
-#     Selection('EtaBCD', '1.52 < |#eta^{TOBJ}| <= 2.8', '1.52 < abs(eta) <= 2.8')
-# ]
-
-
-# gen_pt_sel = [
-#     Selection('all'),
-#     Selection('Pt15', 'p_{T}^{TOBJ}>=15GeV', 'pt >= 15'),
-#     # Selection('Pt10to25', '10 #leq p_{T}^{TOBJ} < 25GeV', '(pt >= 10) & (pt < 25)'),
-#     # Selection('Pt20', 'p_{T}^{TOBJ}>=20GeV', 'pt >= 20'),
-#     Selection('Pt30', 'p_{T}^{TOBJ}>=30GeV', 'pt >= 30'),
-#     # Selection('Pt35', 'p_{T}^{TOBJ}>=35GeV', 'pt >= 35'),
-#     # Selection('Pt40', 'p_{T}^{TOBJ}>=40GeV', 'pt >= 40')
-# ]
-# gen_pt_sel_red = [
-#     Selection('all'),
-#     Selection('Pt15', 'p_{T}^{TOBJ}>=15GeV', 'pt >= 15')
-# ]
-
-# gen_pt_upper = [
-#     Selection('', '', 'pt <= 100')
-# ]
-
 gen_pid_sel = [
     Selection('GEN', '', 
-              lambda ar: ((np.abs(ar.pdgid) == PID.electron ) | (np.abs(ar.pdgid) == PID.photon)) & (ar.gen != -1))
+              lambda ar: ((np.abs(ar.pdgid) == PID.electron ) | (np.abs(ar.pdgid) == PID.photon)) & (ar.prompt >= 2))
         #       '(((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})) | \
         #                    ((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})))'.format(
         # PID.electron, PID.electron,
         # PID.photon, PID.photon))
 ]
+
+gen_jet_sel = [
+    Selection('GENJ')
+]
+
+
+
 gen_ele_sel = [
     Selection('GEN11', '', '((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {}))'.format(
         PID.electron, PID.electron))

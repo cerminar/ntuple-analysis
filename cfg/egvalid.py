@@ -3,7 +3,6 @@ import python.plotters as plotters
 import python.collections as collections
 import python.selections as selections
 
-sim_eg_match_ee_selections = (selections.Selector('^EGq[4-5]$')*('^Pt[1-3][0]$|all'))()
 gen_ee_tk_selections = (selections.Selector('GEN$')*('Ee$')*('^Eta[A-C]$|EtaBC$|all')+selections.Selector('GEN$')*('Ee$')*('Pt15|Pt30'))()
 gen_ee_selections = (selections.Selector('GEN$')*('Ee')*('^Eta[BC]+[CD]$|^Eta[A-D]$|all')+selections.Selector('GEN$')*('Ee')*('^Pt15|^Pt30'))()
 
@@ -60,7 +59,7 @@ egid_iso_tkpho_selections = (selections.Selector('^IDTight[P]|all')*('^Pt[1-3][0
 egid_iso_tkele_comp_selections = (selections.Selector('^IDTight[E]|^IDComp|all')*('^Pt[1-3][0]$|all'))()
 
 
-gen_selections = (selections.Selector('GEN$')*('^Eta[F]$|^Eta[AF][ABCD]*[C]$|all')+selections.Selector('GEN$')*('^Ee|all')*('^Pt15|^Pt30'))()
+gen_selections = (selections.Selector('GEN$')*('^Eta[F]$|^Eta[AF][ABCD]*[C]$|all')+selections.Selector('GEN$')*('^Pt15|^Pt30'))()
 
 # for sels in [gen_selections, selections.gen_selections]:
 #     print('--------------------')
@@ -76,22 +75,22 @@ l1tc_emu_genmatched = [
     #     collections.EGStaEB, collections.sim_parts,
     #     egid_sta_selections, selections.gen_eb_selections),
     plotters.EGGenMatchPlotter(
-        collections.TkEleEE, collections.sim_parts,
+        collections.TkEleEE, collections.gen_ele,
         egid_iso_tkele_selections, gen_ee_tk_selections),
     plotters.EGGenMatchPlotter(
-        collections.TkEleEB, collections.sim_parts,
+        collections.TkEleEB, collections.gen_ele,
         egid_iso_tkele_selections, selections.gen_eb_selections),
     plotters.EGGenMatchPlotter(
-        collections.TkEmEE, collections.sim_parts,
+        collections.TkEmEE, collections.gen_ele,
         egid_iso_tkpho_selections, gen_ee_tk_selections),
     plotters.EGGenMatchPlotter(
-        collections.TkEmEB, collections.sim_parts,
+        collections.TkEmEB, collections.gen_ele,
         egid_iso_tkpho_selections, selections.gen_eb_selections),
     plotters.EGGenMatchPlotter(
-        collections.TkEmL2, collections.sim_parts,
+        collections.TkEmL2, collections.gen_ele,
         egid_iso_tkpho_selections, selections.gen_selections),
     plotters.EGGenMatchPlotter(
-        collections.TkEleL2, collections.sim_parts,
+        collections.TkEleL2, collections.gen_ele,
         egid_iso_tkele_selections, selections.gen_selections),
     
 ]
@@ -130,10 +129,10 @@ l1tc_l1emu_ee_ell_genmatched = [
 
 l1tc_l2emu_genmatched = [
     plotters.EGGenMatchPlotter(
-        collections.TkEmL2, collections.sim_parts,
+        collections.TkEmL2, collections.gen,
         egid_iso_tkpho_selections, selections.gen_selections),
     plotters.EGGenMatchPlotter(
-        collections.TkEleL2, collections.sim_parts,
+        collections.TkEleL2, collections.gen,
         egid_iso_tkele_selections, selections.gen_selections),   
 ]
 

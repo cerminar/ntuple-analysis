@@ -1,0 +1,32 @@
+
+common:
+  output_dir:
+    default: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
+    matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
+    Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
+    triolet: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
+  output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
+  output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
+  plot_version: v200A
+  run_clustering: False
+  run_density_computation: False
+# +AccountingGroup = "group_u_CMS.u_zh.users"
+# +AccountingGroup = "group_u_CMST3.all"
+
+collections:
+      
+  jet_eff:
+    file_label:
+      jeteff
+    samples:
+      - ttbar_PU200
+    plotters:
+      - !!python/name:cfg.jets.jets_genmatched
+    htc_jobflavor:
+      microcentury
+    priorities:
+      ttbar_PU200: 2
+    events_per_job:
+      ttbar_PU200: 10000
+
+

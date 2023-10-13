@@ -14,5 +14,5 @@ compid_plotters = [
     plotters.CompCatTuplePlotter(collections.TkEleEE, collections.sim_parts, comp_selections, sim_selections)
 ]
 
-for sel in sim_selections:
-    print(sel)
+# for sel in sim_selections:
+#     print(sel)

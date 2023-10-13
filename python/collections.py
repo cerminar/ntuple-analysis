@@ -108,9 +108,9 @@ class DFCollection(object):
     """
     [DFCollection]: collection of objects consumed by plotters.
 
-    This class represents the DataFrame of the objects which need to be plotted.
+    This class represents the data for the objects which need to be plotted.
     The objects are registered with the EventManager at creation time but they
-    are actually created/read event by event only if one plotter object activates
+    are actually created/read only if one plotter object activates
     them (or anotrher DFCollection depending on them) at booking time.
     As a result you can instantiate as many objects as needed and only those
     actually consumed by a plotter will be read.
@@ -317,19 +317,7 @@ def gen_fixtures(particles, mc_particles):
 
 
 def mc_fixtures(particles):
-    # print(['mc_fixtures'])
-    # print(particles)
-    # # particles['firstmother'] = particles.index.to_numpy()
-    particles['firstmother_pdgid'] = particles.pdgid
-    # return particles
-    # # FIXME: this is broken
-    # for particle in particles.itertuples():
-    #     print(particle.daughters)
-    #     if particle.daughters == [[], []]:
-    #         continue
-    #     particles.loc[particle.daughters, 'firstmother'] = particle.Index
-    #     particles.loc[particle.daughters, 'firstmother_pdgid'] = particle.pdgid
-    # return particles
+    particles['abseta'] = np.abs(particles.eta)
 
 
 def tc_fixtures(tcs):
@@ -756,15 +744,48 @@ calib_mgr = calib.CalibManager()
 # --- FP collections
 
 gen_ele = DFCollection(
-    name='GEN', label='GEN particles',
+    name='GEN', label='GEN particles (ele)',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='GenEl', entry_block=entry_block),
     fixture_function=mc_fixtures,
     # print_function=lambda df: df[['pdgid', 'pt', 'eta', 'phi']],
     # print_function=lambda df: df[(df.pdgid==23 | (abs(df.pdgid)==15))],
     max_print_lines=None,
-    debug=4)
-gen_ele.activate()
+    debug=0)
+# gen_ele.activate()
+
+gen_pho = DFCollection(
+    name='GEN', label='GEN particles (pho)',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='GenPh', entry_block=entry_block),
+    fixture_function=mc_fixtures,
+    # print_function=lambda df: df[['pdgid', 'pt', 'eta', 'phi']],
+    # print_function=lambda df: df[(df.pdgid==23 | (abs(df.pdgid)==15))],
+    max_print_lines=None,
+    debug=0)
+
+
+gen = DFCollection(
+    name='GEN', label='GEN particles',
+    filler_function=lambda event, entry_block: ak.concatenate([gen_ele.df, gen_pho.df], axis=1),
+    # fixture_function=mc_fixtures,
+    # print_function=lambda df: df[['pdgid', 'pt', 'eta', 'phi']],
+    # print_function=lambda df: df[(df.pdgid==23 | (abs(df.pdgid)==15))],
+    depends_on=[gen_ele, gen_pho],
+    max_print_lines=None,
+    debug=0)
+# gen.activate()
+
+
+gen_jet = DFCollection(
+    name='GEN', label='GEN jets',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='GenJets', entry_block=entry_block),
+    fixture_function=mc_fixtures,
+    # print_function=lambda df: df[['pdgid', 'pt', 'eta', 'phi']],
+    # print_function=lambda df: df[(df.pdgid==23 | (abs(df.pdgid)==15))],
+    max_print_lines=None,
+    debug=0)
 
 
 hgc_cl3d = DFCollection(
@@ -827,7 +848,7 @@ TkEmEB = DFCollection(
 TkEmL2 = DFCollection(
     name='TkEmL2', label='TkEm L2',
     filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='L2TkEm', entry_block=entry_block),
+        prefix='TkEmL2', entry_block=entry_block),
     fixture_function=quality_flags,
     debug=0)
 
@@ -837,7 +858,7 @@ TkEleL2 = DFCollection(
     filler_function=lambda event, entry_block : event.getDataFrame(
         prefix='TkEleL2', entry_block=entry_block, fallback='L2TkEle'),
     fixture_function=quality_ele_fixtures,
-    debug=4)
+    debug=0)
 
 TkEmL2Ell = DFCollection(
     name='TkEmL2Ell', label='TkEm L2 (ell.)',
@@ -929,20 +950,16 @@ tk_pfinputs = DFCollection(
     fixture_function=maptk2pfregions_in,
     depends_on=[tracks],
     debug=0)
+
+pfjets = DFCollection(
+    name='PFJets', label='PFJets',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='L1PFJets', entry_block=entry_block),
+    print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    debug=0)
+
 # --------------
 
-
-
-
-gen = DFCollection(
-    name='GEN', label='GEN particles',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='gen', entry_block=entry_block),
-    fixture_function=mc_fixtures,
-    print_function=lambda df: df[['pdgid', 'pt', 'eta', 'phi']],
-    # print_function=lambda df: df[(df.pdgid==23 | (abs(df.pdgid)==15))],
-    max_print_lines=None,
-    debug=0)
 
 # -- FP
 

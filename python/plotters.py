@@ -551,7 +551,7 @@ class GenericGenMatchPlotter(BasePlotter):
                  data_set, gen_set,
                  data_selections=[selections.Selection('all')],
                  gen_selections=[selections.Selection('all')],
-                 gen_eta_phi_columns=['exeta', 'exphi'],
+                 gen_eta_phi_columns=['caloeta', 'calophi'],
                  drcut=0.1):
         self.ObjectHistoClass = ObjectHistoClass
         self.ResoHistoClass = ResoHistoClass
@@ -567,9 +567,7 @@ class GenericGenMatchPlotter(BasePlotter):
             data_set,
             data_selections,
             gen_set,
-            selections.multiply_selections(
-                gen_selections,
-                [selections.Selection('', '', lambda ar: ar.gen > 0)]))
+            gen_selections)
         self.dr2 = drcut*drcut
 
         # print self
@@ -633,7 +631,9 @@ class GenericGenMatchPlotter(BasePlotter):
     def fill_histos(self, debug=0):
         # FIXME: we need to reduce the # of jugged dimensions for the selection slicing to work in AWKWARD....
         # print(self.gen_set.df.fields)
-        gen = self.gen_set.df[['eta', 'abseta', 'phi', 'pt', 'energy', 'exeta', 'exphi', 'fbrem', 'gen', 'pid', 'reachedEE', 'pdgid', 'ovx', 'ovy', 'ovz']]
+        # gen = self.gen_set.df[['eta', 'abseta', 'phi', 'pt', 'energy', 'exeta', 'exphi', 'fbrem', 'gen', 'pid', 'reachedEE', 'pdgid', 'ovx', 'ovy', 'ovz']]
+        gen = self.gen_set.df
+        
         for tp_sel in self.data_selections:
             # print(tp_sel)
             if tp_sel.all:
@@ -644,7 +644,10 @@ class GenericGenMatchPlotter(BasePlotter):
             for gen_sel in self.gen_selections:
                 # print(gen_sel)
                 # print(gen_sel.selection(gen))
-                genReference = gen[gen_sel.selection(gen)]
+                if gen_sel.all:
+                    genReference = gen
+                else:
+                    genReference = gen[gen_sel.selection(gen)]
                 histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
                 # print (histo_name)
                 # print (f'# data: {objects.shape[0]}')
@@ -675,6 +678,17 @@ class TrackGenMatchPlotter(GenericGenMatchPlotter):
                                                    data_set, gen_set,
                                                    data_selections, gen_selections,
                                                    gen_eta_phi_columns=['eta', 'phi'])
+
+
+class JetGenMatchPlotter(GenericGenMatchPlotter):
+    def __init__(self, data_set, gen_set,
+                 data_selections=[selections.Selection('all')],
+                 gen_selections=[selections.Selection('all')]):
+        super(JetGenMatchPlotter, self).__init__(histos.JetHistos, histos.JetResoHistos,
+                                                   data_set, gen_set,
+                                                   data_selections, gen_selections,
+                                                   gen_eta_phi_columns=['eta', 'phi'],
+                                                   drcut=0.3)
 
 
 class TrackGenMatchPlotter(GenericGenMatchPlotter):

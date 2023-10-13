@@ -44,37 +44,7 @@ collections:
     events_per_job:
       nugun_alleta_pu200: 20000
 
-  eg_rate_oldID:
-    file_label:
-      rate
-    samples:
-      - nugun_alleta_pu200
-    plotters:
-      # - !!python/name:cfg.rate.eg_tdrsim_plotters
-      - !!python/name:cfg.rate.eg_emu_oldID_plotters
-    htc_jobflavor:
-      microcentury
-    priorities:
-      nugun_alleta_pu200: 6
-    events_per_job:
-      nugun_alleta_pu200: 20000
-
-
-
-  eg_rate_sim:
-    file_label:
-      rate
-    samples:
-      - nugun_alleta_pu200
-    plotters:
-      - !!python/name:cfg.rate.eg_tdrsim_plotters
-    htc_jobflavor:
-      microcentury
-    priorities:
-      nugun_alleta_pu200: 6
-    events_per_job:
-      nugun_alleta_pu200: 20000
-
+  
   eg_rate_emu:
     file_label:
       rate
@@ -82,25 +52,11 @@ collections:
       - nugun_alleta_pu200
     plotters:
       # - !!python/name:cfg.rate.eg_emuCTl1_sta_plotters
-      - !!python/name:cfg.rate.eg_emuCTl1_ele_plotters
+      # - !!python/name:cfg.rate.eg_emuCTl1_ele_plotters
       # - !!python/name:cfg.rate.eg_emuCTl1_pho_plotters
-      # - !!python/name:cfg.rate.eg_emuCTl2_plotters
-      - !!python/name:cfg.rate.eg_emuCTl1_ell_plotters
+      - !!python/name:cfg.rate.eg_emuCTl2_plotters
+      # - !!python/name:cfg.rate.eg_emuCTl1_ell_plotters
       # - !!python/name:cfg.rate.eg_emuCTl2_ell_plotters
-    htc_jobflavor:
-      microcentury
-    priorities:
-      nugun_alleta_pu200: 6
-    events_per_job:
-      nugun_alleta_pu200: 20000
-
-  eg_rate_emufw:
-    file_label:
-      rate
-    samples:
-      - nugun_alleta_pu200
-    plotters:
-      - !!python/name:cfg.rate.eg_emufw_plotters
     htc_jobflavor:
       microcentury
     priorities:

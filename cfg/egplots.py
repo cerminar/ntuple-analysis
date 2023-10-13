@@ -34,8 +34,8 @@ quantization_plotters = [
 
 ]
 
-for sel in simple_selections:
-    print(sel)
+# for sel in simple_selections:
+#     print(sel)
 
 # l1tc_pho_plotters = [
 
