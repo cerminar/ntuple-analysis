@@ -2,7 +2,7 @@
 
 PYTHON framework for the analysis of [ROOT](https://root.cern/) `TTree` data using [uproot](https://uproot.readthedocs.io/en/latest/) for the IO and [awkward-array](https://awkward-array.org/doc/main/) for the columnar data analysis.
 
-The tool is originally developed for the analysis of [L1T ntuples for Phase-2 e/g](https://github.com/cerminar/Phase2EGTriggerAnalysis) but should work with any kind of flat ntuples.
+The tool is developed for the analysis of [FastPUPPI](https://github.com/p2l1pfp/FastPUPPI) but should work with any kind of flat ntuples.
 
 ## Pre-requisites: first time setup
 
