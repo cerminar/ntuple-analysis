@@ -272,38 +272,13 @@ def cl3d_layerEnergy_hoe(clusters, tcs):
 
 
 def cl3d_fixtures(clusters):
-    # print(clusters.columns)
-    # for backward compatibility
-    if clusters.empty:
-        # return
-        return clusters
-
-    clusters.rename(columns={'clusters_id': 'clusters',
-                             'clusters_n': 'nclu'},
-                    inplace=True)
-
-    # clusters['ptem'] = clusters.pt/(1+clusters.hoe)
-    # clusters['eem'] = clusters.energy/(1+clusters.hoe)
-    clusters['emax'] = clusters.emaxe*clusters.energy
-    clusters.loc[clusters.hoe == -1, ['hoe']] = 999
-    # print(clusters[clusters.hoe == -1][['hoe']])
-    # FIXME: replace
-    clusters['bdt_pu'] = 0.5
-    # clusters['bdt_pu'] = rnptmva.evaluate_reader(
-    #         classifiers.mva_pu_classifier_builder(), 
-    #         'BDT', 
-    #         clusters[['emax', 'emaxe', 'spptot', 'srrtot', 'ntc90']])
-
-    if False:
-        clusters['bdt_pi'] = rnptmva.evaluate_reader(
-            classifiers.mva_pi_classifier_builder(), 'BDT', clusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
-    
-    clusters['pt_em'] = clusters.apply(lambda x: x.ipt[x.name[1]][1], axis=1)
-    clusters.drop('ipt', axis=1, inplace=True)
-    clusters.drop('ienergy', axis=1, inplace=True)
-    clusters['meanz_scaled'] = np.abs(clusters.meanz) - 320
-    # return
-    # return clusters
+    # if False:
+    #     clusters['bdt_pi'] = rnptmva.evaluate_reader(
+    #         classifiers.mva_pi_classifier_builder(), 'BDT', clusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
+    mask_loose = 0b0010
+    mask_tight = 0b0001
+    clusters['IDTightEm'] = np.bitwise_and(clusters.hwQual, mask_tight) > 0
+    clusters['IDLooseEm'] = np.bitwise_and(clusters.hwQual, mask_loose) > 0
 
 
 def gen_fixtures(particles, mc_particles):
@@ -738,6 +713,14 @@ def build_double_obj(obj):
     # ret.show()
     return ret
 
+def highest_pt(objs, num=2):
+    sel_objs = objs[objs.prompt >= 2]
+    index = ak.argsort(sel_objs.pt)
+    array = sel_objs[index]
+    # print (ak.local_index(array))
+    return array[ak.local_index(array.pt, axis=1)<num]
+
+
 
 calib_mgr = calib.CalibManager()
 
@@ -753,6 +736,19 @@ gen_ele = DFCollection(
     max_print_lines=None,
     debug=0)
 # gen_ele.activate()
+
+
+gen_highestpt_ele = DFCollection(
+    name='GEN', label='GEN particles (ele highest-pT)',
+    filler_function=lambda event, entry_block: highest_pt(gen_ele.df),
+    # fixture_function=mc_fixtures,
+    # print_function=lambda df: df[['pdgid', 'pt', 'eta', 'phi']],
+    # print_function=lambda df: df[(df.pdgid==23 | (abs(df.pdgid)==15))],
+    max_print_lines=None,
+    depends_on=[gen_ele],
+    debug=0)
+gen_highestpt_ele.activate()
+
 
 gen_pho = DFCollection(
     name='GEN', label='GEN particles (pho)',
@@ -774,7 +770,7 @@ gen = DFCollection(
     depends_on=[gen_ele, gen_pho],
     max_print_lines=None,
     debug=0)
-# gen.activate()
+gen.activate()
 
 
 gen_jet = DFCollection(
@@ -791,12 +787,13 @@ gen_jet = DFCollection(
 hgc_cl3d = DFCollection(
     name='HGCCl3d', label='HGC Cl3d',
     filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='Cl3D', entry_block=entry_block, fallback='HMvDR'),
+        prefix='HGCal3DCl', entry_block=entry_block, fallback='HMvDR'),
     fixture_function=lambda clusters: cl3d_fixtures(clusters),
     # read_entry_block=500,
     debug=0,
-    print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'phi', 'quality', 'pt_em', 'bdt_pu']].sort_values(by='pt', ascending=False))
-# hgc_cl3d.activate()
+    print_function=lambda df: df[['pt', 'eta', 'phi', 'hwQual', 'ptEm']].sort_values(by='pt', ascending=False)
+    )
+
 
 tracks = DFCollection(
     name='L1Trk', label='L1Track',
@@ -1031,11 +1028,11 @@ SelectedSimParts = DFCollection(
 
 DoubleSimEle = DFCollection(
     name='DoubleSimEle', label='Double Sim e/g',
-    filler_function=lambda event, entry_block: build_double_obj(obj=selected_gen_parts),
+    filler_function=lambda event, entry_block: build_double_obj(obj=gen_highestpt_ele.df),
     # fixture_function=,
-    depends_on=[selected_gen_parts],
+    depends_on=[gen_highestpt_ele],
     debug=0)
-
+DoubleSimEle.activate()
 
 
 

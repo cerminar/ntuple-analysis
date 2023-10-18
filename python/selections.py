@@ -583,6 +583,14 @@ eg_id_sel = [
 
     ]
 
+tp_id_sel = [
+    Selection('all'),
+    Selection('IDTightEm', 'Tight-EM', lambda array: array.IDTightEm),
+    Selection('IDLooseEm', 'Loose-EM', lambda array: array.IDLooseEm),
+    ]
+
+
+
 comp_id_sel = [
     Selection('IDCompWP955', 'CompID WP 0.955', lambda ar: ar.compBDTScore > -0.7318549872638138), #, epsilon_b = 0.0985
     # Selection('IDCompWP950', 'CompID WP 0.950', 'compBDTScore > -0.5871849', #, epsilon_b = 0.0917
@@ -665,24 +673,24 @@ Selector.selection_primitives = sm.selections.copy()
 
 
 menu_sel = [
-    ((Selector('^EtaEB')&('^IDTightE'))|(Selector('^EtaEE')&('^IDTightP'))).one('MenuSta', 'TightID'),
-    ((Selector('^EtaEB')&('^IsoEleEB'))|(Selector('^EtaEE')&('^IsoEleEE')&('^IDTightE'))).one('MenuEleIsoTight', 'Iso TightID'),
-    ((Selector('^EtaEB')&('^IsoEleEB'))|(Selector('^EtaEE')&('^IsoEleEE'))).one('MenuEleIsoLoose', 'Iso LooseID'),
-    ((Selector('^EtaEB')&('^IDTightE'))|(Selector('^EtaEE')&('^IDTightE'))).one('MenuEleTight', 'TightID'),
-    ((Selector('^EtaEB')&('^IDTightE'))|(Selector('^EtaEE'))).one('MenuEleLoose', 'LooseID'),
-    ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP'))).one('MenuPhoIso', 'Iso'),
+    ((Selector('^EtaEB')&('^IDTightE$'))|(Selector('^EtaEE')&('^IDTightP'))).one('MenuSta', 'TightID'),
+    ((Selector('^EtaEB')&('^IsoEleEB$'))|(Selector('^EtaEE')&('^IsoEleEE')&('^IDTightE$'))).one('MenuEleIsoTight', 'Iso TightID'),
+    ((Selector('^EtaEB')&('^IsoEleEB$'))|(Selector('^EtaEE')&('^IsoEleEE'))).one('MenuEleIsoLoose', 'Iso LooseID'),
+    ((Selector('^EtaEB')&('^IDTightE$'))|(Selector('^EtaEE')&('^IDTightE$'))).one('MenuEleTight', 'TightID'),
+    ((Selector('^EtaEB')&('^IDTightE$$'))|(Selector('^EtaEE'))).one('MenuEleLoose', 'LooseID'),
+    ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP'))).one('MenuPhoIso', 'Iso'),
     # Rate selections
     ((Selector('^EtaEB')&('^IsoEleEB')&('^PtIsoEleEB28'))|(Selector('^EtaEE')&('^IsoEleEE')&('^PtIsoEleEE28'))).one('SingleIsoTkEle28', 'SingleIsoTkEle28'),
-    ((Selector('^EtaEB')&('^IsoEleEB')&('^PtIsoEleEB28'))|(Selector('^EtaEE')&('^IsoEleEE')&('^IDTightE')&('^PtIsoEleEE28'))).one('SingleIsoTkEle28Tight', 'SingleIsoTkEle28Tight'),
-    ((Selector('^EtaEB')&('^IDTightE')&('^PtEleEB36'))|(Selector('^EtaEE')&('^IDTightE')&('^PtEleEE36'))).one('SingleTkEle36', 'SingleTkEle36'),
-    ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE')&('^PtIsoPhoEB36'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE36'))).one('SingleIsoTkPho36', 'SingleIsoTkPho36'),
-    ((Selector('^EtaEB')&('^IDTightE')&('^PtStaEB51'))|(Selector('^EtaEE')&('^IDTightP')&('^PtStaEE51'))).one('SingleEGEle51', 'SingleEGEle51'),
+    ((Selector('^EtaEB')&('^IsoEleEB')&('^PtIsoEleEB28'))|(Selector('^EtaEE')&('^IsoEleEE')&('^IDTightE$')&('^PtIsoEleEE28'))).one('SingleIsoTkEle28Tight', 'SingleIsoTkEle28Tight'),
+    ((Selector('^EtaEB')&('^IDTightE$')&('^PtEleEB36'))|(Selector('^EtaEE')&('^IDTightE$')&('^PtEleEE36'))).one('SingleTkEle36', 'SingleTkEle36'),
+    ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB36'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE36'))).one('SingleIsoTkPho36', 'SingleIsoTkPho36'),
+    ((Selector('^EtaEB')&('^IDTightE$')&('^PtStaEB51'))|(Selector('^EtaEE')&('^IDTightP')&('^PtStaEE51'))).one('SingleEGEle51', 'SingleEGEle51'),
     build_DiObj_selection('DoubleIsoTkPho22-12', 'DoubleIsoTkPho22-12',
-                          ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE')&('^PtIsoPhoEB22'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE22'))).one(),
-                          ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE')&('^PtIsoPhoEB12'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE12'))).one()),
+                          ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB22'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE22'))).one(),
+                          ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB12'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE12'))).one()),
     build_DiObj_selection('DoubleTkEle25-12', 'DoubleTkEle25-12',
-                          ((Selector('^EtaEB')&('^IDTightE')&('^PtEleEB25'))|(Selector('^EtaEE')&('^PtEleEE25'))).one(),
-                          ((Selector('^EtaEB')&('^IDTightE')&('^PtEleEB12'))|(Selector('^EtaEE')&('^PtEleEE12'))).one())
+                          ((Selector('^EtaEB')&('^IDTightE$')&('^PtEleEB25'))|(Selector('^EtaEE')&('^PtEleEE25'))).one(),
+                          ((Selector('^EtaEB')&('^IDTightE$')&('^PtEleEB12'))|(Selector('^EtaEE')&('^PtEleEE12'))).one())
 
 ]
 # repeat the call: we want the menu selections to be avaialble via the selectors

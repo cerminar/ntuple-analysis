@@ -18,13 +18,13 @@ samples:
     events_per_job : 200
 
   doublephoton_flat1to100_PU200:
-    input_sample_dir: DoublePhoton_FlatPt-1To100_PU200/FP/v100C/
+    input_sample_dir: DoublePhoton_FlatPt-1To100_PU200/FP/v100D/
     events_per_job : 200
 
 
 
   zprime_m6000_pu200:
-    input_sample_dir: ZprimeToEE_M-6000_PU200/FP/v100C/
+    input_sample_dir: ZprimeToEE_M-6000_PU200/FP/v100D/
     events_per_job: 300
   # 
 

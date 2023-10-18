@@ -9,6 +9,7 @@ import awkward as ak
 import python.boost_hist as bh
 import python.pf_regions as pf_regions
 from scipy.special import expit
+import hist
 
 stuff = []
 
@@ -322,23 +323,22 @@ class GenPartHistos(BaseHistos):
 
 
 class GenParticleHistos(BaseHistos):
-    def __init__(self, name, root_file=None, extended_range=False, debug=False):
+    def __init__(self, name, root_file=None, pt_bins=None, debug=False):
         if not root_file:
-            pt_bins = [y for y in range(0, 102, 2)]
-            if(extended_range):
-                # print ('Booking: {} with extended range'.format(name))
-                pt_bins = [y for y in range(0, 200, 2)] + \
-                          [y for y in range(200, 400, 50)] + \
-                          [y for y in range(400, 1100, 100)]
-            n_pt_bins = len(pt_bins) - 1
-            # print ('bins: {}'.format(pt_bins))
-            # print ("# bins: {}".format(n_pt_bins))
-
             self.h_eta = bh.TH1F(name+'_eta', 'Gen Part eta; #eta^{GEN};', 50, -3, 3)
             self.h_abseta = bh.TH1F(name+'_abseta', 'Gen Part |eta|; |#eta^{GEN}|;', 40, 0, 4)
-            # FIXME: address in hist migration
-            # self.h_pt = bh.TH1F(name+'_pt', 'Gen Part P_{T} (GeV); p_{T}^{GEN} [GeV];', n_pt_bins, array('d', pt_bins))
-            self.h_pt = bh.TH1F(name+'_pt', 'Gen Part P_{T} (GeV); p_{T}^{GEN} [GeV];', 50, 0, 100)
+
+            if pt_bins is None:
+                self.h_pt = bh.TH1F(name+'_pt', 'Gen Part P_{T} (GeV); p_{T}^{GEN} [GeV];', 50, 0, 100)
+            else:
+                self.h_pt = hist.Hist(
+                    hist.axis.Variable(pt_bins, name='p_{T}^{GEN} [GeV]'),
+                    label=name+'_pt', 
+                    name='Gen Part P_{T} (GeV)',
+                    storage=hist.storage.Weight()
+                    )
+            # print ('bins: {}'.format(pt_bins))
+            # print ("# bins: {}".format(n_pt_bins))
 
         BaseHistos.__init__(self, name, root_file, debug)
 
@@ -353,6 +353,24 @@ class GenParticleHistos(BaseHistos):
                        array=particles.abseta)
         bh.fill_1Dhist(hist=self.h_pt,
                        array=particles.pt)
+
+
+class GenParticleExtraHistos(GenParticleHistos):
+    def __init__(self, name, root_file=None, pt_bins=None, debug=False):
+        if not root_file:
+            self.h_n = bh.TH1F(name+'_#', 'Gen Part #; #', 10, 0, 10)
+            self.h_pdgid = bh.TH1F(name+'_pdgid', 'Gen Part pdgid; pdgid;', 100, -50, 50)
+
+        GenParticleHistos.__init__(self, name, root_file, pt_bins, debug)
+
+    def fill(self, particles):
+        weights = None
+        if 'weights' in particles.fields:
+            weights = particles.weights
+
+        self.h_n.fill(ak.count(particles.pt, axis=1))
+        bh.fill_1Dhist(hist=self.h_pdgid,
+                       array=particles.pdgid)
 
 
 class DigiHistos(BaseHistos):
@@ -557,7 +575,7 @@ class Cluster3DHistos(BaseHistos):
             # self.h_isoRel0p2 = bh.TH1F(name+'_isoRel0p2', '3D Cluster relative iso DR 0.2; Rel. Iso;', 100, 0, 1)
             # self.h_bdtPU = bh.TH1F(name+'_bdtPU', '3D Cluster bdt PU out; BDT-PU out;', 100, -1, 1)
             # self.h_bdtPi = bh.TH1F(name+'_bdtPi', '3D Cluster bdt Pi out; BDT-Pi out;', 100, -1, 1)
-            self.h_bdtEg = bh.TH1F(name+'_bdtEg', '3D Cluster bdt Pi out; BDT-EG out;', 100, -1, 1)
+            # self.h_bdtEg = bh.TH1F(name+'_bdtEg', '3D Cluster bdt Pi out; BDT-EG out;', 100, -1, 1)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
@@ -586,7 +604,7 @@ class Cluster3DHistos(BaseHistos):
         #     bh.fill_1Dhist(self.h_bdtPU, cl3ds.bdt_pu)
         # if 'bdt_pi' in cl3ds.fields:
         #     bh.fill_1Dhist(self.h_bdtPi, cl3ds.bdt_pi)
-        bh.fill_1Dhist(self.h_bdtEg, cl3ds.bdteg)
+        # bh.fill_1Dhist(self.h_bdtEg, cl3ds.bdteg)
 
 
 class EGHistos(BaseHistos):
@@ -1079,50 +1097,13 @@ class ResoHistos(BaseResoHistos):
         BaseResoHistos.__init__(self, name, root_file)
 
     def fill(self, reference, target):
-        target_line = target.iloc[0]
-        target_pt = target_line.pt
-        # target_energy = target_line.energy
-        target_eta = target_line.eta
-        target_phi = target_line.phi
-        # target_nclu = target_line.nclu
-
-        reference_pt, reference_energy, reference_eta = \
-            reference.pt, reference.energy, reference.eta
-
-        # self.h_ptRes.Fill((target_pt - reference_pt)/reference_pt)
-        # # self.h_energyRes.Fill(target_energy - reference.energy)
-        # self.h_ptResVeta.Fill(reference_eta, target_pt - reference_pt)
-        # self.h_ptResVpt.Fill(reference_pt, target_pt - reference_pt)
-        # # self.h_energyResVeta.Fill(reference_eta, (target_energy - reference_energy)/reference_energy)
-        # self.h_energyResVenergy.Fill(reference_energy, (target_energy - reference_energy)/reference_energy)
-        # self.h_energyResVnclu.Fill(target.nclu, target_energy - reference.energy)
-        # self.h_ptResVnclu.Fill(target.nclu, target_pt - reference_pt)
-
-        self.h_ptResp.Fill(target_pt/reference_pt)
-        self.h_ptRespVeta.Fill(reference_eta, target_pt/reference_pt)
-        self.h_ptRespVpt.Fill(reference_pt, target_pt/reference_pt)
-        # self.h_ptRespVnclu.Fill(target_nclu, target_pt/reference_pt)
-        # self.h_ptRespVetaVptL1.Fill(abs(target_eta), target_pt, target_pt/reference_pt)
-
-        # if 'pt_em' in target:
-        #     target_ptem = target_line.pt_em
-
-        #     self.h_ptemResp.Fill(target_ptem/reference_pt)
-        #     self.h_ptemRespVpt.Fill(reference_pt, target_ptem/reference_pt)
-
-        # if 'energyCore' in target:
-        #     self.h_coreEnergyRes.Fill(target_energyCore - reference.energy)
-        #     self.h_corePtRes.Fill(target_ptCore - reference_pt)
-        #
-        #     self.h_coreEnergyResVnclu.Fill(target.nclu, target_energyCore - reference.energy)
-        #     self.h_corePtResVnclu.Fill(target.nclu, target_ptCore - reference_pt)
-
-        # if 'energyCentral' in target:
-        #     self.h_centralEnergyRes.Fill(target_energyCentral - reference.energy)
-        if 'exeta' in reference:
-            self.h_etaRes.Fill(target_eta - reference.exeta)
-            self.h_phiRes.Fill(target_phi - reference.exphi)
-            self.h_drRes.Fill(np.sqrt((reference.exphi-target_phi)**2+(reference.exeta-target_eta)**2))
+        bh.fill_1Dhist(self.h_ptResp, target.pt/reference.pt)
+        bh.fill_2Dhist(self.h_ptRespVeta, reference.eta, target.pt/reference.pt)
+        bh.fill_2Dhist(self.h_ptRespVpt, reference.pt, target.pt/reference.pt)
+        if 'caloeta' in reference.fields:
+            bh.fill_1Dhist(self.h_etaRes, target.eta - reference.caloeta)
+            bh.fill_1Dhist(self.h_phiRes, target.phi - reference.calophi)
+            # self.h_drRes.Fill(np.sqrt((reference.exphi-target_phi)**2+(reference.exeta-target_eta)**2))
 
         # if 'n010' in target:
         #     self.h_n010.Fill(target_line.n010)
@@ -1251,10 +1232,10 @@ class HistoEff():
 
 
 class HistoSetEff():
-    def __init__(self, name, root_file=None, extended_range=False, debug=False):
+    def __init__(self, name, root_file=None, pt_bins=None, debug=False):
         self.name = name
-        self.h_num = GenParticleHistos('h_effNum_'+name, root_file, extended_range, debug)
-        self.h_den = GenParticleHistos('h_effDen_'+name, root_file, extended_range, debug)
+        self.h_num = GenParticleHistos('h_effNum_'+name, root_file, pt_bins=pt_bins, debug=debug)
+        self.h_den = GenParticleHistos('h_effDen_'+name, root_file, pt_bins=pt_bins, debug=debug)
         self.h_eff = None
         self.h_ton = None
 
@@ -1932,7 +1913,7 @@ class QuantizationHistos(BaseHistos):
 class DiObjMassHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-            self.h_mass = bh.TH1F(name+'_mass', 'mass (GeV); M(ll) [GeV]', 100, 0, 200)
+            self.h_mass = bh.TH1F(name+'_mass', 'mass (GeV); M(ll) [GeV]', 400, 0, 8000)
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, obj_pairs):

@@ -81,3 +81,22 @@ collections:
       nugun_alleta_pu200: 6
     events_per_job:
       nugun_alleta_pu200: 20000
+
+
+  zprime_eff_tps:
+      file_label:
+        tpzprime
+      samples:
+        - doubleele_flat1to100_PU200
+        - zprime_m6000_pu200
+      plotters:
+        - !!python/name:cfg.hgctps.hgc_tp_highpt_genmatched
+      htc_jobflavor:
+        longlunch
+      priorities:
+        doubleele_flat1to100_PU200: 7
+        zprime_m6000_pu200: 5
+      events_per_job:
+        doubleele_flat1to100_PU200: 1000
+        zprime_m6000_pu200: 5000
+  

@@ -196,17 +196,28 @@ class HGCCl3DRatePlotter(BasePlotter):
 
 
 class GenericDataFramePlotter(BasePlotter):
-    def __init__(self, HistoClass, data_set, selections=[selections.Selection('all')]):
+    def __init__(self, HistoClass, data_set, selections=[selections.Selection('all')], pt_bins=None):
         self.HistoClass = HistoClass
         self.h_set = {}
+        self.pt_bins = pt_bins
         super(GenericDataFramePlotter, self).__init__(data_set, selections)
 
     def book_histos(self):
         self.data_set.activate()
         data_name = self.data_set.name
         for selection in self.data_selections:
-            self.h_set[selection.name] = self.HistoClass(name='{}_{}_nomatch'.format(data_name,
-                                                                                     selection.name))
+            if self.pt_bins:
+                self.h_set[selection.name] = self.HistoClass(
+                    name='{}_{}_nomatch'.format(
+                        data_name,
+                        selection.name),
+                    pt_bins=self.pt_bins)
+            else:
+                self.h_set[selection.name] = self.HistoClass(
+                    name='{}_{}_nomatch'.format(
+                        data_name,
+                        selection.name))
+
 
     def fill_histos(self, debug=0):
         for data_sel in self.data_selections:
@@ -221,13 +232,12 @@ class GenericDataFramePlotter(BasePlotter):
 
 
 class GenPlotter(GenericDataFramePlotter):
-    def __init__(self, gen_set, gen_selections=[selections.Selection('all')]):
+    def __init__(self, gen_set, gen_selections=[selections.Selection('all')], pt_bins=None):
         super(GenPlotter, self).__init__(
-            histos.GenParticleHistos,
+            histos.GenParticleExtraHistos,
             gen_set,
-            selections.multiply_selections(
-                gen_selections,
-                [selections.Selection('', '', 'gen > 0')]))
+            gen_selections, 
+            pt_bins)
 
 
 class TkElePlotter(GenericDataFramePlotter):
@@ -552,7 +562,8 @@ class GenericGenMatchPlotter(BasePlotter):
                  data_selections=[selections.Selection('all')],
                  gen_selections=[selections.Selection('all')],
                  gen_eta_phi_columns=['caloeta', 'calophi'],
-                 drcut=0.1):
+                 drcut=0.1,
+                 pt_bins=None):
         self.ObjectHistoClass = ObjectHistoClass
         self.ResoHistoClass = ResoHistoClass
         # self.data_set = data_set
@@ -563,12 +574,14 @@ class GenericGenMatchPlotter(BasePlotter):
         self.h_resoset = {}
         self.h_effset = {}
         self.gen_eta_phi_columns = gen_eta_phi_columns
+        self.dr2 = drcut*drcut
+        self.pt_bins = pt_bins
+
         super(GenericGenMatchPlotter, self).__init__(
             data_set,
             data_selections,
             gen_set,
             gen_selections)
-        self.dr2 = drcut*drcut
 
         # print self
         # print gen_selections
@@ -626,7 +639,7 @@ class GenericGenMatchPlotter(BasePlotter):
                 histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
                 self.h_dataset[histo_name] = self.ObjectHistoClass(histo_name)
                 self.h_resoset[histo_name] = self.ResoHistoClass(histo_name)
-                self.h_effset[histo_name] = histos.HistoSetEff(histo_name)
+                self.h_effset[histo_name] = histos.HistoSetEff(histo_name, pt_bins=self.pt_bins)
 
     def fill_histos(self, debug=0):
         # FIXME: we need to reduce the # of jugged dimensions for the selection slicing to work in AWKWARD....
@@ -715,10 +728,13 @@ class DecTrackGenMatchPlotter(GenericGenMatchPlotter):
 class Cl3DGenMatchPlotter(GenericGenMatchPlotter):
     def __init__(self, data_set, gen_set,
                  data_selections=[selections.Selection('all')],
-                 gen_selections=[selections.Selection('all')]):
+                 gen_selections=[selections.Selection('all')],
+                 pt_bins=None):
         super(Cl3DGenMatchPlotter, self).__init__(histos.Cluster3DHistos, histos.ResoHistos,
                                                   data_set, gen_set,
-                                                  data_selections, gen_selections)
+                                                  data_selections, gen_selections, 
+                                                  gen_eta_phi_columns=['caloeta', 'calophi'],
+                                                  pt_bins=pt_bins)
 
 
 class EGGenMatchPtWPSPlotter(GenericGenMatchPlotter):
