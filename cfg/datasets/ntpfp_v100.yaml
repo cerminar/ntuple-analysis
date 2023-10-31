@@ -1,4 +1,4 @@
-samples:
+dataset:
   input_dir:  /eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/fp_ntuples/
   calib_version: calib-v134C
   version: 100C
@@ -13,6 +13,7 @@ samples:
   #   events_per_job : 500
   #   # gen_selections: !!python/name:python.selections.genpart_photon_selections
 
+samples:
   doubleele_flat1to100_PU200:
     input_sample_dir: DoubleElectron_FlatPt-1To100_PU200/FP/v100C/
     events_per_job : 200

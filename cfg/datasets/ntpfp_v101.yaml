@@ -1,4 +1,4 @@
-samples:
+dataset:
   input_dir:  /eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/fp_ntuples/
   calib_version: calib-v134C
   version: 101A
@@ -13,11 +13,7 @@ samples:
   #   events_per_job : 500
   #   # gen_selections: !!python/name:python.selections.genpart_photon_selections
 
-  doubleele_flat1to100_PU200:
-    input_sample_dir: DoubleElectron_FlatPt-1To100_PU200/FP/v100C/
-    events_per_job : 200
-
-
+samples:
   doubleele_flat1to100_PU200_config1:
     input_sample_dir: DoubleElectron_FlatPt-1To100_PU200_config1/FP/v101A/
     events_per_job : 200
@@ -42,32 +38,3 @@ samples:
     input_sample_dir: DoubleElectron_FlatPt-1To100_PU200_config5/FP/v101A/
     events_per_job : 200
 
-
-  doublephoton_flat1to100_PU200:
-    input_sample_dir: DoublePhoton_FlatPt-1To100_PU200/FP/v100D/
-    events_per_job : 200
-
-
-  zprime_m6000_pu200:
-    input_sample_dir: ZprimeToEE_M-6000_PU200/FP/v100D/
-    events_per_job: 300
-  # 
-
-  nugun_alleta_pu200:
-    input_sample_dir: NuGunAllEta_PU200/FP/v100C/
-    # input_sample_dir: NuGunAllEta_PU200/NTP/v80A/
-    # input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v47/191105_135050/0000/
-    events_per_job: 300
-  # 
-  ttbar_PU200:
-    input_sample_dir: TT_PU200/FP/v100C/
-    events_per_job: 200
-  
-  
-  dyll_PU200:
-    input_sample_dir: DYToLL_M-50_PU200/FP/v100C/
-    events_per_job: 200
-
-  # dyll_M10to50_PU200:
-  #   input_sample_dir: DYToLL_M-10To50_TuneCP5_14TeV-pythia8/DYToLL_M10To50_PU200_v92G
-  #   events_per_job: 200

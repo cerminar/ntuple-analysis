@@ -47,11 +47,11 @@ def get_collection_parameters(opt, cfgfile):
             outdir = odir
     plot_version = '{}.{}'.format(
         cfgfile['common']['plot_version'], 
-        cfgfile['samples']['version'])
+        cfgfile['dataset']['version'])
 
     collection_params = {}
     for collection, collection_data in cfgfile['collections'].items():
-        samples = collection_data['samples']
+        samples = cfgfile['samples'].keys()
         print('--- Collection: {} with samples: {}'.format(collection, samples))
         sample_params = []
 
@@ -83,27 +83,30 @@ def get_collection_parameters(opt, cfgfile):
                     weight_file = collection_data['weights'][sample]
 
             rate_pt_wps = None
-            if 'rate_pt_wps' in cfgfile['samples']:
-                rate_pt_wps = cfgfile['samples']['rate_pt_wps']
+            if 'rate_pt_wps' in cfgfile['dataset']:
+                rate_pt_wps = cfgfile['dataset']['rate_pt_wps']
 
+            priority = 2
+            if 'priorities' in collection_data and sample in collection_data['priorities']:
+                priority = collection_data['priorities'][sample]
             
-            params = Parameters({'input_base_dir': cfgfile['samples']['input_dir'],
+            params = Parameters({'input_base_dir': cfgfile['dataset']['input_dir'],
                                  'input_sample_dir': cfgfile['samples'][sample]['input_sample_dir'],
-                                 'tree_name': cfgfile['samples']['tree_name'],
+                                 'tree_name': cfgfile['dataset']['tree_name'],
                                  'output_filename_base': output_filename_base,
                                  'output_filename': out_file,
                                  'output_dir': outdir,
                                  'clusterize': cfgfile['common']['run_clustering'],
                                  'eventsToDump': [],
                                  'version': plot_version,
-                                 'calib_version':  cfgfile['samples']['calib_version'],
+                                 'calib_version':  cfgfile['dataset']['calib_version'],
                                  'rate_pt_wps': rate_pt_wps,
                                  'maxEvents': int(opt.NEVENTS),
                                  'events_per_job': events_per_job,
                                  'computeDensity': cfgfile['common']['run_density_computation'],
                                  'plotters': plotters,
                                  'htc_jobflavor': collection_data['htc_jobflavor'],
-                                 'htc_priority': collection_data['priorities'][sample],
+                                 'htc_priority': priority,
                                  'weight_file': weight_file,
                                  'debug': opt.DEBUG,
                                  'name': sample})
@@ -211,7 +214,7 @@ def main(analyze, submit_mode=False):
 
     plot_version = '{}.{}'.format(
         cfgfile['common']['plot_version'], 
-        cfgfile['samples']['version'])
+        cfgfile['dataset']['version'])
 
     if opt.BATCH and not opt.RUN:
         batch_dir = 'batch_{}_{}'.format(opt.COLLECTION, plot_version)
