@@ -294,6 +294,16 @@ def gen_fixtures(particles, mc_particles):
 def mc_fixtures(particles):
     particles['abseta'] = np.abs(particles.eta)
 
+def ele_mc_fixtures(particles):
+    mc_fixtures(particles)
+    if 'pdgid' not in particles.fields:
+        particles['pdgid'] = particles.charge*11
+
+def pho_mc_fixtures(particles):
+    mc_fixtures(particles)
+    if 'pdgid' not in particles.fields:
+        particles['pdgid'] = 22
+
 
 def tc_fixtures(tcs):
     # print tcs.columns
@@ -730,7 +740,7 @@ gen_ele = DFCollection(
     name='GEN', label='GEN particles (ele)',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='GenEl', entry_block=entry_block),
-    fixture_function=mc_fixtures,
+    fixture_function=ele_mc_fixtures,
     # print_function=lambda df: df[['pdgid', 'pt', 'eta', 'phi']],
     # print_function=lambda df: df[(df.pdgid==23 | (abs(df.pdgid)==15))],
     max_print_lines=None,
@@ -747,14 +757,14 @@ gen_highestpt_ele = DFCollection(
     max_print_lines=None,
     depends_on=[gen_ele],
     debug=0)
-gen_highestpt_ele.activate()
+# gen_highestpt_ele.activate()
 
 
 gen_pho = DFCollection(
     name='GEN', label='GEN particles (pho)',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='GenPh', entry_block=entry_block),
-    fixture_function=mc_fixtures,
+    fixture_function=pho_mc_fixtures,
     # print_function=lambda df: df[['pdgid', 'pt', 'eta', 'phi']],
     # print_function=lambda df: df[(df.pdgid==23 | (abs(df.pdgid)==15))],
     max_print_lines=None,
@@ -770,7 +780,7 @@ gen = DFCollection(
     depends_on=[gen_ele, gen_pho],
     max_print_lines=None,
     debug=0)
-gen.activate()
+# gen.activate()
 
 
 gen_jet = DFCollection(
