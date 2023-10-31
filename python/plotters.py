@@ -770,10 +770,12 @@ class HGCCl3DGenMatchPtWPSPlotter(GenericGenMatchPlotter):
 class EGGenMatchPlotter(GenericGenMatchPlotter):
     def __init__(self, data_set, gen_set,
                  data_selections=[selections.Selection('all')],
-                 gen_selections=[selections.Selection('all')]):
+                 gen_selections=[selections.Selection('all')],
+                 pt_bins=None):
         super(EGGenMatchPlotter, self).__init__(histos.EGHistos, histos.EGResoHistos,
                                                 data_set, gen_set,
-                                                data_selections, gen_selections)
+                                                data_selections, gen_selections, 
+                                                pt_bins=pt_bins)
 
 
 class TkEGGenMatchPlotter(GenericGenMatchPlotter):

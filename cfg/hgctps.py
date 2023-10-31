@@ -69,6 +69,10 @@ hgc_tp_tkmatch_genmatched = [
         tkcl3dmatch_selections, gen_ee_selections)                                 
 ]
 
+
+zprime_eff_pt_bins = list(range(0,100, 10))+list(range(100,500, 50))+list(range(500, 1000, 100))+list(range(1000, 1600, 200))+list(range(1600, 4000, 400))
+
+
 hgc_tp_highpt_genmatched = [
     plotters.GenPlotter(
         collections.gen_ele,
@@ -81,10 +85,11 @@ hgc_tp_highpt_genmatched = [
     plotters.Cl3DGenMatchPlotter(
         collections.hgc_cl3d, collections.gen_ele,
         hgc_tp_id_selections, gen_ee_selections,
-        pt_bins=range(0,4000, 5)),
+        pt_bins=zprime_eff_pt_bins),
     plotters.EGGenMatchPlotter(
         collections.TkEleL2, collections.gen_ele,
-        ctl2_eg_selections, gen_selections),
+        ctl2_eg_selections, gen_selections,
+        pt_bins=zprime_eff_pt_bins),
 
                                
 ]

@@ -177,19 +177,8 @@ def analyze(params, batch_idx=-1):
                 for plotter in plotter_collection:
                     plotter.fill_histos_event(tree_reader.file_entry, debug=debug)
 
-                # pool = Pool(processes=2, initializer=pool_init, initargs=(plotter_collection,))
-                #
-                # args = ((ipl, tree_reader.file_entry, debug) for ipl, plotter in enumerate(plotter_collection))
-                # pool.map(executor, args)
-                # # pool.apply_async(executor, (plotter.fill_histos_event, tree_reader.file_entry, debug))
-                # pool.close()
-                # pool.join()
                 # if tree_reader.global_entry % 100 == 0:
                 #     tr.collect_stats()
-
-                if tree_reader.global_entry != 0 and tree_reader.global_entry % 10000 == 0:
-                    print("Writing histos to file")
-                    hm.writeHistos()
 
                 if batch_idx != -1 and timecounter.counter.started() and tree_reader.global_entry % 100 == 0:
                     # when in batch mode, if < 5min are left we stop the event loop

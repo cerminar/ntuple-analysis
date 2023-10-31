@@ -54,9 +54,9 @@ l1tc_rate_pt_wps = [
 egid_sta_selections = (selections.Selector('^IDTightS|all')*('^Pt[1-3][0]$|all'))()
 # egid_iso_tkele_selections = (selections.Selector('^IDTight[E]|all')*('^Pt[1-3][0]$|all')*('^Iso0p[1-2]|all'))()
 # egid_iso_tkpho_selections = (selections.Selector('^IDTight[P]|all')*('^Pt[1-3][0]$|all')*('^Iso0p[1-2]|all'))()
-egid_iso_tkele_selections = (selections.Selector('^IDTight[E]|all')*('^Pt[1-3][0]$|all'))()
-egid_iso_tkpho_selections = (selections.Selector('^IDTight[P]|all')*('^Pt[1-3][0]$|all'))()
-egid_iso_tkele_comp_selections = (selections.Selector('^IDTight[E]|^IDComp|all')*('^Pt[1-3][0]$|all'))()
+egid_iso_tkele_selections = (selections.Selector('^IDTight[E]$|all')*('^Pt[1-3][0]$|all'))()
+egid_iso_tkpho_selections = (selections.Selector('^IDTight[P]$|all')*('^Pt[1-3][0]$|all'))()
+egid_iso_tkele_comp_selections = (selections.Selector('^IDTight[E]$|^IDComp|all')*('^Pt[1-3][0]$|all'))()
 
 
 gen_selections = (selections.Selector('GEN$')*('^Eta[F]$|^Eta[AF][ABCD]*[C]$|all')+selections.Selector('GEN$')*('^Pt15|^Pt30'))()
@@ -129,10 +129,10 @@ l1tc_l1emu_ee_ell_genmatched = [
 
 l1tc_l2emu_genmatched = [
     plotters.EGGenMatchPlotter(
-        collections.TkEmL2, collections.gen,
+        collections.TkEmL2, collections.gen_ele,
         egid_iso_tkpho_selections, selections.gen_selections),
     plotters.EGGenMatchPlotter(
-        collections.TkEleL2, collections.gen,
+        collections.TkEleL2, collections.gen_ele,
         egid_iso_tkele_selections, selections.gen_selections),   
 ]
 
@@ -152,10 +152,10 @@ egid_menu_pho_rate_selections = (selections.Selector('^SingleIsoTkPho|^SingleEGE
 
 l1tc_l2emu_singlelepton_genmatched = [
     plotters.EGGenMatchPlotter(
-        collections.TkEmL2, collections.sim_parts,
+        collections.TkEmL2, collections.gen_ele,
         egid_menu_pho_rate_selections, gen_selections),
     plotters.EGGenMatchPlotter(
-        collections.TkEleL2, collections.sim_parts,
+        collections.TkEleL2, collections.gen_ele,
         egid_menu_ele_rate_selections, gen_selections),   
 ]
 

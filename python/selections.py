@@ -458,7 +458,7 @@ gen_ele_sel = [
         PID.electron, PID.electron))
 ]
 gen_part_fbrem_sel = [
-    Selection('all', '', ''),
+    Selection('all', 'no cut', ''),
     Selection('BremH', 'f_{BREM}>=0.5', 'fbrem >= 0.5'),
     Selection('BremL', 'f_{BREM}<0.5', 'fbrem < 0.5'),
 ]
