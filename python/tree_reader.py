@@ -4,6 +4,8 @@ import resource
 import gc
 import awkward as ak
 import awkward_pandas as akpd
+import vector
+vector.register_awkward()
 
 class TreeReader(object):
     def __init__(self, entry_range, max_events):
@@ -111,8 +113,22 @@ class TreeReader(object):
                                    aliases=name_map, 
                                    entry_start=self.file_entry, 
                                    entry_stop=self.file_entry+entry_block)
+        
+        print(akarray)
+        records = {}
+        for field in akarray.fields:
+            records[field] = akarray[field]
+        
+        if 'pt' in names and 'eta' in names and 'phi' in names:
+            if not 'mass' in names:
+                records['mass'] = 0.*akarray['pt']
+            return vector.zip(records)
+
+        return ak.zip(records)
+
         # FIXME: we should probably do an ak.Record using sometjhing along the lines of:
         # ele_rec = ak.zip({'pt': tkele.pt, 'eta': tkele.eta, 'phi': tkele.phi}, with_name="pippo")
         # this would allow to handle the records and assign behaviours....
-        return akarray
+
+        # return akarray
         

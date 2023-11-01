@@ -15,11 +15,11 @@ dataset:
 
 samples:
   doubleele_flat1to100_PU200:
-    input_sample_dir: DoubleElectron_FlatPt-1To100_PU200/FP/v100C/
+    input_sample_dir: DoubleElectron_FlatPt-1To100_PU200/FP/v100D/
     events_per_job : 200
 
   doublephoton_flat1to100_PU200:
-    input_sample_dir: DoublePhoton_FlatPt-1To100_PU200/FP/v100D/
+    input_sample_dir: DoublePhoton_FlatPt-1To100_PU200/FP/v100C/
     events_per_job : 200
 
 
@@ -30,7 +30,7 @@ samples:
   # 
 
   nugun_alleta_pu200:
-    input_sample_dir: NuGunAllEta_PU200/FP/v100C/
+    input_sample_dir: NuGunAllEta_PU200/FP/v100D/
     # input_sample_dir: NuGunAllEta_PU200/NTP/v80A/
     # input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v47/191105_135050/0000/
     events_per_job: 300

@@ -22,9 +22,7 @@ import awkward as ak
 import ROOT
 import math
 import sys
-import vector
-
-vector.register_awkward()
+import xgboost
 # import root_numpy.tmva as rnptmva
 
 from .utils import debugPrintOut
@@ -211,7 +209,7 @@ class DFCollection(object):
     def fill_real(self, event, stride, weight_file=None, debug=0):
         self.df = self.filler_function(event, stride)
         if self.fixture_function is not None:
-            self.fixture_function(self.df)
+            self.df = self.fixture_function(self.df)
         if self.weight_function is not None:
             self.df = self.weight_function(self.df, weight_file)
         self.entries = range(0,1000)# FIXME: self.df.index.get_level_values('entry').unique()
@@ -219,66 +217,58 @@ class DFCollection(object):
             print(f'read coll. {self.name} from entry: {event.file_entry} to entry: {event.file_entry+stride} (stride: {stride}), # rows: {len(self.df)}, # entries: {len(self.entries)}')
 
 
-def tkeg_fromcluster_fixture(tkegs):
-    # print tkegs
-    tkegs.loc[tkegs.hwQual == 1, 'hwQual'] = 3
-
-
-# NOTE: scorporate the part wich computes the layer_weights
-# (needed only by rthe calib plotters) from the rest (creating ad-hoc collections)
-# this should also allow for removing the tc dependency -> huge speedup in filling
-# FIXME: this needs to be ported to the new interface reading several entries at once
-def cl3d_layerEnergy_hoe(clusters, tcs):
-    """ """
-    if clusters.empty:
-        return clusters
-    do_compute_hoe = False
-    do_compute_layer_energy = False
-    if 'hoe' not in clusters.columns:
-        do_compute_hoe = True
-    if 'layer_energy' not in clusters.columns:
-        do_compute_layer_energy = True
-
-    def compute_layer_energy(cluster, do_layer_energy=True, do_hoe=False):
-        components = tcs[tcs.id.isin(cluster.clusters)]
-        hist, bins = np.histogram(components.layer.values,
-                                  bins=range(0, 29, 2),
-                                  weights=components.energy.values)
-        results = []
-        if do_layer_energy:
-            results.append(hist)
-        if do_hoe:
-            em_energy = np.sum(hist)
-            hoe = -1
-            if em_energy != 0:
-                hoe = max(0, cluster.energy - em_energy)/em_energy
-            results.append(hoe)
-        return results
-
-    if do_compute_hoe or do_compute_layer_energy:
-        new_columns = []
-        if do_compute_layer_energy:
-            new_columns.append('layer_energy')
-        if do_compute_hoe:
-            new_columns.append('hoe')
-        clusters[new_columns] = clusters.apply(
-            lambda cl: compute_layer_energy(
-                cl,
-                do_compute_layer_energy,
-                do_compute_hoe),
-            result_type='expand',
-            axis=1)
-    return clusters
 
 
 def cl3d_fixtures(clusters):
-    # if False:
-    #     clusters['bdt_pi'] = rnptmva.evaluate_reader(
-    #         classifiers.mva_pi_classifier_builder(), 'BDT', clusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
+    # print(clusters.show())
+
+    # print(clusters)
+    # print(clusters.type.show())
+    # print(clusters.energy)
+
     mask_loose = 0b0010
     mask_tight = 0b0001
     clusters['IDTightEm'] = np.bitwise_and(clusters.hwQual, mask_tight) > 0
     clusters['IDLooseEm'] = np.bitwise_and(clusters.hwQual, mask_loose) > 0
+    clusters['eMax'] = clusters.emaxe*clusters.energy
+
+
+    input_array = ak.flatten(
+        clusters[[
+            'coreshowerlength', 
+            'showerlength', 
+            'firstlayer', 
+            'maxlayer', 
+            'szz', 
+            'srrmean', 
+            'srrtot', 
+            'seetot', 
+            'spptot']], 
+        axis=1)
+    input_data = ak.concatenate(ak.unzip(input_array[:, np.newaxis]), axis=1)
+    input_matrix = xgboost.DMatrix(np.asarray(input_data))
+    score =  classifiers.eg_hgc_model_xgb.predict(input_matrix)
+
+    pu_input_array = ak.flatten(
+        clusters[[
+            'eMax', 
+            'emaxe', 
+            'spptot', 
+            'srrtot', 
+            'ntc90']], 
+        axis=1)
+    pu_input_data = ak.concatenate(ak.unzip(pu_input_array[:, np.newaxis]), axis=1)
+    pu_input_matrix = xgboost.DMatrix(np.asarray(pu_input_data))
+    pu_score =  classifiers.pu_veto_model_xgb.predict(pu_input_matrix)
+
+    counts = ak.num(clusters)
+    clusters_flat = ak.flatten(clusters)
+    clusters_flat['egbdtscore'] = score
+    clusters_flat['pubdtscore'] = pu_score
+    clusters = ak.unflatten(clusters_flat, counts)
+    print(clusters.type.show())
+
+    return clusters
 
 
 def gen_fixtures(particles, mc_particles):
@@ -288,21 +278,22 @@ def gen_fixtures(particles, mc_particles):
     particles['pdgid'] = particles.pid
     particles['abseta'] = np.abs(particles.eta)
     particles['firstmother_pdgid'] = mc_particles.df.pdgid[particles[particles.gen != -1].gen-1]
-    # return particles
+    return particles
 
 
 def mc_fixtures(particles):
     particles['abseta'] = np.abs(particles.eta)
+    return particles
 
 def ele_mc_fixtures(particles):
-    mc_fixtures(particles)
     if 'pdgid' not in particles.fields:
         particles['pdgid'] = particles.charge*11
+    return mc_fixtures(particles)
 
 def pho_mc_fixtures(particles):
-    mc_fixtures(particles)
     if 'pdgid' not in particles.fields:
         particles['pdgid'] = 22
+    return mc_fixtures(particles)
 
 
 def tc_fixtures(tcs):
@@ -313,33 +304,7 @@ def tc_fixtures(tcs):
         tcs['abseta'] = np.abs(tcs.eta)
     # tcs['xproj'] = tcs.x/tcs.z
     # tcs['yproj'] = tcs.y/tcs.z
-    # return tcs
-
-
-def cl2d_fixtures(clusters):
-    clusters['ncells'] = 1
-    if not clusters.empty:
-        clusters['ncells'] = [len(x) for x in clusters.cells]
-    # return clusters
-
-
-def tower_fixtures(towers):
-    if towers.empty:
-        # print '***[compute_tower_data]:WARNING input data-frame is empty'
-        return towers
-
-    towers.eval('HoE = etHad/etEm', inplace=True)
-
-    def fill_momentum(tower):
-        vector = ROOT.TLorentzVector()
-        vector.SetPtEtaPhiE(tower.pt, tower.eta, tower.phi, tower.energy)
-        tower.momentum = vector
-        # print tower.pt, tower.momentum.Pt()
-        return tower
-
-    towers['momentum'] = ROOT.TLorentzVector()
-    towers = towers.apply(fill_momentum, axis=1)
-    return towers
+    return tcs
 
 
 def recluster_mp(cl3ds, tcs, cluster_size, cluster_function, pool):
@@ -595,7 +560,7 @@ def tkele_fixture_ee(electrons):
     electrons['looseTkID'] = True
     electrons['photonID'] = True
     electrons['dpt'] = electrons.tkPt - electrons.pt
-    # return electrons
+    return electrons
 
 
 def tkele_fixture_eb(electrons):
@@ -606,7 +571,7 @@ def tkele_fixture_eb(electrons):
     electrons['looseTkID'] = ((hwqual.values >> 1) & 1) > 0
     electrons['photonID'] = ((hwqual.values >> 2) & 1) > 0
     electrons['dpt'] = electrons.tkPt - electrons.pt
-    # return electrons
+    return electrons
 
 
 def quality_flags(objs):
@@ -621,12 +586,12 @@ def quality_flags(objs):
     objs['IDTightPho'] = np.bitwise_and(objs.hwQual, mask_tight_pho) > 0
     objs['IDNoBrem'] = np.bitwise_and(objs.hwQual, mask_no_brem) > 0
     objs['IDBrem'] = np.bitwise_and(objs.hwQual, mask_no_brem) == 0
-    # return objs
+    return objs
 
 def quality_ele_fixtures(objs):
     # print(objs)
     objs['dpt'] = objs.tkPt - objs.pt
-    quality_flags(objs)
+    return quality_flags(objs)
 
 
 def print_columns(df):
@@ -700,23 +665,8 @@ def decodedTk_fixtures(objects):
 
 
 def build_double_obj(obj):
-    # we convert the ak.Array to ak.Record
-    # FIXME: this could be moved upstream for all collections!
-    obj['mass'] = 0.*obj.pt
-    data = {}
-    
-    # print(obj.fields)
-    for field in obj.fields:
-
-        if field in ['energy', 'exx', 'exy', 'weight',  'energy', 'dvx', 'dvy', 'dvz', 'ovx', 'ovy', 'ovz', 'mother', 'exphi', 'exeta', 'exx', 'exy', 'fbrem', 'fromBeamPipe','firstmother_pdgid']:
-            continue
-
-        data[field] = obj[field]
-        # print(field)
-        # print( obj[field])
-    obj_rec = vector.zip(data)
     ret = ak.combinations(
-        array=obj_rec, 
+        array=obj, 
         n=2, 
         axis=1,
         fields=['leg0', 'leg1'])
@@ -800,8 +750,10 @@ hgc_cl3d = DFCollection(
         prefix='HGCal3DCl', entry_block=entry_block, fallback='HMvDR'),
     fixture_function=lambda clusters: cl3d_fixtures(clusters),
     # read_entry_block=500,
-    debug=0,
-    print_function=lambda df: df[['pt', 'eta', 'phi', 'hwQual', 'ptEm']].sort_values(by='pt', ascending=False)
+    debug=4,
+    print_function=lambda df: df[['rho', 'eta', 'phi', 'hwQual', 'ptEm', 'egbdtscore', 'pubdtscore']].sort_values(by='rho', ascending=False)
+    # print_function=lambda df: df.columns
+
     )
 
 

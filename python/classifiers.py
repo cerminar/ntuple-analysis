@@ -2,7 +2,7 @@
 
 import ROOT
 import array
-
+import xgboost
 
 def book_MVA_classifier(model, weight_file, variables):
     mva_classifier = ROOT.TMVA.Reader()
@@ -46,3 +46,13 @@ def mva_pi_classifier_builder():
                                                            'eMaxOverE_cl',
                                                            'sigmaZZ_cl'])
     return mva_pi_classifier
+
+
+
+eg_hgc_model_xgb = xgboost.Booster()
+eg_hgc_model_xgb.load_model('data/hgcegid_3151_loweta_xgboost.json')
+
+pu_veto_model_xgb = xgboost.Booster()
+pu_veto_model_xgb.load_model('data/puid_model_xgboost.json')
+# loaded_model = XGBClassifier()
+# loaded_model.load_model('xgb_model.json')
