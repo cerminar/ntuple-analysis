@@ -16,18 +16,10 @@ Edit/skip it accordingly for your specific system.
 
 `source setup_lxplus.sh`
 
-### 2. install `virtualenvwrapper`
-
-This stetp needs to be done **only once** for your account and can be done with whatever `python` version is in use in the system.
-
-For some reason the current `CMSSW` scrips seems to deliver an inconsistent setup of `virtualenv` and `virtualenvwrapper`, for this reason we force a new installation in `~/.local` using:
-
-`pip install --ignore-installed --user virtualenv==15.1.0 virtualenvwrapper`
-
-For a more complete overview of the procedure you can refer to
-`virtualenvwrapper` [installation instructions](https://virtualenvwrapper.readthedocs.io/en/latest/install.html) 
-
 ### 3. setup `virtualenvwrapper`
+
+For a more complete overview of the virtualenvwrapper setup you can refer to
+`virtualenvwrapper` [installation instructions](https://virtualenvwrapper.readthedocs.io/en/latest/install.html) 
 
 For starting using virtualenvwrapper
 
