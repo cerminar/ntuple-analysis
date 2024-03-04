@@ -11,6 +11,7 @@ The tool was developed for the analysis of [FastPUPPI](https://github.com/p2l1pf
 - [Usage](#usage)
   - [First time setup](#first-time-setup)
   - [After the first setup](#after-the-first-setup)
+  - [Running the project on Windows](#running-the-project-on-windows)
 - [Main script](#main-script)
     -  [How does the analyzeNtuples work?](#how-does-analyzentuplespy-work)
     -  [Configuration files for the analyzeNtuples script](#configuration-files-for-the-analyzentuplespy-script)
@@ -105,7 +106,7 @@ The features
     ```
     mkvirtualenv --system-site-packages -p `which python3.9` -r requirements.txt <venvname>
     ```
-    *where venvname is the name of your new virtual environment**
+    *where venvname is the name of your new virtual environment*
 
     *If you created a virtual environment in a different way, you can use:*
     ```
@@ -187,6 +188,30 @@ The features
     *where venvname is the name of your existing virtual environment from the first set-up.*
 
     *also, ```lsvirtualenv``` is your friend if you forget the name of the virtualenv.*
+
+### Running the Jupyter Notebook on Windows
+
+You need to do the following:
+
+1. Download [Ubuntu](https://apps.microsoft.com/detail/9pdxgncfsczv?hl=en-us&gl=US) for Windows here and install it.
+2. Launch the first instance of Ubuntu (referred to here as #1) and complete all the steps on that machine from [here](#first-time-setup).
+3. Launch another instance of Ubuntu (referred to here as #2) and create a tunnel between instance #1 and your Windows machine by:
+   ```
+   ssh -L 8099:localhost:8095 YOUR_MACHINE_URL
+   ```
+   *YOUR_MACHINE_URL is the URL of the address to connect to your machine.*
+
+   `NOTE:` If you are going to use the LXPLUS service, it might happen that this tunnel will not be created with the machine that launched Jupyter Notebook with the following:
+
+    ```
+    jupyter notebook --no-browser --port=8095
+    ```
+
+    It means that you need a dedicated CentOS machine.
+4. Open http://localhost:8099/ in the browser on Windows.
+
+    `NOTE:` When in Jupyter Notebook, it is important to select a kernel that you have created with the python3 -m ipykernel install command on step 10.
+  
 
 ## Main script
 
