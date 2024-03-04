@@ -9,12 +9,12 @@ The tool is developed for the analysis of [FastPUPPI](https://github.com/p2l1pfp
 - [Features](#features)
 - [Requirements](#requirements)
 - [Usage](#usage)
-  - [First time setup](#initial-setup)
-  - [Running after first time setup](#running-after-first-time-setup)
+  - [First time setup](#first-time-setup)
+  - [After first time setup](#after-first-time-setup)
 - [Main script](#main-script)
-    -  [How does the analyzeNtuples.py work?](#how-does-ntuples-work)
-    -  [Configuration files for the analyzeNtuples.py script](#config-files-ntuples-script)
-- [Submitting to the batch system](#submitting-batch-system)
+    -  [How does the analyzeNtuples work?](#how-does-the-analyzentuples-work)
+    -  [Configuration files for the analyzeNtuples script](#configuration-files-for-the-analyzentuples-script)
+- [Submitting to the batch system](#submitting-to-the-batch-system)
 - [FAQ](#faq)
 - [Contributing](#contributing)
 
@@ -145,7 +145,7 @@ The features
     jupyter notebook --no-browser --port=8095
     ```
  
-### Running after first time setup
+### After first time setup
 
 1. Log in to a LXPLUS machine.
 
