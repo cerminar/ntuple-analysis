@@ -13,7 +13,7 @@ The tool is developed for the analysis of [FastPUPPI](https://github.com/p2l1pfp
   - [After first time setup](#after-first-time-setup)
 - [Main script](#main-script)
   - [How does the analyzeNtuples.py work?](#how-does-the-analyzentuplespy-work)
-  - [Configuration files for the analyzeNtuples.py script](#after-first-time-setup)
+  - [Configuration files for the analyzeNtuples.py script](#configuration-files-for-the-analyzentuplespy-script)
 - [Submitting to the batch system](#configuration-files-for-the-analyzentuplespy-script)
 - [FAQ](#faq)
 - [Contributing](#contributing)
