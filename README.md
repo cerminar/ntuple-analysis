@@ -15,7 +15,9 @@ This step is `lxplus` specific, givin access to a more recent `python` and `root
 Edit/skip it accordingly for your specific system.
 
 `source setup_lxplus.sh`
+
 ---
+
 ### 4. create a virtualenv for the project
 
 The **first time** you will have to create the actual instance of the `virtualenv`:
