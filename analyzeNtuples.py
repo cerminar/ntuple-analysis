@@ -15,72 +15,23 @@ Plotters:
 Histograms:
     which histograms are produced is handled in the `l1THistos` module (and the plotters).
 """
-
-# import ROOT
-# from __future__ import print_function
-from __future__ import print_function
+import argparse
 import sys
-# The purpose of this file is to demonstrate mainly the objects
-# that are in the HGCalNtuple
-import ROOT
 import os
 import traceback
 import platform
-# import tracemalloc
-
-# import root_numpy as rnp
-import pandas as pd
 import uproot as up
+import ROOT
 
 from python.main import main
 import python.l1THistos as histos
-# import python.clusterTools as clAlgo
 import python.file_manager as fm
 import python.collections as collections
 import python.calibrations as calibs
 import python.timecounter as timecounter
 import python.tree_reader as treereader
-# from pandas.core.common import SettingWithCopyError, SettingWithCopyWarning
-# import warnings
-# warnings.filterwarnings('error', category=SettingWithCopyWarning)
-# ROOT.ROOT.EnableImplicitMT(2)
 
 
-# class Tracer(object):
-#     def __init__(self):
-#         tracemalloc.start(10)
-#         self.snapshots = []
-# 
-#     def collect_stats(self):
-#         filters = []
-#         self.snapshots.append(tracemalloc.take_snapshot())
-#         if len(self.snapshots) > 1:
-#             stats = self.snapshots[-1].filter_traces(filters).compare_to(self.snapshots[-2], 'filename')
-# 
-#             for stat in stats[:10]:
-#                 print("{} new KiB {} total KiB {} new {} total memory blocks: ".format(stat.size_diff/1024, stat.size / 1024, stat.count_diff, stat.count))
-#                 for line in stat.traceback.format():
-#                     print(line)
-
-
-def convertGeomTreeToDF(tree):
-    branches = [br.GetName() for br in tree.GetListOfBranches()
-                if not br.GetName().startswith('c_')]
-    cell_array = rnp.tree2array(tree, branches=branches)
-    cell_df = pd.DataFrame()
-    for idx in range(0, len(branches)):
-        cell_df[branches[idx]] = cell_array[branches[idx]]
-    return cell_df
-
-
-def dumpFrame2JSON(filename, frame):
-    with open(filename, 'w') as f:
-        f.write(frame.to_json())
-
-
-def pool_init(plotters):
-    global plotters_glb
-    plotters_glb = plotters
 
 
 # @profile
@@ -88,7 +39,6 @@ def analyze(params, batch_idx=-1):
     print(params)
     debug = int(params.debug)
 
-    # tree_name = 'hgcalTriggerNtuplizer/HGCalTriggerNtuple'
     input_files = []
     range_ev = (0, params.maxEvents)
 
@@ -159,6 +109,7 @@ def analyze(params, batch_idx=-1):
         tree_file = up.open(tree_file_name, num_workers=1)
         print(f'opening file: {tree_file_name}')
         print(f' . tree name: {params.tree_name}')
+
         def getUpTree(uprobj, name):
             parts = name.split('/')
             if len(parts) > 1:
@@ -208,10 +159,12 @@ def analyze(params, batch_idx=-1):
     return tree_reader.n_tot_entries
 
 
+
+
 if __name__ == "__main__":
 
     tic = 0
-    if '3.8' in platform.python_version() or '3.9' in platform.python_version() or '3.10' in platform.python_version():
+    if int(platform.python_version().split('.')[1]) >= 8:
         timecounter.counter.start()
 
     nevents = 0
