@@ -15,13 +15,12 @@ Plotters:
 Histograms:
     which histograms are produced is handled in the `l1THistos` module (and the plotters).
 """
-import argparse
+
 import sys
 import os
 import traceback
 import platform
 import uproot as up
-import ROOT
 
 from python.main import main
 import python.l1THistos as histos
@@ -79,10 +78,9 @@ def analyze(params, batch_idx=-1):
     # instantiate all the plotters
     plotter_collection = []
     plotter_collection.extend(params.plotters)
-    # print(plotter_collection)
 
-    # -------------------------------------------------------
-    # book histos
+    # -------------------------BOOK HISTOS------------------------------
+
     for plotter in plotter_collection:
         plotter.book_histos()
 
@@ -91,21 +89,18 @@ def analyze(params, batch_idx=-1):
     if params.weight_file is not None:
         collection_manager.read_weight_file(params.weight_file)
 
-    # -------------------------------------------------------
-    # event loop
+    # -------------------------EVENT LOOP--------------------------------
 
     tree_reader = treereader.TreeReader(range_ev, params.maxEvents)
     print(f"events_per_job: {params.events_per_job}")
     print(f"maxEvents: {params.maxEvents}")
     print(f"range_ev: {range_ev}")
 
-    # tr = Tracer()
-
     break_file_loop = False
     for tree_file_name in files_with_protocol:
         if break_file_loop:
             break
-        # tree_file = up.open(tree_file_name, num_workers=2)
+
         tree_file = up.open(tree_file_name, num_workers=1)
         print(f"opening file: {tree_file_name}")
         print(f" . tree name: {params.tree_name}")
@@ -123,12 +118,9 @@ def analyze(params, batch_idx=-1):
         while tree_reader.next(debug):
             try:
                 collection_manager.read(tree_reader, debug)
-                # processes = []
+
                 for plotter in plotter_collection:
                     plotter.fill_histos_event(tree_reader.file_entry, debug=debug)
-
-                # if tree_reader.global_entry % 100 == 0:
-                #     tr.collect_stats()
 
                 if (
                     batch_idx != -1
