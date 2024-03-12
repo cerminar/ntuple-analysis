@@ -46,7 +46,7 @@ def get_collection_parameters(opt, cfgfile):
         if machine in hostname:
             outdir = odir
     plot_version = '{}.{}'.format(
-        cfgfile['common']['plot_version'], 
+        cfgfile['common']['plot_version'],
         cfgfile['dataset']['version'])
 
     collection_params = {}
@@ -89,7 +89,7 @@ def get_collection_parameters(opt, cfgfile):
             priority = 2
             if 'priorities' in collection_data and sample in collection_data['priorities']:
                 priority = collection_data['priorities'][sample]
-            
+
             params = Parameters({'input_base_dir': cfgfile['dataset']['input_dir'],
                                  'input_sample_dir': cfgfile['samples'][sample]['input_sample_dir'],
                                  'tree_name': cfgfile['dataset']['tree_name'],
@@ -213,7 +213,7 @@ def main(analyze, submit_mode=False):
     print('About to process samples: {}'.format(samples_to_process))
 
     plot_version = '{}.{}'.format(
-        cfgfile['common']['plot_version'], 
+        cfgfile['common']['plot_version'],
         cfgfile['dataset']['version'])
 
     if opt.BATCH and not opt.RUN:
