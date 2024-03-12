@@ -40,7 +40,5 @@ if __name__ == "__main__":
 
     if counter.started():
         analysis_time, time_per_event = counter.time_per_event(nevents)
-        print(
-            f"\nAnalyzed {nevents} events in {analysis_time:.2f} s ({time_per_event:.2f} s/ev)"
-        )
+        print(f"\nAnalyzed {nevents} events in {analysis_time:.2f} s ({time_per_event:.2f} s/ev)")
         counter.print_nevent_per_jobflavor(time_per_event)

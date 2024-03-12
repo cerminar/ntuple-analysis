@@ -67,7 +67,7 @@ def debugPrintOut(level, name, toCount, toPrint, max_lines=-1):
     if level == 0:
         return
     if level >= 3:
-        print(('# {}: {}'.format(name, len(toCount))))
+        print(f'# {name}: {len(toCount)}')
     if level >= 4 and not toPrint.empty:
         print(max_lines)
         if max_lines != -1:

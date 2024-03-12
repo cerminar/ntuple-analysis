@@ -514,7 +514,7 @@ def compute_tcs_to_cluster_deltaro(cluster, tcs):
 def get_dr_clusters(cl3ds, tcs, cylind_size):
     return run_distance_based_recluster(cl3ds, tcs,
                                         distance_function=compute_tcs2cluster_distance,
-                                        selection='(dr < {})'.format(cylind_size))
+                                        selection=f'(dr < {cylind_size})')
 
 
 def get_dtdu_clusters(cl3ds, tcs, cylind_size):
@@ -522,7 +522,7 @@ def get_dtdu_clusters(cl3ds, tcs, cylind_size):
                                         distance_function=lambda cluster, tcs: compute_tcs2cluster_distance(cluster, tcs,
                                                                                                             do_deltaUT=True,
                                                                                                             do_dr=False),
-                                        selection='(sqrt((dt/{})**2+(du/{})**2) < 1)'.format(cylind_size[0], cylind_size[1]))
+                                        selection=f'(sqrt((dt/{cylind_size[0]})**2+(du/{cylind_size[1]})**2) < 1)')
 
 
 def get_dtdu_clusters_unpack(clusters_tcs_cylsize):

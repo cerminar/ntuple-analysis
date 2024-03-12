@@ -9,31 +9,14 @@ The tool is developed for the analysis of [FastPUPPI](https://github.com/p2l1pfp
 The tool can be run on any private machines using just `python`, `pip` and `virtualenvwrapper`.
 If you plan to run it on lxplus you might want to look at the point `1` below.
 
-### 1. lxplus setup
+### lxplus setup
 
 This step is `lxplus` specific, givin access to a more recent `python` and `root` version.
 Edit/skip it accordingly for your specific system.
 
 `source setup_lxplus.sh`
 
-### 2. install `virtualenvwrapper`
-
-This stetp needs to be done **only once** for your account and can be done with whatever `python` version is in use in the system.
-
-For some reason the current `CMSSW` scrips seems to deliver an inconsistent setup of `virtualenv` and `virtualenvwrapper`, for this reason we force a new installation in `~/.local` using:
-
-`pip install --ignore-installed --user virtualenv==15.1.0 virtualenvwrapper`
-
-For a more complete overview of the procedure you can refer to
-`virtualenvwrapper` [installation instructions](https://virtualenvwrapper.readthedocs.io/en/latest/install.html) 
-
-### 3. setup `virtualenvwrapper`
-
-For starting using virtualenvwrapper
-
-`source setVirtualEnvWrapper.sh`
-
-### 4. create a virtualenv for the project
+create a virtualenv for the project
 
 The **first time** you will have to create the actual instance of the `virtualenv`:
 
@@ -45,32 +28,17 @@ The **first time** you will have to create the actual instance of the `virtualen
 You can use the file directly using for example:
 
 `pip install -r requirements.txt`
-
 *NOTE*: `python > 3.9` is a requirement.
 
+### Conda environment
+You can use also conda to install all the dependencies and root
 
-## Setup after first installation
-
-### 1. lxplus setup
-
-This step is `lxplus` specific, givin access to a more recent `python` and `root` version.
-Edit/skip it accordingly for your specific system.
-
-`source setup_lxplus.sh`
-
-### 2. setup `virtualenvwrapper`
-
-For starting using virtualenvwrapper
-
-`source setVirtualEnvWrapper.sh`
-
-### 3. activate the `virtualenv`
-
-After this initial (once in a time) setup is done you can just activate the virtualenv calling:
-
-`workon  <venvname>`
-
-(`lsvirtualenv` is your friend in case you forgot the name).
+```bash
+conda create env_name python=3.11
+conda activate env_name
+conda install root              #In the conda-forge channel
+pip install -r requirements.txt
+```
 
 
 ## Running the analysis

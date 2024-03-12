@@ -192,9 +192,8 @@ class CalibManager(object):
 
         def set_calibration_version(self, version):
             if version not in self.calib_table.keys():
-                print("calibration version: {} not among availble sets: {}".format(version,
-                                                                                   self.calib_table.keys()))
-                raise KeyError('Unknown calibration version: {}, check configuration file!'.format(version))
+                print(f"calibration version: {version} not among availble sets: {self.calib_table.keys()}")
+                raise KeyError(f'Unknown calibration version: {version}, check configuration file!')
             self.calib_version = version
 
         def get_calibration(self, collection_name, calib_key):

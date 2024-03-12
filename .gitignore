@@ -117,3 +117,5 @@ plots1/test.txt
 plots1/xemacs.csh
 .vscode/settings.json
 .vscode/tasks.json
+metadata.json
+out/*.root
