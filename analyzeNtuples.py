@@ -21,16 +21,15 @@ import traceback
 import platform
 
 from python.main import main
-import python.timecounter as timecounter
+from python.timecounter import TimeCounter
 from python.analyzer import analyze
 
 
-
-
 if __name__ == "__main__":
-    tic = 0
+
+    counter = TimeCounter()
     if int(platform.python_version().split(".")[1]) >= 8:
-        timecounter.counter.start()
+        counter.start()
 
     nevents = 0
     try:
@@ -41,9 +40,9 @@ if __name__ == "__main__":
         traceback.print_exc()
         sys.exit(100)
 
-    if timecounter.counter.started():
-        analysis_time, time_per_event = timecounter.counter.time_per_event(nevents)
+    if counter.started():
+        analysis_time, time_per_event = counter.time_per_event(nevents)
         print(
             f"Analyzed {nevents} events in {analysis_time:.2f} s ({time_per_event:.2f} s/ev)"
         )
-        timecounter.counter.print_nevent_per_jobflavor(time_per_event)
+        counter.print_nevent_per_jobflavor(time_per_event)
