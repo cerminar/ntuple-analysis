@@ -9,16 +9,14 @@ The tool is developed for the analysis of [FastPUPPI](https://github.com/p2l1pfp
 The tool can be run on any private machines using just `python`, `pip` and `virtualenvwrapper`.
 If you plan to run it on lxplus you might want to look at the point `1` below.
 
-### 1. lxplus setup
+### lxplus setup
 
 This step is `lxplus` specific, givin access to a more recent `python` and `root` version.
 Edit/skip it accordingly for your specific system.
 
 `source setup_lxplus.sh`
 
----
-
-### 4. create a virtualenv for the project
+create a virtualenv for the project
 
 The **first time** you will have to create the actual instance of the `virtualenv`:
 
@@ -30,8 +28,17 @@ The **first time** you will have to create the actual instance of the `virtualen
 You can use the file directly using for example:
 
 `pip install -r requirements.txt`
-
 *NOTE*: `python > 3.9` is a requirement.
+
+### Conda environment
+You can use also conda to install all the dependencies and root
+
+```bash
+conda create env_name python=3.11
+conda activate env_name
+conda install root              #In the conda-forge channel
+pip install -r requirements.txt
+```
 
 
 ## Running the analysis
