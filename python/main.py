@@ -21,19 +21,7 @@ class Parameters(dict):
         return self[name]
 
     def __str__(self):
-        return 'Name: {},\n \
-                clusterize: {}\n \
-                compute density: {}\n \
-                maxEvents: {}\n \
-                output file: {}\n \
-                events per job: {}\n \
-                debug: {}'.format(self.name,
-                                  self.clusterize,
-                                  self.computeDensity,
-                                  self.maxEvents,
-                                  self.output_filename,
-                                  self.events_per_job,
-                                  self.debug)
+        return f'Name: {self.name},\n                 clusterize: {self.clusterize}\n                 compute density: {self.computeDensity}\n                 maxEvents: {self.maxEvents}\n                 output file: {self.output_filename}\n                 events per job: {self.events_per_job}\n                 debug: {self.debug}'
 
     def __repr__(self):
         return self.name
@@ -45,14 +33,12 @@ def get_collection_parameters(opt, cfgfile):
     for machine, odir in cfgfile['common']['output_dir'].items():
         if machine in hostname:
             outdir = odir
-    plot_version = '{}.{}'.format(
-        cfgfile['common']['plot_version'],
-        cfgfile['dataset']['version'])
+    plot_version = f"{cfgfile['common']['plot_version']}.{cfgfile['dataset']['version']}"
 
     collection_params = {}
     for collection, collection_data in cfgfile['collections'].items():
         samples = cfgfile['samples'].keys()
-        print('--- Collection: {} with samples: {}'.format(collection, samples))
+        print(f'--- Collection: {collection} with samples: {samples}')
         sample_params = []
 
         plotters = []
@@ -61,8 +47,8 @@ def get_collection_parameters(opt, cfgfile):
 
         for sample in samples:
             events_per_job = -1
-            output_filename_base = 'histos_{}_{}_{}'.format(sample, collection_data['file_label'], plot_version)
-            out_file_name = '{}i.root'.format(output_filename_base)
+            output_filename_base = f"histos_{sample}_{collection_data['file_label']}_{plot_version}"
+            out_file_name = f'{output_filename_base}i.root'
             if opt.BATCH:
                 events_per_job = cfgfile['samples'][sample]['events_per_job']
                 if 'events_per_job' in collection_data.keys():
@@ -70,7 +56,7 @@ def get_collection_parameters(opt, cfgfile):
                         events_per_job = collection_data['events_per_job'][sample]
 
                 if opt.RUN:
-                    out_file_name = '{}_{}.root'.format(output_filename_base, opt.RUN)
+                    out_file_name = f'{output_filename_base}_{opt.RUN}.root'
 
             if opt.OUTDIR:
                 outdir = opt.OUTDIR
@@ -200,24 +186,21 @@ def main(analyze, submit_mode=False):
                                   if sample.name == opt.SAMPLE]
                     samples_to_process.append(sel_sample[0])
             else:
-                print(('Collection: {}, available samples: {}'.format(
-                    opt.COLLECTION, collection_params[opt.COLLECTION])))
+                print(f'Collection: {opt.COLLECTION}, available samples: {collection_params[opt.COLLECTION]}')
                 sys.exit(0)
         else:
-            print('ERROR: collection {} not in the cfg file'.format(opt.COLLECTION))
+            print(f'ERROR: collection {opt.COLLECTION} not in the cfg file')
             sys.exit(10)
     else:
-        print('\nAvailable collections: {}'.format(collection_params.keys()))
+        print(f'\nAvailable collections: {collection_params.keys()}')
         sys.exit(0)
 
-    print('About to process samples: {}'.format(samples_to_process))
+    print(f'About to process samples: {samples_to_process}')
 
-    plot_version = '{}.{}'.format(
-        cfgfile['common']['plot_version'],
-        cfgfile['dataset']['version'])
+    plot_version = f"{cfgfile['common']['plot_version']}.{cfgfile['dataset']['version']}"
 
     if opt.BATCH and not opt.RUN:
-        batch_dir = 'batch_{}_{}'.format(opt.COLLECTION, plot_version)
+        batch_dir = f'batch_{opt.COLLECTION}_{plot_version}'
         if not os.path.exists(batch_dir):
             os.mkdir(batch_dir)
             os.mkdir(batch_dir+'/conf/')
@@ -240,11 +223,11 @@ def main(analyze, submit_mode=False):
                                                                nev_toprocess=nevents,
                                                                nev_perjob=sample.events_per_job,
                                                                debug=int(opt.DEBUG))
-            print('Total # of events to be processed: {}'.format(nevents))
-            print('# of events per job: {}'.format(sample.events_per_job))
+            print(f'Total # of events to be processed: {nevents}')
+            print(f'# of events per job: {sample.events_per_job}')
             if n_jobs == 0:
                 n_jobs = 1
-            print('# of jobs to be submitted: {}'.format(n_jobs))
+            print(f'# of jobs to be submitted: {n_jobs}')
             sample['nbatch_jobs'] = n_jobs
 
             params = {}
@@ -255,9 +238,9 @@ def main(analyze, submit_mode=False):
             params['TEMPL_INPUT'] = opt.DATASETFILE
             params['TEMPL_COLL'] = opt.COLLECTION
             params['TEMPL_SAMPLE'] = sample.name
-            params['TEMPL_OUTFILE'] = '{}.root'.format(sample.output_filename_base)
+            params['TEMPL_OUTFILE'] = f'{sample.output_filename_base}.root'
             params['TEMPL_EOSPROTOCOL'] = fm.get_eos_protocol(dirname=sample.output_dir)
-            params['TEMPL_INFILE'] = '{}_*.root'.format(sample.output_filename_base)
+            params['TEMPL_INFILE'] = f'{sample.output_filename_base}_*.root'
             params['TEMPL_FILEBASE'] = sample.output_filename_base
             params['TEMPL_OUTDIR'] = sample.output_dir
             params['TEMPL_VIRTUALENV'] = os.path.basename(os.environ['VIRTUAL_ENV'])
@@ -294,7 +277,7 @@ def main(analyze, submit_mode=False):
                          params=params)
 
             editTemplate(infile='templates/hadd_dagman.dag',
-                         outfile=os.path.join(batch_dir, 'hadd_{}.dag'.format(sample.name)),
+                         outfile=os.path.join(batch_dir, f'hadd_{sample.name}.dag'),
                          params=params)
 
             editTemplate(infile='templates/run_harvest.sh',
@@ -312,25 +295,23 @@ def main(analyze, submit_mode=False):
                                  params=params)
 
             for jid in range(0, n_jobs):
-                dagman_spl += 'JOB Job_{} batch.sub\n'.format(jid)
-                dagman_spl += 'VARS Job_{} JOB_ID="{}"\n'.format(jid, jid)
-                dagman_spl_retry += 'Retry Job_{} 3\n'.format(jid)
-                dagman_spl_retry += 'PRIORITY Job_{} {}\n'.format(jid, sample.htc_priority)
+                dagman_spl += f'JOB Job_{jid} batch.sub\n'
+                dagman_spl += f'VARS Job_{jid} JOB_ID="{jid}\"\n'
+                dagman_spl_retry += f'Retry Job_{jid} 3\n'
+                dagman_spl_retry += f'PRIORITY Job_{jid} {sample.htc_priority}\n'
 
-            dagman_sub += 'SPLICE {} {}.spl DIR {}\n'.format(
-                sample.name, sample.name, sample_batch_dir)
-            dagman_sub += 'JOB {} {}/batch_hadd.sub\n'.format(sample.name+'_hadd', sample_batch_dir)
-            dagman_sub += 'JOB {} {}/batch_cleanup.sub\n'.format(
-                sample.name+'_cleanup', sample_batch_dir)
+            dagman_sub += f'SPLICE {sample.name} {sample.name}.spl DIR {sample_batch_dir}\n'
+            dagman_sub += f"JOB {sample.name + '_hadd'} {sample_batch_dir}/batch_hadd.sub\n"
+            dagman_sub += f"JOB {sample.name + '_cleanup'} {sample_batch_dir}/batch_cleanup.sub\n"
 
-            dagman_dep += 'PARENT {} CHILD {}\n'.format(sample.name, sample.name+'_hadd')
-            dagman_dep += 'PARENT {} CHILD {}\n'.format(sample.name+'_hadd', sample.name+'_cleanup')
+            dagman_dep += f"PARENT {sample.name} CHILD {sample.name + '_hadd'}\n"
+            dagman_dep += f"PARENT {sample.name + '_hadd'} CHILD {sample.name + '_cleanup'}\n"
 
             # dagman_ret += 'Retry {} 3\n'.format(sample.name)
-            dagman_ret += 'Retry {} 3\n'.format(sample.name+'_hadd')
-            dagman_ret += 'PRIORITY {} {}\n'.format(sample.name+'_hadd', sample.htc_priority)
+            dagman_ret += f"Retry {sample.name + '_hadd'} 3\n"
+            dagman_ret += f"PRIORITY {sample.name + '_hadd'} {sample.htc_priority}\n"
 
-            dagman_splice = open(os.path.join(sample_batch_dir, '{}.spl'.format(sample.name)), 'w')
+            dagman_splice = open(os.path.join(sample_batch_dir, f'{sample.name}.spl'), 'w')
             dagman_splice.write(dagman_spl)
             dagman_splice.write(dagman_spl_retry)
             dagman_splice.close()
@@ -352,7 +333,7 @@ def main(analyze, submit_mode=False):
         # cp TEMPL_TASKDIR/TEMPL_CFG
         print('Ready for HT-Condor submission please run the following commands:')
         # print('condor_submit {}'.format(condor_file_path))
-        print('condor_submit_dag {}'.format(dagman_file_name))
+        print(f'condor_submit_dag {dagman_file_name}')
 
         if submit_mode:
             if opt.LOCAL:

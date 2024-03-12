@@ -32,8 +32,6 @@ import python.timecounter as timecounter
 import python.tree_reader as treereader
 
 
-
-
 # @profile
 def analyze(params, batch_idx=-1):
     print(params)
@@ -43,29 +41,31 @@ def analyze(params, batch_idx=-1):
     range_ev = (0, params.maxEvents)
 
     if params.events_per_job == -1:
-        print('This is interactive processing...')
-        input_files = fm.get_files_for_processing(input_dir=os.path.join(params.input_base_dir,
-                                                                         params.input_sample_dir),
-                                                  tree=params.tree_name,
-                                                  nev_toprocess=params.maxEvents,
-                                                  debug=debug)
+        print("This is interactive processing...")
+        input_files = fm.get_files_for_processing(
+            input_dir=os.path.join(params.input_base_dir, params.input_sample_dir),
+            tree=params.tree_name,
+            nev_toprocess=params.maxEvents,
+            debug=debug,
+        )
     else:
-        print('This is batch processing...')
-        input_files, range_ev = fm.get_files_and_events_for_batchprocessing(input_dir=os.path.join(params.input_base_dir,
-                                                                                                   params.input_sample_dir),
-                                                                            tree=params.tree_name,
-                                                                            nev_toprocess=params.maxEvents,
-                                                                            nev_perjob=params.events_per_job,
-                                                                            batch_id=batch_idx,
-                                                                            debug=debug)
+        print("This is batch processing...")
+        input_files, range_ev = fm.get_files_and_events_for_batchprocessing(
+            input_dir=os.path.join(params.input_base_dir, params.input_sample_dir),
+            tree=params.tree_name,
+            nev_toprocess=params.maxEvents,
+            nev_perjob=params.events_per_job,
+            batch_id=batch_idx,
+            debug=debug,
+        )
 
-    # print ('- dir {} contains {} files.'.format(params.input_sample_dir, len(input_files)))
-    print('- will read {} files from dir {}:'.format(len(input_files), params.input_sample_dir))
+    print(f"- will read {len(input_files)} files from dir {params.input_sample_dir}:")
     for file_name in input_files:
-        print('        - {}'.format(file_name))
+        print(f"        - {file_name}")
 
-    files_with_protocol = [fm.get_eos_protocol(file_name)+file_name for file_name in input_files]
-
+    files_with_protocol = [
+        fm.get_eos_protocol(file_name) + file_name for file_name in input_files
+    ]
 
     calib_manager = calibs.CalibManager()
     calib_manager.set_calibration_version(params.calib_version)
@@ -95,9 +95,9 @@ def analyze(params, batch_idx=-1):
     # event loop
 
     tree_reader = treereader.TreeReader(range_ev, params.maxEvents)
-    print('events_per_job: {}'.format(params.events_per_job))
-    print('maxEvents: {}'.format(params.maxEvents))
-    print('range_ev: {}'.format(range_ev))
+    print(f"events_per_job: {params.events_per_job}")
+    print(f"maxEvents: {params.maxEvents}")
+    print(f"range_ev: {range_ev}")
 
     # tr = Tracer()
 
@@ -107,13 +107,13 @@ def analyze(params, batch_idx=-1):
             break
         # tree_file = up.open(tree_file_name, num_workers=2)
         tree_file = up.open(tree_file_name, num_workers=1)
-        print(f'opening file: {tree_file_name}')
-        print(f' . tree name: {params.tree_name}')
+        print(f"opening file: {tree_file_name}")
+        print(f" . tree name: {params.tree_name}")
 
         def getUpTree(uprobj, name):
-            parts = name.split('/')
+            parts = name.split("/")
             if len(parts) > 1:
-                return getUpTree(uprobj, '/'.join(parts[1:]))
+                return getUpTree(uprobj, "/".join(parts[1:]))
             return uprobj[name]
 
         ttree = getUpTree(tree_file, params.tree_name)
@@ -121,7 +121,6 @@ def analyze(params, batch_idx=-1):
         tree_reader.setTree(ttree)
 
         while tree_reader.next(debug):
-
             try:
                 collection_manager.read(tree_reader, debug)
                 # processes = []
@@ -131,11 +130,20 @@ def analyze(params, batch_idx=-1):
                 # if tree_reader.global_entry % 100 == 0:
                 #     tr.collect_stats()
 
-                if batch_idx != -1 and timecounter.counter.started() and tree_reader.global_entry % 100 == 0:
+                if (
+                    batch_idx != -1
+                    and timecounter.counter.started()
+                    and tree_reader.global_entry % 100 == 0
+                ):
                     # when in batch mode, if < 5min are left we stop the event loop
-                    if timecounter.counter.job_flavor_time_left(params.htc_jobflavor) < 5*60:
+                    if (
+                        timecounter.counter.job_flavor_time_left(params.htc_jobflavor)
+                        < 5 * 60
+                    ):
                         tree_reader.printEntry()
-                        print('    less than 5 min left for batch slot: exit event loop!')
+                        print(
+                            "    less than 5 min left for batch slot: exit event loop!"
+                        )
                         timecounter.counter.job_flavor_time_perc(params.htc_jobflavor)
                         break_file_loop = True
                         break
@@ -149,22 +157,17 @@ def analyze(params, batch_idx=-1):
                 sys.exit(200)
 
         tree_file.close()
-    # print("Processed {} events/{} TOT events".format(nev, ntuple.nevents()))
 
-    print("Writing histos to file {}".format(params.output_filename))
+    print(f"Writing histos to file {params.output_filename}")
     hm.writeHistos()
     output.close()
-    # ROOT.ROOT.DisableImplicitMT()
 
     return tree_reader.n_tot_entries
 
 
-
-
 if __name__ == "__main__":
-
     tic = 0
-    if int(platform.python_version().split('.')[1]) >= 8:
+    if int(platform.python_version().split(".")[1]) >= 8:
         timecounter.counter.start()
 
     nevents = 0
@@ -178,7 +181,7 @@ if __name__ == "__main__":
 
     if timecounter.counter.started():
         analysis_time, time_per_event = timecounter.counter.time_per_event(nevents)
-        print('Analyzed {} events in {:.2f} s ({:.2f} s/ev)'.format(
-            nevents, analysis_time, time_per_event))
-        # print (' real time: {:.2f} s'.format(timecounter.counter.real_time()))
+        print(
+            f"Analyzed {nevents} events in {analysis_time:.2f} s ({time_per_event:.2f} s/ev)"
+        )
         timecounter.counter.print_nevent_per_jobflavor(time_per_event)

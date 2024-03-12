@@ -316,10 +316,10 @@ def get_metadata(input_dir, tree, debug=0):
     file_metadata = {}
     json_files = listFiles(input_dir, match=json_name)
     if len(json_files) == 0:
-        print('no metadata file {} in input dir: {}'.format(json_name, input_dir))
+        print(f'no metadata file {json_name} in input dir: {input_dir}')
         print('Will now index files...')
         files = listFiles(input_dir)
-        print('# of files: {}'.format(len(files)))
+        print(f'# of files: {len(files)}')
 
         for idx, file_name in enumerate(files):
             nevents = 0
@@ -334,7 +334,7 @@ def get_metadata(input_dir, tree, debug=0):
             
             file_metadata[file_name] = nevents
             if debug > 2:
-                print(' [{}] file: {} # events: {}'.format(idx, file_name, nevents))
+                print(f' [{idx}] file: {file_name} # events: {nevents}')
 
         with open(json_name, 'w', encoding='utf-8') as fp:
             json.dump(file_metadata, fp)
@@ -345,7 +345,7 @@ def get_metadata(input_dir, tree, debug=0):
         print(f'COPY: {json_name} to {input_dir} w name: {json_name} return: {retc}')
     else:
         print('dir already indexed, will read metadata...')
-        unique_filename = '{}.json'.format(uuid.uuid4())
+        unique_filename = f'{uuid.uuid4()}.json'
         ret = copy_from_eos(input_dir=input_dir,
                             file_name=json_name,
                             target_file_name=unique_filename)
@@ -365,7 +365,7 @@ def get_files_to_process(nev_toprocess, metadata, debug=0):
         # FIXME: if value is 0 maybe one should check again and rewrite the json?
         nevents_tot += int(value)
     if debug > 2:
-        print('Tot.# events: {}'.format(nevents_tot))
+        print(f'Tot.# events: {nevents_tot}')
 
     if nev_toprocess == -1:
         return metadata.keys()
@@ -380,7 +380,7 @@ def get_files_to_process(nev_toprocess, metadata, debug=0):
 
     if debug > 3:
         print(files_sofar)
-        print('# of files: {}'.format(len(files_sofar)))
+        print(f'# of files: {len(files_sofar)}')
     return files_sofar
 
 
@@ -394,12 +394,12 @@ def get_njobs(nev_toprocess, nev_perjob, metadata, debug=0):
         nevents_tot += int(metadata[file_name])
 
     if debug > 3:
-        print('Tot.# events: {}'.format(nevents_tot))
+        print(f'Tot.# events: {nevents_tot}')
     if nev_toprocess == -1:
         nev_toprocess = nevents_tot
 
     njobs = int(nev_toprocess/nev_perjob)
-    print('# of jobs: {}'.format(njobs))
+    print(f'# of jobs: {njobs}')
     ret = {}
     for job_id in range(0, njobs):
         files_perjob = []
@@ -408,7 +408,7 @@ def get_njobs(nev_toprocess, nev_perjob, metadata, debug=0):
         first_ev_injob = events_injob[0]
         last_ev_injob = events_injob[-1]
         if debug > 3:
-            print(' jobid: {}, i: {} e: {}'.format(job_id, first_ev_injob, last_ev_injob))
+            print(f' jobid: {job_id}, i: {first_ev_injob} e: {last_ev_injob}')
         for file_name in needed_files:
             first_ev = comulative[file_name]
             last_ev = first_ev + metadata[file_name]
@@ -420,14 +420,14 @@ def get_njobs(nev_toprocess, nev_perjob, metadata, debug=0):
             elif(last_ev_injob > first_ev and last_ev_injob < last_ev):
                 files_perjob.append(file_name)
         if debug > 3:
-            print('   files: {}, range: {}'.format(files_perjob, eventrange))
+            print(f'   files: {files_perjob}, range: {eventrange}')
         totv = 0
         for file_n in files_perjob:
             if debug > 3:
-                print('    file: {} ({})'.format(file_n, metadata[file_n]))
+                print(f'    file: {file_n} ({metadata[file_n]})')
             totv += metadata[file_n]
         if debug > 3:
-            print('   # ev in files: {}'.format(totv))
+            print(f'   # ev in files: {totv}')
         ret[job_id] = (files_perjob, eventrange)
     return ret
 
@@ -503,7 +503,7 @@ if __name__ == "__main__":
     # input_dir = '/Users/cerminar/Workspace/hgcal-analysis/ntuple-tools/'
     found_files = listFiles(input_dir, match='.root')
     print(found_files)
-    print('# of files: {}'.format(len(found_files)))
+    print(f'# of files: {len(found_files)}')
 
     # # input_dir='/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1061p2/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v29/190902_144701/0000/'
     # tree_name = 'hgcalTriggerNtuplizer/HGCalTriggerNtuple'

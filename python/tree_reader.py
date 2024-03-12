@@ -69,12 +69,7 @@ class TreeReader(object):
         return True
 
     def printEntry(self):
-        print("--- File entry: {}, global entry: {}, tot # events: {} @ {}, MaxRSS {:.2f} Mb".format(
-            self.file_entry,
-            self.global_entry,
-            self.n_tot_entries,
-            datetime.datetime.now(),
-            resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1E6))
+        print(f"--- File entry: {self.file_entry}, global entry: {self.global_entry}, tot # events: {self.n_tot_entries} @ {datetime.datetime.now()}, MaxRSS {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000000.0:.2f} Mb")
         # print(self.tree.keys())
         # print(self.tree.arrays(['run', 'lumi', 'event'], library='pd', entry_start=self.file_entry, entry_stop=self.file_entry+1))
         # self.dump_garbage()
@@ -97,8 +92,8 @@ class TreeReader(object):
 
     def getDataFrame(self, prefix, entry_block, fallback=None):
         branches = [br for br in self._branches
-                    if br.startswith(prefix+'_') and
-                    not br == '{}_n'.format(prefix)]
+                    if br.startswith(f"{prefix}_") and
+                    not br == f'{prefix}_n']
         names = ['_'.join(br.split('_')[1:]) for br in branches]
         name_map = dict(zip(names, branches))
         if len(branches) == 0:

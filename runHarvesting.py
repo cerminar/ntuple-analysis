@@ -30,18 +30,18 @@ def data_creator(input_dir, sample_name, version, q):
             file_name = os.path.split(item)[1]
             # print file_name
             # print id
-            if sample_name in item and version+'_' in item:
+            if sample_name in item and f"{version}_" in item:
                 # or not os.path.isfile('{}.checked'.format(os.path.splitext(file)[0])):
                 if os.path.isfile(file_name):
-                    if not os.path.isfile('{}.checked'.format(os.path.splitext(file_name)[0])):
+                    if not os.path.isfile(f'{os.path.splitext(file_name)[0]}.checked'):
                         # logger.debug ('file {} exists but check failed...'.format(file_name))
                         remote_checksum = fm.get_checksum(item)
                         local_checksum = fm.get_checksum(file_name)
                         if remote_checksum == local_checksum:
-                            logger.debug('   remote checksum for file: {} did not change...skipping for now'.format(file_name))
+                            logger.debug(f'   remote checksum for file: {file_name} did not change...skipping for now')
                             continue
                         else:
-                            logger.info('   remote checksum for file: {} changed: will copy it again'.format(file_name))
+                            logger.info(f'   remote checksum for file: {file_name} changed: will copy it again')
                     else:
                         continue
                 copy_ret = fm.copy_from_eos(input_dir=input_dir,
@@ -49,7 +49,7 @@ def data_creator(input_dir, sample_name, version, q):
                                             target_file_name=file_name,
                                             dowait=True,
                                             silent=True)
-                logger.debug('copy returned: {}'.format(copy_ret))
+                logger.debug(f'copy returned: {copy_ret}')
                 if copy_ret == 0:
                     q.put(file_name)
                     ncopied += 1
@@ -77,20 +77,20 @@ def data_checker(queue_all, queue_ready):
         # print('data found to be processed: {}'.format(data))
         file = ROOT.TFile(os.path.join(fm.get_eos_protocol(data), data))
         if len(file.GetListOfKeys()) == 0:
-            logger.info('file: {} is not OK'.format(data))
+            logger.info(f'file: {data} is not OK')
         else:
-            fname = '{}.checked'.format(os.path.splitext(data)[0])
+            fname = f'{os.path.splitext(data)[0]}.checked'
             open(fname, 'a').close()
-            if not os.path.isfile('{}.hadded'.format(os.path.splitext(data)[0])):
+            if not os.path.isfile(f'{os.path.splitext(data)[0]}.hadded'):
                 queue_ready.put(data)
             else:
-                logger.debug('file: {} has already been hadded...skipping it'.format(data))
+                logger.debug(f'file: {data} has already been hadded...skipping it')
         file.Close()
 
 
 def data_consumer(sample_name, version, queue_ready, queue_tomove):
     logger.info('Starting data consumer')
-    out_file_name = '{}_temp.root'.format(sample_name, version)
+    out_file_name = f'{sample_name}_{version}_temp.root'
     new_data = []
     index = 0
     while True:
@@ -101,29 +101,29 @@ def data_consumer(sample_name, version, queue_ready, queue_tomove):
             break
         new_data.append(data)
         if(len(new_data) >= 20):
-            logger.info('Launch hadd on {} files: '.format(len(new_data)))
+            logger.info(f'Launch hadd on {len(new_data)} files: ')
             hadd_proc = subprocess32.Popen(['hadd', '-a', '-j', '2', '-k', out_file_name]+new_data, stdout=subprocess32.PIPE, stderr=subprocess32.STDOUT)
             hadd_proc.wait()
             if hadd_proc.returncode == 0:
-                logger.info('   hadd succeeded with exit code: {}'.format(hadd_proc.returncode))
-                logger.debug('   hadd output follows: {}'.format(hadd_proc.stdout.readlines()))
+                logger.info(f'   hadd succeeded with exit code: {hadd_proc.returncode}')
+                logger.debug(f'   hadd output follows: {hadd_proc.stdout.readlines()}')
                 index += 1
                 for file in new_data:
-                    fname = '{}.hadded'.format(os.path.splitext(file)[0])
+                    fname = f'{os.path.splitext(file)[0]}.hadded'
                     open(fname, 'a').close()
-                out_file_name_copy = '{}_tocopy_{}.root'.format(sample_name, index)
+                out_file_name_copy = f'{sample_name}_tocopy_{index}.root'
                 copyfile(out_file_name, out_file_name_copy)
                 queue_tomove.put(out_file_name_copy)
                 del new_data[:]
-                logger.debug('  resetting file list for hadd operation to {}'.format(len(new_data)))
+                logger.debug(f'  resetting file list for hadd operation to {len(new_data)}')
             else:
-                logger.info('   hadd failed with exit code: {}'.format(hadd_proc.returncode))
-                logger.debug('   hadd output follows: {}'.format(hadd_proc.stdout.readlines()))
+                logger.info(f'   hadd failed with exit code: {hadd_proc.returncode}')
+                logger.debug(f'   hadd output follows: {hadd_proc.stdout.readlines()}')
                 file = ROOT.TFile(out_file_name)
                 if len(file.GetListOfKeys()) == 0:
-                    logger.info('file: {} is not OK'.format(out_file_name))
+                    logger.info(f'file: {out_file_name} is not OK')
                 else:
-                    logger.info('file: {} is OK, will retry hadding!'.format(out_file_name))
+                    logger.info(f'file: {out_file_name} is OK, will retry hadding!')
                 file.Close()
 
 
@@ -133,14 +133,13 @@ def data_mover(sample_name, version, out_dir, queue_tomove):
         data = queue_tomove.get()
         if data is sentinel:
             break
-        out_file_name = '{}t.root'.format(sample_name)
+        out_file_name = f'{sample_name}t.root'
         fm.copy_to_eos(data, out_dir, out_file_name)
 
 
 def main():
 
-    usage = ('usage: %prog [options]\n'
-             + '%prog -h for help')
+    usage = "usage: %prog [options]\n%prog -h for help"
     parser = optparse.OptionParser(usage)
     parser.add_option('-i', '--input-dir',
                       dest='INPUTDIR',

@@ -40,7 +40,7 @@ class Test(object):
         self.name = name
 
     def __repr__(self):
-        return "<TEST class, {}>".format(self.name)
+        return f"<TEST class, {self.name}>"
 
 
 class BasePlotter(object):
@@ -78,12 +78,7 @@ class BasePlotter(object):
         return histo_primitives
 
     def __repr__(self):
-        return '<{}, ds: {}, ds_sel: {}, g: {}, g_sel: {} >'.format(
-            self.__class__.__name__,
-            self.data_set,
-            self.data_selections,
-            self.gen_set,
-            self.gen_selections)
+        return f'<{self.__class__.__name__}, ds: {self.data_set}, ds_sel: {self.data_selections}, g: {self.gen_set}, g_sel: {self.gen_selections} >'
     # def change_genpart_selection(self, newselection):
     #     """Allow customization of gen selection per sample."""
     #     if self.gen_selections is not None:
@@ -108,8 +103,7 @@ class RatePlotter(BasePlotter):
         self.tp_set.activate()
         tp_name = self.tp_set.name
         for selection in self.tp_selections:
-            self.h_rate[selection.name] = histos.RateHistos(name='{}_{}'.format(tp_name,
-                                                                                selection.name))
+            self.h_rate[selection.name] = histos.RateHistos(name=f'{tp_name}_{selection.name}')
 
     def fill_histos(self, debug=0):
         # print '------------------'
@@ -140,7 +134,7 @@ class BaseRateCounter(BasePlotter):
         tp_name = self.tp_set.name
         for selection in self.tp_selections:
             self.h_rate[selection.name] = self.HistoClass(
-                name='{}_{}'.format(tp_name, selection.name))
+                name=f'{tp_name}_{selection.name}')
 
     def fill_histos(self, debug=0):
         # print('------------------')
@@ -179,8 +173,7 @@ class HGCCl3DRatePlotter(BasePlotter):
         self.tp_set.activate()
         tp_name = self.tp_set.name
         for selection in self.tp_selections:
-            self.h_rate[selection.name] = histos.RateHistos(name='{}_{}'.format(tp_name,
-                                                                                selection.name))
+            self.h_rate[selection.name] = histos.RateHistos(name=f'{tp_name}_{selection.name}')
 
     def fill_histos(self, debug=0):
         # print '------------------'
@@ -208,15 +201,11 @@ class GenericDataFramePlotter(BasePlotter):
         for selection in self.data_selections:
             if self.pt_bins:
                 self.h_set[selection.name] = self.HistoClass(
-                    name='{}_{}_nomatch'.format(
-                        data_name,
-                        selection.name),
+                    name=f'{data_name}_{selection.name}_nomatch',
                     pt_bins=self.pt_bins)
             else:
                 self.h_set[selection.name] = self.HistoClass(
-                    name='{}_{}_nomatch'.format(
-                        data_name,
-                        selection.name))
+                    name=f'{data_name}_{selection.name}_nomatch')
 
 
     def fill_histos(self, debug=0):
@@ -289,7 +278,7 @@ class TPPlotter(BasePlotter):
         self.tp_set.activate()
         tp_name = self.tp_set.name
         for selection in self.tp_selections:
-            self.h_tpset[selection.name] = histos.HistoSetClusters(name='{}_{}_nomatch'.format(tp_name, selection.name))
+            self.h_tpset[selection.name] = histos.HistoSetClusters(name=f'{tp_name}_{selection.name}_nomatch')
 
     def fill_histos(self, debug=0):
         # FIXME: migrate to the new query caching system
@@ -445,8 +434,7 @@ class TPGenMatchPlotter(BasePlotter):
                                                    h_clustersInCone,
                                                    debug=0):
                         if debug > 4:
-                            print('- best match: {}, all matches: {}'.format(idx_bestmatch,
-                                                                             idx_allmatches))
+                            print(f'- best match: {idx_bestmatch}, all matches: {idx_allmatches}')
                         bestcl = cl3ds.loc[idx_bestmatch]
                         h_clustersInCone.fill_n(len(idx_allmatches)-1)
                         for idx in idx_allmatches:
@@ -472,8 +460,8 @@ class TPGenMatchPlotter(BasePlotter):
                     histoGenMatched.fill(genParticles.loc[[idx]])
 
                 if debug >= 6:
-                    print(('--- Dump match for algo {} ---------------'.format(algoname)))
-                    print(('GEN particle: idx: {}'.format(idx)))
+                    print(f'--- Dump match for algo {algoname} ---------------')
+                    print(f'GEN particle: idx: {idx}')
                     print(genParticle)
                     print('Matched to 3D cluster:')
                     print(matched3DCluster)
@@ -482,18 +470,17 @@ class TPGenMatchPlotter(BasePlotter):
                     print('matched cells:')
                     print(matchedTriggerCells)
 
-                    print(('3D cluster energy: {}'.format(matched3DCluster.energy.sum())))
-                    print(('3D cluster pt: {}'.format(matched3DCluster.pt.sum())))
+                    print(f'3D cluster energy: {matched3DCluster.energy.sum()}')
+                    print(f'3D cluster pt: {matched3DCluster.pt.sum()}')
                     calib_factor = 1.084
-                    print(('sum 2D cluster energy: {}'.format(matchedClusters.energy.sum()*calib_factor)))
+                    print(f'sum 2D cluster energy: {matchedClusters.energy.sum() * calib_factor}')
                     # print ('sum 2D cluster pt: {}'.format(matchedClusters.pt.sum()*calib_factor))
-                    print(('sum TC energy: {}'.format(matchedTriggerCells.energy.sum())))
+                    print(f'sum TC energy: {matchedTriggerCells.energy.sum()}')
                     print('Sum of matched clusters in cone:')
                     print(clustersInCone)
             else:
                 if debug >= 5:
-                    print(('==== Warning no match found for algo {}, idx {} ======================'.format(algoname,
-                                                                                                           idx)))
+                    print(f'==== Warning no match found for algo {algoname}, idx {idx} ======================')
                     if debug >= 2:
                         print(genParticle)
                         print(trigger3DClusters)
@@ -507,9 +494,7 @@ class TPGenMatchPlotter(BasePlotter):
         self.tp_set.activate()
         for tp_sel in self.tp_selections:
             for gen_sel in self.gen_selections:
-                histo_name = '{}_{}_{}'.format(self.tp_set.name,
-                                               tp_sel.name,
-                                               gen_sel.name)
+                histo_name = f'{self.tp_set.name}_{tp_sel.name}_{gen_sel.name}'
                 self.h_tpset[histo_name] = histos.HistoSetClusters(histo_name)
                 self.h_resoset[histo_name] = histos.HistoSetReso(histo_name)
                 self.h_effset[histo_name] = histos.HistoSetEff(histo_name, extended_range=self.extended_range)
@@ -522,7 +507,7 @@ class TPGenMatchPlotter(BasePlotter):
             cl3Ds = self.tp_set.cl3ds.query(tp_sel)
             for gen_sel in self.gen_selections:
                 genReference = self.gen_set.query(gen_sel)
-                histo_name = '{}_{}_{}'.format(self.tp_set.name, tp_sel.name, gen_sel.name)
+                histo_name = f'{self.tp_set.name}_{tp_sel.name}_{gen_sel.name}'
 
                 h_tpset_match = self.h_tpset[histo_name]
                 h_resoset = self.h_resoset[histo_name]
@@ -549,11 +534,7 @@ class TPGenMatchPlotter(BasePlotter):
                                         debug)
 
     def __repr__(self):
-        return '<{} tps: {}, tps_s: {}, gen:{}, gen_s:{}> '.format(self.__class__.__name__,
-                                                                   self.tp_set.name,
-                                                                   [sel.name for sel in self.tp_selections],
-                                                                   self.gen_set.name,
-                                                                   [sel.name for sel in self.gen_selections])
+        return f'<{self.__class__.__name__} tps: {self.tp_set.name}, tps_s: {[sel.name for sel in self.tp_selections]}, gen:{self.gen_set.name}, gen_s:{[sel.name for sel in self.gen_selections]}> '
 
 
 class GenericGenMatchPlotter(BasePlotter):
@@ -636,7 +617,7 @@ class GenericGenMatchPlotter(BasePlotter):
         # print(f'# data sel: {len(self.data_selections)} x # gen sel: {len(self.gen_selections)} = {len(self.data_selections)*len(self.gen_selections)}')
         for tp_sel in self.data_selections:
             for gen_sel in self.gen_selections:
-                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                histo_name = f'{self.data_set.name}_{tp_sel.name}_{gen_sel.name}'
                 self.h_dataset[histo_name] = self.ObjectHistoClass(histo_name)
                 self.h_resoset[histo_name] = self.ResoHistoClass(histo_name)
                 self.h_effset[histo_name] = histos.HistoSetEff(histo_name, pt_bins=self.pt_bins)
@@ -661,7 +642,7 @@ class GenericGenMatchPlotter(BasePlotter):
                     genReference = gen
                 else:
                     genReference = gen[gen_sel.selection(gen)]
-                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                histo_name = f'{self.data_set.name}_{tp_sel.name}_{gen_sel.name}'
                 # print (histo_name)
                 # print (f'# data: {objects.shape[0]}')
                 # print (f'# gen: {genReference.shape[0]}')
@@ -925,14 +906,14 @@ class CalibrationPlotter(BasePlotter):
                 h_calibration.fill(reference=genParticle, target=obj_matched)
 
                 if debug >= 4:
-                    print(('--- Dump match for algo {} ---------------'.format(algoname)))
-                    print(('GEN particle: idx: {}'.format(idx)))
+                    print(f'--- Dump match for algo {algoname} ---------------')
+                    print(f'GEN particle: idx: {idx}')
                     print(genParticle)
                     print('Matched to track object:')
                     print(obj_matched)
             else:
                 if debug >= 5:
-                    print(('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx)))
+                    print(f'==== Warning no match found for algo {algoname}, idx {idx} ======================')
                     print(genParticle)
                     print(objects)
 
@@ -941,7 +922,7 @@ class CalibrationPlotter(BasePlotter):
         self.data_set.activate()
         for tp_sel in self.data_selections:
             for gen_sel in self.gen_selections:
-                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                histo_name = f'{self.data_set.name}_{tp_sel.name}_{gen_sel.name}'
                 self.h_calibration[histo_name] = histos.CalibrationHistos(histo_name)
 
     def fill_histos(self, debug=0):
@@ -949,7 +930,7 @@ class CalibrationPlotter(BasePlotter):
             objects = self.data_set.query(tp_sel)
             for gen_sel in self.gen_selections:
                 genReference = self.gen_set.query(gen_sel)
-                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                histo_name = f'{self.data_set.name}_{tp_sel.name}_{gen_sel.name}'
 
                 h_calib = self.h_calibration[histo_name]
                 # print 'TPsel: {}, GENsel: {}'.format(tp_sel.name, gen_sel.name)
@@ -977,10 +958,10 @@ class TTGenMatchPlotter:
         self.gen_set.activate()
         for tp_sel in self.tt_selections:
             for gen_sel in self.gen_selections:
-                histo_name = '{}_{}'.format(tp_sel.name, gen_sel.name)
-                self.h_tt[histo_name] = histos.TriggerTowerHistos('{}_{}'.format(self.tt_set.name, histo_name))
-                self.h_reso_tt[histo_name] = histos.TriggerTowerResoHistos('{}_{}'.format(self.tt_set.name, histo_name))
-                self.h_reso_ttcl[histo_name] = histos.TriggerTowerResoHistos('{}Cl_{}'.format(self.tt_set.name, histo_name))
+                histo_name = f'{tp_sel.name}_{gen_sel.name}'
+                self.h_tt[histo_name] = histos.TriggerTowerHistos(f'{self.tt_set.name}_{histo_name}')
+                self.h_reso_tt[histo_name] = histos.TriggerTowerResoHistos(f'{self.tt_set.name}_{histo_name}')
+                self.h_reso_ttcl[histo_name] = histos.TriggerTowerResoHistos(f'{self.tt_set.name}Cl_{histo_name}')
 
     def fill_histos(self, debug=0):
         triggerTowers_all = self.tt_set.df
@@ -990,7 +971,7 @@ class TTGenMatchPlotter:
             if not tp_sel.all:
                 triggerTowers = triggerTowers_all.query(tp_sel.selection)
             for gen_sel in self.gen_selections:
-                histo_name = '{}_{}'.format(tp_sel.name, gen_sel.name)
+                histo_name = f'{tp_sel.name}_{gen_sel.name}'
                 genReference = genParts_all
                 if not gen_sel.all:
                     genReference = genParts_all.query(gen_sel.selection)
@@ -1055,14 +1036,14 @@ class TTGenMatchPlotter:
                 # histoResoCone.fill(reference=genParticle, target=clustersInCone.iloc[0])
 
                 if debug >= 4:
-                    print(('--- Dump match for algo {} ---------------'.format(algoname)))
-                    print(('GEN particle: idx: {}'.format(idx)))
+                    print(f'--- Dump match for algo {algoname} ---------------')
+                    print(f'GEN particle: idx: {idx}')
                     print(genParticle)
                     print('Matched Trigger Tower:')
                     print(matchedTower)
             else:
                 if debug >= 0:
-                    print(('==== Warning no match found for algo {}, idx {} ======================'.format(algoname, idx)))
+                    print(f'==== Warning no match found for algo {algoname}, idx {idx} ======================')
                     if debug >= 2:
                         print(genParticle)
 
@@ -1077,9 +1058,7 @@ class CorrOccupancyPlotter(BasePlotter):
         tp_name = self.tp_set.name
         for selection in self.tp_selections:
             self.h_occ[selection.name] = histos.CorrOccupancyHistos(
-                name='{}_{}'.format(
-                    tp_name,
-                    selection.name))
+                name=f'{tp_name}_{selection.name}')
 
     def fill_histos(self, debug=0):
         pass
@@ -1143,8 +1122,8 @@ class ClusterTCGenMatchPlotter(BasePlotter):
                 h_tc_matched.fill(sel_tcs, obj_matched)
 
                 if debug >= 4:
-                    print(('--- Dump match for algo {} ---------------'.format(algoname)))
-                    print(('GEN particle: idx: {}'.format(idx)))
+                    print(f'--- Dump match for algo {algoname} ---------------')
+                    print(f'GEN particle: idx: {idx}')
                     print(genParticle)
 
     def book_histos(self):
@@ -1153,7 +1132,7 @@ class ClusterTCGenMatchPlotter(BasePlotter):
         pass
         for tp_sel in self.data_selections:
             for gen_sel in self.gen_selections:
-                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                histo_name = f'{self.data_set.name}_{tp_sel.name}_{gen_sel.name}'
                 self.h_tcmatching[histo_name] = histos.TCClusterMatchHistos(histo_name)
 
     def fill_histos(self, debug=0):
@@ -1161,7 +1140,7 @@ class ClusterTCGenMatchPlotter(BasePlotter):
             objects = self.data_set.query(tp_sel)
             for gen_sel in self.gen_selections:
                 genReference = self.gen_set.query(gen_sel)
-                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                histo_name = f'{self.data_set.name}_{tp_sel.name}_{gen_sel.name}'
 
                 h_tc_match = self.h_tcmatching[histo_name]
                 # h_resoset = self.h_resoset[histo_name]
@@ -1232,7 +1211,7 @@ class IsoTuplePlotter(BasePlotter):
         self.data_set.activate()
         for tp_sel in self.data_selections:
             for gen_sel in self.gen_selections:
-                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                histo_name = f'{self.data_set.name}_{tp_sel.name}_{gen_sel.name}'
                 self.h_resoset[histo_name] = histos.IsoTuples(histo_name)
 
     def fill_histos(self, debug=0):
@@ -1243,7 +1222,7 @@ class IsoTuplePlotter(BasePlotter):
             objects = self.data_set.query_event(tp_sel, idx)
             for gen_sel in self.gen_selections:
                 genReference = self.gen_set.query_event(gen_sel, idx)
-                histo_name = '{}_{}_{}'.format(self.data_set.name, tp_sel.name, gen_sel.name)
+                histo_name = f'{self.data_set.name}_{tp_sel.name}_{gen_sel.name}'
                 # print (histo_name)
                 # print (f'# data: {objects.shape[0]}')
                 # print (f'# gen: {genReference.shape[0]}')
@@ -1271,7 +1250,7 @@ class QuantizationPlotter(GenericDataFramePlotter):
         data_name = self.data_set.name
         for selection in self.data_selections:
             self.h_set[selection.name] = self.HistoClass(
-                name='{}_{}_nomatch'.format(data_name, selection.name),
+                name=f'{data_name}_{selection.name}_nomatch',
                 features=self.features)
 
 

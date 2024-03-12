@@ -62,7 +62,7 @@ def submit(batch_cfg_dir,
             res = future.result()
             print(res)
             if res[2] == 0:
-                out_file = os.path.join(batch_work_dir, sample.name, f'job_{res[1]}', sample.output_filename_base+f'_{res[1]}.root')
+                out_file = os.path.join(batch_work_dir, sample.name, f'job_{res[1]}', f"{sample.output_filename_base}_{res[1]}.root")
                 hadd_files[sample.name].append(out_file)
 
     # results.append(('doublephoton_flat1to100_PU200', 0, 0))

@@ -73,13 +73,13 @@ class EventManager(object):
             self.collections.append(collection)
 
         def registerActiveCollection(self, collection):
-            print('[EventManager] registering collection as active: {}'.format(collection.name))
+            print(f'[EventManager] registering collection as active: {collection.name}')
             self.active_collections.append(collection)
 
         def read(self, event, debug):
             for collection in self.active_collections:
                 if debug >= 3:
-                    print('[EventManager] filling collection: {}'.format(collection.name))
+                    print(f'[EventManager] filling collection: {collection.name}')
                 collection.fill(event, self.weight_file, debug)
 
         def get_labels(self):
@@ -612,28 +612,19 @@ def gen_part_pt_weights(gen_parts, weight_file):
 
 def map2pfregions(objects, eta_var, phi_var, fiducial=False):
     for ieta in range(0, pf_regions.regionizer.n_eta_regions()):
-        objects['eta_reg_{}'.format(ieta)] = False
+        objects[f'eta_reg_{ieta}'] = False
     for iphi in range(0, pf_regions.regionizer.n_phi_regions()):
-        objects['phi_reg_{}'.format(iphi)] = False
+        objects[f'phi_reg_{iphi}'] = False
 
     for ieta, eta_range in enumerate(pf_regions.regionizer.get_eta_boundaries(fiducial)):
-        query = '({} > {}) & ({} <= {})'.format(
-            eta_var,
-            eta_range[0],
-            eta_var,
-            eta_range[1]
-            )
+        query = f'({eta_var} > {eta_range[0]}) & ({eta_var} <= {eta_range[1]})'
         region_objects = objects.query(query).index
-        objects.loc[region_objects, ['eta_reg_{}'.format(ieta)]] = True
+        objects.loc[region_objects, [f'eta_reg_{ieta}']] = True
 
     for iphi, phi_range in enumerate(pf_regions.regionizer.get_phi_boundaries(fiducial)):
-        query = '({} > {}) & ({} <= {})'.format(
-            phi_var,
-            phi_range[0],
-            phi_var,
-            phi_range[1])
+        query = f'({phi_var} > {phi_range[0]}) & ({phi_var} <= {phi_range[1]})'
         region_objects = objects.query(query).index
-        objects.loc[region_objects, ['phi_reg_{}'.format(iphi)]] = True
+        objects.loc[region_objects, [f'phi_reg_{iphi}']] = True
 
     return objects
 

@@ -95,13 +95,13 @@ class Selection:
 
     def __and__(self, other):
         """ & operation """
-        new_name = name='{}{}'.format(self.name, other.name)
+        new_name = name=f'{self.name}{other.name}'
         if self.name == 'all':
             new_name = other.name
         if other.name == 'all':
             new_name = self.name
 
-        new_label = '{}, {}'.format(self.label_, other.label_)
+        new_label = f'{self.label_}, {other.label_}'
         if self.label_ == '':
             new_label = other.label_
         if other.label == '':
@@ -127,7 +127,7 @@ class Selection:
             return other.all
         if self.all:
             return self.all
-        new_label = '{} or {}'.format(self.label_, other.label_)
+        new_label = f'{self.label_} or {other.label_}'
         if self.label_ == '':
             new_label = other.label_
         if other.label == '':
@@ -137,7 +137,7 @@ class Selection:
         #     obj_name = 'GEN'
         # new_label = new_label.replace('TOBJ', obj_name)
         return Selection(
-            name='{}Or{}'.format(self.name, other.name),
+            name=f'{self.name}Or{other.name}',
             label=new_label,
             selection=lambda array : self.selection(array) | other.selection(array))
 
@@ -154,13 +154,10 @@ class Selection:
     #     return self.__and__(other)
 
     def __str__(self):
-        return 'n: {}, \n\t l:{}'.format(
-            self.name, self.label)
+        return f'n: {self.name}, \n\t l:{self.label}'
 
     def __repr__(self):
-        return '<{} {}> '.format(
-            self.__class__.__name__,
-            self)
+        return f'<{self.__class__.__name__} {self}> '
 
     
 
@@ -454,8 +451,7 @@ gen_jet_sel = [
 
 
 gen_ele_sel = [
-    Selection('GEN11', '', '((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {}))'.format(
-        PID.electron, PID.electron))
+    Selection('GEN11', '', f'((abs(pdgid) == {PID.electron}) & (abs(firstmother_pdgid) == {PID.electron}))')
 ]
 gen_part_fbrem_sel = [
     Selection('all', 'no cut', ''),
