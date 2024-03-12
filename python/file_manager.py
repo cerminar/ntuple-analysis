@@ -1,15 +1,10 @@
-# from __future__ import absolute_import
-from __future__ import print_function
-from importlib.resources import path
 import os
 import time
-from unittest import result
 import subprocess as subproc
 import uproot as up
 import json
 import uuid
 from io import open
-
 
 class FileEntry(object):
     def __init__(self, name, date, attributes, owner, group, size) -> None:
@@ -19,16 +14,16 @@ class FileEntry(object):
         self.group = group
         self.size = size
         self.date = date
-    
+
     def is_dir(self):
         return self.attributes[0] == 'd'
 
     def __str__(self) -> str:
         return f'{self.attributes} {self.name}'
-    
+
     def basename(self):
         return os.path.basename(self.name)
-    
+
     def dirname(self):
         return os.path.dirname(self.name)
 
@@ -55,13 +50,13 @@ class FileSystem(object):
 
     def list_dir_cmd(self,  path, recursive=False):
         pass
-    
+
     def list_dir_parse(self,  lines, path):
         pass
 
     def checksum_cmd(self, filename):
         pass
-  
+
     def checksum_parse(self, results):
         pass
 
@@ -115,7 +110,7 @@ class FileSystem(object):
             target_cks = filesystem(target).checksum(target)
             print(f'ckecksums source: {source_cks}, target {target_cks}')
             return source_cks == target_cks
-        
+
         return ok
 
 
@@ -134,8 +129,8 @@ class XrdFileSystem(FileSystem):
             ls_cmd.append('-R')
         ls_cmd.append(path)
         return ls_cmd
-    
-    def list_dir_parse(self, lines, path):
+
+    def list_dir_parse(self, lines):
         ret = []
         for line in lines:
             line = line.decode('utf-8')
@@ -143,20 +138,20 @@ class XrdFileSystem(FileSystem):
             if len(parts) == 7:
                 ret.append(
                     FileEntry(
-                        name=parts[6], 
-                        date=f'{parts[3]} {parts[4]}', 
-                        attributes=parts[0], 
-                        owner=parts[1], 
-                        group=parts[2], 
+                        name=parts[6],
+                        date=f'{parts[3]} {parts[4]}',
+                        attributes=parts[0],
+                        owner=parts[1],
+                        group=parts[2],
                         size=parts[3]))
             else:
                 ret.append(
                     FileEntry(
-                        name=parts[4], 
-                        date=f'{parts[1]} {parts[2]}', 
-                        attributes=parts[0], 
-                        owner='', 
-                        group='', 
+                        name=parts[4],
+                        date=f'{parts[1]} {parts[2]}',
+                        attributes=parts[0],
+                        owner='',
+                        group='',
                         size=parts[2]))
         return ret
 
@@ -165,7 +160,7 @@ class XrdFileSystem(FileSystem):
         cmd.extend(self.cmd_base_)
         cmd.extend(['query', 'checksum', filename])
         return cmd
-  
+
     def checksum_parse(self, results):
         return results[0].split()[1]
 
@@ -178,7 +173,7 @@ class XrdFileSystem(FileSystem):
 class LocalFileSystem(FileSystem):
     def __init__(self, protocol) -> None:
         super().__init__(protocol)
-    
+
     def list_dir_cmd(self,  path, recursive=False):
         ls_cmd = []
         ls_cmd.extend(self.cmd_base_)
@@ -187,8 +182,8 @@ class LocalFileSystem(FileSystem):
             ls_cmd.append('-R')
         ls_cmd.append(path)
         return ls_cmd
-        
-    
+
+
     def list_dir_parse(self, lines, path):
         ret = []
         for line in lines:
@@ -218,7 +213,7 @@ class LocalFileSystem(FileSystem):
 
     def checksum_parse(self, results):
         return results[0].split()[0]
-    
+
     def copy_cmd(self, source, target, options=[]):
         if '--continue' in options:
             options.remove('continue')
@@ -261,7 +256,7 @@ def file_name_wprotocol(filename):
 def copy_from_eos(input_dir, file_name, target_file_name, dowait=False, silent=False):
     fs = XrdFileSystem(get_eos_protocol(input_dir))
     return fs.copy(os.path.join(input_dir, file_name), target_file_name, silent)
-    
+
 
 def copy_to_eos(file_name, target_dir, target_file_name):
     fs = XrdFileSystem(get_eos_protocol(target_dir))
@@ -330,8 +325,8 @@ def get_metadata(input_dir, tree, debug=0):
             except OSError as error:
                 print(error.strerror)
                 print(f'WARNING: file {file_name} can not be indexed, skipping!')
-                continue 
-            
+                continue
+
             file_metadata[file_name] = nevents
             if debug > 2:
                 print(f' [{idx}] file: {file_name} # events: {nevents}')
@@ -472,12 +467,12 @@ if __name__ == "__main__":
     print(f'list dir: :{dir}')
     for f in local_fs.list_dir(path=dir):
         print(f)
-    
+
     dir = u'/Users/cerminar/CERNbox/hgcal/CMSSW1015/plots/'
     print(f'list dir: :{dir}')
     rfiles = [f.name for f in local_fs.list_dir(path=dir) if '.root' in f.name]
     print (f'# files: {len(rfiles)}')
-    
+
 
     print(f'Checksum file: {rfiles[0]}: {local_fs.checksum(rfiles[0])}')
 
