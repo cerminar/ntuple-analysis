@@ -3,7 +3,8 @@
 """
 Main script for L1 TP analysis.
 
-The script reads the configuration, opens the input and output files for the given sample,
+The script reads the configuration,
+opens the input and output files for the given sample,
 runs the event loop and saves histograms to disk.
 All the analysis logic is anyhow elsewhere:
 
@@ -13,28 +14,25 @@ Data:
 Plotters:
     what to do with the data is handled in the `plotters` module
 Histograms:
-    which histograms are produced is handled in the `l1THistos` module (and the plotters).
+    which histograms are produced is handled in the
+    `l1THistos` module (and the plotters).
 """
 
 import sys
 import traceback
-import platform
 
+from python.analyzer import analyze
 from python.main import main
 from python.timecounter import TimeCounter
-from python.analyzer import analyze
-
 
 if __name__ == "__main__":
-
     counter = TimeCounter()
-    if int(platform.python_version().split(".")[1]) >= 8:
-        counter.start()
+    counter.start()
 
     nevents = 0
     try:
         nevents += main(analyze=analyze)
-    except Exception as inst:
+    except Exception as inst:  # noqa: BLE001
         print(str(inst))
         print("Unexpected error:", sys.exc_info()[0])
         traceback.print_exc()
@@ -42,7 +40,5 @@ if __name__ == "__main__":
 
     if counter.started():
         analysis_time, time_per_event = counter.time_per_event(nevents)
-        print(
-            f"Analyzed {nevents} events in {analysis_time:.2f} s ({time_per_event:.2f} s/ev)"
-        )
+        print(f"\nAnalyzed {nevents} events in {analysis_time:.2f} s ({time_per_event:.2f} s/ev)")
         counter.print_nevent_per_jobflavor(time_per_event)
