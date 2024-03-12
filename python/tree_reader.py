@@ -109,13 +109,13 @@ class TreeReader(object):
                                    entry_start=self.file_entry, 
                                    entry_stop=self.file_entry+entry_block)
         
-        print(akarray)
+        # print(akarray)
         records = {}
         for field in akarray.fields:
             records[field] = akarray[field]
         
         if 'pt' in names and 'eta' in names and 'phi' in names:
-            if not 'mass' in names:
+            if not 'mass' in names and not 'energy' in names:
                 records['mass'] = 0.*akarray['pt']
             return vector.zip(records)
 
