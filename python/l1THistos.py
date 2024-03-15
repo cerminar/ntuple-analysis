@@ -307,6 +307,74 @@ class CompTuples(BaseUpTuples):
         BaseUpTuples.fill(self, tree_data)
 
 
+
+class HGCIdTuples(BaseUpTuples):
+    def __init__(self, name, root_file=None, debug=False):
+        BaseUpTuples.__init__(
+            self, "CompData", name, root_file, debug)
+
+    def fill(self, data):
+# Index(['pt', 'energy', 'eta', 'phi', 'tkIso', 'pfIso', 'puppiIso', 'tkChi2',
+#        'tkPt', 'tkZ0', 'compBDTScore', 'compBdt', 'compHoe', 'compSrrtot',
+#        'compDeta', 'compDphi', 'compDpt', 'compMeanz', 'compNstubs',
+#        'compChi2RPhi', 'compChi2RZ', 'compChi2Bend', 'dpt', 'hwQual',
+#        'IDTightSTA', 'IDTightEle', 'IDTightPho', 'IDNoBrem', 'IDBrem'],
+#       dtype='object')
+        # FIXME: here we do the selection of the tree branches and other manipulations
+        vars = ['rho', 'phi', 'eta', 'coreshowerlength', 'ebm0', 'ebm1',
+       'firstlayer', 'hbm', 'hwQual', 'maxlayer', 'nTcs', 'showerlength',
+       'emax1layers', 'emax3layers', 'emax5layers', 'emaxe', 'eot',
+       'first1layers', 'first3layers', 'first5layers', 'firstHcal1layers',
+       'firstHcal3layers', 'firstHcal5layers', 'hoe', 'last1layers',
+       'last3layers', 'last5layers', 'layer10', 'layer50', 'layer90', 'meanz',
+       'ntc67', 'ntc90', 'ptEm', 'seemax', 'seetot', 'sppmax', 'spptot',
+       'srrmax', 'srrmean', 'srrtot', 'szz', 'varEtaEta', 'varPhiPhi', 'varRR',
+       'varZZ', 'pfPuIdPass', 'pfEmIdPass', 'pfPuIdScore', 'pfEmIdScore',
+       'egEmIdScore', 'IDTightEm', 'IDLooseEm', 'eMax']
+        tree_data = {}
+        for var in vars:
+            if var in data.fields:
+                tree_data[var] = data[var]
+        BaseUpTuples.fill(self, tree_data)
+
+class HGCIdMatchTuples(BaseUpTuples):
+    def __init__(self, name, root_file=None, debug=False):
+        BaseUpTuples.__init__(
+            self, "CompCatData", name, root_file, debug)
+
+    def fill(self, reference, target):
+        # print(self.t_name)
+        # print(target.fields)
+        target_vars = ['rho', 'phi', 'eta', 'coreshowerlength', 'ebm0', 'ebm1',
+       'firstlayer', 'hbm', 'hwQual', 'maxlayer', 'nTcs', 'showerlength',
+       'emax1layers', 'emax3layers', 'emax5layers', 'emaxe', 'eot',
+       'first1layers', 'first3layers', 'first5layers', 'firstHcal1layers',
+       'firstHcal3layers', 'firstHcal5layers', 'hoe', 'last1layers',
+       'last3layers', 'last5layers', 'layer10', 'layer50', 'layer90', 'meanz',
+       'ntc67', 'ntc90', 'ptEm', 'seemax', 'seetot', 'sppmax', 'spptot',
+       'srrmax', 'srrmean', 'srrtot', 'szz', 'varEtaEta', 'varPhiPhi', 'varRR',
+       'varZZ', 'pfPuIdPass', 'pfEmIdPass', 'pfPuIdScore', 'pfEmIdScore',
+       'egEmIdScore', 'IDTightEm', 'IDLooseEm', 'eMax']
+        rference_vars = [
+            'rho',
+            'eta',
+            'phi',
+            'pdgid',
+            'caloeta', 
+            'calophi']
+        # FIXME: add dz0 gen-track
+        tree_data = {}
+        for var in target_vars:
+            tree_data[var] = ak.flatten(ak.drop_none(target[var]))
+        for var in rference_vars:
+            tree_data[f'gen_{var}'] = ak.flatten(ak.drop_none(reference[var]))
+        # print(reference.fields)
+        # tree_data[f'gen_dz'] = ak.flatten(ak.drop_none(np.abs(reference.ovz-target.tkZ0)))
+        
+        BaseUpTuples.fill(self, tree_data)
+
+
+
 class GenPartHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         self.h_pt = bh.TH1F(name+'_pt', 'Gen Part Pt (GeV)', 100, 0, 100)
@@ -320,6 +388,9 @@ class GenPartHistos(BaseHistos):
     # def write(self):
     #     for histo in [a for a in dir(self) if a.startswith('h_')]:
     #         getattr(self, histo).Write()
+
+
+
 
 
 class GenParticleHistos(BaseHistos):
@@ -1884,30 +1955,35 @@ class QuantizationHistos(BaseHistos):
     def __init__(self, name, features=None, root_file=None, debug=False):
         if not root_file:
             self.features = features
-            self.h_features = bh.TH2F(
+            self.h_features = bh.TH2F_category(
                 name+'_features', 
                 'features; feature; value',
-                 len(self.features), 0, len(self.features),
+                 self.features,
                  1000, -1000, 1000)
-            self.h_featuresLog2 = bh.TH2F(
+            self.h_featuresLog2 = bh.TH2F_category(
                 name+'_featuresLog2', 
                 'featuresLog2; features; log_{2}(value)',
-                 len(self.features), 0, len(self.features),
+                 self.features,
                  64, -32, 32)
-            for bin,ft in enumerate(features):
-                self.h_features.GetXaxis().SetBinLabel(bin+1, ft)
-                self.h_featuresLog2.GetXaxis().SetBinLabel(bin+1, ft)
+            # for bin,ft in enumerate(features):
+            #     self.h_features.GetXaxis().SetBinLabel(bin+1, ft)
+            #     self.h_featuresLog2.GetXaxis().SetBinLabel(bin+1, ft)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, df):
         fill = df
-        print(df.columns)
+        # print(df.fields)
         for bin,ft in enumerate(self.features):
-            fill[f'{ft}_bin'] = bin
-            fill[f'{ft}_log2'] = np.log2(fill[[ft]])
-            bh.fill_2Dhist(self.h_features, fill[[f'{ft}_bin', ft]]) 
-            bh.fill_2Dhist(self.h_featuresLog2, fill[[f'{ft}_bin', f'{ft}_log2']]) 
+            fill[f'{ft}_bin'] = [ft]
+            # print(fill[ft])
+            # print(ak.flatten(fill[ft]))
+            fill[f'{ft}_log2'] = np.log2(fill[ft])
+            # print(fill[[f'{ft}_bin', ft]])
+            # print(ak.flatten(fill[[f'{ft}_bin', ft]]))
+
+            bh.fill_2Dhist(self.h_features, fill[f'{ft}_bin'], fill[ft]) 
+            bh.fill_2Dhist(self.h_featuresLog2, fill[f'{ft}_bin'], fill[f'{ft}_log2']) 
 
 
 class DiObjMassHistos(BaseHistos):

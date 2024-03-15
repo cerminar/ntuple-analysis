@@ -352,12 +352,8 @@ def compare_selections(sel1, sel2):
 
 
 # TP selections
-tp_id_sel = [
-    Selection('all', '', ''),
-    Selection('Em', 'EGId', 'quality >0'),
-]
+
 tp_pt_sel = [
-    Selection('all', '', ''),
     # Selection('Pt5to10', '5<=p_{T}^{TOBJ}<10GeV', '(pt >= 5) & (pt < 10)'),
     # Selection('Pt10to20', '10<=p_{T}^{TOBJ}<20GeV', '(pt >= 10) & (pt < 20)'),
     # Selection('Pt10', 'p_{T}^{TOBJ}>=10GeV', 'pt >= 10'),
@@ -367,7 +363,6 @@ tp_pt_sel = [
     Selection('Pt30', 'p_{T}^{TOBJ} #geq 30 GeV', lambda array: array.pt >= 30)
 ]
 tp_pt_sel_ext = [
-    Selection('all', '', ''),
     Selection('Pt2', 'p_{T}^{TOBJ} #geq 2GeV',  lambda array: array.pt >= 2),
     Selection('Pt3', 'p_{T}^{TOBJ} #geq 3GeV',  lambda array: array.pt >= 3),
     Selection('Pt4', 'p_{T}^{TOBJ} #geq 4GeV',  lambda array: array.pt >= 4),
@@ -384,12 +379,13 @@ tp_pt_sel_ext = [
     Selection('Pt40', 'p_{T}^{TOBJ} #geq 40 GeV', lambda array: array.pt >= 40)
 ]
 
-tp_tccluster_match_selections = [Selection('all', '', ''),
-                                 Selection('Pt5to10', '5 <= p_{T}^{TOBJ} < 10GeV', lambda array: (array.pt < 10) & (array.pt >= 5)),
-                                 Selection('Pt10to20', '10 <= p_{T}^{TOBJ} < 20GeV', lambda array: (array.pt < 20) & (array.pt >= 10))
-                                 ]
+tp_tccluster_match_selections = [
+    Selection('Pt5to10', '5 <= p_{T}^{TOBJ} < 10GeV', lambda array: (array.pt < 10) & (array.pt >= 5)),
+    Selection('Pt10to20', '10 <= p_{T}^{TOBJ} #leq 20GeV', lambda array: (array.pt < 20) & (array.pt >= 10)),
+    Selection('Pt10to25', '10 #leq p_{T}^{TOBJ} < 25GeV', lambda array: (array.pt < 25) & (array.pt >= 10))
+]
+
 tp_eta_ee_sel = [
-    Selection('all', '', ''),
     # Selection('EtaA', '|#eta^{TOBJ}| <= 1.52', 'abs(eta) <= 1.52'),
     # Selection('EtaB', '1.52 < |#eta^{TOBJ}| <= 1.7', '1.52 < abs(eta) <= 1.7'),
     # Selection('EtaC', '1.7 < |#eta^{TOBJ}| <= 2.4', '1.7 < abs(eta) <= 2.4'),
@@ -413,15 +409,7 @@ genpart_pion_selections = [
 
 gen_ee_sel = [
     Selection('Ee', '', lambda array: array.reachedEE > 0),
-    # # FIXME: remove after test (or pick one)
-    # Selection('R0', 'R0', 'reachedEE >0 ')
 ]
-
-# gen_ee_sel_named = [
-#     Selection('Ee', '', 'reachedEE >0'),
-#     # # FIXME: remove after test (or pick one)
-#     # Selection('R0', 'R0', 'reachedEE >0 ')
-# ]
 
 eta_sel = [
     Selection('EtaA', '1.49 < |#eta^{TOBJ}| #leq 1.52', lambda array: (1.49 < abs(array.eta)) & (abs(array.eta) <= 1.52)),
@@ -440,25 +428,30 @@ eta_sel = [
 
 gen_pid_sel = [
     Selection('GEN', '', 
-              lambda ar: ((np.abs(ar.pdgid) == PID.electron ) | (np.abs(ar.pdgid) == PID.photon)) & (ar.prompt >= 2))
+              lambda ar: ((np.abs(ar.pdgid) == PID.electron ) | (np.abs(ar.pdgid) == PID.photon)) & (ar.prompt >= 2)),
         #       '(((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})) | \
         #                    ((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})))'.format(
         # PID.electron, PID.electron,
         # PID.photon, PID.photon))
+    Selection('GENPi', '', 
+              lambda ar: ((np.abs(ar.pdgid) == PID.pion )) & (ar.prompt >= 2))
+        #       '(((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})) | \
+        #                    ((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})))'.format(
+        # PID.electron, PID.electron,
+        # PID.photon, PID.photon))
+
 ]
 
 gen_jet_sel = [
     Selection('GENJ')
 ]
 
-
-
 gen_ele_sel = [
     Selection('GEN11', '', '((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {}))'.format(
         PID.electron, PID.electron))
 ]
 gen_part_fbrem_sel = [
-    Selection('all', 'no cut', ''),
+    Selection('all'),
     Selection('BremH', 'f_{BREM}>=0.5', 'fbrem >= 0.5'),
     Selection('BremL', 'f_{BREM}<0.5', 'fbrem < 0.5'),
 ]
@@ -473,28 +466,6 @@ eg_eta_sel = [
     Selection('EtaEB', '|#eta^{TOBJ}| <= 1.479', lambda ar: abs(ar.eta) <= 1.479),
     Selection('EtaEE', '1.479 < |#eta^{TOBJ}| <= 2.4', lambda ar: (abs(ar.eta) > 1.479) & (abs(ar.eta) <= 2.4)),
 ]
-
-eg_id_ee_selections = [
-    Selection('EGq1', 'hwQual=1', 'hwQual == 1'),
-    Selection('EGq2', 'hwQual=2', 'hwQual == 2'),
-    Selection('EGq3', 'hwQual=3', 'hwQual == 3'),
-    Selection('EGq2or3', 'hwQual=2/3', '(hwQual == 2) | (hwQual == 3)'),
-    Selection('EGq1or3', 'hwQual=1/3', '(hwQual == 1) | (hwQual == 3)'),
-    Selection('EGq4or5', 'hwQual=4/5', '(hwQual == 4) | (hwQual == 5)'),
-    # Selection('PFEG', 'PF EG-ID', '(hwQual == 1) | (hwQual == 3)'),
-    # Selection('EGnoPU', 'EG-ID noPU', '(hwQual == 3) | (hwQual == 2)'),
-    Selection('EGq4', 'hwQual=4', 'hwQual == 4'),
-    Selection('EGq5', 'hwQual=5', 'hwQual == 5'),
-    Selection('EGq6', 'hwQual=6', 'hwQual == 6')
-
-]
-
-tracks_quality_sels = [Selection('all'),
-                       Selection('St4', '# stubs > 3', 'nStubs > 3')]
-# tracks_pt_sels = [Selection('all'),
-#                   Selection('Pt2', 'p_{T}^{TOBJ}>=2GeV', 'pt >= 2'),
-#                   Selection('Pt5', 'p_{T}^{TOBJ}>=5GeV', 'pt >= 5'),
-#                   Selection('Pt10', 'p_{T}^{TOBJ}>=10GeV', 'pt >= 10')]
 
 pfinput_regions = [
     Selection('all'),
@@ -627,15 +598,15 @@ working_points_histomax = {
         "v10_3151": [
                 # Low eta
                 {
-                #  '900': 0.9903189,
-                #  '950': 0.9646683,
+                 '900': 0.9903189,
+                 '950': 0.9646683,
                  '975': 0.8292287,
                  '995': -0.7099538,
                 },
                 # High eta
                 {
-                #  '900': 0.9932326,
-                #  '950': 0.9611762,
+                 '900': 0.9932326,
+                 '950': 0.9611762,
                  '975': 0.7616282,
                  '995': -0.9163715,
                 }
@@ -655,12 +626,14 @@ wls = zip(wps, labels)
 tphgc_egbdt_sel = []
 
 for wps,lab in wls:
+
     for wp,cut in wps.items():
         tphgc_egbdt_sel.append(
             Selection(
                 f'EgBdt{lab}{wp}', 
-                f'BDT^{{eg}}_{{{lab}}}@{wp}%', 
-                f'bdteg > {cut}'))
+                f'BDT^{{eg}}_{{{lab}}}@{wp}%',
+                lambda ar, cut=cut: ar.egEmIdScore > cut)
+                )
 
 tphgc_pubdt_sel = [
     Selection('PUId', 'PUId', 'bdt_pu > 0.15')
@@ -778,14 +751,14 @@ if False:
     eg_iso_sel.extend(read_isowp_sel('data/iso_wps.json', 'PFTkEmEE', 'EtaABC'))
 
 
-eg_id_iso_ee_sel = []
-eg_id_iso_ee_sel += multiply_selections(eg_id_ee_selections, eg_iso_sel)
-eg_id_iso_eta_ee_selections = []
-eg_id_iso_eta_ee_selections += multiply_selections(eg_id_iso_ee_sel, tp_eta_ee_sel)
-eg_id_iso_pt_ee_selections_ext = []
-eg_id_iso_pt_ee_selections_ext += multiply_selections(eg_id_ee_selections, tp_pt_sel_ext)
-eg_id_iso_pt_ee_selections_ext += eg_id_iso_ee_sel
-eg_id_iso_pt_ee_selections_ext = prune(eg_id_iso_pt_ee_selections_ext)
+# eg_id_iso_ee_sel = []
+# eg_id_iso_ee_sel += multiply_selections(eg_id_ee_selections, eg_iso_sel)
+# eg_id_iso_eta_ee_selections = []
+# eg_id_iso_eta_ee_selections += multiply_selections(eg_id_iso_ee_sel, tp_eta_ee_sel)
+# eg_id_iso_pt_ee_selections_ext = []
+# eg_id_iso_pt_ee_selections_ext += multiply_selections(eg_id_ee_selections, tp_pt_sel_ext)
+# eg_id_iso_pt_ee_selections_ext += eg_id_iso_ee_sel
+# eg_id_iso_pt_ee_selections_ext = prune(eg_id_iso_pt_ee_selections_ext)
 
 # print 'eg_id_iso_eta_ee_selections:'
 # print eg_id_iso_eta_ee_selections
@@ -808,7 +781,7 @@ eg_iso_ee_wp_sel = [
 # fill_isowp_sel(eg_iso_ee_wp_sel, eg_iso_ee_wp)
 
 eg_iso_pt_ee_selections = []
-eg_iso_pt_eb_selections = []
+# eg_iso_pt_eb_selections = []
 
 if False:
     for iso_sel_name, pt_sel in read_isoptwp_sel('data/iso_pt_wps.json', 'PFNFtkEmEE'):
@@ -819,8 +792,8 @@ if False:
     for iso_sel_name, pt_sel in read_isoptwp_sel('data/iso_pt_wps.json', 'PFNFtkEmEB'):
         iso_sel = list(filter(lambda x: x.name == iso_sel_name, barrel_rate_selections))[0]
         eg_iso_pt_eb_selections.append(iso_sel+pt_sel)
-else:
-    eg_iso_pt_ee_selections += multiply_selections(eg_id_ee_selections, eg_iso_ee_wp_sel)
+# else:
+#     eg_iso_pt_ee_selections += multiply_selections(eg_id_ee_selections, eg_iso_ee_wp_sel)
 
 # EG selection quality and Pt EB
 

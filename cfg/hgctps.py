@@ -17,7 +17,7 @@ hgc_tp_rate_selections = (selections.Selector('^EgBdt*|^Em|all')*('PUId|all')*('
 
 tkcl3dmatch_selections = (selections.Selector('PUId')*('^EgBdtLE|all')*('^Pt[1,2,5]$|all')*('^MTkPt[2-5]|all'))()
 
-hgc_tp_id_selections = (selections.Selector('^IDTightEm$|^IDLooseEm$|all'))()
+hgc_tp_id_selections = (selections.Selector('^IDTightEm$|^IDLooseEm$|all')+selections.Selector('^EgBdt|all'))()
 
 
 double_gen_selections = [
@@ -70,7 +70,7 @@ hgc_tp_tkmatch_genmatched = [
 ]
 
 
-zprime_eff_pt_bins = list(range(0,100, 10))+list(range(100,500, 50))+list(range(500, 1000, 100))+list(range(1000, 1600, 200))+list(range(1600, 4000, 400))
+zprime_eff_pt_bins = list(range(0,100, 10))+list(range(100,500, 100))+list(range(500, 1000, 250))+list(range(1000, 2000, 500))
 
 
 hgc_tp_highpt_genmatched = [
@@ -94,5 +94,5 @@ hgc_tp_highpt_genmatched = [
                                
 ]
 
-for sel in hgc_tp_id_selections:
+for sel in gen_selections:
     print (sel)

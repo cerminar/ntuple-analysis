@@ -1289,6 +1289,22 @@ class CompCatTuplePlotter(GenericGenMatchPlotter):
                                                 data_selections, gen_selections, drcut=0.2)
 
 
+class HGCIdTuplesPlotter(GenericDataFramePlotter):
+    def __init__(self, obj_set, obj_selections=[selections.Selection('all')]):
+        super(HGCIdTuplesPlotter, self).__init__(histos.HGCIdTuples, obj_set, obj_selections)
+
+
+
+class HGCIdMatchTuplesPlotter(GenericGenMatchPlotter):
+    def __init__(self, data_set, gen_set,
+                 data_selections=[selections.Selection('all')],
+                 gen_selections=[selections.Selection('all')]):
+        super(HGCIdMatchTuplesPlotter, self).__init__(histos.Cluster3DHistos, histos.HGCIdMatchTuples,
+                                                data_set, gen_set,
+                                                data_selections, gen_selections, 
+                                                drcut=0.1)
+
+
 class DiObjMassPlotter(GenericDataFramePlotter):
     def __init__(self, obj_set, obj_selections=[selections.Selection('all')]):
         super(DiObjMassPlotter, self).__init__(histos.DiObjMassHistos, obj_set, obj_selections)

@@ -231,42 +231,49 @@ def cl3d_fixtures(clusters):
     clusters['IDTightEm'] = np.bitwise_and(clusters.hwQual, mask_tight) > 0
     clusters['IDLooseEm'] = np.bitwise_and(clusters.hwQual, mask_loose) > 0
     clusters['eMax'] = clusters.emaxe*clusters.energy
+    clusters['meanz_scaled'] = clusters.meanz-320.
+    clusters['abseta'] =  np.abs(clusters.eta)
+
+    if False:
+        input_array = ak.flatten(
+            clusters[[
+                'coreshowerlength', 
+                'showerlength', 
+                'firstlayer', 
+                'maxlayer', 
+                'szz', 
+                'srrmean', 
+                'srrtot', 
+                'seetot', 
+                'spptot']], 
+            axis=1)
+        input_data = ak.concatenate(ak.unzip(input_array[:, np.newaxis]), axis=1)
+        input_matrix = xgboost.DMatrix(np.asarray(input_data))
+        score =  classifiers.eg_hgc_model_xgb.predict(input_matrix)
+
+        pu_input_array = ak.flatten(
+            clusters[[
+                'eMax', 
+                'emaxe', 
+                'spptot', 
+                'srrtot', 
+                'ntc90']], 
+            axis=1)
+        pu_input_data = ak.concatenate(ak.unzip(pu_input_array[:, np.newaxis]), axis=1)
+        pu_input_matrix = xgboost.DMatrix(np.asarray(pu_input_data))
+        pu_score =  classifiers.pu_veto_model_xgb.predict(pu_input_matrix)
+
+        counts = ak.num(clusters)
+        clusters_flat = ak.flatten(clusters)
+        clusters_flat['egbdtscore'] = score
+        clusters_flat['pubdtscore'] = pu_score
+
+        clusters_flat['egbdtscoreproba'] = -np.log(1.0/score - 1.0)
+        clusters_flat['pubdtscoreproba'] = -np.log(1.0/pu_score - 1.0)
 
 
-    input_array = ak.flatten(
-        clusters[[
-            'coreshowerlength', 
-            'showerlength', 
-            'firstlayer', 
-            'maxlayer', 
-            'szz', 
-            'srrmean', 
-            'srrtot', 
-            'seetot', 
-            'spptot']], 
-        axis=1)
-    input_data = ak.concatenate(ak.unzip(input_array[:, np.newaxis]), axis=1)
-    input_matrix = xgboost.DMatrix(np.asarray(input_data))
-    score =  classifiers.eg_hgc_model_xgb.predict(input_matrix)
-
-    pu_input_array = ak.flatten(
-        clusters[[
-            'eMax', 
-            'emaxe', 
-            'spptot', 
-            'srrtot', 
-            'ntc90']], 
-        axis=1)
-    pu_input_data = ak.concatenate(ak.unzip(pu_input_array[:, np.newaxis]), axis=1)
-    pu_input_matrix = xgboost.DMatrix(np.asarray(pu_input_data))
-    pu_score =  classifiers.pu_veto_model_xgb.predict(pu_input_matrix)
-
-    counts = ak.num(clusters)
-    clusters_flat = ak.flatten(clusters)
-    clusters_flat['egbdtscore'] = score
-    clusters_flat['pubdtscore'] = pu_score
-    clusters = ak.unflatten(clusters_flat, counts)
-    print(clusters.type.show())
+        clusters = ak.unflatten(clusters_flat, counts)
+        # print(clusters.type.show())
 
     return clusters
 
@@ -295,6 +302,10 @@ def pho_mc_fixtures(particles):
         particles['pdgid'] = 22
     return mc_fixtures(particles)
 
+def pi_mc_fixtures(particles):
+    if 'pdgid' not in particles.fields:
+        particles['pdgid'] = particles.charge*211
+    return mc_fixtures(particles)
 
 def tc_fixtures(tcs):
     # print tcs.columns
@@ -720,6 +731,16 @@ gen_pho = DFCollection(
     max_print_lines=None,
     debug=0)
 
+gen_pi = DFCollection(
+    name='GEN', label='GEN particles (pi)',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='GenPi', entry_block=entry_block),
+    fixture_function=pi_mc_fixtures,
+    # print_function=lambda df: df[['pdgid', 'pt', 'eta', 'phi']],
+    # print_function=lambda df: df[(df.pdgid==23 | (abs(df.pdgid)==15))],
+    max_print_lines=None,
+    debug=0)
+
 
 gen = DFCollection(
     name='GEN', label='GEN particles',
@@ -750,9 +771,9 @@ hgc_cl3d = DFCollection(
         prefix='HGCal3DCl', entry_block=entry_block, fallback='HMvDR'),
     fixture_function=lambda clusters: cl3d_fixtures(clusters),
     # read_entry_block=500,
-    debug=4,
-    print_function=lambda df: df[['rho', 'eta', 'phi', 'hwQual', 'ptEm', 'egbdtscore', 'pubdtscore']].sort_values(by='rho', ascending=False)
-    # print_function=lambda df: df.columns
+    debug=0,
+    # print_function=lambda df: df[['rho', 'eta', 'phi', 'hwQual', 'ptEm', 'egbdtscore', 'pubdtscore', 'egbdtscoreproba', 'pubdtscoreproba', 'pfPuIdScore', 'egEmIdScore']].sort_values(by='rho', ascending=False)
+    print_function=lambda df: df.columns
 
     )
 
@@ -829,7 +850,7 @@ TkEmL2Ell = DFCollection(
 TkEleL2Ell = DFCollection(
     name='TkEleL2Ell', label='TkEle L2 (ell.)',
     filler_function=lambda event, entry_block : event.getDataFrame(
-        prefix='L2TkEleEll', entry_block=entry_block),
+        prefix='L2TkEleEll', entry_block=entry_block, fallback='TkEleL2Ell'),
     fixture_function=quality_ele_fixtures,
     debug=0)
 
@@ -994,7 +1015,7 @@ DoubleSimEle = DFCollection(
     # fixture_function=,
     depends_on=[gen_highestpt_ele],
     debug=0)
-DoubleSimEle.activate()
+# DoubleSimEle.activate()
 
 
 
