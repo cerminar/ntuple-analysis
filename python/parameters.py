@@ -8,13 +8,15 @@ class Parameters(dict):
 
     def __str__(self):
         return (
-            f"Name: {self.name},\n"
-            f"clusterize: {self.clusterize}\n"
-            f"compute density: {self.computeDensity}\n"
-            f"maxEvents: {self.maxEvents}\n"
-            f"output file: {self.output_filename}\n"
-            f"events per job: {self.events_per_job}\n"
-            f"debug: {self.debug}"
+            f"\n--------------------Parameters--------------------\n"
+            f"{'Name':<16}: {self.name:<12}\n"
+            f"{'clusterize':<16}: {self.clusterize:<12}\n"
+            f"{'compute density':<16}: {self.computeDensity:<12}\n"
+            f"{'maxEvents':<16}: {self.maxEvents:<12}\n"
+            f"{'output file':<16}: {self.output_filename:<12}\n"
+            f"{'events per job':<16}: {self.events_per_job:<12}\n"
+            f"{'debug':<16}: {self.debug:<12}"
+            "\n"
         )
 
     def __repr__(self):
@@ -46,7 +48,7 @@ def get_collection_parameters(opt, cfgfile):
             if opt.BATCH:
                 events_per_job = cfgfile["samples"][sample]["events_per_job"]
                 if "events_per_job" in collection_data and sample in collection_data["events_per_job"]:
-                        events_per_job = collection_data["events_per_job"][sample]
+                    events_per_job = collection_data["events_per_job"][sample]
 
                 if opt.RUN:
                     out_file_name = f"{output_filename_base}_{opt.RUN}.root"
@@ -58,7 +60,7 @@ def get_collection_parameters(opt, cfgfile):
 
             weight_file = None
             if "weights" in collection_data and sample in collection_data["weights"]:
-                    weight_file = collection_data["weights"][sample]
+                weight_file = collection_data["weights"][sample]
 
             rate_pt_wps = None
             if "rate_pt_wps" in cfgfile["dataset"]:
