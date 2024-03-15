@@ -2,6 +2,7 @@ import sys
 
 import typer
 import yaml
+from rich import print as pprint
 
 from cfg import *  #!FIXXX
 from python.analyzer import analyze
@@ -97,7 +98,7 @@ def analyzeNtuples(  # noqa: PLR0913
         sel_sample = [sample for sample in collection_params[opt.COLLECTION] if sample.name == opt.SAMPLE]
         samples_to_process.append(sel_sample[0])
 
-    print(f"About to process samples: {samples_to_process}")
+    pprint(f"About to process samples: {samples_to_process}")
 
     plot_version = f"{cfgfile['common']['plot_version']}.{cfgfile['dataset']['version']}"
 
@@ -114,7 +115,10 @@ def analyzeNtuples(  # noqa: PLR0913
         batch_idx = int(opt.RUN)
 
     ret_nevents = 0
-    for sample in samples_to_process:
+    for idx, sample in enumerate(samples_to_process):
+        pprint(
+            f"\n\n========================== #{idx+1}/{len(samples_to_process)}: {sample.name} ==========================\n"
+        )
         ret_nevents += analyze(sample, batch_idx=batch_idx)
     return ret_nevents
 

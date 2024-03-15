@@ -1,6 +1,10 @@
 import os
 import socket
 
+from rich import print as pprint
+from rich.console import Console
+from rich.table import Table
+
 
 class Parameters(dict):
     def __getattr__(self, name):
@@ -22,6 +26,21 @@ class Parameters(dict):
     def __repr__(self):
         return self.name
 
+    def print(self):
+        table = Table(title="Parameters")
+        table.add_column("Parameter", justify="right", style="cyan", no_wrap=True)
+        table.add_column("Value", style="magenta")
+
+        table.add_row("Name", self.name)
+        table.add_row("clusterize", str(self.clusterize))
+        table.add_row("compute density", str(self.computeDensity))
+        table.add_row("maxEvents", str(self.maxEvents))
+        table.add_row("output file", self.output_filename)
+        table.add_row("events per job", str(self.events_per_job))
+        table.add_row("debug", str(self.debug))
+        console = Console()
+        console.print(table)
+
 
 def get_collection_parameters(opt, cfgfile):
     outdir = cfgfile["common"]["output_dir"]["default"]
@@ -32,9 +51,10 @@ def get_collection_parameters(opt, cfgfile):
     plot_version = f"{cfgfile['common']['plot_version']}.{cfgfile['dataset']['version']}"
 
     collection_params = {}
+    print("")
     for collection, collection_data in cfgfile["collections"].items():
         samples = cfgfile["samples"].keys()
-        print(f"--- Collection: {collection} with samples: {samples}")
+        pprint(f"--- Collection: {collection} with samples: {samples}")
         sample_params = []
 
         plotters = []
