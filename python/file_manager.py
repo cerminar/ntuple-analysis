@@ -36,7 +36,6 @@ class FileSystem:
         self.protocol_host = protocol.lstrip('root://')
         self.cmd_base_ = []
 
-
     def list_dir(self, path, recursive=False):
         ls_cmd = self.list_dir_cmd(path, recursive)
         ok, entries = self.exec(ls_cmd)
@@ -49,10 +48,10 @@ class FileSystem:
     def parse_file_list(self):
         pass
 
-    def list_dir_cmd(self,  path, recursive=False):
+    def list_dir_cmd(self, path, recursive=False):
         pass
 
-    def list_dir_parse(self,  lines, path):
+    def list_dir_parse(self, lines, path):
         pass
 
     def checksum_cmd(self, filename):
@@ -91,7 +90,7 @@ class FileSystem:
                 raise exc
         if debug:
             print(f'cmd: {cmd} return code: {proc.returncode}')
-        return (proc.returncode == 0),lines
+        return (proc.returncode == 0), lines
 
     def copy(self, source, target, silent=False):
         cmd = self.copy_cmd(source, target)
@@ -115,14 +114,12 @@ class FileSystem:
         return ok
 
 
-
-
 class XrdFileSystem(FileSystem):
     def __init__(self, protocol) -> None:
         super().__init__(protocol)
         self.cmd_base_ = ['xrdfs', self.protocol]
 
-    def list_dir_cmd(self,  path, recursive=False):
+    def list_dir_cmd(self, path, recursive=False):
         ls_cmd = []
         ls_cmd.extend(self.cmd_base_)
         ls_cmd.extend(['ls', '-l'])
@@ -131,7 +128,7 @@ class XrdFileSystem(FileSystem):
         ls_cmd.append(path)
         return ls_cmd
 
-    def list_dir_parse(self, lines):
+    def list_dir_parse(self, lines, path):
         ret = []
         for line in lines:
             line = line.decode('utf-8')
@@ -144,7 +141,9 @@ class XrdFileSystem(FileSystem):
                         attributes=parts[0],
                         owner=parts[1],
                         group=parts[2],
-                        size=parts[3]))
+                        size=parts[3],
+                    )
+                )
             else:
                 ret.append(
                     FileEntry(
@@ -153,11 +152,13 @@ class XrdFileSystem(FileSystem):
                         attributes=parts[0],
                         owner='',
                         group='',
-                        size=parts[2]))
+                        size=parts[2],
+                    )
+                )
         return ret
 
     def checksum_cmd(self, filename):
-        cmd= []
+        cmd = []
         cmd.extend(self.cmd_base_)
         cmd.extend(['query', 'checksum', filename])
         return cmd
@@ -171,11 +172,12 @@ class XrdFileSystem(FileSystem):
         ret.extend([file_name_wprotocol(source), file_name_wprotocol(target)])
         return ret
 
+
 class LocalFileSystem(FileSystem):
     def __init__(self, protocol) -> None:
         super().__init__(protocol)
 
-    def list_dir_cmd(self,  path, recursive=False):
+    def list_dir_cmd(self, path, recursive=False):
         ls_cmd = []
         ls_cmd.extend(self.cmd_base_)
         ls_cmd.extend(['ls', '-l'])
@@ -183,7 +185,6 @@ class LocalFileSystem(FileSystem):
             ls_cmd.append('-R')
         ls_cmd.append(path)
         return ls_cmd
-
 
     def list_dir_parse(self, lines, path):
         ret = []
@@ -195,7 +196,7 @@ class LocalFileSystem(FileSystem):
                 continue
             elif len(parts) == 1:
                 if parts[0][-1] == ':':
-                    path = (parts[0].rstrip(':'))
+                    path = parts[0].rstrip(':')
                 else:
                     print(f'ERROR [LocalFileSystem::list_dir_parse] parsing: {parts}')
                 continue
@@ -204,7 +205,16 @@ class LocalFileSystem(FileSystem):
                     continue
                 else:
                     print(f'ERROR [LocalFileSystem::list_dir_parse] parsing: {parts}')
-            ret.append(FileEntry(os.path.join(path, parts[8]), f'{parts[4]} {parts[5]} {parts[6]} {parts[7]}', parts[0], parts[2], parts[3], parts[4]))
+            ret.append(
+                FileEntry(
+                    os.path.join(path, parts[8]),
+                    f'{parts[4]} {parts[5]} {parts[6]} {parts[7]}',
+                    parts[0],
+                    parts[2],
+                    parts[3],
+                    parts[4],
+                )
+            )
         return ret
 
     def checksum_cmd(self, filename):
@@ -224,7 +234,6 @@ class LocalFileSystem(FileSystem):
         return ret
 
 
-
 def filesystem(filename):
     protocol = get_eos_protocol(filename)
     fs = XrdFileSystem(protocol)
@@ -236,6 +245,8 @@ def filesystem(filename):
 def get_checksum(filename):
     fs = filesystem(filename)
     return fs.checksum(filename)
+
+
 #     xrdfs root://eosuser.cern.ch/  query checksum /eos/user/c/cerminar/hgcal/CMSSW1015/plots/histos_ele_flat2to100_PU200_v55_93.root
 #     xrdadler32 plots1/histos_ele_flat2to100_PU200_v55_93.root
 
@@ -334,17 +345,12 @@ def get_metadata(input_dir, tree, debug=0):
 
         with open(json_name, 'w', encoding='utf-8') as fp:
             json.dump(file_metadata, fp)
-        retc = copy_to_eos(
-            file_name=json_name,
-            target_dir=input_dir,
-            target_file_name=json_name)
+        retc = copy_to_eos(file_name=json_name, target_dir=input_dir, target_file_name=json_name)
         print(f'COPY: {json_name} to {input_dir} w name: {json_name} return: {retc}')
     else:
         print('dir already indexed, will read metadata...')
         unique_filename = f'{uuid.uuid4()}.json'
-        ret = copy_from_eos(input_dir=input_dir,
-                            file_name=json_name,
-                            target_file_name=unique_filename)
+        ret = copy_from_eos(input_dir=input_dir, file_name=json_name, target_file_name=unique_filename)
         print(f'copy file: {unique_filename} ret: {ret}')
         with open(unique_filename, 'r', encoding='utf-8') as fp:
             file_metadata = json.load(fp)
@@ -381,7 +387,6 @@ def get_files_to_process(nev_toprocess, metadata, debug=0):
 
 
 def get_njobs(nev_toprocess, nev_perjob, metadata, debug=0):
-
     needed_files = sorted(get_files_to_process(nev_toprocess, metadata, debug))
     nevents_tot = 0
     comulative = {}
@@ -394,13 +399,13 @@ def get_njobs(nev_toprocess, nev_perjob, metadata, debug=0):
     if nev_toprocess == -1:
         nev_toprocess = nevents_tot
 
-    njobs = int(nev_toprocess/nev_perjob)
+    njobs = int(nev_toprocess / nev_perjob)
     print(f'# of jobs: {njobs}')
     ret = {}
     for job_id in range(njobs):
         files_perjob = []
         eventrange = (-1, -1)
-        events_injob = range(job_id*nev_perjob, (job_id+1)*nev_perjob)
+        events_injob = range(job_id * nev_perjob, (job_id + 1) * nev_perjob)
         first_ev_injob = events_injob[0]
         last_ev_injob = events_injob[-1]
         if debug > 3:
@@ -408,10 +413,15 @@ def get_njobs(nev_toprocess, nev_perjob, metadata, debug=0):
         for file_name in needed_files:
             first_ev = comulative[file_name]
             last_ev = first_ev + metadata[file_name]
-            if(first_ev_injob >= first_ev and first_ev_injob < last_ev):
+            if first_ev_injob >= first_ev and first_ev_injob < last_ev:
                 files_perjob.append(file_name)
-                eventrange = (first_ev_injob - first_ev, first_ev_injob - first_ev+nev_perjob-1)
-            elif(first_ev_injob < first_ev and last_ev_injob >= last_ev) or (last_ev_injob > first_ev and last_ev_injob < last_ev):
+                eventrange = (first_ev_injob - first_ev, first_ev_injob - first_ev + nev_perjob - 1)
+            elif (
+                first_ev_injob < first_ev
+                and last_ev_injob >= last_ev
+                or last_ev_injob > first_ev
+                and last_ev_injob < last_ev
+            ):
                 files_perjob.append(file_name)
         if debug > 3:
             print(f'   files: {files_perjob}, range: {eventrange}')
@@ -470,30 +480,35 @@ if __name__ == '__main__':
     dir = '/Users/cerminar/CERNbox/hgcal/CMSSW1015/plots/'
     print(f'list dir: :{dir}')
     rfiles = [f.name for f in local_fs.list_dir(path=dir) if '.root' in f.name]
-    print (f'# files: {len(rfiles)}')
-
+    print(f'# files: {len(rfiles)}')
 
     print(f'Checksum file: {rfiles[0]}: {local_fs.checksum(rfiles[0])}')
 
-    print ('List eos dir: /eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/ntuples/TT_TuneCP5_14TeV-powheg-pythia8/TT_PU200_v81C/')
+    print(
+        'List eos dir: /eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/ntuples/TT_TuneCP5_14TeV-powheg-pythia8/TT_PU200_v81C/'
+    )
     xrd_fs = XrdFileSystem(protocol='root://eoscms.cern.ch')
-    res =  xrd_fs.list_dir(path='/eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/ntuples/TT_TuneCP5_14TeV-powheg-pythia8/TT_PU200_v81C/')
+    res = xrd_fs.list_dir(
+        path='/eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/ntuples/TT_TuneCP5_14TeV-powheg-pythia8/TT_PU200_v81C/'
+    )
     print([f.name for f in res])
 
-    for f in xrd_fs.list_dir(path='/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v53/'):
+    for f in xrd_fs.list_dir(
+        path='/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v53/'
+    ):
         print(f)
 
     dir = '/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v53/'
     rfiles = [f.name for f in xrd_fs.list_dir(path=dir, recursive=True) if '.root' in f.name]
     print(f'Checksum file: {rfiles[0]}: {xrd_fs.checksum(rfiles[0])}')
 
-
-
     local_dir = '/Users/cerminar/cernbox/hgcal/CMSSW1015/'
     local_files = listFiles(local_dir, match='.root')
     print(len(local_files))
 
-    input_dir = '/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v53/'
+    input_dir = (
+        '/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v53/'
+    )
     # input_dir = '/Users/cerminar/Workspace/hgcal-analysis/ntuple-tools/'
     found_files = listFiles(input_dir, match='.root')
     print(found_files)
@@ -509,7 +524,6 @@ if __name__ == '__main__':
     #     batch_id=121,
     #     debug=True)
 
-
     input_dir = '/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6//DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU0_v63A/'
     tree_name = 'l1CaloTriggerNtuplizer_egOnly/HGCalTriggerNtuple'
     nev_toprocess = 100
@@ -521,13 +535,12 @@ if __name__ == '__main__':
     tree_name = 'l1CaloTriggerNtuplizer_egOnly/HGCalTriggerNtuple'
     nev_toprocess = 100
     print(f'Input dir: {input_dir}, tree_name: {tree_name}, nev: {nev_toprocess}')
-    #files = get_files_for_processing(input_dir, tree_name, nev_toprocess, debug=4)
-    #print(f'   files for processing: {files}')
+    # files = get_files_for_processing(input_dir, tree_name, nev_toprocess, debug=4)
+    # print(f'   files for processing: {files}')
 
     json_name = 'metadata.json'
     file_metadata = {}
     json_files = listFiles(input_dir, match=json_name)
-
 
     # get_checksum(filename=plots1/histos_nugun_alleta_pu200_v55.root)
 
