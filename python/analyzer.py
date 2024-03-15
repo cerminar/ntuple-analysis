@@ -1,14 +1,14 @@
 import os
 import sys
 import traceback
+
 import uproot as up
 
-import python.l1THistos as histos
-import python.file_manager as fm
-import python.collections as collections
 import python.calibrations as calibs
+import python.file_manager as fm
+import python.l1THistos as histos
 import python.tree_reader as treereader
-import python.timecounter as timecounter
+from python import collections, timecounter
 
 
 # @profile
@@ -117,7 +117,7 @@ def analyze(params, batch_idx=-1):
 
             except Exception as inst:
                 tree_reader.printEntry()
-                print(f"[EXCEPTION OCCURRED:] {str(inst)}")
+                print(f"[EXCEPTION OCCURRED:] {inst!s}")
                 print("Unexpected error:", sys.exc_info()[0])
                 traceback.print_exc()
                 tree_file.close()
