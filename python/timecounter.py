@@ -3,6 +3,8 @@ import sys
 import time
 import traceback
 
+from rich import print as pprint
+
 
 class TimeCounter:
     def __init__(self):
@@ -52,7 +54,7 @@ class TimeCounter:
     def print_nevent_per_jobflavor(self, time_per_event):
         if self.started():
             for job_flavor, job_time in self.job_flavors.items():
-                print(
+                pprint(
                     f"{job_flavor:<12} {self.job_flavors_labels[job_flavor]:<12} "
                     f"#ev: {int(job_time / (1.1 * time_per_event)):<12}"
                 )
@@ -83,7 +85,7 @@ def print_stats(func):
         nevents = 0
         try:
             nevents += func(*args, **kwargs)
-        except Exception as inst:  # noqa: BLE001
+        except Exception as inst:
             print(str(inst))
             print("Unexpected error:", sys.exc_info()[0])
             traceback.print_exc()
@@ -91,7 +93,9 @@ def print_stats(func):
 
         if counter.started():
             analysis_time, time_per_event = counter.time_per_event(nevents)
-            print(f"\nAnalyzed {nevents} events in {analysis_time:.2f} s ({time_per_event:.2f} s/ev)")
+            pprint("\n===========================================")
+            pprint(f"Analyzed {nevents} events in {analysis_time:.2f} s ({time_per_event:.2f} s/ev)")
+            pprint("-------------------------------------------")
             counter.print_nevent_per_jobflavor(time_per_event)
 
     return wrapper
