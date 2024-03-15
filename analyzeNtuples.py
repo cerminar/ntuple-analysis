@@ -6,8 +6,8 @@ import yaml
 from cfg import *  #!FIXXX
 from python.analyzer import analyze
 from python.parameters import Parameters, get_collection_parameters
-from python.stats_printer import print_stats
 from python.submission import to_HTCondor
+from python.timecounter import print_stats
 
 description = """
 Main script for L1 TP analysis.
