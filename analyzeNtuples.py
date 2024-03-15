@@ -50,7 +50,7 @@ def analyzeNtuples(  # noqa: PLR0913
     local: bool = typer.Option(False, '-l', '--local', help='run the batch on local resources'),
     workers: int = typer.Option(2, '-j', '--jobworkers', help='# of local workers'),
     workdir: str = typer.Option(None, '-w', '--workdir', help='local work directory'),
-    submit: bool = typer.Option(False, '-s', '--submit', help='submit the jobs via CONDOR'),
+    submit: bool = typer.Option(False, '-S', '--submit', help='submit the jobs via CONDOR'),
 ):
     if submit and local and not workdir:
         raise ValueError('The --workdir option is required when submitting jobs locally')
