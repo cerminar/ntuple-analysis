@@ -62,39 +62,40 @@ def analyzeNtuples(  # noqa: PLR0913
     cfgfile.update(parse_yaml(configfile))
     cfgfile.update(parse_yaml(datasetfile))
 
-    opt = Parameters({
-        "COLLECTION": collection,
-        "SAMPLE": sample,
-        "DEBUG": debug,
-        "NEVENTS": nevents,
-        "BATCH": batch,
-        "RUN": run,
-        "OUTDIR": outdir,
-        "LOCAL": local,
-        "WORKERS": workers,
-        "WORKDIR": workdir,
-        "SUBMIT": submit,
-    })
+    opt = Parameters(
+        {
+            "COLLECTION": collection,
+            "SAMPLE": sample,
+            "DEBUG": debug,
+            "NEVENTS": nevents,
+            "BATCH": batch,
+            "RUN": run,
+            "OUTDIR": outdir,
+            "LOCAL": local,
+            "WORKERS": workers,
+            "WORKDIR": workdir,
+            "SUBMIT": submit,
+        }
+    )
     collection_params = get_collection_parameters(opt, cfgfile)
 
     samples_to_process = []
-    if opt.COLLECTION:
-        if opt.COLLECTION in collection_params:
-            if opt.SAMPLE:
-                if opt.SAMPLE == "all":
-                    samples_to_process.extend(collection_params[opt.COLLECTION])
-                else:
-                    sel_sample = [sample for sample in collection_params[opt.COLLECTION] if sample.name == opt.SAMPLE]
-                    samples_to_process.append(sel_sample[0])
-            else:
-                print(f"Collection: {opt.COLLECTION}, available samples: {collection_params[opt.COLLECTION]}")
-                sys.exit(0)
-        else:
-            print(f"ERROR: collection {opt.COLLECTION} not in the cfg file")
-            sys.exit(10)
-    else:
+
+    if not opt.COLLECTION:
         print(f"\nAvailable collections: {collection_params.keys()}")
         sys.exit(0)
+    if opt.COLLECTION not in collection_params:
+        print(f"ERROR: collection {opt.COLLECTION} not in the cfg file")
+        sys.exit(10)
+    if not opt.SAMPLE:
+        print(f"Collection: {opt.COLLECTION}, available samples: {collection_params[opt.COLLECTION]}")
+        sys.exit(0)
+
+    if opt.SAMPLE == "all":
+        samples_to_process.extend(collection_params[opt.COLLECTION])
+    else:
+        sel_sample = [sample for sample in collection_params[opt.COLLECTION] if sample.name == opt.SAMPLE]
+        samples_to_process.append(sel_sample[0])
 
     print(f"About to process samples: {samples_to_process}")
 
