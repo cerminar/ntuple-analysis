@@ -6,7 +6,7 @@ import uproot as up
 
 import python.calibrations as calibs
 import python.file_manager as fm
-import python.l1THistos as histos
+import python.l1THistos as Histos
 import python.tree_reader as treereader
 from python import collections, timecounter
 
@@ -42,9 +42,7 @@ def analyze(params, batch_idx=-1):
     for file_name in input_files:
         print(f"        - {file_name}")
 
-    files_with_protocol = [
-        fm.get_eos_protocol(file_name) + file_name for file_name in input_files
-    ]
+    files_with_protocol = [fm.get_eos_protocol(file_name) + file_name for file_name in input_files]
 
     calib_manager = calibs.CalibManager()
     calib_manager.set_calibration_version(params.calib_version)
@@ -52,7 +50,7 @@ def analyze(params, batch_idx=-1):
         calib_manager.set_pt_wps_version(params.rate_pt_wps)
 
     output = up.recreate(params.output_filename)
-    hm = histos.HistoManager()
+    hm = Histos.HistoManager()
     hm.file = output
 
     # instantiate all the plotters
@@ -76,15 +74,11 @@ def analyze(params, batch_idx=-1):
     print(f"maxEvents: {params.maxEvents}")
     print(f"range_ev: {range_ev}")
 
-    break_file_loop = False
     for tree_file_name in files_with_protocol:
-        if break_file_loop:
-            break
 
         tree_file = up.open(tree_file_name, num_workers=1)
         print(f"opening file: {tree_file_name}")
         print(f" . tree name: {params.tree_name}")
-
 
         ttree = tree_file[params.tree_name]
 
@@ -101,19 +95,12 @@ def analyze(params, batch_idx=-1):
                     batch_idx != -1
                     and timecounter.counter.started()
                     and tree_reader.global_entry % 100 == 0
+                    and timecounter.counter.job_flavor_time_left(params.htc_jobflavor) < 5 * 60
                 ):
-                    # when in batch mode, if < 5min are left we stop the event loop
-                    if (
-                        timecounter.counter.job_flavor_time_left(params.htc_jobflavor)
-                        < 5 * 60
-                    ):
-                        tree_reader.printEntry()
-                        print(
-                            "    less than 5 min left for batch slot: exit event loop!"
-                        )
-                        timecounter.counter.job_flavor_time_perc(params.htc_jobflavor)
-                        break_file_loop = True
-                        break
+                    tree_reader.printEntry()
+                    print("    less than 5 min left for batch slot: exit event loop!")
+                    timecounter.counter.job_flavor_time_perc(params.htc_jobflavor)
+                    break
 
             except Exception as inst:
                 tree_reader.printEntry()
