@@ -1,8 +1,4 @@
-from __future__ import absolute_import
-import python.plotters as plotters
-import python.collections as collections
-import python.selections as selections
-
+from python import collections, plotters, selections
 
 pfin_hgc_tp_selections = (selections.Selector('^EgBdtLE|^Em|all')*('PUId|all')*('^Pt[1,2,5]$|all'))()
 pfin_tkcl3dmatch_selections = (selections.Selector('PUId')*('^EgBdtLE|all')*('^Pt[1,2,5]$|all')*('^MTkPt[1-5]|all'))()
@@ -17,13 +13,13 @@ pfin_tk_selections = (selections.Selector('^TkPt'))()
 
 l1tcorr_input_occ = [
     plotters.CorrOccupancyPlotter(
-        collections.hgc_cl3d_pfinputs, 
+        collections.hgc_cl3d_pfinputs,
         pfin_hgc_tp_selections),
     plotters.CorrOccupancyPlotter(
-        collections.EGStaEB_pfinputs, 
+        collections.EGStaEB_pfinputs,
         pfin_eb_selections),
     plotters.CorrOccupancyPlotter(
-        collections.tk_pfinputs, 
+        collections.tk_pfinputs,
         pfin_tk_selections),
 ]
 
@@ -31,13 +27,13 @@ l1tcorr_input_occ = [
 
 l1tcorr_tkcl3dmatch_input_occ = [
     plotters.CorrOccupancyPlotter(
-        collections.tkCl3DMatch, 
+        collections.tkCl3DMatch,
         pfin_tkcl3dmatch_selections),
     plotters.CorrOccupancyPlotter(
-        collections.hgc_cl3d_pfinputs, 
+        collections.hgc_cl3d_pfinputs,
         pfin_hgc_tp_selections),
     plotters.CorrOccupancyPlotter(
-        collections.tk_pfinputs, 
+        collections.tk_pfinputs,
         pfin_tk_selections),
 ]
 
@@ -54,7 +50,7 @@ l1tcorr_tkcl3dmatch_input_occ = [
 # hgc_tp_genmatched = [
 #     plotters.Cl3DGenMatchPlotter(
 #         collections.hgc_cl3d, collections.sim_parts,
-#         hgc_tp_selections, gen_ee_selections)                                 
+#         hgc_tp_selections, gen_ee_selections)
 # ]
 
 
@@ -65,7 +61,7 @@ l1tcorr_tkcl3dmatch_input_occ = [
 
 # hgc_tp_rate_pt_wps = [
 #     plotters.HGCCl3DGenMatchPtWPSPlotter(
-#         collections.hgc_cl3d, collections.sim_parts, 
+#         collections.hgc_cl3d, collections.sim_parts,
 #         gen_ee_selections)
 # ]
 

@@ -1,8 +1,4 @@
-from __future__ import absolute_import
-import python.plotters as plotters
-import python.collections as collections
-import python.selections as selections
-
+from python import collections, plotters, selections
 
 simeg_rate_ee_selections = (selections.Selector('^EGq[4-5]$')*('^Eta[^DA][BC]*[BCD]$|all'))()
 emueg_rate_ee_selections = (selections.Selector('^EGq[1,3]$')*('^Eta[A][BC]*[C]$')*('^Iso|all'))()

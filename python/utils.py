@@ -1,12 +1,13 @@
-from __future__ import print_function
 import math as m
+
 import numpy as np
 import pandas as pd
 from scipy.spatial import cKDTree
 
 
 def match_etaphi(ref_etaphi, trigger_etaphi, trigger_pt, deltaR=0.2, return_positional=False):
-    '''Match objects within a given DeltaR.
+    """
+    Match objects within a given DeltaR.
 
     If return_positional = False
      Returns the panda index of the best match (highest-pt)
@@ -14,7 +15,7 @@ def match_etaphi(ref_etaphi, trigger_etaphi, trigger_pt, deltaR=0.2, return_posi
     If return_positional = True
      Returns the position of the best match (highest-pt)
        and of all the matches in the input trigger_etaphi and trigger_pt arrays.
-       '''
+    """
     # print ("INPUT ref_etaphi")
     # print (ref_etaphi)
     # print ("INPUT trigger_etaphi")

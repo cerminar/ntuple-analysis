@@ -2,7 +2,7 @@
 # POOL = Pool(5)
 
 # FIXME: dummy to avoid the complication of multiprocessing for now
-class Pool(object):
+class Pool:
     def map(self, func, args):
         ret = []
         for arg in args:

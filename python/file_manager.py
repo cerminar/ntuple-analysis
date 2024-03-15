@@ -1,12 +1,14 @@
-import os
-import time
-import subprocess as subproc
-import uproot as up
 import json
+import os
+import subprocess as subproc
+import time
 import uuid
 from io import open
 
-class FileEntry(object):
+import uproot as up
+
+
+class FileEntry:
     def __init__(self, name, date, attributes, owner, group, size) -> None:
         self.name = name
         self.attributes = attributes
@@ -28,13 +30,12 @@ class FileEntry(object):
         return os.path.dirname(self.name)
 
 
-class FileSystem(object):
+class FileSystem:
     def __init__(self, protocol) -> None:
         self.protocol = protocol
         self.protocol_host = protocol.lstrip('root://')
         self.cmd_base_ = []
 
-        return
 
     def list_dir(self, path, recursive=False):
         ls_cmd = self.list_dir_cmd(path, recursive)
@@ -396,7 +397,7 @@ def get_njobs(nev_toprocess, nev_perjob, metadata, debug=0):
     njobs = int(nev_toprocess/nev_perjob)
     print(f'# of jobs: {njobs}')
     ret = {}
-    for job_id in range(0, njobs):
+    for job_id in range(njobs):
         files_perjob = []
         eventrange = (-1, -1)
         events_injob = range(job_id*nev_perjob, (job_id+1)*nev_perjob)
@@ -410,9 +411,7 @@ def get_njobs(nev_toprocess, nev_perjob, metadata, debug=0):
             if(first_ev_injob >= first_ev and first_ev_injob < last_ev):
                 files_perjob.append(file_name)
                 eventrange = (first_ev_injob - first_ev, first_ev_injob - first_ev+nev_perjob-1)
-            elif(first_ev_injob < first_ev and last_ev_injob >= last_ev):
-                files_perjob.append(file_name)
-            elif(last_ev_injob > first_ev and last_ev_injob < last_ev):
+            elif(first_ev_injob < first_ev and last_ev_injob >= last_ev) or (last_ev_injob > first_ev and last_ev_injob < last_ev):
                 files_perjob.append(file_name)
         if debug > 3:
             print(f'   files: {files_perjob}, range: {eventrange}')
@@ -427,7 +426,7 @@ def get_njobs(nev_toprocess, nev_perjob, metadata, debug=0):
     return ret
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     """
     Meant to test the module functionality
 
@@ -463,12 +462,12 @@ if __name__ == "__main__":
 
     print('Local fs:')
     local_fs = LocalFileSystem(protocol='root://localhost')
-    dir = u'/Users/cerminar/cernbox/hgcal/CMSSW1015/'
+    dir = '/Users/cerminar/cernbox/hgcal/CMSSW1015/'
     print(f'list dir: :{dir}')
     for f in local_fs.list_dir(path=dir):
         print(f)
 
-    dir = u'/Users/cerminar/CERNbox/hgcal/CMSSW1015/plots/'
+    dir = '/Users/cerminar/CERNbox/hgcal/CMSSW1015/plots/'
     print(f'list dir: :{dir}')
     rfiles = [f.name for f in local_fs.list_dir(path=dir) if '.root' in f.name]
     print (f'# files: {len(rfiles)}')
@@ -478,23 +477,23 @@ if __name__ == "__main__":
 
     print ('List eos dir: /eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/ntuples/TT_TuneCP5_14TeV-powheg-pythia8/TT_PU200_v81C/')
     xrd_fs = XrdFileSystem(protocol='root://eoscms.cern.ch')
-    res =  xrd_fs.list_dir(path=u'/eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/ntuples/TT_TuneCP5_14TeV-powheg-pythia8/TT_PU200_v81C/')
+    res =  xrd_fs.list_dir(path='/eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/ntuples/TT_TuneCP5_14TeV-powheg-pythia8/TT_PU200_v81C/')
     print([f.name for f in res])
 
-    for f in xrd_fs.list_dir(path=u'/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v53/'):
+    for f in xrd_fs.list_dir(path='/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v53/'):
         print(f)
 
-    dir = u'/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v53/'
+    dir = '/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v53/'
     rfiles = [f.name for f in xrd_fs.list_dir(path=dir, recursive=True) if '.root' in f.name]
     print(f'Checksum file: {rfiles[0]}: {xrd_fs.checksum(rfiles[0])}')
 
 
 
-    local_dir = u'/Users/cerminar/cernbox/hgcal/CMSSW1015/'
+    local_dir = '/Users/cerminar/cernbox/hgcal/CMSSW1015/'
     local_files = listFiles(local_dir, match='.root')
     print(len(local_files))
 
-    input_dir = u'/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v53/'
+    input_dir = '/eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6/NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v53/'
     # input_dir = '/Users/cerminar/Workspace/hgcal-analysis/ntuple-tools/'
     found_files = listFiles(input_dir, match='.root')
     print(found_files)

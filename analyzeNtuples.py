@@ -31,29 +31,29 @@ Histograms:
 
 @print_stats
 def analyzeNtuples(  # noqa: PLR0913
-    configfile: str = typer.Option(..., "-f", "--file", help="specify the yaml configuration file"),
+    configfile: str = typer.Option(..., '-f', '--file', help='specify the yaml configuration file'),
     datasetfile: str = typer.Option(
-        ..., "-i", "--input-dataset", help="specify the yaml file defining the input dataset"
+        ..., '-i', '--input-dataset', help='specify the yaml file defining the input dataset'
     ),
-    collection: str = typer.Option(..., "-c", "--collection", help="specify the collection to be processed"),
+    collection: str = typer.Option(..., '-c', '--collection', help='specify the collection to be processed'),
     sample: str = typer.Option(
         ...,
-        "-s",
-        "--sample",
+        '-s',
+        '--sample',
         help='specify the sample (within the collection) to be processed ("all" to run the full collection)',
     ),
-    debug: int = typer.Option(0, "-d", "--debug", help="debug level"),
-    nevents: int = typer.Option(10, "-n", "--nevents", help="# of events to process per sample"),
-    batch: int = typer.Option(None, "-b", "--batch", help="submit the jobs via CONDOR"),
-    run: str = typer.Option(None, "-r", "--run", help="the batch_id to run (need to be used with the option -b)"),
-    outdir: str = typer.Option(None, "-o", "--outdir", help="override the output directory for the files"),
-    local: bool = typer.Option(False, "-l", "--local", help="run the batch on local resources"),
-    workers: int = typer.Option(2, "-j", "--jobworkers", help="# of local workers"),
-    workdir: str = typer.Option(None, "-w", "--workdir", help="local work directory"),
-    submit: bool = typer.Option(False, "-s", "--submit", help="submit the jobs via CONDOR"),
+    debug: int = typer.Option(0, '-d', '--debug', help='debug level'),
+    nevents: int = typer.Option(10, '-n', '--nevents', help='# of events to process per sample'),
+    batch: int = typer.Option(None, '-b', '--batch', help='submit the jobs via CONDOR'),
+    run: str = typer.Option(None, '-r', '--run', help='the batch_id to run (need to be used with the option -b)'),
+    outdir: str = typer.Option(None, '-o', '--outdir', help='override the output directory for the files'),
+    local: bool = typer.Option(False, '-l', '--local', help='run the batch on local resources'),
+    workers: int = typer.Option(2, '-j', '--jobworkers', help='# of local workers'),
+    workdir: str = typer.Option(None, '-w', '--workdir', help='local work directory'),
+    submit: bool = typer.Option(False, '-s', '--submit', help='submit the jobs via CONDOR'),
 ):
     if submit and local and not workdir:
-        raise ValueError("The --workdir option is required when submitting jobs locally")
+        raise ValueError('The --workdir option is required when submitting jobs locally')
 
     def parse_yaml(filename):
         with open(filename) as stream:
@@ -65,17 +65,17 @@ def analyzeNtuples(  # noqa: PLR0913
 
     opt = Parameters(
         {
-            "COLLECTION": collection,
-            "SAMPLE": sample,
-            "DEBUG": debug,
-            "NEVENTS": nevents,
-            "BATCH": batch,
-            "RUN": run,
-            "OUTDIR": outdir,
-            "LOCAL": local,
-            "WORKERS": workers,
-            "WORKDIR": workdir,
-            "SUBMIT": submit,
+            'COLLECTION': collection,
+            'SAMPLE': sample,
+            'DEBUG': debug,
+            'NEVENTS': nevents,
+            'BATCH': batch,
+            'RUN': run,
+            'OUTDIR': outdir,
+            'LOCAL': local,
+            'WORKERS': workers,
+            'WORKDIR': workdir,
+            'SUBMIT': submit,
         }
     )
     collection_params = get_collection_parameters(opt, cfgfile)
@@ -83,22 +83,22 @@ def analyzeNtuples(  # noqa: PLR0913
     samples_to_process = []
 
     if not opt.COLLECTION:
-        print(f"\nAvailable collections: {collection_params.keys()}")
+        print(f'\nAvailable collections: {collection_params.keys()}')
         sys.exit(0)
     if opt.COLLECTION not in collection_params:
-        print(f"ERROR: collection {opt.COLLECTION} not in the cfg file")
+        print(f'ERROR: collection {opt.COLLECTION} not in the cfg file')
         sys.exit(10)
     if not opt.SAMPLE:
-        print(f"Collection: {opt.COLLECTION}, available samples: {collection_params[opt.COLLECTION]}")
+        print(f'Collection: {opt.COLLECTION}, available samples: {collection_params[opt.COLLECTION]}')
         sys.exit(0)
 
-    if opt.SAMPLE == "all":
+    if opt.SAMPLE == 'all':
         samples_to_process.extend(collection_params[opt.COLLECTION])
     else:
         sel_sample = [sample for sample in collection_params[opt.COLLECTION] if sample.name == opt.SAMPLE]
         samples_to_process.append(sel_sample[0])
 
-    pprint(f"About to process samples: {samples_to_process}")
+    pprint(f'About to process samples: {samples_to_process}')
 
     plot_version = f"{cfgfile['common']['plot_version']}.{cfgfile['dataset']['version']}"
 
@@ -117,11 +117,11 @@ def analyzeNtuples(  # noqa: PLR0913
     ret_nevents = 0
     for idx, sample in enumerate(samples_to_process):
         pprint(
-            f"\n\n========================== #{idx+1}/{len(samples_to_process)}: {sample.name} ==========================\n"
+            f'\n\n========================== #{idx+1}/{len(samples_to_process)}: {sample.name} ==========================\n'
         )
         ret_nevents += analyze(sample, batch_idx=batch_idx)
     return ret_nevents
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     typer.run(analyzeNtuples)

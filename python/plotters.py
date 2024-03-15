@@ -19,31 +19,30 @@ fill_histos:
 Several collections of plotters are also instantiated. Which one will actually be run
 is steered via the configuration file.
 """
-from __future__ import print_function
-from __future__ import absolute_import
-import ROOT
-import pandas as pd
-import numpy as np
 import awkward as ak
-from . import l1THistos as histos
-from . import utils as utils
-from . import clusterTools as clAlgo
-from . import selections as selections
+import numpy as np
+import pandas as pd
+import ROOT
+
 from . import calibrations as calib
+from . import clusterTools as clAlgo
+from . import l1THistos as histos
+from . import selections as selections
+from . import utils as utils
 
 # import collections as collections
 # ROOT.gROOT.ProcessLine('#include "src/fastfilling.h"')
 
 
-class Test(object):
+class Test:
     def __init__(self, name):
         self.name = name
 
     def __repr__(self):
-        return f"<TEST class, {self.name}>"
+        return f'<TEST class, {self.name}>'
 
 
-class BasePlotter(object):
+class BasePlotter:
     def __init__(self, data_set, data_selections, gen_set=None, gen_selections=None):
         self.data_set = data_set
         self.data_selections = data_selections
@@ -225,7 +224,7 @@ class GenPlotter(GenericDataFramePlotter):
         super(GenPlotter, self).__init__(
             histos.GenParticleExtraHistos,
             gen_set,
-            gen_selections, 
+            gen_selections,
             pt_bins)
 
 
@@ -478,12 +477,11 @@ class TPGenMatchPlotter(BasePlotter):
                     print(f'sum TC energy: {matchedTriggerCells.energy.sum()}')
                     print('Sum of matched clusters in cone:')
                     print(clustersInCone)
-            else:
-                if debug >= 5:
-                    print(f'==== Warning no match found for algo {algoname}, idx {idx} ======================')
-                    if debug >= 2:
-                        print(genParticle)
-                        print(trigger3DClusters)
+            elif debug >= 5:
+                print(f'==== Warning no match found for algo {algoname}, idx {idx} ======================')
+                if debug >= 2:
+                    print(genParticle)
+                    print(trigger3DClusters)
 
         # if len(allmatched2Dclusters) != 0:
         #     matchedClustersAll = pd.concat(allmatched2Dclusters)
@@ -595,7 +593,7 @@ class GenericGenMatchPlotter(BasePlotter):
         dr2 = (obj_eta-gen_eta)**2+(obj_phi-gen_phi)**2
         match = ak.Array(data={'ele_idx': obj_idx, 'gen_idx': gen_idx, 'dpt': dpt, 'dr2': dr2})
         dr_match=match[match.dr2<self.dr2]
-        for genid in np.unique(ak.flatten(dr_match.gen_idx)):                
+        for genid in np.unique(ak.flatten(dr_match.gen_idx)):
             gen_match_id = dr_match[dr_match.gen_idx == genid]
             dpt_min_index = ak.argmin(gen_match_id.dpt, axis=1, keepdims=True)
             best_match_id = gen_match_id[dpt_min_index]
@@ -627,7 +625,7 @@ class GenericGenMatchPlotter(BasePlotter):
         # print(self.gen_set.df.fields)
         # gen = self.gen_set.df[['eta', 'abseta', 'phi', 'pt', 'energy', 'exeta', 'exphi', 'fbrem', 'gen', 'pid', 'reachedEE', 'pdgid', 'ovx', 'ovy', 'ovz']]
         gen = self.gen_set.df
-        
+
         for tp_sel in self.data_selections:
             # print(tp_sel)
             if tp_sel.all:
@@ -713,7 +711,7 @@ class Cl3DGenMatchPlotter(GenericGenMatchPlotter):
                  pt_bins=None):
         super(Cl3DGenMatchPlotter, self).__init__(histos.Cluster3DHistos, histos.ResoHistos,
                                                   data_set, gen_set,
-                                                  data_selections, gen_selections, 
+                                                  data_selections, gen_selections,
                                                   gen_eta_phi_columns=['caloeta', 'calophi'],
                                                   pt_bins=pt_bins)
 
@@ -755,7 +753,7 @@ class EGGenMatchPlotter(GenericGenMatchPlotter):
                  pt_bins=None):
         super(EGGenMatchPlotter, self).__init__(histos.EGHistos, histos.EGResoHistos,
                                                 data_set, gen_set,
-                                                data_selections, gen_selections, 
+                                                data_selections, gen_selections,
                                                 pt_bins=pt_bins)
 
 
@@ -911,11 +909,10 @@ class CalibrationPlotter(BasePlotter):
                     print(genParticle)
                     print('Matched to track object:')
                     print(obj_matched)
-            else:
-                if debug >= 5:
-                    print(f'==== Warning no match found for algo {algoname}, idx {idx} ======================')
-                    print(genParticle)
-                    print(objects)
+            elif debug >= 5:
+                print(f'==== Warning no match found for algo {algoname}, idx {idx} ======================')
+                print(genParticle)
+                print(objects)
 
     def book_histos(self):
         self.gen_set.activate()
@@ -981,7 +978,7 @@ class TTGenMatchPlotter:
                                            self.h_tt[histo_name],
                                            self.h_reso_tt[histo_name],
                                            self.h_reso_ttcl[histo_name],
-                                           "TThighestPt",
+                                           'TThighestPt',
                                            debug)
 
     def plotTriggerTowerMatch(self,
@@ -1041,11 +1038,10 @@ class TTGenMatchPlotter:
                     print(genParticle)
                     print('Matched Trigger Tower:')
                     print(matchedTower)
-            else:
-                if debug >= 0:
-                    print(f'==== Warning no match found for algo {algoname}, idx {idx} ======================')
-                    if debug >= 2:
-                        print(genParticle)
+            elif debug >= 0:
+                print(f'==== Warning no match found for algo {algoname}, idx {idx} ======================')
+                if debug >= 2:
+                    print(genParticle)
 
 
 class CorrOccupancyPlotter(BasePlotter):
@@ -1129,7 +1125,6 @@ class ClusterTCGenMatchPlotter(BasePlotter):
     def book_histos(self):
         self.gen_set.activate()
         self.data_set.activate()
-        pass
         for tp_sel in self.data_selections:
             for gen_sel in self.gen_selections:
                 histo_name = f'{self.data_set.name}_{tp_sel.name}_{gen_sel.name}'
@@ -1273,7 +1268,7 @@ class DiObjMassPlotter(GenericDataFramePlotter):
         super(DiObjMassPlotter, self).__init__(histos.DiObjMassHistos, obj_set, obj_selections)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     for sel in selections.multiply_selections(
             selections.tp_id_selections,
             selections.tp_eta_selections):

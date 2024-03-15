@@ -1,14 +1,17 @@
-import multiprocessing
-import sys
-import python.file_manager as fm
-import traceback
-import ROOT
-import os
-import subprocess32
-from shutil import copyfile
-import optparse
 import logging
+import multiprocessing
+import optparse
+import os
+import sys
 import time
+import traceback
+from shutil import copyfile
+
+import ROOT
+import subprocess32
+
+import python.file_manager as fm
+
 logger = multiprocessing.log_to_stderr()
 logger.setLevel(logging.DEBUG)
 
@@ -30,7 +33,7 @@ def data_creator(input_dir, sample_name, version, q):
             file_name = os.path.split(item)[1]
             # print file_name
             # print id
-            if sample_name in item and f"{version}_" in item:
+            if sample_name in item and f'{version}_' in item:
                 # or not os.path.isfile('{}.checked'.format(os.path.splitext(file)[0])):
                 if os.path.isfile(file_name):
                     if not os.path.isfile(f'{os.path.splitext(file_name)[0]}.checked'):
@@ -139,7 +142,7 @@ def data_mover(sample_name, version, out_dir, queue_tomove):
 
 def main():
 
-    usage = "usage: %prog [options]\n%prog -h for help"
+    usage = 'usage: %prog [options]\n%prog -h for help'
     parser = optparse.OptionParser(usage)
     parser.add_option('-i', '--input-dir',
                       dest='INPUTDIR',
@@ -200,6 +203,6 @@ if __name__ == '__main__':
         sys.exit(status)
     except Exception as inst:
         print(str(inst))
-        print("Unexpected error:", sys.exc_info()[0])
+        print('Unexpected error:', sys.exc_info()[0])
         traceback.print_exc()
         sys.exit(100)
