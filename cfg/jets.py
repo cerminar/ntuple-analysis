@@ -1,7 +1,4 @@
-from __future__ import absolute_import
-import python.plotters as plotters
-import python.collections as collections
-import python.selections as selections
+from python import collections, plotters, selections
 
 pfjet_selections = (selections.Selector('^Pt[34]0$|all'))()
 

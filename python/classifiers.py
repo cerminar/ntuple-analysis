@@ -1,8 +1,10 @@
 """Provides MVA classifiers."""
 
-import ROOT
 import array
+
+import ROOT
 import xgboost
+
 
 def book_MVA_classifier(model, weight_file, variables):
     mva_classifier = ROOT.TMVA.Reader()

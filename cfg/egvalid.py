@@ -1,7 +1,4 @@
-from __future__ import absolute_import
-import python.plotters as plotters
-import python.collections as collections
-import python.selections as selections
+from python import collections, plotters, selections
 
 gen_ee_tk_selections = (selections.Selector('GEN$')*('Ee$')*('^Eta[A-C]$|EtaBC$|all')+selections.Selector('GEN$')*('Ee$')*('Pt15|Pt30'))()
 gen_ee_selections = (selections.Selector('GEN$')*('Ee')*('^Eta[BC]+[CD]$|^Eta[A-D]$|all')+selections.Selector('GEN$')*('Ee')*('^Pt15|^Pt30'))()
@@ -94,7 +91,7 @@ l1tc_emu_genmatched = [
     plotters.EGGenMatchPlotter(
         collections.TkEleL2, collections.gen_ele,
         egid_iso_tkele_selections, selections.gen_selections),
-    
+
 ]
 
 
@@ -135,7 +132,7 @@ l1tc_l2emu_genmatched = [
         egid_iso_tkpho_selections, selections.gen_selections),
     plotters.EGGenMatchPlotter(
         collections.TkEleL2, collections.gen_ele,
-        egid_iso_tkele_selections, selections.gen_selections),   
+        egid_iso_tkele_selections, selections.gen_selections),
 ]
 
 l1tc_l2emu_ell_genmatched = [
@@ -144,7 +141,7 @@ l1tc_l2emu_ell_genmatched = [
     #     egid_iso_tkpho_selections, selections.gen_selections),
     plotters.EGGenMatchPlotter(
         collections.TkEleL2Ell, collections.sim_parts,
-        egid_iso_tkele_selections, selections.gen_selections),   
+        egid_iso_tkele_selections, selections.gen_selections),
 ]
 
 
@@ -158,13 +155,13 @@ l1tc_l2emu_singlelepton_genmatched = [
         egid_menu_pho_rate_selections, gen_menu_selections),
     plotters.EGGenMatchPlotter(
         collections.TkEleL2, collections.gen_ele,
-        egid_menu_ele_rate_selections, gen_menu_selections),   
+        egid_menu_ele_rate_selections, gen_menu_selections),
 ]
 
 l1tc_l2emu_ell_singlelepton_genmatched = [
     plotters.EGGenMatchPlotter(
         collections.TkEleL2Ell, collections.gen_ele,
-        egid_menu_ele_rate_selections, gen_menu_selections),   
+        egid_menu_ele_rate_selections, gen_menu_selections),
 ]
 
 

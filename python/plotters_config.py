@@ -1,13 +1,8 @@
 # run with python -m python.plotters_config
-from __future__ import absolute_import
-from . import plotters
-from . import collections
-from . import selections
 
 from cfg import *
 
-
-if __name__ == "__main__":
+if __name__ == '__main__':
 
     print('enter name: ')
     selec_name = input()

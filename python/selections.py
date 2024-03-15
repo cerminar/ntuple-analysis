@@ -7,12 +7,14 @@ Selections can be composed (added). The actual selection syntax follows the
 `pandas` `DataFrame` `query` syntax.
 """
 
-from __future__ import print_function
 import json
 import os
 import re
-import python.pf_regions as pf_regions
+
 import numpy as np
+
+from python import pf_regions
+
 
 class PID:
     electron = 11
@@ -22,7 +24,7 @@ class PID:
     kzero = 130
 
 
-class SelectionManager(object):
+class SelectionManager:
     """
     SelectionManager.
 
@@ -64,11 +66,13 @@ class Selection:
     [Selection] class.
 
     Args:
+    ----
         name (string): the name to be used in the histo name
                        (should not use `-` characters or spaces)
 
         label (string): used in plot legends, no constraints
         selection (string): see pandas.DataFrame.query syntax
+
     """
 
     def __init__(self, name, label='', selection=None):
@@ -77,7 +81,7 @@ class Selection:
         self.selection = selection
         self.all = False
         if self.name == 'all' or selection is None:
-            self.selection = lambda ar: True;
+            self.selection = lambda ar: True
             self.all = True
         self.hash = hash(selection)
         self.register()
@@ -94,14 +98,14 @@ class Selection:
         selection_manager.registerSelection(self)
 
     def __and__(self, other):
-        """ & operation """
-        new_name = name='{}{}'.format(self.name, other.name)
+        """& operation"""
+        new_name = name=f'{self.name}{other.name}'
         if self.name == 'all':
             new_name = other.name
         if other.name == 'all':
             new_name = self.name
 
-        new_label = '{}, {}'.format(self.label_, other.label_)
+        new_label = f'{self.label_}, {other.label_}'
         if self.label_ == '':
             new_label = other.label_
         if other.label == '':
@@ -122,12 +126,12 @@ class Selection:
 
 
     def __or__(self, other):
-        """ | operation """
+        """| operation"""
         if other.all:
             return other.all
         if self.all:
             return self.all
-        new_label = '{} or {}'.format(self.label_, other.label_)
+        new_label = f'{self.label_} or {other.label_}'
         if self.label_ == '':
             new_label = other.label_
         if other.label == '':
@@ -137,7 +141,7 @@ class Selection:
         #     obj_name = 'GEN'
         # new_label = new_label.replace('TOBJ', obj_name)
         return Selection(
-            name='{}Or{}'.format(self.name, other.name),
+            name=f'{self.name}Or{other.name}',
             label=new_label,
             selection=lambda array : self.selection(array) | other.selection(array))
 
@@ -154,15 +158,12 @@ class Selection:
     #     return self.__and__(other)
 
     def __str__(self):
-        return 'n: {}, \n\t l:{}'.format(
-            self.name, self.label)
+        return f'n: {self.name}, \n\t l:{self.label}'
 
     def __repr__(self):
-        return '<{} {}> '.format(
-            self.__class__.__name__,
-            self)
+        return f'<{self.__class__.__name__} {self}> '
 
-    
+
 
 def multiply_selections(list1, list2):
     return and_selections(list1, list2)
@@ -194,8 +195,8 @@ def prune(selection_list):
 
 def build_DiObj_selection(name, label, selection_leg0, selection_leg1):
     return Selection(
-        name, 
-        label, 
+        name,
+        label,
         lambda array: selection_leg0.selection(array.leg0) & selection_leg1.selection(array.leg1))
         # FIXME: it was (leg0 sel. | leg1 sel.) instead of &
 
@@ -248,7 +249,7 @@ def read_isoptwp_sel(file_name, obj_name):
     return ret_sel
 
 
-class Selector(object):
+class Selector:
     # common to all instances of the object
     selection_primitives = []
 
@@ -319,13 +320,13 @@ class Selector(object):
 
     def one(self, new_name=None, new_label=None):
         if len(self.selections) != 1:
-            print(f'[Selector.one] ERROR: selector returns {len(self.selections)} object and one() called!')            
+            print(f'[Selector.one] ERROR: selector returns {len(self.selections)} object and one() called!')
             raise ValueError
         sel = self.selections[0]
         if new_name:
             sel.rename(new_name, new_label)
         return sel
-    
+
 
 def compare_selections(sel1, sel2):
     if len(sel1) != len(sel2):
@@ -335,7 +336,7 @@ def compare_selections(sel1, sel2):
     sel1.sort(key=lambda x: x.name)
     sel2.sort(key=lambda x: x.name)
     ret = True
-    for id in range(0, len(sel1)):
+    for id in range(len(sel1)):
         isDiff = False
         if sel1[id].name != sel2[id].name:
             isDiff = True
@@ -394,8 +395,8 @@ tp_eta_ee_sel = [
     # Selection('EtaE', '|#eta^{TOBJ}| > 2.8', 'abs(eta) > 2.8'),
     # Selection('EtaAB', '|#eta^{TOBJ}| <= 1.7', 'abs(eta) <= 1.7'),
     # Selection('EtaABC', '|#eta^{TOBJ}| <= 2.4', 'abs(eta) <= 2.4'),
-    Selection('EtaBC', '1.52 < |#eta^{TOBJ}| #leq 2.4', lambda array: (1.52 < abs(array.eta)) &  (abs(array.eta) <= 2.4)),
-    Selection('EtaBCD', '1.52 < |#eta^{TOBJ}| #leq 2.8', lambda array: (1.52 < abs(array.eta)) &  (abs(array.eta) <= 2.8)),
+    Selection('EtaBC', '1.52 < |#eta^{TOBJ}| #leq 2.4', lambda array: (abs(array.eta) > 1.52) &  (abs(array.eta) <= 2.4)),
+    Selection('EtaBCD', '1.52 < |#eta^{TOBJ}| #leq 2.8', lambda array: (abs(array.eta) > 1.52) &  (abs(array.eta) <= 2.8)),
     # Selection('EtaBCDE', '1.52 < |#eta^{TOBJ}| < 3', '1.52 < abs(eta) < 3')
                      ]
 
@@ -412,34 +413,25 @@ gen_ee_sel = [
 ]
 
 eta_sel = [
-    Selection('EtaA', '1.49 < |#eta^{TOBJ}| #leq 1.52', lambda array: (1.49 < abs(array.eta)) & (abs(array.eta) <= 1.52)),
-    Selection('EtaB', '1.52 < |#eta^{TOBJ}| #leq 1.7', lambda array: (1.52 < abs(array.eta)) & (abs(array.eta) <= 1.7)),
-    Selection('EtaC', '1.7 < |#eta^{TOBJ}| #leq 2.4', lambda array: (1.7 < abs(array.eta)) & (abs(array.eta) <= 2.4)),
-    Selection('EtaD', '2.4 < |#eta^{TOBJ}| #leq 2.8', lambda array: (2.4 < abs(array.eta)) & (abs(array.eta) <= 2.8)),
-    Selection('EtaDE', '2.4 < |#eta^{TOBJ}| #leq 3.0', lambda array: (2.4 < abs(array.eta)) & (abs(array.eta) <= 3.0)),
+    Selection('EtaA', '1.49 < |#eta^{TOBJ}| #leq 1.52', lambda array: (abs(array.eta) > 1.49) & (abs(array.eta) <= 1.52)),
+    Selection('EtaB', '1.52 < |#eta^{TOBJ}| #leq 1.7', lambda array: (abs(array.eta) > 1.52) & (abs(array.eta) <= 1.7)),
+    Selection('EtaC', '1.7 < |#eta^{TOBJ}| #leq 2.4', lambda array: (abs(array.eta) > 1.7) & (abs(array.eta) <= 2.4)),
+    Selection('EtaD', '2.4 < |#eta^{TOBJ}| #leq 2.8', lambda array: (abs(array.eta) > 2.4) & (abs(array.eta) <= 2.8)),
+    Selection('EtaDE', '2.4 < |#eta^{TOBJ}| #leq 3.0', lambda array: (abs(array.eta) > 2.4) & (abs(array.eta) <= 3.0)),
     Selection('EtaE', '|#eta^{TOBJ}| > 2.8', lambda array: abs(array.eta) > 2.8),
-    Selection('EtaAB', '1.49 < |#eta^{TOBJ}| #leq 1.7', lambda array: (1.49 < abs(array.eta)) & (abs(array.eta) <= 1.7)),
-    Selection('EtaABC', '1.49 < |#eta^{TOBJ}| #leq 2.4', lambda array: (1.49 < abs(array.eta)) & (abs(array.eta) <= 2.4)),
-    Selection('EtaABCD', '1.49 < |#eta^{TOBJ}| #leq 2.8', lambda array: (1.49 < abs(array.eta)) & (abs(array.eta) <= 2.8)),
+    Selection('EtaAB', '1.49 < |#eta^{TOBJ}| #leq 1.7', lambda array: (abs(array.eta) > 1.49) & (abs(array.eta) <= 1.7)),
+    Selection('EtaABC', '1.49 < |#eta^{TOBJ}| #leq 2.4', lambda array: (abs(array.eta) > 1.49) & (abs(array.eta) <= 2.4)),
+    Selection('EtaABCD', '1.49 < |#eta^{TOBJ}| #leq 2.8', lambda array: (abs(array.eta) > 1.49) & (abs(array.eta) <= 2.8)),
     Selection('EtaFABCD', '|#eta^{TOBJ}| #leq 2.8', lambda array: abs(array.eta) <= 2.8),
     Selection('EtaFABC', '|#eta^{TOBJ}| #leq 2.4', lambda array: abs(array.eta) <= 2.4),
-    Selection('EtaBCDE', '1.52 < |#eta^{TOBJ}|', lambda array: 1.52 < abs(array.eta))
+    Selection('EtaBCDE', '1.52 < |#eta^{TOBJ}|', lambda array: abs(array.eta) > 1.52)
 ]
 
 gen_pid_sel = [
     Selection('GEN', '', 
               lambda ar: ((np.abs(ar.pdgid) == PID.electron ) | (np.abs(ar.pdgid) == PID.photon)) & (ar.prompt >= 2)),
-        #       '(((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})) | \
-        #                    ((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})))'.format(
-        # PID.electron, PID.electron,
-        # PID.photon, PID.photon))
     Selection('GENPi', '', 
               lambda ar: ((np.abs(ar.pdgid) == PID.pion )) & (ar.prompt >= 2))
-        #       '(((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})) | \
-        #                    ((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {})))'.format(
-        # PID.electron, PID.electron,
-        # PID.photon, PID.photon))
-
 ]
 
 gen_jet_sel = [
@@ -447,8 +439,7 @@ gen_jet_sel = [
 ]
 
 gen_ele_sel = [
-    Selection('GEN11', '', '((abs(pdgid) == {}) & (abs(firstmother_pdgid) == {}))'.format(
-        PID.electron, PID.electron))
+    Selection('GEN11', '', f'((abs(pdgid) == {PID.electron}) & (abs(firstmother_pdgid) == {PID.electron}))')
 ]
 gen_part_fbrem_sel = [
     Selection('all'),
@@ -469,7 +460,7 @@ eg_eta_sel = [
 
 pfinput_regions = [
     Selection('all'),
-    Selection('PFinBRL', 'Barrel', ' | '.join([f'eta_reg_{r}' for r in pf_regions.regions['BRL']])),  # 4 5 6 7 8 9 
+    Selection('PFinBRL', 'Barrel', ' | '.join([f'eta_reg_{r}' for r in pf_regions.regions['BRL']])),  # 4 5 6 7 8 9
     Selection('PFinHGC', 'HgCal', ' | '.join([f'eta_reg_{r}' for r in pf_regions.regions['HGC']])),  # 3 10
     Selection('PFinHGCNoTk', 'HgCalNoTk', ' | '.join([f'eta_reg_{r}' for r in pf_regions.regions['HGCNoTk']])),  # 2 11
     Selection('PFinHF', 'HF', ' | '.join([f'eta_reg_{r}' for r in pf_regions.regions['HF']])),  # 0 1 12 13
@@ -526,7 +517,7 @@ menu_thresh_pt = [
     Selection('PtIsoEleEE28', 'p_{T}^{TOBJ}#geq28GeV', lambda ar: ar.pt >= 22.1),
     Selection('PtIsoPhoEB36', 'p_{T}^{TOBJ}#geq36GeV', lambda ar: ar.pt >= 30.4),
     Selection('PtIsoPhoEE36', 'p_{T}^{TOBJ}#geq36GeV', lambda ar: ar.pt >= 29.0),
-    
+
     Selection('PtIsoPhoEB22', 'p_{T}^{TOBJ}#geq22GeV', lambda ar: ar.pt >= 17.6),
     Selection('PtIsoPhoEE22', 'p_{T}^{TOBJ}#geq22GeV', lambda ar: ar.pt >= 15.9),
     Selection('PtIsoPhoEB12', 'p_{T}^{TOBJ}#geq12GeV', lambda ar: ar.pt >= 8.5),
@@ -595,7 +586,7 @@ iso_sel = [
 
 
 working_points_histomax = {
-        "v10_3151": [
+        'v10_3151': [
                 # Low eta
                 {
                  '900': 0.9903189,
@@ -621,7 +612,7 @@ version = 'v10_3151'
 
 wps = working_points_histomax[version]
 labels = ['LE', 'HE']
-wls = zip(wps, labels)
+wls = zip(wps, labels, strict=False)
 # for i,
 tphgc_egbdt_sel = []
 
@@ -631,9 +622,8 @@ for wps,lab in wls:
         tphgc_egbdt_sel.append(
             Selection(
                 f'EgBdt{lab}{wp}', 
-                f'BDT^{{eg}}_{{{lab}}}@{wp}%',
-                lambda ar, cut=cut: ar.egEmIdScore > cut)
-                )
+                f'BDT^{{eg}}_{{{lab}}}@{wp}%', 
+                f'bdteg > {cut}'))
 
 tphgc_pubdt_sel = [
     Selection('PUId', 'PUId', 'bdt_pu > 0.15')
@@ -798,7 +788,7 @@ if False:
 # EG selection quality and Pt EB
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     from cfg import *
     print('enter selection name: ')
     selec_name = input()
