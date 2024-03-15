@@ -14,28 +14,24 @@ Objects:
     can be used by plotters.
 """
 
-from __future__ import print_function
-from __future__ import absolute_import
-import pandas as pd
-import numpy as np
-import awkward as ak
-import ROOT
 import math
-import sys
+
+import awkward as ak
+import numpy as np
+import pandas as pd
+import ROOT
 import xgboost
-# import root_numpy.tmva as rnptmva
+from scipy.spatial import cKDTree
 
-from .utils import debugPrintOut
-import python.clusterTools as clAlgo
-from python.mp_pool import POOL
-import python.classifiers as classifiers
 import python.calibrations as calib
-import python.pf_regions as pf_regions
-from scipy.spatial import cKDTree    
-import python.selections as selections
+import python.clusterTools as clAlgo
+from python import classifiers, pf_regions, selections
+
+# import root_numpy.tmva as rnptmva
+from .utils import debugPrintOut
 
 
-class WeightFile(object):
+class WeightFile:
     def __init__(self, file_name):
         self.file_ = ROOT.TFile(file_name)
         self.cache_ = {}
@@ -49,7 +45,7 @@ class WeightFile(object):
         return histo.GetBinContent(bin_n)
 
 
-class EventManager(object):
+class EventManager:
     """
     EventManager.
 
@@ -73,13 +69,13 @@ class EventManager(object):
             self.collections.append(collection)
 
         def registerActiveCollection(self, collection):
-            print('[EventManager] registering collection as active: {}'.format(collection.name))
+            print(f'[EventManager] registering collection as active: {collection.name}')
             self.active_collections.append(collection)
 
         def read(self, event, debug):
             for collection in self.active_collections:
                 if debug >= 3:
-                    print('[EventManager] filling collection: {}'.format(collection.name))
+                    print(f'[EventManager] filling collection: {collection.name}')
                 collection.fill(event, self.weight_file, debug)
 
         def get_labels(self):
@@ -102,7 +98,7 @@ class EventManager(object):
         return setattr(self.instance, name)
 
 
-class DFCollection(object):
+class DFCollection:
     """
     [DFCollection]: collection of objects consumed by plotters.
 
@@ -114,6 +110,7 @@ class DFCollection(object):
     actually consumed by a plotter will be read.
 
     Args:
+    ----
         name (string): name which enters the histo name
         label (string): drawn on plots or legends
         filler_function (callable): function accepting event
@@ -163,9 +160,8 @@ class DFCollection(object):
             for coll in self.depends_on:
                 if common_block_size == -1:
                     common_block_size = coll.read_entry_block
-                else:
-                    if coll.read_entry_block != common_block_size:
-                        raise ValueError(f'Collection {self.name} depends on collections with different common_block_size!')
+                elif coll.read_entry_block != common_block_size:
+                    raise ValueError(f'Collection {self.name} depends on collections with different common_block_size!')
             if common_block_size != self.read_entry_block:
                 print(f'Collection {self.name}: common_block_size set to dependent value: {common_block_size}')
                 self.read_entry_block = common_block_size
@@ -212,7 +208,7 @@ class DFCollection(object):
             self.df = self.fixture_function(self.df)
         if self.weight_function is not None:
             self.df = self.weight_function(self.df, weight_file)
-        self.entries = range(0,1000)# FIXME: self.df.index.get_level_values('entry').unique()
+        self.entries = range(1000)# FIXME: self.df.index.get_level_values('entry').unique()
         if debug > 2:
             print(f'read coll. {self.name} from entry: {event.file_entry} to entry: {event.file_entry+stride} (stride: {stride}), # rows: {len(self.df)}, # entries: {len(self.entries)}')
 
@@ -235,15 +231,15 @@ def cl3d_fixtures(clusters):
 
     input_array = ak.flatten(
         clusters[[
-            'coreshowerlength', 
-            'showerlength', 
-            'firstlayer', 
-            'maxlayer', 
-            'szz', 
-            'srrmean', 
-            'srrtot', 
-            'seetot', 
-            'spptot']], 
+            'coreshowerlength',
+            'showerlength',
+            'firstlayer',
+            'maxlayer',
+            'szz',
+            'srrmean',
+            'srrtot',
+            'seetot',
+            'spptot']],
         axis=1)
     input_data = ak.concatenate(ak.unzip(input_array[:, np.newaxis]), axis=1)
     input_matrix = xgboost.DMatrix(np.asarray(input_data))
@@ -251,11 +247,11 @@ def cl3d_fixtures(clusters):
 
     pu_input_array = ak.flatten(
         clusters[[
-            'eMax', 
-            'emaxe', 
-            'spptot', 
-            'srrtot', 
-            'ntc90']], 
+            'eMax',
+            'emaxe',
+            'spptot',
+            'srrtot',
+            'ntc90']],
         axis=1)
     pu_input_data = ak.concatenate(ak.unzip(pu_input_array[:, np.newaxis]), axis=1)
     pu_input_matrix = xgboost.DMatrix(np.asarray(pu_input_data))
@@ -383,7 +379,7 @@ def get_merged_cl3d(triggerClusters, pool, debug=0):
 
 def get_trackmatched_egs(egs, tracks, debug=0):
     entries = tracks.df.index.get_level_values('entry').union(egs.df.index.get_level_values('entry')).unique()
-    
+
     data = []
     index = []
     for entry in entries:
@@ -396,12 +392,12 @@ def get_trackmatched_egs(egs, tracks, debug=0):
             tk_match = tracks.df.loc[(entry, key[1])]
             index.append((entry, subentry))
             data_entry=[
-                eg_match.pt_em, 
-                eg_match.eta, 
-                eg_match.phi, 
-                eg_match.quality, 
-                eg_match.bdteg, 
-                eg_match.bdt_pu, 
+                eg_match.pt_em,
+                eg_match.eta,
+                eg_match.phi,
+                eg_match.quality,
+                eg_match.bdteg,
+                eg_match.bdt_pu,
                 tk_match.pt,
                 tk_match.eta,
                 tk_match.phi,
@@ -416,10 +412,10 @@ def get_trackmatched_egs(egs, tracks, debug=0):
 
             data.append(data_entry)
             subentry += 1
-    
+
     newcolumns = ['pt', 'eta', 'phi', 'quality', 'bdteg', 'bdt_pu']
     newcolumns.extend(['tkpt', 'tketa', 'tkphi', 'tkcaloeta', 'tkcalophi', 'tkz0', 'tkchi2', 'tkchi2red', 'dr', 'clidx', 'tkidx'])
-    
+
     newindex = pd.MultiIndex.from_tuples(index, names=egs.df.index.names)
     matched_egs = pd.DataFrame(data=data, columns=newcolumns, index=newindex)
 
@@ -512,9 +508,8 @@ def get_calibrated_clusters2(calib_factors, input_3Dclusters):
             # print calib_factor_tmp
             calib_factor = 1./calib_factor_tmp.calib.values[0]
         # print cluster
-        else:
-            if cluster.eta <= 2.8 and cluster.eta > 1.52 and cluster.pt > 4 and cluster.pt <= 100:
-                print(cluster[['pt', 'eta']])
+        elif cluster.eta <= 2.8 and cluster.eta > 1.52 and cluster.pt > 4 and cluster.pt <= 100:
+            print(cluster[['pt', 'eta']])
 
         cluster['pt2'] = cluster.pt*calib_factor
         return cluster
@@ -611,29 +606,20 @@ def gen_part_pt_weights(gen_parts, weight_file):
 
 
 def map2pfregions(objects, eta_var, phi_var, fiducial=False):
-    for ieta in range(0, pf_regions.regionizer.n_eta_regions()):
-        objects['eta_reg_{}'.format(ieta)] = False
-    for iphi in range(0, pf_regions.regionizer.n_phi_regions()):
-        objects['phi_reg_{}'.format(iphi)] = False
+    for ieta in range(pf_regions.regionizer.n_eta_regions()):
+        objects[f'eta_reg_{ieta}'] = False
+    for iphi in range(pf_regions.regionizer.n_phi_regions()):
+        objects[f'phi_reg_{iphi}'] = False
 
     for ieta, eta_range in enumerate(pf_regions.regionizer.get_eta_boundaries(fiducial)):
-        query = '({} > {}) & ({} <= {})'.format(
-            eta_var,
-            eta_range[0],
-            eta_var,
-            eta_range[1]
-            )
+        query = f'({eta_var} > {eta_range[0]}) & ({eta_var} <= {eta_range[1]})'
         region_objects = objects.query(query).index
-        objects.loc[region_objects, ['eta_reg_{}'.format(ieta)]] = True
+        objects.loc[region_objects, [f'eta_reg_{ieta}']] = True
 
     for iphi, phi_range in enumerate(pf_regions.regionizer.get_phi_boundaries(fiducial)):
-        query = '({} > {}) & ({} <= {})'.format(
-            phi_var,
-            phi_range[0],
-            phi_var,
-            phi_range[1])
+        query = f'({phi_var} > {phi_range[0]}) & ({phi_var} <= {phi_range[1]})'
         region_objects = objects.query(query).index
-        objects.loc[region_objects, ['phi_reg_{}'.format(iphi)]] = True
+        objects.loc[region_objects, [f'phi_reg_{iphi}']] = True
 
     return objects
 
@@ -666,8 +652,8 @@ def decodedTk_fixtures(objects):
 
 def build_double_obj(obj):
     ret = ak.combinations(
-        array=obj, 
-        n=2, 
+        array=obj,
+        n=2,
         axis=1,
         fields=['leg0', 'leg1'])
     # ret.show()
@@ -876,7 +862,7 @@ decTk = DFCollection(
 tkCl3DMatch = DFCollection(
     name='TkCl3DMatch', label='TkCl3DMatch',
     filler_function=lambda event, entry_block: get_trackmatched_egs(egs=hgc_cl3d, tracks=tracks),
-    fixture_function=mapcalo2pfregions_in,    
+    fixture_function=mapcalo2pfregions_in,
     depends_on=[hgc_cl3d, tracks],
     debug=0)
 

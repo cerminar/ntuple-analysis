@@ -1,7 +1,4 @@
-from __future__ import absolute_import
-import python.plotters as plotters
-import python.collections as collections
-import python.selections as selections
+from python import collections, plotters, selections
 
 gen_ee_tk_selections = (selections.Selector('GEN$')*('Ee$')*('^Eta[A-C]$|EtaBC$|all')+selections.Selector('GEN$')*('Ee$')*('Pt15|Pt30'))()
 gen_ee_selections = (selections.Selector('GEN$')*('^Eta[ABC]+[CD]$|^Eta[A-D]$|all')+selections.Selector('GEN$')*('^Pt15|^Pt30'))()
@@ -26,10 +23,10 @@ double_gen_selections = [
                           (selections.Selector('GEN$')*('^EtaEB$')).one()),
     selections.build_DiObj_selection('DoubleGENEtaEE', 'GENEtaEE',
                           (selections.Selector('GEN$')*('^EtaEE$')).one(),
-                          (selections.Selector('GEN$')*('^EtaEE$')).one()),                          
+                          (selections.Selector('GEN$')*('^EtaEE$')).one()),
     selections.build_DiObj_selection('DoubleGEN', 'GEN',
                           (selections.Selector('GEN$')).one(),
-                          (selections.Selector('GEN$')).one()),                          
+                          (selections.Selector('GEN$')).one()),
 
 ]
 
@@ -45,7 +42,7 @@ hgc_tp_unmatched = [
 hgc_tp_genmatched = [
     plotters.Cl3DGenMatchPlotter(
         collections.hgc_cl3d, collections.sim_parts,
-        hgc_tp_selections, gen_ee_selections)                                 
+        hgc_tp_selections, gen_ee_selections)
 ]
 
 
@@ -56,7 +53,7 @@ hgc_tp_rate = [
 
 hgc_tp_rate_pt_wps = [
     plotters.HGCCl3DGenMatchPtWPSPlotter(
-        collections.hgc_cl3d, collections.sim_parts, 
+        collections.hgc_cl3d, collections.sim_parts,
         gen_ee_selections)
 ]
 
@@ -66,7 +63,7 @@ hgc_tp_rate_pt_wps = [
 hgc_tp_tkmatch_genmatched = [
     plotters.Cl3DGenMatchPlotter(
         collections.tkCl3DMatch, collections.sim_parts,
-        tkcl3dmatch_selections, gen_ee_selections)                                 
+        tkcl3dmatch_selections, gen_ee_selections)
 ]
 
 
@@ -91,7 +88,7 @@ hgc_tp_highpt_genmatched = [
         ctl2_eg_selections, gen_selections,
         pt_bins=zprime_eff_pt_bins),
 
-                               
+
 ]
 
 for sel in hgc_tp_id_selections:

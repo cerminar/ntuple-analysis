@@ -1,9 +1,20 @@
-#!/usr/bin/env python
+import sys
 
-"""
+import typer
+import yaml
+from rich import print as pprint
+
+from cfg import *  #!FIXXX
+from python.analyzer import analyze
+from python.parameters import Parameters, get_collection_parameters
+from python.submission import to_HTCondor
+from python.timecounter import print_stats
+
+description = """
 Main script for L1 TP analysis.
 
-The script reads the configuration, opens the input and output files for the given sample,
+The script reads the configuration,
+opens the input and output files for the given sample,
 runs the event loop and saves histograms to disk.
 All the analysis logic is anyhow elsewhere:
 
@@ -13,219 +24,104 @@ Data:
 Plotters:
     what to do with the data is handled in the `plotters` module
 Histograms:
-    which histograms are produced is handled in the `l1THistos` module (and the plotters).
+    which histograms are produced is handled in the
+    `l1THistos` module (and the plotters).
 """
 
-# import ROOT
-# from __future__ import print_function
-from __future__ import print_function
-import sys
-# The purpose of this file is to demonstrate mainly the objects
-# that are in the HGCalNtuple
-import ROOT
-import os
-import traceback
-import platform
-# import tracemalloc
 
-# import root_numpy as rnp
-import pandas as pd
-import uproot as up
+@print_stats
+def analyzeNtuples(  # noqa: PLR0913
+    configfile: str = typer.Option(..., '-f', '--file', help='specify the yaml configuration file'),
+    datasetfile: str = typer.Option(
+        ..., '-i', '--input-dataset', help='specify the yaml file defining the input dataset'
+    ),
+    collection: str = typer.Option(..., '-c', '--collection', help='specify the collection to be processed'),
+    sample: str = typer.Option(
+        ...,
+        '-s',
+        '--sample',
+        help='specify the sample (within the collection) to be processed ("all" to run the full collection)',
+    ),
+    debug: int = typer.Option(0, '-d', '--debug', help='debug level'),
+    nevents: int = typer.Option(10, '-n', '--nevents', help='# of events to process per sample'),
+    batch: int = typer.Option(None, '-b', '--batch', help='submit the jobs via CONDOR'),
+    run: str = typer.Option(None, '-r', '--run', help='the batch_id to run (need to be used with the option -b)'),
+    outdir: str = typer.Option(None, '-o', '--outdir', help='override the output directory for the files'),
+    local: bool = typer.Option(False, '-l', '--local', help='run the batch on local resources'),
+    workers: int = typer.Option(2, '-j', '--jobworkers', help='# of local workers'),
+    workdir: str = typer.Option(None, '-w', '--workdir', help='local work directory'),
+    submit: bool = typer.Option(False, '-s', '--submit', help='submit the jobs via CONDOR'),
+):
+    if submit and local and not workdir:
+        raise ValueError('The --workdir option is required when submitting jobs locally')
 
-from python.main import main
-import python.l1THistos as histos
-# import python.clusterTools as clAlgo
-import python.file_manager as fm
-import python.collections as collections
-import python.calibrations as calibs
-import python.timecounter as timecounter
-import python.tree_reader as treereader
-# from pandas.core.common import SettingWithCopyError, SettingWithCopyWarning
-# import warnings
-# warnings.filterwarnings('error', category=SettingWithCopyWarning)
-# ROOT.ROOT.EnableImplicitMT(2)
+    def parse_yaml(filename):
+        with open(filename) as stream:
+            return yaml.load(stream, Loader=yaml.FullLoader)
 
+    cfgfile = {}
+    cfgfile.update(parse_yaml(configfile))
+    cfgfile.update(parse_yaml(datasetfile))
 
-# class Tracer(object):
-#     def __init__(self):
-#         tracemalloc.start(10)
-#         self.snapshots = []
-# 
-#     def collect_stats(self):
-#         filters = []
-#         self.snapshots.append(tracemalloc.take_snapshot())
-#         if len(self.snapshots) > 1:
-#             stats = self.snapshots[-1].filter_traces(filters).compare_to(self.snapshots[-2], 'filename')
-# 
-#             for stat in stats[:10]:
-#                 print("{} new KiB {} total KiB {} new {} total memory blocks: ".format(stat.size_diff/1024, stat.size / 1024, stat.count_diff, stat.count))
-#                 for line in stat.traceback.format():
-#                     print(line)
+    opt = Parameters(
+        {
+            'COLLECTION': collection,
+            'SAMPLE': sample,
+            'DEBUG': debug,
+            'NEVENTS': nevents,
+            'BATCH': batch,
+            'RUN': run,
+            'OUTDIR': outdir,
+            'LOCAL': local,
+            'WORKERS': workers,
+            'WORKDIR': workdir,
+            'SUBMIT': submit,
+        }
+    )
+    collection_params = get_collection_parameters(opt, cfgfile)
 
+    samples_to_process = []
 
-def convertGeomTreeToDF(tree):
-    branches = [br.GetName() for br in tree.GetListOfBranches()
-                if not br.GetName().startswith('c_')]
-    cell_array = rnp.tree2array(tree, branches=branches)
-    cell_df = pd.DataFrame()
-    for idx in range(0, len(branches)):
-        cell_df[branches[idx]] = cell_array[branches[idx]]
-    return cell_df
+    if not opt.COLLECTION:
+        print(f'\nAvailable collections: {collection_params.keys()}')
+        sys.exit(0)
+    if opt.COLLECTION not in collection_params:
+        print(f'ERROR: collection {opt.COLLECTION} not in the cfg file')
+        sys.exit(10)
+    if not opt.SAMPLE:
+        print(f'Collection: {opt.COLLECTION}, available samples: {collection_params[opt.COLLECTION]}')
+        sys.exit(0)
 
-
-def dumpFrame2JSON(filename, frame):
-    with open(filename, 'w') as f:
-        f.write(frame.to_json())
-
-
-def pool_init(plotters):
-    global plotters_glb
-    plotters_glb = plotters
-
-
-# @profile
-def analyze(params, batch_idx=-1):
-    print(params)
-    debug = int(params.debug)
-
-    # tree_name = 'hgcalTriggerNtuplizer/HGCalTriggerNtuple'
-    input_files = []
-    range_ev = (0, params.maxEvents)
-
-    if params.events_per_job == -1:
-        print('This is interactive processing...')
-        input_files = fm.get_files_for_processing(input_dir=os.path.join(params.input_base_dir,
-                                                                         params.input_sample_dir),
-                                                  tree=params.tree_name,
-                                                  nev_toprocess=params.maxEvents,
-                                                  debug=debug)
+    if opt.SAMPLE == 'all':
+        samples_to_process.extend(collection_params[opt.COLLECTION])
     else:
-        print('This is batch processing...')
-        input_files, range_ev = fm.get_files_and_events_for_batchprocessing(input_dir=os.path.join(params.input_base_dir,
-                                                                                                   params.input_sample_dir),
-                                                                            tree=params.tree_name,
-                                                                            nev_toprocess=params.maxEvents,
-                                                                            nev_perjob=params.events_per_job,
-                                                                            batch_id=batch_idx,
-                                                                            debug=debug)
+        sel_sample = [sample for sample in collection_params[opt.COLLECTION] if sample.name == opt.SAMPLE]
+        samples_to_process.append(sel_sample[0])
 
-    # print ('- dir {} contains {} files.'.format(params.input_sample_dir, len(input_files)))
-    print('- will read {} files from dir {}:'.format(len(input_files), params.input_sample_dir))
-    for file_name in input_files:
-        print('        - {}'.format(file_name))
+    pprint(f'About to process samples: {samples_to_process}')
 
-    files_with_protocol = [fm.get_eos_protocol(file_name)+file_name for file_name in input_files]
+    plot_version = f"{cfgfile['common']['plot_version']}.{cfgfile['dataset']['version']}"
 
+    to_HTCondor(
+        analyze=analyze,
+        opt=opt,
+        submit_mode=submit,
+        plot_version=plot_version,
+        samples_to_process=samples_to_process,
+    )
 
-    calib_manager = calibs.CalibManager()
-    calib_manager.set_calibration_version(params.calib_version)
-    if params.rate_pt_wps:
-        calib_manager.set_pt_wps_version(params.rate_pt_wps)
+    batch_idx = -1
+    if opt.BATCH and opt.RUN:
+        batch_idx = int(opt.RUN)
 
-    output = up.recreate(params.output_filename)
-    hm = histos.HistoManager()
-    hm.file = output
-
-    # instantiate all the plotters
-    plotter_collection = []
-    plotter_collection.extend(params.plotters)
-    # print(plotter_collection)
-
-    # -------------------------------------------------------
-    # book histos
-    for plotter in plotter_collection:
-        plotter.book_histos()
-
-    collection_manager = collections.EventManager()
-
-    if params.weight_file is not None:
-        collection_manager.read_weight_file(params.weight_file)
-
-    # -------------------------------------------------------
-    # event loop
-
-    tree_reader = treereader.TreeReader(range_ev, params.maxEvents)
-    print('events_per_job: {}'.format(params.events_per_job))
-    print('maxEvents: {}'.format(params.maxEvents))
-    print('range_ev: {}'.format(range_ev))
-
-    # tr = Tracer()
-
-    break_file_loop = False
-    for tree_file_name in files_with_protocol:
-        if break_file_loop:
-            break
-        # tree_file = up.open(tree_file_name, num_workers=2)
-        tree_file = up.open(tree_file_name, num_workers=1)
-        print(f'opening file: {tree_file_name}')
-        print(f' . tree name: {params.tree_name}')
-        def getUpTree(uprobj, name):
-            parts = name.split('/')
-            # if len(parts) > 1:
-            #     return getUpTree(uprobj, '/'.join(parts[1:]))
-            return uprobj[name]
-
-        ttree = getUpTree(tree_file, params.tree_name)
-
-        tree_reader.setTree(ttree)
-
-        while tree_reader.next(debug):
-
-            try:
-                collection_manager.read(tree_reader, debug)
-                # processes = []
-                for plotter in plotter_collection:
-                    plotter.fill_histos_event(tree_reader.file_entry, debug=debug)
-
-                # if tree_reader.global_entry % 100 == 0:
-                #     tr.collect_stats()
-
-                if batch_idx != -1 and timecounter.counter.started() and tree_reader.global_entry % 100 == 0:
-                    # when in batch mode, if < 5min are left we stop the event loop
-                    if timecounter.counter.job_flavor_time_left(params.htc_jobflavor) < 5*60:
-                        tree_reader.printEntry()
-                        print('    less than 5 min left for batch slot: exit event loop!')
-                        timecounter.counter.job_flavor_time_perc(params.htc_jobflavor)
-                        break_file_loop = True
-                        break
-
-            except Exception as inst:
-                tree_reader.printEntry()
-                print(f"[EXCEPTION OCCURRED:] {str(inst)}")
-                print("Unexpected error:", sys.exc_info()[0])
-                traceback.print_exc()
-                tree_file.close()
-                sys.exit(200)
-
-        tree_file.close()
-    # print("Processed {} events/{} TOT events".format(nev, ntuple.nevents()))
-
-    print("Writing histos to file {}".format(params.output_filename))
-    hm.writeHistos()
-    output.close()
-    # ROOT.ROOT.DisableImplicitMT()
-
-    return tree_reader.n_tot_entries
+    ret_nevents = 0
+    for idx, sample in enumerate(samples_to_process):
+        pprint(
+            f'\n\n========================== #{idx+1}/{len(samples_to_process)}: {sample.name} ==========================\n'
+        )
+        ret_nevents += analyze(sample, batch_idx=batch_idx)
+    return ret_nevents
 
 
-if __name__ == "__main__":
-
-    tic = 0
-    if '3.8' in platform.python_version() or '3.9' in platform.python_version() or '3.10' in platform.python_version():
-        timecounter.counter.start()
-
-    nevents = 0
-    try:
-        nevents += main(analyze=analyze)
-    except Exception as inst:
-        print(str(inst))
-        print("Unexpected error:", sys.exc_info()[0])
-        traceback.print_exc()
-        sys.exit(100)
-
-    if timecounter.counter.started():
-        analysis_time, time_per_event = timecounter.counter.time_per_event(nevents)
-        print('Analyzed {} events in {:.2f} s ({:.2f} s/ev)'.format(
-            nevents, analysis_time, time_per_event))
-        # print (' real time: {:.2f} s'.format(timecounter.counter.real_time()))
-        timecounter.counter.print_nevent_per_jobflavor(time_per_event)
+if __name__ == '__main__':
+    typer.run(analyzeNtuples)

@@ -1,8 +1,9 @@
-import subprocess32 as subprocess
 import os
 import shutil
+from concurrent import futures
 
-import concurrent.futures as futures
+import subprocess32 as subprocess
+
 from python.main import main
 
 
@@ -11,14 +12,14 @@ def work(job_id, cfg_dir, work_main_dir, params):
     job_name = f'job_{job_id}'
     work_dir_path = os.path.join(work_main_dir, job_name)
 
-    stdoutput_file = open(f'{work_main_dir}/{job_name}.out', "w")
-    stderr_file = open(f'{work_main_dir}/{job_name}.err', "w")
+    stdoutput_file = open(f'{work_main_dir}/{job_name}.out', 'w')
+    stderr_file = open(f'{work_main_dir}/{job_name}.err', 'w')
 
     os.mkdir(work_dir_path)
     shutil.copyfile(os.path.join(cfg_dir, 'ntuple-tools.tar.gz'), os.path.join(work_dir_path, 'ntuple-tools.tar.gz'))
 
     run_p = subprocess.Popen(
-        ["sh", os.path.join(cfg_dir, params.name, 'run_local.sh'),  work_dir_path, str(job_id)],
+        ['sh', os.path.join(cfg_dir, params.name, 'run_local.sh'),  work_dir_path, str(job_id)],
         stdout=stdoutput_file, stderr=stderr_file)
     run_p.wait()
     if run_p.returncode:
@@ -37,7 +38,7 @@ def submit(batch_cfg_dir,
 
     batch_work_dir = os.path.join(work_dir, batch_cfg_dir)
     mkdir_p = subprocess.run(
-        ["mkdir", '-p', batch_work_dir],
+        ['mkdir', '-p', batch_work_dir],
         capture_output=True)
     if mkdir_p.returncode:
         print(mkdir_p.stdout)
@@ -55,14 +56,14 @@ def submit(batch_cfg_dir,
             hadd_files[sample.name] = []
             # inputs = [(job_id, batch_cfg_dir, batch_work_dir) for job_id in range(0, sample.nbatch_jobs)]
             # executor.map(work_unpack, inputs)
-            for job_id in range(0, sample.nbatch_jobs):
+            for job_id in range(sample.nbatch_jobs):
                 results.append(executor.submit(work, job_id, batch_cfg_dir, sample_work_dir, sample))
             #
         for future in futures.as_completed(results):
             res = future.result()
             print(res)
             if res[2] == 0:
-                out_file = os.path.join(batch_work_dir, sample.name, f'job_{res[1]}', sample.output_filename_base+f'_{res[1]}.root')
+                out_file = os.path.join(batch_work_dir, sample.name, f'job_{res[1]}', f'{sample.output_filename_base}_{res[1]}.root')
                 hadd_files[sample.name].append(out_file)
 
     # results.append(('doublephoton_flat1to100_PU200', 0, 0))
@@ -93,5 +94,5 @@ def submit(batch_cfg_dir,
     #     index += 1
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main(analyze=submit, submit_mode=True)

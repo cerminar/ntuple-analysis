@@ -25,7 +25,7 @@ For some reason the current `CMSSW` scrips seems to deliver an inconsistent setu
 `pip install --ignore-installed --user virtualenv==15.1.0 virtualenvwrapper`
 
 For a more complete overview of the procedure you can refer to
-`virtualenvwrapper` [installation instructions](https://virtualenvwrapper.readthedocs.io/en/latest/install.html) 
+`virtualenvwrapper` [installation instructions](https://virtualenvwrapper.readthedocs.io/en/latest/install.html)
 
 ### 3. setup `virtualenvwrapper`
 
@@ -73,6 +73,17 @@ After this initial (once in a time) setup is done you can just activate the virt
 (`lsvirtualenv` is your friend in case you forgot the name).
 
 
+### Conda environment
+You can use also conda to install all the dependencies and root
+
+```bash
+conda create env_name python=3.11
+conda activate env_name
+conda install root              #In the conda-forge channel
+pip install -r requirements.txt
+```
+
+
 ## Running the analysis
 
 The main script is `analyzeNtuples.py`:
@@ -89,9 +100,9 @@ Data are read in `collections` of objects corresponding to an `array` and are pr
 
 
 ### Configuration file
-The configuration is handled by 2 yaml files. 
+The configuration is handled by 2 yaml files.
 
-One specifying    
+One specifying
    - output directories
    - versioning of the plots
    - collections of samples, i.e. group of samples to be processed homogeneously: for each collection the list of plotters (see below) to be run is provided.

@@ -1,8 +1,8 @@
-from __future__ import print_function
-import pandas as pd
-import numpy as np
-from sklearn.cluster import DBSCAN
 import math
+
+import numpy as np
+import pandas as pd
+from sklearn.cluster import DBSCAN
 
 
 def buildTriggerTowerCluster(allTowers, seedTower, debug):
@@ -48,7 +48,7 @@ def buildDBSCANClusters(sel_layer, sel_zside, tcs):
     densities = [0.05, 0.05, 0.1, 0.25, 0.3, 0.3, 0.5, 0.45, 0.4, 0.35, 0.4, 0.25, 0.25, 0.15, 0.1, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15]
 
     # densities = [0.1, 0.2, 0.5, 0.5, 1.1, 1.3, 1.7, 1.8, 2.0, 2.2, 2.6, 2.0, 1.8, 1.4, 1.2, 0.8, 0.6, 0.4, 0.2, 0.2, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
-    densities.extend([0.05 for i in range(0, 40)])
+    densities.extend([0.05 for i in range(40)])
     # print 'ECCOCI: {}'.format(len(densities))
     # photon Pt35 tunes (no selection on unconverted)
     # densities = [0.05, 0.05, 0.05, 0.1, 0.25, 0.45, 1.1, 1.6, 2.5, 3.55, 4.85, 4.6, 4.35, 3.55, 3.15, 2.25, 1.8, 1.05, 1.0, 0.65, 0.5, 0.2, 0.1, 0.05, 0.05, 0.05, 0.05, 0.2]
@@ -285,9 +285,9 @@ def compute3DClQuantities(components, calib_factor=1.084):
 
 def build3DCl(components, calib_factor=1.084):
     """
-      A more efficient version of build3D.
+    A more efficient version of build3D.
 
-      Builds clusters avoiding to add one column at the time.
+    Builds clusters avoiding to add one column at the time.
     """
     return pd.DataFrame().append(compute3DClQuantities(components, calib_factor),
                                  ignore_index=True)
@@ -501,20 +501,18 @@ def compute_tcs2cluster_distance(cluster, tcs,
             return cl_size_by_layer[tc.layer - 1]
         tcs.loc[tcs.index, 'cl_size'] = tcs.apply(assign_size, axis=1)
 
-    return
 
 
 def compute_tcs_to_cluster_deltaro(cluster, tcs):
     compute_tcs2cluster_distance(cluster, tcs,
                                  do_deltaUT=True,
                                  do_extra=True)
-    return
 
 
 def get_dr_clusters(cl3ds, tcs, cylind_size):
     return run_distance_based_recluster(cl3ds, tcs,
                                         distance_function=compute_tcs2cluster_distance,
-                                        selection='(dr < {})'.format(cylind_size))
+                                        selection=f'(dr < {cylind_size})')
 
 
 def get_dtdu_clusters(cl3ds, tcs, cylind_size):
@@ -522,7 +520,7 @@ def get_dtdu_clusters(cl3ds, tcs, cylind_size):
                                         distance_function=lambda cluster, tcs: compute_tcs2cluster_distance(cluster, tcs,
                                                                                                             do_deltaUT=True,
                                                                                                             do_dr=False),
-                                        selection='(sqrt((dt/{})**2+(du/{})**2) < 1)'.format(cylind_size[0], cylind_size[1]))
+                                        selection=f'(sqrt((dt/{cylind_size[0]})**2+(du/{cylind_size[1]})**2) < 1)')
 
 
 def get_dtdu_clusters_unpack(clusters_tcs_cylsize):
