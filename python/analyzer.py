@@ -102,16 +102,16 @@ def analyze(params, batch_idx=-1):
                     and tree_reader.global_entry % 100 == 0
                     and timecounter.counter.job_flavor_time_left(params.htc_jobflavor) < 5 * 60
                 ):
-                    tree_reader.pprintEntry()
+                    tree_reader.printEntry()
                     pprint('    less than 5 min left for batch slot: exit event loop!')
                     timecounter.counter.job_flavor_time_perc(params.htc_jobflavor)
                     break
 
             except Exception as inst:
-                tree_reader.pprintEntry()
+                tree_reader.printEntry()
                 pprint(f'[EXCEPTION OCCURRED:] {inst!s}')
                 pprint('Unexpected error:', sys.exc_info()[0])
-                traceback.pprint_exc()
+                traceback.print_exc()
                 tree_file.close()
                 sys.exit(200)
 
