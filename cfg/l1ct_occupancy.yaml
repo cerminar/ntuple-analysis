@@ -14,14 +14,14 @@ common:
 # +AccountingGroup = "group_u_CMST3.all"
 
 collections:
-      
+
   tps:
     file_label:
       l1ct
     samples:
       - ttbar_PU200
     plotters:
-      - !!python/name:cfg.l1ct_occupancy.l1tcorr_input_occ
+      - cfg.l1ct_occupancy.l1tcorr_input_occ
     htc_jobflavor:
       workday
     priorities:
@@ -36,7 +36,7 @@ collections:
       - ttbar_PU200
       - doubleele_flat1to100_PU200
     plotters:
-      - !!python/name:cfg.l1ct_occupancy.l1tcorr_tkcl3dmatch_input_occ
+      - cfg.l1ct_occupancy.l1tcorr_tkcl3dmatch_input_occ
     htc_jobflavor:
       workday
     priorities:

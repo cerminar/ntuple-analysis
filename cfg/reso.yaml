@@ -14,7 +14,7 @@ common:
 # +AccountingGroup = "group_u_CMST3.all"
 
 collections:
-      
+
   mass:
     file_label:
       mass
@@ -28,7 +28,7 @@ collections:
       # - photon_flat8to150_PU200
       - dyll_PU200
     plotters:
-      - !!python/name:cfg.reso.diobj_mass
+      - cfg.reso.diobj_mass
     htc_jobflavor:
       microcentury
     priorities:
@@ -55,7 +55,7 @@ collections:
       # - photon_flat8to150_PU200
       # - dyll_PU200
     plotters:
-      - !!python/name:cfg.reso.eg_resotuples_plotters
+      - cfg.reso.eg_resotuples_plotters
     htc_jobflavor:
       microcentury
     priorities:

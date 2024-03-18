@@ -14,14 +14,14 @@ common:
 # +AccountingGroup = "group_u_CMST3.all"
 
 collections:
-      
+
   jet_eff:
     file_label:
       jeteff
     samples:
       - ttbar_PU200
     plotters:
-      - !!python/name:cfg.jets.jets_genmatched
+      - cfg.jets.jets_genmatched
     htc_jobflavor:
       microcentury
     priorities:

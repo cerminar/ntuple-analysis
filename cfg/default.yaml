@@ -20,8 +20,8 @@ collections:
     samples:
       - nugun_alleta_pu200
     plotters:
-      - !!python/name:python.plotters_config.track_plotters
-      - !!python/name:python.plotters_config.eg_rate_plotters
+      - python.plotters_config.track_plotters
+      - python.plotters_config.eg_rate_plotters
     htc_jobflavor:
       workday
     priorities:
@@ -38,9 +38,9 @@ collections:
       # - ele_flat2to100_PU0
       # - ele_flat2to100_PU200
     plotters:
-      # - !!python/name:python.plotters_config.track_plotters
-      - !!python/name:python.plotters_config.track_genmatched_plotters
-      # - !!python/name:python.plotters_config.eg_genmatched_plotters
+      # - python.plotters_config.track_plotters
+      - python.plotters_config.track_genmatched_plotters
+      # - python.plotters_config.eg_genmatched_plotters
     htc_jobflavor:
       workday
     priorities:
@@ -70,8 +70,8 @@ collections:
       # - photon_flat8to150_PU200
       # - dyll_PU200
     plotters:
-      # - !!python/name:python.plotters_config.eg_plotters
-      - !!python/name:python.plotters_config.eg_genmatched_plotters_iso
+      # - python.plotters_config.eg_plotters
+      - python.plotters_config.eg_genmatched_plotters_iso
     htc_jobflavor:
       longlunch
     priorities:
@@ -105,8 +105,8 @@ collections:
       # - photon_flat8to150_PU200
       # - dyll_PU200
     plotters:
-      - !!python/name:python.plotters_config.eg_plotters
-      - !!python/name:python.plotters_config.eg_genmatched_plotters
+      - python.plotters_config.eg_plotters
+      - python.plotters_config.eg_genmatched_plotters
     htc_jobflavor:
       microcentury
     priorities:
@@ -136,7 +136,7 @@ collections:
   #     - ele_flat2to100_PU200
   #     # - dyll_PU200
   #   plotters:
-  #     - !!python/name:python.plotters_config.ele_genmatched_plotters
+  #     - python.plotters_config.ele_genmatched_plotters
   #   htc_jobflavor:
   #     tomorrow
   #   priorities:
@@ -156,8 +156,8 @@ collections:
   #     # - photon_flat8to150_PU0
   #     # - photon_flat8to150_PU200
   #   plotters:
-  #     - !!python/name:python.plotters_config.eg_resotuples_plotters
-  #     - !!python/name:python.plotters_config.tp_resotuples_plotters
+  #     - python.plotters_config.eg_resotuples_plotters
+  #     - python.plotters_config.tp_resotuples_plotters
   #   htc_jobflavor:
   #     workday
   #   priorities:
@@ -175,7 +175,7 @@ collections:
   #     - photon_flat8to150_PU0
   #     # - photon_flat8to150_PU200
   #   plotters:
-  #     - !!python/name:python.plotters_config.tp_calib_plotters
+  #     - python.plotters_config.tp_calib_plotters
   #     # - ttower_plotters
   #     # - ttower_genmatched_plotters
   #   htc_jobflavor:
@@ -196,11 +196,11 @@ collections:
   #     # - photon_flat8to150_PU0
   #     # - photon_flat8to150_PU200
   #   plotters:
-  #     - !!python/name:python.plotters_config.tp_plotters
-  #     - !!python/name:python.plotters_config.tp_genmatched_plotters
-  #     - !!python/name:python.plotters_config.genpart_plotters
-  #     # - !!python/name:python.plotters_config.ttower_plotters
-  #     # - !!python/name:python.plotters_config.ttower_genmatched_plotters
+  #     - python.plotters_config.tp_plotters
+  #     - python.plotters_config.tp_genmatched_plotters
+  #     - python.plotters_config.genpart_plotters
+  #     # - python.plotters_config.ttower_plotters
+  #     # - python.plotters_config.ttower_genmatched_plotters
   #   htc_jobflavor:
   #     tomorrow
   #   priorities:
@@ -217,26 +217,26 @@ collections:
   #     doubleele_flat1to100_PU0: 2100
   #     doubleele_flat1to100_PU200: 800
   #     doublephoton_flat1to100_PU200: 800
-  # 
-  # 
+  #
+  #
   # highpt_tps:
   #   file_label:
   #     tps
   #   samples:
   #     - zprime_ee_PU200
   #   plotters:
-  #     # - !!python/name:python.plotters_config.tp_plotters
-  #     - !!python/name:python.plotters_config.tp_genmatched_extrange_plotters
-  #     # - !!python/name:python.plotters_config.genpart_plotters
-  #     # - !!python/name:python.plotters_config.ttower_plotters
-  #     # - !!python/name:python.plotters_config.ttower_genmatched_plotters
+  #     # - python.plotters_config.tp_plotters
+  #     - python.plotters_config.tp_genmatched_extrange_plotters
+  #     # - python.plotters_config.genpart_plotters
+  #     # - python.plotters_config.ttower_plotters
+  #     # - python.plotters_config.ttower_genmatched_plotters
   #   htc_jobflavor:
   #     workday
   #   priorities:
   #     zprime_ee_PU200: 5
   #   events_per_job:
   #     zprime_ee_PU200: 2000
-  # 
+  #
   # single_had_guns_tps:
   #   file_label:
   #     tps
@@ -244,11 +244,11 @@ collections:
   #     - pion_flat2to100_PU0
   #     - pion_flat2to100_PU200
   #   plotters:
-  #     - !!python/name:python.plotters_config.tp_plotters
-  #     - !!python/name:python.plotters_config.tp_genmatched_plotters
-  #     - !!python/name:python.plotters_config.genpart_plotters
-  #     # - !!python/name:python.plotters_config.ttower_plotters
-  #     # - !!python/name:python.plotters_config.ttower_genmatched_plotters
+  #     - python.plotters_config.tp_plotters
+  #     - python.plotters_config.tp_genmatched_plotters
+  #     - python.plotters_config.genpart_plotters
+  #     # - python.plotters_config.ttower_plotters
+  #     # - python.plotters_config.ttower_genmatched_plotters
   #   htc_jobflavor:
   #     tomorrow
   #   priorities:
@@ -262,8 +262,8 @@ collections:
       - ttbar_PU200
       # - dyll_PU200
     plotters:
-      - !!python/name:python.plotters_config.correlator_occupancy_plotters
-      - !!python/name:python.plotters_config.pftrack_plotters
+      - python.plotters_config.correlator_occupancy_plotters
+      - python.plotters_config.pftrack_plotters
     htc_jobflavor:
       microcentury
     priorities:
@@ -278,11 +278,11 @@ collections:
     samples:
       - nugun_alleta_pu200
     plotters:
-      # - !!python/name:python.plotters_config.rate_plotters
-      # - !!python/name:python.plotters_config.ttower_plotters
-      # - !!python/name:python.plotters_config.tp_plotters
-      # - !!python/name:python.plotters_config.eg_plotters
-      - !!python/name:python.plotters_config.eg_rate_plotters
+      # - python.plotters_config.rate_plotters
+      # - python.plotters_config.ttower_plotters
+      # - python.plotters_config.tp_plotters
+      # - python.plotters_config.eg_plotters
+      - python.plotters_config.eg_rate_plotters
     htc_jobflavor:
       microcentury
     priorities:
@@ -301,10 +301,10 @@ collections:
   #     # - nugun_endcap_PU140
   #     # - nugun_endcap_PU200
   #   plotters:
-  #     # - !!python/name:python.plotters_config.rate_plotters
-  #       - !!python/name:python.plotters_config.ttower_plotters
-  #     # - !!python/name:python.plotters_config.tp_plotters
-  #     # - !!python/name:python.plotters_config.eg_rate_plotters
+  #     # - python.plotters_config.rate_plotters
+  #       - python.plotters_config.ttower_plotters
+  #     # - python.plotters_config.tp_plotters
+  #     # - python.plotters_config.eg_rate_plotters
   #   htc_jobflavor:
   #     workday
   #   priorities:
@@ -320,10 +320,10 @@ collections:
   #     - photon_flat8to150_PU0
   #     # - photon_flat8to150_PU200
   #   plotters:
-  #     # - !!python/name:python.plotters_config.tp_plotters
-  #     - !!python/name:python.plotters_config.tp_cluster_tc_match_plotters
-  #     # - !!python/name:python.plotters_config.ttower_plotters
-  #     # - !!python/name:python.plotters_config.ttower_genmatched_plotters
+  #     # - python.plotters_config.tp_plotters
+  #     - python.plotters_config.tp_cluster_tc_match_plotters
+  #     # - python.plotters_config.ttower_plotters
+  #     # - python.plotters_config.ttower_genmatched_plotters
   #   htc_jobflavor:
   #     microcentury
   #   priorities:
@@ -331,7 +331,7 @@ collections:
   #     ele_flat2to100_PU200: 3
   #     photon_flat8to150_PU0: 4
   #     photon_flat8to150_PU200: 2
-      
+
 
   isostudy_eg:
     file_label:
@@ -347,7 +347,7 @@ collections:
       # - photon_flat8to150_PU200
       # - dyll_PU200
     plotters:
-      - !!python/name:cfg.isotuples.plotters
+      - cfg.isotuples.plotters
     htc_jobflavor:
       microcentury
     priorities:
@@ -378,7 +378,7 @@ collections:
       # - photon_flat8to150_PU200
       # - dyll_PU200
     plotters:
-      - !!python/name:python.plotters_config.decTk_plotters
+      - python.plotters_config.decTk_plotters
     htc_jobflavor:
       microcentury
     priorities:

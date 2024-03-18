@@ -1,10 +1,10 @@
-import sys
+import sys  # noqa: I001
 
 import typer
 import yaml
 from rich import print as pprint
 
-from cfg import *  #!FIXXX
+import ROOT  # noqa: F401 #! NEEDED
 from python.analyzer import analyze
 from python.parameters import Parameters, get_collection_parameters
 from python.submission import to_HTCondor
@@ -59,8 +59,19 @@ def analyzeNtuples(  # noqa: PLR0913
         with open(filename) as stream:
             return yaml.load(stream, Loader=yaml.FullLoader)
 
+    config = parse_yaml(configfile)
+    for plots_dicts_key in config['collections']:
+        plots_dicts = config['collections'][plots_dicts_key]
+        if plots_dicts['plotters']:
+            plts = []
+            for plt in plots_dicts['plotters']:
+                exec(  # noqa: S102
+                    f"from {plt.split(':')[-1].split('.'+plt.split('.')[-1])[0]} import {plt.split('.')[-1]}"
+                )
+                plts.append(eval(f"{plt.split('.')[-1]}"))  # noqa: S307
+        config['collections'][plots_dicts_key]['plotters'] = plts
     cfgfile = {}
-    cfgfile.update(parse_yaml(configfile))
+    cfgfile.update(config)
     cfgfile.update(parse_yaml(datasetfile))
 
     opt = Parameters(

@@ -28,8 +28,8 @@ collections:
       # - photon_flat8to150_PU200
       # - dyll_PU200
     plotters:
-      - !!python/name:cfg.decodedtk.decTk_plotters
-      - !!python/name:cfg.egvalid.l1tc_emu_genmatched
+      - cfg.decodedtk.decTk_plotters
+      - cfg.egvalid.l1tc_emu_genmatched
     htc_jobflavor:
       microcentury
     priorities:
@@ -54,7 +54,7 @@ collections:
       # - photon_flat8to150_PU200
       # - dyll_PU200
     plotters:
-      - !!python/name:cfg.decodedtk.tk_plotters
+      - cfg.decodedtk.tk_plotters
     htc_jobflavor:
       microcentury
     priorities:
