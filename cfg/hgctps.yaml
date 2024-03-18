@@ -14,7 +14,7 @@ common:
 # +AccountingGroup = "group_u_CMST3.all"
 
 collections:
-      
+
   tps:
     file_label:
       tp
@@ -28,9 +28,9 @@ collections:
       # - photon_flat8to150_PU200
       # - dyll_PU200
     plotters:
-      - !!python/name:cfg.hgctps.hgc_tp_unmatched
-      - !!python/name:cfg.hgctps.hgc_tp_genmatched
-      - !!python/name:cfg.hgctps.hgc_tp_rate_pt_wps
+      - cfg.hgctps.hgc_tp_unmatched
+      - cfg.hgctps.hgc_tp_genmatched
+      - cfg.hgctps.hgc_tp_rate_pt_wps
     htc_jobflavor:
       microcentury
     priorities:
@@ -55,7 +55,7 @@ collections:
       # - photon_flat8to150_PU200
       # - dyll_PU200
     plotters:
-      - !!python/name:cfg.hgctps.hgc_tp_tkmatch_genmatched
+      - cfg.hgctps.hgc_tp_tkmatch_genmatched
     htc_jobflavor:
       longlunch
     priorities:
@@ -74,7 +74,7 @@ collections:
     samples:
       - nugun_alleta_pu200
     plotters:
-      - !!python/name:cfg.hgctps.hgc_tp_rate
+      - cfg.hgctps.hgc_tp_rate
     htc_jobflavor:
       microcentury
     priorities:
@@ -90,7 +90,7 @@ collections:
         - doubleele_flat1to100_PU200
         - zprime_m6000_pu200
       plotters:
-        - !!python/name:cfg.hgctps.hgc_tp_highpt_genmatched
+        - cfg.hgctps.hgc_tp_highpt_genmatched
       htc_jobflavor:
         longlunch
       priorities:
@@ -99,4 +99,3 @@ collections:
       events_per_job:
         doubleele_flat1to100_PU200: 1000
         zprime_m6000_pu200: 5000
-  

@@ -14,7 +14,7 @@ common:
 # +AccountingGroup = "group_u_CMST3.all"
 
 collections:
-      
+
   compid:
     file_label:
       compid
@@ -29,7 +29,7 @@ collections:
       # - photon_flat8to150_PU200
       # - dyll_PU200
     plotters:
-      - !!python/name:cfg.compIDtuples.compid_plotters
+      - cfg.compIDtuples.compid_plotters
     htc_jobflavor:
       microcentury
     priorities:

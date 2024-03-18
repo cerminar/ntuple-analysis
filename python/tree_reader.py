@@ -35,21 +35,19 @@ class TreeReader:
                             'simpart_posx', 'simpart_posy', 'simpart_posz',
                             ]
         if len(self._branches) == 0:
-            self._branches = [br for br in self.tree.keys() if br not in branch_blacklist]
+            self._branches = [br for br in self.tree.keys() if br not in branch_blacklist]  # noqa: SIM118 #keys needed
         print(f'open new tree file with # entries: {self.tree.num_entries}')
         self.file_entry = -1
 
     def next(self, debug=0):
 
-        if self.max_events != -1:
-            if self.n_tot_entries == self.max_events:
+        if self.max_events != -1 and self.n_tot_entries == self.max_events:
                 print('END loop for max_event!')
                 # we processed the max # of events
                 return False
-        if self.entry_range[1] != -1:
-            if self.global_entry == self.entry_range[1]:
-                print('END loop for entry_range')
-                return False
+        if self.entry_range[1] != -1 and self.global_entry == self.entry_range[1]:
+            print('END loop for entry_range')
+            return False
         if self.file_entry == self.tree.num_entries-1:
             print('END loop for end_of_file')
             return False
@@ -69,10 +67,8 @@ class TreeReader:
         return True
 
     def printEntry(self):
-        print(f'--- File entry: {self.file_entry}, global entry: {self.global_entry}, tot # events: {self.n_tot_entries} @ {datetime.datetime.now()}, MaxRSS {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000000.0:.2f} Mb')
-        # print(self.tree.keys())
-        # print(self.tree.arrays(['run', 'lumi', 'event'], library='pd', entry_start=self.file_entry, entry_stop=self.file_entry+1))
-        # self.dump_garbage()
+        print(f'--- File entry: {self.file_entry}, global entry: {self.global_entry}, tot # events: {self.n_tot_entries} @ {datetime.datetime.now()}, MaxRSS {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000000.0:.2f} Mb')  # noqa: DTZ005
+
 
     def dump_garbage(self):
         """
@@ -85,7 +81,8 @@ class TreeReader:
         print ('\nGARBAGE OBJECTS:')
         for x in gc.garbage:
             s = str(x)
-            if len(s) > 80: s = s[:80]
+            if len(s) > 80:
+                s = s[:80]
             print (type(x),'\n  ', s)
 
 
@@ -98,7 +95,7 @@ class TreeReader:
         if len(branches) == 0:
             if fallback is not None:
                 return self.getDataFrame(prefix=fallback, entry_block=entry_block)
-            prefs = set([br.split('_')[0] for br in self._branches])
+            prefs = {br.split('_')[0] for br in self._branches}
             print(f'stored branch prefixes are: {prefs}')
             raise ValueError(f'[TreeReader::getDataFrame] No branches with prefix: {prefix}')
 
@@ -108,7 +105,6 @@ class TreeReader:
                                    entry_start=self.file_entry,
                                    entry_stop=self.file_entry+entry_block)
 
-        # print(akarray)
         records = {}
         for field in akarray.fields:
             records[field] = akarray[field]
@@ -120,9 +116,6 @@ class TreeReader:
 
         return ak.zip(records)
 
-        # FIXME: we should probably do an ak.Record using sometjhing along the lines of:
-        # ele_rec = ak.zip({'pt': tkele.pt, 'eta': tkele.eta, 'phi': tkele.phi}, with_name="pippo")
+        #TODO: we should probably do an ak.Record using sometjhing along the lines of:
+        # ele_rec = ak.zip({'pt': tkele.pt, 'eta': tkele.eta, 'phi': tkele.phi}, with_name="pippo")  # noqa: ERA001
         # this would allow to handle the records and assign behaviours....
-
-        # return akarray
-

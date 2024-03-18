@@ -13,7 +13,7 @@ common:
 # +AccountingGroup = "group_u_CMST3.all"
 
 collections:
-      
+
   isostudy_eg:
     file_label:
       iso
@@ -28,7 +28,7 @@ collections:
       # - photon_flat8to150_PU200
       # - dyll_PU200
     plotters:
-      - !!python/name:cfg.test.plotters
+      - cfg.test.plotters
     htc_jobflavor:
       microcentury
     priorities:

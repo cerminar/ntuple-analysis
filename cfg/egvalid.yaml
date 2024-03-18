@@ -14,7 +14,7 @@ common:
 # +AccountingGroup = "group_u_CMST3.all"
 
 collections:
-      
+
   egvalid_l1tc:
     file_label:
       eg
@@ -28,9 +28,9 @@ collections:
       # - photon_flat8to150_PU200
       # - dyll_PU200
     plotters:
-      - !!python/name:cfg.egvalid.l1tc_eg_genmatched
-      - !!python/name:cfg.egvalid.l1tc_rate_pt_wps
-      # - !!python/name:cfg.egvalid.l1tc_fw_eg_genmatched      
+      - cfg.egvalid.l1tc_eg_genmatched
+      - cfg.egvalid.l1tc_rate_pt_wps
+      # - cfg.egvalid.l1tc_fw_eg_genmatched
     htc_jobflavor:
       microcentury
     priorities:
@@ -57,8 +57,8 @@ collections:
         # - photon_flat8to150_PU200
         # - dyll_PU200
       plotters:
-        - !!python/name:cfg.egvalid.l1tc_emu_genmatched
-        # - !!python/name:cfg.egvalid.l1tc_emu_rate_pt_wps
+        - cfg.egvalid.l1tc_emu_genmatched
+        # - cfg.egvalid.l1tc_emu_rate_pt_wps
       htc_jobflavor:
         longlunch
       priorities:
@@ -85,12 +85,12 @@ collections:
         # - photon_flat8to150_PU200
         # - dyll_PU200
       plotters:
-        # - !!python/name:cfg.egvalid.l1tc_l1emu_eb_genmatched
-        # - !!python/name:cfg.egvalid.l1tc_l1emu_ee_genmatched
-        - !!python/name:cfg.egvalid.l1tc_l2emu_genmatched
-        # - !!python/name:cfg.egvalid.l1tc_l1emu_ee_ell_genmatched
-        # - !!python/name:cfg.egvalid.l1tc_l2emu_ell_genmatched
-        # - !!python/name:cfg.egvalid.l1tc_emu_rate_pt_wps
+        # - cfg.egvalid.l1tc_l1emu_eb_genmatched
+        # - cfg.egvalid.l1tc_l1emu_ee_genmatched
+        - cfg.egvalid.l1tc_l2emu_genmatched
+        # - cfg.egvalid.l1tc_l1emu_ee_ell_genmatched
+        # - cfg.egvalid.l1tc_l2emu_ell_genmatched
+        # - cfg.egvalid.l1tc_emu_rate_pt_wps
       htc_jobflavor:
         longlunch
       priorities:
@@ -103,7 +103,7 @@ collections:
         doubleele_flat1to100_PU200: 1000
         doublephoton_flat1to100_PU200: 1000
         zprime_ee_PU200: 5000
-        
+
   egvalid_l1tc_l1emu_menu:
       file_label:
         egmenu
@@ -118,8 +118,8 @@ collections:
         # - photon_flat8to150_PU200
         # - dyll_PU200
       plotters:
-        - !!python/name:cfg.egvalid.l1tc_l2emu_singlelepton_genmatched
-        # - !!python/name:cfg.egvalid.l1tc_l2emu_singlelepton_rate_pt_wps
+        - cfg.egvalid.l1tc_l2emu_singlelepton_genmatched
+        # - cfg.egvalid.l1tc_l2emu_singlelepton_rate_pt_wps
       htc_jobflavor:
         longlunch
       priorities:
@@ -132,4 +132,3 @@ collections:
         doubleele_flat1to100_PU200: 1000
         doublephoton_flat1to100_PU200: 1000
         zprime_ee_PU200: 5000
-  

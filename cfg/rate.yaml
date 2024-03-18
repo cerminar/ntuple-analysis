@@ -14,14 +14,14 @@ common:
 # +AccountingGroup = "group_u_CMST3.all"
 
 collections:
-      
+
   tp_rate:
     file_label:
       rate
     samples:
       - nugun_alleta_pu200
     plotters:
-      - !!python/name:cfg.rate.tp_plotters
+      - cfg.rate.tp_plotters
     htc_jobflavor:
       microcentury
     priorities:
@@ -35,8 +35,8 @@ collections:
     samples:
       - nugun_alleta_pu200
     plotters:
-      # - !!python/name:cfg.rate.eg_tdrsim_plotters
-      - !!python/name:cfg.rate.eg_emu_plotters
+      # - cfg.rate.eg_tdrsim_plotters
+      - cfg.rate.eg_emu_plotters
     htc_jobflavor:
       microcentury
     priorities:
@@ -44,19 +44,19 @@ collections:
     events_per_job:
       nugun_alleta_pu200: 20000
 
-  
+
   eg_rate_emu:
     file_label:
       rate
     samples:
       - nugun_alleta_pu200
     plotters:
-      # - !!python/name:cfg.rate.eg_emuCTl1_sta_plotters
-      # - !!python/name:cfg.rate.eg_emuCTl1_ele_plotters
-      # - !!python/name:cfg.rate.eg_emuCTl1_pho_plotters
-      - !!python/name:cfg.rate.eg_emuCTl2_plotters
-      # - !!python/name:cfg.rate.eg_emuCTl1_ell_plotters
-      # - !!python/name:cfg.rate.eg_emuCTl2_ell_plotters
+      # - cfg.rate.eg_emuCTl1_sta_plotters
+      # - cfg.rate.eg_emuCTl1_ele_plotters
+      # - cfg.rate.eg_emuCTl1_pho_plotters
+      - cfg.rate.eg_emuCTl2_plotters
+      # - cfg.rate.eg_emuCTl1_ell_plotters
+      # - cfg.rate.eg_emuCTl2_ell_plotters
     htc_jobflavor:
       microcentury
     priorities:
@@ -71,9 +71,9 @@ collections:
       samples:
         - nugun_alleta_pu200
       plotters:
-        # - !!python/name:cfg.rate.eg_emu_plotters
-        - !!python/name:cfg.rate.eg_menuCTl2_plotters
-        - !!python/name:cfg.rate.eg_menuCTl2_ell_plotters
+        # - cfg.rate.eg_emu_plotters
+        - cfg.rate.eg_menuCTl2_plotters
+        - cfg.rate.eg_menuCTl2_ell_plotters
       htc_jobflavor:
         microcentury
       priorities:
@@ -87,8 +87,8 @@ collections:
       samples:
         - nugun_alleta_pu200
       plotters:
-        # - !!python/name:cfg.rate.eg_emu_plotters
-        - !!python/name:cfg.rate.eg_menuCTl2_rate
+        # - cfg.rate.eg_emu_plotters
+        - cfg.rate.eg_menuCTl2_rate
       htc_jobflavor:
         microcentury
       priorities:
