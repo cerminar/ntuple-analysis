@@ -59,18 +59,21 @@ def analyzeNtuples(  # noqa: PLR0913
         with open(filename) as stream:
             return yaml.load(stream, Loader=yaml.FullLoader)
 
+    cfgfile = {}
     config = parse_yaml(configfile)
+
     for plots_dicts_key in config['collections']:
         plots_dicts = config['collections'][plots_dicts_key]
         if plots_dicts['plotters']:
             plts = []
             for plt in plots_dicts['plotters']:
+                module, name = plt.rsplit('.', 1)
                 exec(  # noqa: S102
-                    f"from {plt.split(':')[-1].split('.'+plt.split('.')[-1])[0]} import {plt.split('.')[-1]}"
+                    f'from {module} import {name}'
                 )
-                plts.append(eval(f"{plt.split('.')[-1]}"))  # noqa: S307
+                plts.append(eval(f'{name}'))  # noqa: S307
         config['collections'][plots_dicts_key]['plotters'] = plts
-    cfgfile = {}
+
     cfgfile.update(config)
     cfgfile.update(parse_yaml(datasetfile))
 
