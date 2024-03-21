@@ -76,6 +76,13 @@ class BasePlotter:
                                                            ignore_index=True)
         return histo_primitives
 
+    def fill_histos(self, debug=0):
+        pass
+
+    def fill_histos_event(self, idx, debug=0):
+        if self.data_set.new_read:
+            self.fill_histos(debug)
+
     def __repr__(self):
         return f'<{self.__class__.__name__}, ds: {self.data_set}, ds_sel: {self.data_selections}, g: {self.gen_set}, g_sel: {self.gen_selections} >'
     # def change_genpart_selection(self, newselection):
@@ -117,9 +124,6 @@ class RatePlotter(BasePlotter):
             self.h_rate[selection.name].fill(sel_clusters)
             self.h_rate[selection.name].fill_norm(self.tp_set.new_read_nentries)
 
-    def fill_histos_event(self, idx, debug=0):
-        if self.data_set.new_read:
-            self.fill_histos(debug)
 
 
 class BaseRateCounter(BasePlotter):
@@ -145,10 +149,6 @@ class BaseRateCounter(BasePlotter):
             sel_clusters = self.tp_set.query(selection)
             self.h_rate[selection.name].fill(sel_clusters)
             self.h_rate[selection.name].fill_norm(self.tp_set.new_read_nentries)
-
-    def fill_histos_event(self, idx, debug=0):
-        if self.data_set.new_read:
-            self.fill_histos(debug)
 
 
 class RateCounter(BaseRateCounter):
@@ -182,10 +182,6 @@ class HGCCl3DRatePlotter(BasePlotter):
             self.h_rate[selection.name].fill_many(sel_clusters.loc[sel_clusters['pt_em'].groupby(level='entry', group_keys=False).nlargest(n=1).index, ['pt_em']])
             self.h_rate[selection.name].fill_norm(self.tp_set.new_read_nentries)
 
-    def fill_histos_event(self, idx, debug=0):
-        if self.data_set.new_read:
-            self.fill_histos(debug)
-
 
 class GenericDataFramePlotter(BasePlotter):
     def __init__(self, HistoClass, data_set, selections=[selections.Selection('all')], pt_bins=None):
@@ -213,10 +209,6 @@ class GenericDataFramePlotter(BasePlotter):
             if not data_sel.all:
                 data = data[data_sel.selection(data)]
             self.h_set[data_sel.name].fill(data)
-
-    def fill_histos_event(self, idx, debug=0):
-        if self.data_set.new_read:
-            self.fill_histos(debug)
 
 
 class GenPlotter(GenericDataFramePlotter):
@@ -657,10 +649,6 @@ class GenericGenMatchPlotter(BasePlotter):
                                      self.data_set.name,
                                      debug)
 
-    def fill_histos_event(self, idx, debug=0):
-        if self.data_set.new_read:
-            self.fill_histos(debug)
-
 
 class TrackGenMatchPlotter(GenericGenMatchPlotter):
     def __init__(self, data_set, gen_set,
@@ -1045,32 +1033,6 @@ class TTGenMatchPlotter:
                 if debug >= 2:
                     print(genParticle)
 
-
-class CorrOccupancyPlotter(BasePlotter):
-    def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
-        self.h_occ = {}
-        super(CorrOccupancyPlotter, self).__init__(tp_set, tp_selections)
-
-    def book_histos(self):
-        self.tp_set.activate()
-        tp_name = self.tp_set.name
-        for selection in self.tp_selections:
-            self.h_occ[selection.name] = histos.CorrOccupancyHistos(
-                name=f'{tp_name}_{selection.name}')
-
-    def fill_histos(self, debug=0):
-        for tp_sel in self.data_selections:
-            # print(tp_sel)
-            if tp_sel.all:
-                # FIXME: workaround for now
-                objects = self.data_set.df
-            else:
-                objects = self.data_set.df[tp_sel.selection(self.data_set.df)]
-            self.h_occ[tp_sel.name].fill(objects)
-
-    def fill_histos_event(self, idx, debug=0):
-        if self.data_set.new_read:
-            self.fill_histos(debug)
 
 
 class ClusterTCGenMatchPlotter(BasePlotter):
