@@ -541,7 +541,7 @@ eg_id_sel = [
     Selection('IDNoBrem', 'NoBrem', lambda array: array.IDNoBrem),
     Selection('IDBrem', 'Brem', lambda array: array.IDNoBrem == False),
 
-    Selection('IDEleH', 'TkEle ID (H)', ''),
+    # Selection('IDEleH', 'TkEle ID (H)', ''),
 
     ]
 
@@ -626,7 +626,10 @@ for wps,lab in wls:
                 f'bdteg > {cut}'))
 
 tphgc_pubdt_sel = [
-    Selection('PUId', 'PUId', 'bdt_pu > 0.15')
+    Selection('IDPuVeto', 'PU Veto', lambda ar: ar.pfPuIdPass),
+    Selection('IDEmPf', 'PF Em', lambda ar: ar.pfEmIdPass),
+    Selection('IDEmTight', 'EgID Tight', lambda ar: ar.IDTightEm),
+    Selection('IDEmLoose', 'EgID Loose', lambda ar: ar.IDLooseEm),
 ]
 
 # print(tphgc_egbdt_sel)

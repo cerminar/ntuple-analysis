@@ -540,7 +540,7 @@ class GenericGenMatchPlotter(BasePlotter):
                  data_set, gen_set,
                  data_selections=[selections.Selection('all')],
                  gen_selections=[selections.Selection('all')],
-                 gen_eta_phi_columns=['caloeta', 'calophi'],
+                 gen_eta_phi_columns=('caloeta', 'calophi'),
                  drcut=0.1,
                  pt_bins=None):
         self.ObjectHistoClass = ObjectHistoClass
@@ -750,10 +750,12 @@ class EGGenMatchPlotter(GenericGenMatchPlotter):
     def __init__(self, data_set, gen_set,
                  data_selections=[selections.Selection('all')],
                  gen_selections=[selections.Selection('all')],
+                 gen_eta_phi_columns=('caloeta', 'calophi'),
                  pt_bins=None):
         super(EGGenMatchPlotter, self).__init__(histos.EGHistos, histos.EGResoHistos,
                                                 data_set, gen_set,
                                                 data_selections, gen_selections,
+                                                gen_eta_phi_columns=gen_eta_phi_columns,
                                                 pt_bins=pt_bins)
 
 
@@ -1057,16 +1059,18 @@ class CorrOccupancyPlotter(BasePlotter):
                 name=f'{tp_name}_{selection.name}')
 
     def fill_histos(self, debug=0):
-        pass
+        for tp_sel in self.data_selections:
+            # print(tp_sel)
+            if tp_sel.all:
+                # FIXME: workaround for now
+                objects = self.data_set.df
+            else:
+                objects = self.data_set.df[tp_sel.selection(self.data_set.df)]
+            self.h_occ[tp_sel.name].fill(objects)
 
     def fill_histos_event(self, idx, debug=0):
-        for selection in self.tp_selections:
-            sel_objs = self.tp_set.query_event(selection, idx)
-            # print(f'sel: {selection.name}:')
-            # print(sel_objs)
-            if not sel_objs.empty:
-                # print trigger_clusters.iloc[0]
-                self.h_occ[selection.name].fill(sel_objs)
+        if self.data_set.new_read:
+            self.fill_histos(debug)
 
 
 class ClusterTCGenMatchPlotter(BasePlotter):

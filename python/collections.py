@@ -226,50 +226,50 @@ def cl3d_fixtures(clusters):
     mask_tight = 0b0001
     clusters['IDTightEm'] = np.bitwise_and(clusters.hwQual, mask_tight) > 0
     clusters['IDLooseEm'] = np.bitwise_and(clusters.hwQual, mask_loose) > 0
-    clusters['eMax'] = clusters.emaxe*clusters.energy
-    clusters['meanz_scaled'] = clusters.meanz-320.
-    clusters['abseta'] =  np.abs(clusters.eta)
+    # clusters['eMax'] = clusters.emaxe*clusters.energy
+    # clusters['meanz_scaled'] = clusters.meanz-320.
+    # clusters['abseta'] =  np.abs(clusters.eta)
 
-    if False:
-        input_array = ak.flatten(
-            clusters[[
-                'coreshowerlength',
-                'showerlength',
-                'firstlayer',
-                'maxlayer',
-                'szz',
-                'srrmean',
-                'srrtot',
-                'seetot',
-                'spptot']],
-            axis=1)
-        input_data = ak.concatenate(ak.unzip(input_array[:, np.newaxis]), axis=1)
-        input_matrix = xgboost.DMatrix(np.asarray(input_data))
-        score =  classifiers.eg_hgc_model_xgb.predict(input_matrix)
+    # if False:
+    #     input_array = ak.flatten(
+    #         clusters[[
+    #             'coreshowerlength',
+    #             'showerlength',
+    #             'firstlayer',
+    #             'maxlayer',
+    #             'szz',
+    #             'srrmean',
+    #             'srrtot',
+    #             'seetot',
+    #             'spptot']],
+    #         axis=1)
+    #     input_data = ak.concatenate(ak.unzip(input_array[:, np.newaxis]), axis=1)
+    #     input_matrix = xgboost.DMatrix(np.asarray(input_data))
+    #     score =  classifiers.eg_hgc_model_xgb.predict(input_matrix)
 
-    pu_input_array = ak.flatten(
-        clusters[[
-            'eMax',
-            'emaxe',
-            'spptot',
-            'srrtot',
-            'ntc90']],
-        axis=1)
-    pu_input_data = ak.concatenate(ak.unzip(pu_input_array[:, np.newaxis]), axis=1)
-    pu_input_matrix = xgboost.DMatrix(np.asarray(pu_input_data))
-    pu_score =  classifiers.pu_veto_model_xgb.predict(pu_input_matrix)
+    # pu_input_array = ak.flatten(
+    #     clusters[[
+    #         'eMax',
+    #         'emaxe',
+    #         'spptot',
+    #         'srrtot',
+    #         'ntc90']],
+    #     axis=1)
+    # pu_input_data = ak.concatenate(ak.unzip(pu_input_array[:, np.newaxis]), axis=1)
+    # pu_input_matrix = xgboost.DMatrix(np.asarray(pu_input_data))
+    # pu_score =  classifiers.pu_veto_model_xgb.predict(pu_input_matrix)
 
-        counts = ak.num(clusters)
-        clusters_flat = ak.flatten(clusters)
-        clusters_flat['egbdtscore'] = score
-        clusters_flat['pubdtscore'] = pu_score
+    # counts = ak.num(clusters)
+    # clusters_flat = ak.flatten(clusters)
+    # clusters_flat['egbdtscore'] = score
+    # clusters_flat['pubdtscore'] = pu_score
 
-        clusters_flat['egbdtscoreproba'] = -np.log(1.0/score - 1.0)
-        clusters_flat['pubdtscoreproba'] = -np.log(1.0/pu_score - 1.0)
+    # clusters_flat['egbdtscoreproba'] = -np.log(1.0/score - 1.0)
+    # clusters_flat['pubdtscoreproba'] = -np.log(1.0/pu_score - 1.0)
 
 
-        clusters = ak.unflatten(clusters_flat, counts)
-        # print(clusters.type.show())
+    # clusters = ak.unflatten(clusters_flat, counts)
+    # print(clusters.type.show())
 
     return clusters
 
@@ -617,20 +617,13 @@ def gen_part_pt_weights(gen_parts, weight_file):
 
 
 def map2pfregions(objects, eta_var, phi_var, fiducial=False):
-    for ieta in range(pf_regions.regionizer.n_eta_regions()):
-        objects[f'eta_reg_{ieta}'] = False
-    for iphi in range(pf_regions.regionizer.n_phi_regions()):
-        objects[f'phi_reg_{iphi}'] = False
-
     for ieta, eta_range in enumerate(pf_regions.regionizer.get_eta_boundaries(fiducial)):
-        query = f'({eta_var} > {eta_range[0]}) & ({eta_var} <= {eta_range[1]})'
-        region_objects = objects.query(query).index
-        objects.loc[region_objects, [f'eta_reg_{ieta}']] = True
+        # print(f'eta_reg_{ieta}')
+        objects[f'eta_reg_{ieta}'] = (objects[eta_var] > eta_range[0]) & (objects[eta_var] <= eta_range[1])
+        # print(objects[['eta', 'phi', f'eta_reg_{ieta}']].show())
 
     for iphi, phi_range in enumerate(pf_regions.regionizer.get_phi_boundaries(fiducial)):
-        query = f'({phi_var} > {phi_range[0]}) & ({phi_var} <= {phi_range[1]})'
-        region_objects = objects.query(query).index
-        objects.loc[region_objects, [f'phi_reg_{iphi}']] = True
+        objects[f'phi_reg_{iphi}'] = (objects[phi_var] > phi_range[0]) & (objects[phi_var] <= phi_range[1])
 
     return objects
 

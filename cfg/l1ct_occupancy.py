@@ -1,6 +1,6 @@
 from python import collections, plotters, selections
 
-pfin_hgc_tp_selections = (selections.Selector('^EgBdtLE|^Em|all')*('PUId|all')*('^Pt[1,2,5]$|all'))()
+pfin_hgc_tp_selections = (selections.Selector('^IDEm*|all')*('IDPuVeto|all')*('^Pt[1,2,5]$|all'))()
 pfin_tkcl3dmatch_selections = (selections.Selector('PUId')*('^EgBdtLE|all')*('^Pt[1,2,5]$|all')*('^MTkPt[1-5]|all'))()
 pfin_eb_selections = (selections.Selector('^Pt[1,2,5]$'))()
 pfin_tk_selections = (selections.Selector('^TkPt'))()
@@ -14,13 +14,13 @@ pfin_tk_selections = (selections.Selector('^TkPt'))()
 l1tcorr_input_occ = [
     plotters.CorrOccupancyPlotter(
         collections.hgc_cl3d_pfinputs,
-        pfin_hgc_tp_selections),
-    plotters.CorrOccupancyPlotter(
-        collections.EGStaEB_pfinputs,
-        pfin_eb_selections),
-    plotters.CorrOccupancyPlotter(
-        collections.tk_pfinputs,
-        pfin_tk_selections),
+        pfin_hgc_tp_selections), # FIXME pfin_hgc_tp_selections
+    # plotters.CorrOccupancyPlotter(
+    #     collections.EGStaEB_pfinputs,
+    #     pfin_eb_selections),
+    # plotters.CorrOccupancyPlotter(
+    #     collections.tk_pfinputs,
+    #     pfin_tk_selections),
 ]
 
 
@@ -86,3 +86,6 @@ l1tcorr_tkcl3dmatch_input_occ = [
 #     plotters.CorrOccupancyPlotter(
 #         collections.cl3d_hm_pfinputs, selections.pfeg_tp_input_selections),
 # ]
+
+for sel in pfin_hgc_tp_selections:
+    print (sel)
