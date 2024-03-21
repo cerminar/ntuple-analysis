@@ -337,6 +337,9 @@ def get_metadata(input_dir, tree, debug=0):
             except OSError as error:
                 print(error.strerror)
                 print(f'WARNING: file {file_name} can not be indexed, skipping!')
+            except up.exceptions.KeyInFileError as error:
+                print(error.because)
+                print(f'WARNING: file {file_name} can not be indexed, skipping!')
                 continue
 
             file_metadata[file_name] = nevents

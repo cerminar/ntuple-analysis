@@ -1,3 +1,4 @@
+# datasets for tracker failure scenario studies
 dataset:
   input_dir:  /eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/fp_ntuples/
   calib_version: calib-v134C
