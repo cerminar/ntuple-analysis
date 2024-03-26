@@ -639,7 +639,7 @@ Selector.selection_primitives = sm.selections.copy()
 
 
 menu_sel = [
-    ((Selector('^EtaEB')&('^IDTightE$'))|(Selector('^EtaEE')&('^IDTightP'))).one('MenuSta', 'TightID'),
+    ((Selector('^EtaEB')&('^IDTightE$'))|(Selector('^EtaEE')&('^IDTightS$'))).one('MenuSta', 'TightID'),
     ((Selector('^EtaEB')&('^IsoEleEB$'))|(Selector('^EtaEE')&('^IsoEleEE')&('^IDTightE$'))).one('MenuEleIsoTight', 'Iso TightID'),
     ((Selector('^EtaEB')&('^IsoEleEB$'))|(Selector('^EtaEE')&('^IsoEleEE'))).one('MenuEleIsoLoose', 'Iso LooseID'),
     ((Selector('^EtaEB')&('^IDTightE$'))|(Selector('^EtaEE')&('^IDTightE$'))).one('MenuEleTight', 'TightID'),

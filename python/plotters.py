@@ -100,69 +100,6 @@ class BasePlotter:
     #                                      self.data_set.name)
 
 
-class RatePlotter(BasePlotter):
-    def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
-        self.h_rate = {}
-        super(RatePlotter, self).__init__(tp_set, tp_selections)
-
-    def book_histos(self):
-        self.tp_set.activate()
-        tp_name = self.tp_set.name
-        for selection in self.tp_selections:
-            self.h_rate[selection.name] = histos.RateHistos(name=f'{tp_name}_{selection.name}')
-
-    def fill_histos(self, debug=0):
-        # print '------------------'
-        # print self.tp_set.name
-        for selection in self.tp_selections:
-            sel_clusters = self.tp_set.df
-            if not selection.all:
-                # print(selection)
-                sel_clusters = self.tp_set.df[selection.selection(self.tp_set.df)]
-            # max_pt_index = ak.argmax(sel_clusters.pt, axis=1, keepdims=True)
-            # max_pt_per_event = sel_clusters[max_pt_index]
-            self.h_rate[selection.name].fill(sel_clusters)
-            self.h_rate[selection.name].fill_norm(self.tp_set.new_read_nentries)
-
-
-
-class BaseRateCounter(BasePlotter):
-    def __init__(self, HistoClass, tp_set, tp_selections=[selections.Selection('all')]):
-        self.HistoClass = HistoClass
-        self.h_rate = {}
-        super(BaseRateCounter, self).__init__(tp_set, tp_selections)
-
-    def book_histos(self):
-        self.tp_set.activate()
-        tp_name = self.tp_set.name
-        for selection in self.tp_selections:
-            self.h_rate[selection.name] = self.HistoClass(
-                name=f'{tp_name}_{selection.name}')
-
-    def fill_histos(self, debug=0):
-        # print('------------------')
-        # print(f'L1 Obj: {self.tp_set.name}')
-        for selection in self.tp_selections:
-            # print(f' .  sel: {selection}')
-            # print(f' .  # of read entries: {self.tp_set.new_read_nentries}')
-
-            sel_clusters = self.tp_set.query(selection)
-            self.h_rate[selection.name].fill(sel_clusters)
-            self.h_rate[selection.name].fill_norm(self.tp_set.new_read_nentries)
-
-
-class RateCounter(BaseRateCounter):
-    def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
-        self.h_rate = {}
-        super(RateCounter, self).__init__(histos.SingleObjRateHistoCounter, tp_set, tp_selections)
-
-
-class DoubleObjRateCounter(BaseRateCounter):
-    def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
-        self.h_rate = {}
-        super(DoubleObjRateCounter, self).__init__(histos.DoubleObjRateHistoCounter, tp_set, tp_selections)
-
-
 class HGCCl3DRatePlotter(BasePlotter):
     def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
         self.h_rate = {}
