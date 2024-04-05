@@ -83,6 +83,10 @@ class BaseHistos:
         dir_name = self.__class__.__name__
         for histo in [a for a in dir(self) if a.startswith('h_')]:
             writeable_hist = getattr(self, histo)
+            
+            name = writeable_hist.label         
+            writeable_hist = writeable_hist.compute()
+            
             # print (f"Writing {histo} class {writeable_hist.__class__.__name__}")
             if 'GraphBuilder' in writeable_hist.__class__.__name__ :
                 continue
