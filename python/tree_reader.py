@@ -5,6 +5,9 @@ import resource
 import awkward as ak
 import vector
 
+import coffea
+from coffea.nanoevents import NanoEventsFactory, NanoAODSchema, BaseSchema
+
 vector.register_awkward()
 
 class TreeReader:
@@ -94,7 +97,11 @@ class TreeReader:
                     if br.startswith(f'{prefix}_') and
                     br != f'{prefix}_n']
         names = ['_'.join(br.split('_')[1:]) for br in branches]
-        name_map = dict(zip(names, branches, strict=False))
+        
+        # FIXME: name_map = dict(zip(names, branches, strict=False))
+        # strict=False does not work with the dask.
+
+        name_map = dict(zip(names, branches))
         if len(branches) == 0:
             if fallback is not None:
                 return self.getDataFrame(prefix=fallback, entry_block=entry_block)
@@ -102,21 +109,29 @@ class TreeReader:
             print(f'stored branch prefixes are: {prefs}')
             raise ValueError(f'[TreeReader::getDataFrame] No branches with prefix: {prefix}')
 
-        akarray = self.tree.arrays(names,
-                                   library='ak',
-                                   aliases=name_map,
-                                   entry_start=self.file_entry,
-                                   entry_stop=self.file_entry+entry_block)
+        # FIXME: old code of eagerily reading ttree.
+        #akarray = self.tree.arrays(names,
+        #library='ak',
+        #aliases=name_map,
+        #entry_start=self.file_entry,
+        #entry_stop=self.file_entry+entry_block)
+        
+        akarray = NanoEventsFactory.from_root(
+                                   self.tree,
+                                   schemaclass=BaseSchema).events()
+
+        akarray = akarray[branches][self.file_entry : self.file_entry + entry_block]
 
         # print(akarray)
         records = {}
         for field in akarray.fields:
             records[field] = akarray[field]
 
-        if 'pt' in names and 'eta' in names and 'phi' in names:
-            if 'mass' not in names and 'energy' not in names:
-                records['mass'] = 0.*akarray['pt']
-            return vector.zip(records)
+        # FIXME: Commented this part out, does not work with dask.
+        #if 'pt' in names and 'eta' in names and 'phi' in names:
+        #if 'mass' not in names and 'energy' not in names:
+        #records['mass'] = 0.*akarray['pt']
+        #return vector.zip(records)
 
         return ak.zip(records)
 
