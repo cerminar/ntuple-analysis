@@ -612,7 +612,11 @@ version = 'v10_3151'
 
 wps = working_points_histomax[version]
 labels = ['LE', 'HE']
-wls = zip(wps, labels, strict=False)
+
+# FIXME: is the strict=False is really needed, does not work with dask.
+# wls = zip(wps, labels, strict=False)
+
+wls = zip(wps, labels)
 # for i,
 tphgc_egbdt_sel = []
 
