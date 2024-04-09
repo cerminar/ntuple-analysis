@@ -10,8 +10,6 @@ def TH1F(name, title, nbins, bin_low, bin_high):
     b_name = title_split[0]
     b_label = name
         
-    #print("boost_hist (TH1F) chart name: ", name)
-
     return hist.dask.Hist(
          hist.axis.Regular(bins=nbins, start=bin_low, stop=bin_high, name=b_axis_name),
          label=b_label,
@@ -29,8 +27,6 @@ def TH2F(name, title, x_nbins, x_bin_low, x_bin_high, y_nbins, y_bin_low, y_bin_
         b_y_axis_name = title_split[2]
     b_name = title_split[0]
     b_label = name
-
-    #print("boost_hist (TH2F) chart name: ", name)
     
     return hist.dask.Hist(
         hist.axis.Regular(bins=x_nbins, start=x_bin_low, stop=x_bin_high, name=b_x_axis_name), 
@@ -50,6 +46,10 @@ def fill_1Dhist(hist, array, weights=None):
         hist.fill(flar, weights)
         # ROOT.fill_1Dhist(hist=hist, array=flar, weights=weights)
         
+
+
+
+
 def fill_2Dhist(hist, arrayX, arrayY, weights=None):
     flar_x = ak.drop_none(ak.flatten(arrayX))
     flar_y = ak.drop_none(ak.flatten(arrayY))
@@ -60,3 +60,4 @@ def fill_2Dhist(hist, arrayX, arrayY, weights=None):
     else:
         # ROOT.fill_2Dhist(hist=hist, arrayX=flar_x, arrayY=flar_y, weights=weights)
         hist.fill(flar_x, flar_y, weights)
+
