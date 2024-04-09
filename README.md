@@ -33,15 +33,7 @@ The features
 
 ### First time setup
 
-1. Clone this repository.
-
-    ```
-    git clone https://github.com/cerminar/ntuple-analysis.git
-    ```
-    
-    *Or you can create a fork of this repository if you plan to contribute.*
-
-2. Log in to a LXPLUS machine.
+1. Log in to a LXPLUS machine.
 
     *A computing account at CERN is required.*
     
@@ -56,8 +48,15 @@ The features
     ```
     mkdir "your directory"
     ```
+2. Clone this repository.
 
-    *CD into your newly created directory:*
+    ```
+    git clone https://github.com/cerminar/ntuple-analysis.git
+    ```
+    
+    *Or you can create a fork of this repository if you plan to contribute.*
+
+3. CD into your newly created directory:
     ```
     cd "your directory"
     ```
@@ -67,13 +66,13 @@ The features
     cd ntuple-analysis
     ```
 
-3. Clone [Plot Drawing Tools repository](https://github.com/cerminar/plot-drawing-tools) for the Jupyter Notebook support. 
+4. Clone [Plot Drawing Tools repository](https://github.com/cerminar/plot-drawing-tools) for the Jupyter Notebook support. 
 
     ```
     git clone https://github.com/cerminar/plot-drawing-tools.git
     ```
 
-4. Edit the ```setVirtualEnvWrapper.sh``` script to add the HOME directory of your user.
+5. Edit the ```setVirtualEnvWrapper.sh``` script to add the HOME directory of your user.
 
     *You can use Nano, Vim or your other favorite editor.*
     ```
@@ -87,13 +86,13 @@ The features
     *where YOUR_USERNAME is your username.*
 
 
-5. Run the shell script ```setup_lxplus.sh``` to set-up the LXPLUS service.
+6. Run the shell script ```setup_lxplus.sh``` to set-up the LXPLUS service.
 
     ```
     source setup_lxplus.sh
     ```
 
-6. Run another shell script, ```setVirtualEnvWrapper.sh```, to initialize the virtual environment wrapper. 
+7. Run another shell script, ```setVirtualEnvWrapper.sh```, to initialize the virtual environment wrapper. 
 
      ```
     source setVirtualEnvWrapper.sh
@@ -101,7 +100,7 @@ The features
 
     *To learn more about the Virtual Environment Wrapper, you can take a look at the docs [link](https://virtualenvwrapper.readthedocs.io/en/latest/install.html).*
     
-7. Create a virtual environment for the project.
+8. Create a virtual environment for the project.
 
     ```
     mkvirtualenv --system-site-packages -p `which python3.9` -r requirements.txt <venvname>
@@ -114,14 +113,14 @@ The features
     ```
     *NOTE: python > 3.9 is a requirement.**
     
-8. Activate the virtual environment (if it's not active already).
+9. Activate the virtual environment (if it's not active already).
 
     ```
     workon <venvname>
     ```
     *where venvname is the name of your new virtual environment**
 
-9. In order to use Jupyter Notebooks, we need to reinstall the ```traitlets``` package.
+10. In order to use Jupyter Notebooks, we need to reinstall the ```traitlets``` package.
     
     ```
     pip uninstall traitlets
@@ -132,7 +131,7 @@ The features
     pip install traitlets==5.9.0
     ```
 
-10. Install a custom kernel with all of the packages from your virtual environment.
+11. Install a custom kernel with all of the packages from your virtual environment.
 
     ```
     python3 -m ipykernel install --name <venvname> --user
@@ -141,7 +140,7 @@ The features
 
     *Source: [here](https://stackoverflow.com/questions/28831854/how-do-i-add-python3-kernel-to-jupyter-ipython ))*
 
-11. Launch the Jupyter Notebook.
+12. Launch the Jupyter Notebook.
     
     *You can launch it in the LXPLUS service:*
     ```
