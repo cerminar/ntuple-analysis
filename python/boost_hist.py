@@ -46,10 +46,6 @@ def fill_1Dhist(hist, array, weights=None):
         hist.fill(flar, weights)
         # ROOT.fill_1Dhist(hist=hist, array=flar, weights=weights)
         
-
-
-
-
 def fill_2Dhist(hist, arrayX, arrayY, weights=None):
     flar_x = ak.drop_none(ak.flatten(arrayX))
     flar_y = ak.drop_none(ak.flatten(arrayY))
@@ -60,4 +56,3 @@ def fill_2Dhist(hist, arrayX, arrayY, weights=None):
     else:
         # ROOT.fill_2Dhist(hist=hist, arrayX=flar_x, arrayY=flar_y, weights=weights)
         hist.fill(flar_x, flar_y, weights)
-
