@@ -84,6 +84,9 @@ class BaseHistos:
         for histo in [a for a in dir(self) if a.startswith('h_')]:
             writeable_hist = getattr(self, histo)
             # print (f"Writing {histo} class {writeable_hist.__class__.__name__}")
+            name = writeable_hist.label
+            writeable_hist = writeable_hist.compute()
+
             if 'GraphBuilder' in writeable_hist.__class__.__name__ :
                 continue
             elif 'TH1' in writeable_hist.__class__.__name__ or 'TH2' in writeable_hist.__class__.__name__:
@@ -93,7 +96,7 @@ class BaseHistos:
                 # print('ok')
             else:
                 up_writeable_hist = up.to_writable(writeable_hist)
-                upfile[f'{dir_name}/{writeable_hist.label}'] = up_writeable_hist
+                upfile[f'{dir_name}/{name}'] = up_writeable_hist
 
     # def normalize(self, norm):
     #     className = self.__class__.__name__
@@ -590,7 +593,7 @@ class EGHistos(BaseHistos):
             self.h_pfIsoPV = bh.TH1F(f'{name}_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
             self.h_n = bh.TH1F(f'{name}_n', '# objects per event', 100, 0, 100)
             self.h_compBdt = bh.TH1F(f'{name}_compBdt', 'BDT Score Comp ID', 50, 0, 1)
-
+            
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, egs):
