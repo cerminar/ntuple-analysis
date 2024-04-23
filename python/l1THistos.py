@@ -84,8 +84,7 @@ class BaseHistos:
         for histo in [a for a in dir(self) if a.startswith('h_')]:
             writeable_hist = getattr(self, histo)
             # print (f"Writing {histo} class {writeable_hist.__class__.__name__}")
-            
-            name = writeable_hist.label         
+            name = writeable_hist.label
             writeable_hist = writeable_hist.compute()
 
             if 'GraphBuilder' in writeable_hist.__class__.__name__ :
