@@ -9,7 +9,7 @@ def TH1F(name, title, nbins, bin_low, bin_high):
         b_axis_name = title_split[1]
     b_name = title_split[0]
     b_label = name
-        
+    
     return hist.dask.Hist(
          hist.axis.Regular(bins=nbins, start=bin_low, stop=bin_high, name=b_axis_name),
          label=b_label,
@@ -49,7 +49,7 @@ def fill_1Dhist(hist, array, weights=None):
 def fill_2Dhist(hist, arrayX, arrayY, weights=None):
     flar_x = ak.drop_none(ak.flatten(arrayX))
     flar_y = ak.drop_none(ak.flatten(arrayY))
-
+    
     if weights is None:
         # ROOT.fill_2Dhist(hist=hist, arrayX=flar_x, arrayY=flar_y)
         hist.fill(flar_x, flar_y, threads=None)
