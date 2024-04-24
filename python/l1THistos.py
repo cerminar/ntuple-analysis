@@ -1,5 +1,4 @@
 from array import array
-
 import awkward as ak
 import hist
 
@@ -10,6 +9,8 @@ import ROOT
 # import pandas as pd
 import uproot as up
 from scipy.special import expit
+import dask
+import inspect
 
 import python.boost_hist as bh
 
@@ -21,22 +22,41 @@ class HistoManager:
             self.val = None
             self.histoList = list()
             self.file = None
+            self.computed_histos = [[], []]
 
         def __str__(self):
             return f'self{self.val}'
-
-
 
         def addHistos(self, histo):
             # print 'ADD histo: {}'.format(histo)
             self.histoList.append(histo)
 
-        def writeHistos(self):
+        def computeHistos(self):
+            # [0] full_path = directory + "/" + histo name
+            # [1] histos = all histos
+            all_histos = [[], []]
             for histo in self.histoList:
-                histo.write(self.file)
+                returned_hists_obj = histo.get_all_histograms()
+                for full_path, histo in returned_hists_obj:
+                    all_histos[0].append(full_path)
+                    all_histos[1].append(histo)
+ 
+            self.computed_histos = dask.compute(all_histos)
+            return self.computed_histos
+
+        def writeHistos(self):
+            for path_list, histo_list in self.computed_histos:           
+                histos_len = len(histo_list)
+                
+                for index in range(0, histos_len):
+                    self.write_single_histogram(path_list[index], histo_list[index])
+
+        def write_single_histogram(self, path, histogram):
+            up_writeable_hist = up.to_writable(histogram)
+            self.file[path] = up_writeable_hist
 
     instance = None
-
+    
     def __new__(cls):
         if not HistoManager.instance:
             HistoManager.instance = HistoManager.__TheManager()
@@ -79,22 +99,18 @@ class BaseHistos:
             hm = HistoManager()
             hm.addHistos(self)
 
-    def write(self, upfile):
+    def get_all_histograms(self):
         dir_name = self.__class__.__name__
+        histos_in_write = []
         for histo in [a for a in dir(self) if a.startswith('h_')]:
             writeable_hist = getattr(self, histo)
-            # print (f"Writing {histo} class {writeable_hist.__class__.__name__}")
-            if 'GraphBuilder' in writeable_hist.__class__.__name__ :
-                continue
-            elif 'TH1' in writeable_hist.__class__.__name__ or 'TH2' in writeable_hist.__class__.__name__:
-                # print('start')
-                # FIXME: this somehow fails randomply. ROOT not lining the right python???
-                upfile[f'{dir_name}/{writeable_hist.GetName()}'] = writeable_hist
-                # print('ok')
-            else:
-                up_writeable_hist = up.to_writable(writeable_hist)
-                upfile[f'{dir_name}/{writeable_hist.label}'] = up_writeable_hist
-
+            name = writeable_hist.label
+            
+            full_path = dir_name + '/' + name 
+            
+            histos_in_write.append((full_path, writeable_hist))
+        return histos_in_write
+    
     # def normalize(self, norm):
     #     className = self.__class__.__name__
     #     ret = className()
@@ -579,49 +595,56 @@ class Cluster3DHistos(BaseHistos):
 
 class EGHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
-        if not root_file:
-            self.h_pt = bh.TH1F(f'{name}_pt', 'EG Pt (GeV); p_{T} [GeV]', 100, 0, 100)
-            self.h_eta = bh.TH1F(f'{name}_eta', 'EG eta; #eta;', 100, -4, 4)
-            self.h_energy = bh.TH1F(f'{name}_energy', 'EG energy (GeV); E [GeV]', 1000, 0, 1000)
-            self.h_hwQual = bh.TH1F(f'{name}_hwQual', 'EG energy (GeV); hwQual', 5, 0, 5)
-            self.h_tkIso = bh.TH1F(f'{name}_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2)
-            self.h_pfIso = bh.TH1F(f'{name}_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
-            self.h_tkIsoPV = bh.TH1F(f'{name}_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2)
-            self.h_pfIsoPV = bh.TH1F(f'{name}_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
-            self.h_n = bh.TH1F(f'{name}_n', '# objects per event', 100, 0, 100)
-            self.h_compBdt = bh.TH1F(f'{name}_compBdt', 'BDT Score Comp ID', 50, 0, 1)
+        #print("INIT EG HISTOS")
+        self.name = name
 
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, egs):
+        #print("l1Histos.py: FILLING EG HISTOS... ")
         weight = None
         if 'weight' in egs.fields:
             weight = egs.weight
 
-        bh.fill_1Dhist(hist=self.h_pt,     array=egs.pt,     weights=weight)
-        bh.fill_1Dhist(hist=self.h_eta,    array=egs.eta,    weights=weight)
+        #data = egs.pt.compute()
+        #print("l1Histos.py: bh is", type(bh), " DATA: ", data)
+
+        #tack = inspect.stack()
+        #print("l2THistos.py: TACK ", tack)
+
+        name = self.name
+       
+        #self.h_energy = all_histogram_actions_TH1F([f'{name}_energy', 'EG energy (GeV); E [GeV]', 1000, 0, 1000], [egs.energy, weight])
+        
+        #bh.fill_1Dhist(hist=self.h_pt,     array=egs.pt,     weights=weight)
+        self.h_pt = bh.all_histogram_actions_TH1F([f'{name}_pt', 'EG Pt (GeV); p_{T} [GeV]', 100, 0, 100], [egs.pt, weight])
+        #bh.fill_1Dhist(hist=self.h_eta,    array=egs.eta,    weights=weight)
+        self.h_eta = bh.all_histogram_actions_TH1F([f'{name}_eta', 'EG eta; #eta;', 100, -4, 4], [egs.eta, weight])
         # bh.fill_1Dhist(hist=self.h_energy, array=egs.energy, weights=weight)
-        bh.fill_1Dhist(hist=self.h_hwQual, array=egs.hwQual, weights=weight)
+        #bh.fill_1Dhist(hist=self.h_hwQual, array=egs.hwQual, weights=weight)
+        self.h_hwQual = bh.all_histogram_actions_TH1F([f'{name}_hwQual', 'EG energy (GeV); hwQual', 5, 0, 5], [egs.hwQual, weight])
         if 'tkIso' in egs.fields:
-            bh.fill_1Dhist(hist=self.h_tkIso, array=egs.tkIso, weights=weight)
+            self.h_tkIso = bh.all_histogram_actions_TH1F([f'{name}_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2], [egs.tkIso, weight])
         if 'pfIso' in egs.fields:
-            bh.fill_1Dhist(hist=self.h_pfIso, array=egs.pfIso, weights=weight)
+            self.h_pfIso = bh.all_histogram_actions_TH1F([f'{name}_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2], [egs.pfIso, weight])
         if 'tkIsoPV' in egs.fields:
-            bh.fill_1Dhist(hist=self.h_tkIsoPV, array=egs.tkIsoPV, weights=weight)
-            bh.fill_1Dhist(hist=self.h_pfIsoPV, array=egs.pfIsoPV, weights=weight)
+            self.h_tkIsoPV = bh.all_histogram_actions_TH1F([f'{name}_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2], [egs.tkIsoPV, weight])
+            self.h_pfIsoPV = bh.all_histogram_actions_TH1F([f'{name}_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2], [egs.pfIsoPV, weight])
         if 'compBDTScore' in egs.fields:
-            bh.fill_1Dhist(hist=self.h_compBdt, array=egs.compBDTScore, weights=weight)
+            self.h_compBdt = bh.all_histogram_actions_TH1F([f'{name}_compBdt', 'BDT Score Comp ID', 50, 0, 1], [egs.compBDTScore, weight])            
         if 'idScore' in egs.fields:
-            bh.fill_1Dhist(hist=self.h_compBdt, array=expit(egs.idScore), weights=weight)
+            self.h_compBdt = bh.all_histogram_actions_TH1F([f'{name}_compBdt', 'BDT Score Comp ID', 50, 0, 1], [expit(egs.idScore), weight])        
+            
         # print(ak.count(egs.pt, axis=1))
         # print(egs.pt.type.show())
         # print(ak.count(egs.pt, axis=1).type.show())
-        self.h_n.fill(ak.count(egs.pt, axis=1))
+        #self.h_n.fill(ak.count(egs.pt, axis=1))
         # bh.fill_1Dhist(hist=self.h_n, array=ak.count(egs.pt, axis=1), weights=weight)
         # self.h_n.Fill()
-
+        #self.h_n = bh.all_histogram_actions_TH1F([f'{name}_n', '# objects per event', 100, 0, 100], [ak.count(egs.pt, axis=1), weight])
 
     def add_histos(self):
+        # PAKEITIMAI PAKEITIMAI KETURIOS EILUTES APACOJE
         self.h_pt.Add(self.h_pt_temp.GetValue())
         self.h_eta.Add(self.h_eta_temp.GetValue())
         self.h_energy.Add(self.h_energy_temp.GetValue())
