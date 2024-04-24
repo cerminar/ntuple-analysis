@@ -644,7 +644,6 @@ class EGHistos(BaseHistos):
         #self.h_n = bh.all_histogram_actions_TH1F([f'{name}_n', '# objects per event', 100, 0, 100], [ak.count(egs.pt, axis=1), weight])
 
     def add_histos(self):
-        # PAKEITIMAI PAKEITIMAI KETURIOS EILUTES APACOJE
         self.h_pt.Add(self.h_pt_temp.GetValue())
         self.h_eta.Add(self.h_eta_temp.GetValue())
         self.h_energy.Add(self.h_energy_temp.GetValue())
