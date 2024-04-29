@@ -89,53 +89,15 @@ def analyze(params, batch_idx=-1):
     # ------------------------- READ .ROOT FILES --------------------------------
 
     start_time_reading_files = time.time()
-    pprint('')
-    pprint(f"{'events_per_job':<15}: {params.events_per_job}")
-    pprint(f"{'maxEvents':<15}: {params.maxEvents}")
-    pprint(f"{'range_ev':<15}: {range_ev}")
-    pprint('')
-
-    print("Creating dask-delayed objects for file reading...")
-    print("Reading .ROOT files sequentially...")
-  
-    tree_reader = treereader.TreeReader(range_ev, params.maxEvents)
-
-    for tree_file_name in files_with_protocol:
-        tree_file = up.open(tree_file_name, num_workers=1)
-        pprint(f'opening file: {tree_file_name}')
-        pprint(f' . tree name: {params.tree_name}')
-
-        ttree = tree_file[params.tree_name]
-
-        tree_reader.setTree(ttree)
-
-        while tree_reader.next(debug):
-            try:
-                collection_manager.read(tree_reader, debug)
-
-                for plotter in plotter_collection:
-                    plotter.fill_histos_event(tree_reader.file_entry, debug=debug)
-
-                if (
-                    batch_idx != -1
-                    and timecounter.counter.started()
-                    and tree_reader.global_entry % 100 == 0
-                    and timecounter.counter.job_flavor_time_left(params.htc_jobflavor) < 5 * 60
-                ):
-                    tree_reader.printEntry()
-                    pprint('    less than 5 min left for batch slot: exit event loop!')
-                    timecounter.counter.job_flavor_time_perc(params.htc_jobflavor)
-                    break
-
-            except Exception as inst:
-                tree_reader.printEntry()
-                pprint(f'[EXCEPTION OCCURRED:] {inst!s}')
-                pprint('Unexpected error:', sys.exc_info()[0])
-                traceback.print_exc()
-                tree_file.close()
-                sys.exit(200)
-
-        tree_file.close()
+    
+    compute_files = []
+    for file in files_with_protocol:
+        single_tree_reader = treereader.TreeReader(range_ev, params.maxEvents)
+        compute_files.append(process_file(file, single_tree_reader, debug, collection_manager, plotter_collection, hm))
+        
+    results = dask.compute(*compute_files)
+    
+    n_tot_entries = sum(results)
 
     finish_time_reading_files = time.time()
     print("Finished reading .ROOT files in sequentially! Took: ", finish_time_reading_files - start_time_reading_files, "s.")
@@ -163,4 +125,30 @@ def analyze(params, batch_idx=-1):
 
     # ------------------------- TOTAL ENTRIES OUTPUT --------------------------------
 
+    return n_tot_entries
+
+@dask.delayed
+def process_file(filename, tree_reader, debug, collection_manager, plotter_collection, hm):
+    print("ACTIVE PROCESS_FILE")
+    
+    tree_file = up.open(filename, num_workers=1)
+    pprint(f'opening file: {filename}')
+
+    ttree = tree_file['Events']
+    tree_reader.setTree(ttree)
+
+    while tree_reader.next(debug):
+        try:
+            collection_manager.read(tree_reader, debug)
+
+            for plotter in plotter_collection:
+                #print("DOING PLOTTER", plotter)
+                plotter.fill_histos_event(tree_reader.file_entry, debug=debug)
+
+        except Exception as inst:
+            pprint(f'[EXCEPTION OCCURRED:] {inst!s}')
+            pprint('Unexpected error:', sys.exc_info()[0])
+
+    tree_file.close()
+        
     return tree_reader.n_tot_entries
