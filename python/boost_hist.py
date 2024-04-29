@@ -15,9 +15,9 @@ def all_histogram_actions_TH1F(params_TH1F, params_TH1F_fill):
     # Fill it
     #print("boost_hist.py: all_histogram_actions_TH1F: ", title, " DATA: ", array)
 
-    histogram = fill_1Dhist(histogram, array, weights)
     return histogram
 
+@dask.delayed
 def TH1F(name, title, nbins, bin_low, bin_high):
     b_axis_name = 'X'
     title_split = title.split(';')
@@ -52,6 +52,7 @@ def TH2F(name, title, x_nbins, x_bin_low, x_bin_high, y_nbins, y_bin_low, y_bin_
         storage=hist.storage.Weight()
     )
 
+@dask.delayed
 def fill_1Dhist(hist, array, weights=None):  
     flar = ak.drop_none(ak.flatten(array))
       
