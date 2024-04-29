@@ -1,5 +1,4 @@
 from array import array
-
 import awkward as ak
 import hist
 
@@ -10,6 +9,8 @@ import ROOT
 # import pandas as pd
 import uproot as up
 from scipy.special import expit
+import dask
+import inspect
 
 import python.boost_hist as bh
 
@@ -21,22 +22,41 @@ class HistoManager:
             self.val = None
             self.histoList = list()
             self.file = None
+            self.computed_histos = [[], []]
 
         def __str__(self):
             return f'self{self.val}'
-
-
 
         def addHistos(self, histo):
             # print 'ADD histo: {}'.format(histo)
             self.histoList.append(histo)
 
-        def writeHistos(self):
+        def computeHistos(self):
+            # [0] full_path = directory + "/" + histo name
+            # [1] histos = all histos
+            all_histos = [[], []]
             for histo in self.histoList:
-                histo.write(self.file)
+                returned_hists_obj = histo.get_all_histograms()
+                for full_path, histo in returned_hists_obj:
+                    all_histos[0].append(full_path)
+                    all_histos[1].append(histo)
+ 
+            self.computed_histos = dask.compute(all_histos)
+            return self.computed_histos
+
+        def writeHistos(self):
+            for path_list, histo_list in self.computed_histos:           
+                histos_len = len(histo_list)
+                
+                for index in range(0, histos_len):
+                    self.write_single_histogram(path_list[index], histo_list[index])
+
+        def write_single_histogram(self, path, histogram):
+            up_writeable_hist = up.to_writable(histogram)
+            self.file[path] = up_writeable_hist
 
     instance = None
-
+    
     def __new__(cls):
         if not HistoManager.instance:
             HistoManager.instance = HistoManager.__TheManager()
@@ -79,22 +99,18 @@ class BaseHistos:
             hm = HistoManager()
             hm.addHistos(self)
 
-    def write(self, upfile):
+    def get_all_histograms(self):
         dir_name = self.__class__.__name__
+        histos_in_write = []
         for histo in [a for a in dir(self) if a.startswith('h_')]:
             writeable_hist = getattr(self, histo)
-            # print (f"Writing {histo} class {writeable_hist.__class__.__name__}")
-            if 'GraphBuilder' in writeable_hist.__class__.__name__ :
-                continue
-            elif 'TH1' in writeable_hist.__class__.__name__ or 'TH2' in writeable_hist.__class__.__name__:
-                # print('start')
-                # FIXME: this somehow fails randomply. ROOT not lining the right python???
-                upfile[f'{dir_name}/{writeable_hist.GetName()}'] = writeable_hist
-                # print('ok')
-            else:
-                up_writeable_hist = up.to_writable(writeable_hist)
-                upfile[f'{dir_name}/{writeable_hist.label}'] = up_writeable_hist
-
+            name = writeable_hist.label
+            
+            full_path = dir_name + '/' + name 
+            
+            histos_in_write.append((full_path, writeable_hist))
+        return histos_in_write
+    
     # def normalize(self, norm):
     #     className = self.__class__.__name__
     #     ret = className()
@@ -594,31 +610,29 @@ class EGHistos(BaseHistos):
         BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, egs):
+        #print("l1Histos.py: FILLING EG HISTOS... ")
         weight = None
         if 'weight' in egs.fields:
             weight = egs.weight
-
-        bh.fill_1Dhist(hist=self.h_pt,     array=egs.pt,     weights=weight)
-        bh.fill_1Dhist(hist=self.h_eta,    array=egs.eta,    weights=weight)
+            
+        self.h_pt = bh.fill_1Dhist(hist=self.h_pt,     array=egs.pt,     weights=weight)
+        
+        self.h_eta = bh.fill_1Dhist(hist=self.h_eta,    array=egs.eta,    weights=weight)
         # bh.fill_1Dhist(hist=self.h_energy, array=egs.energy, weights=weight)
-        bh.fill_1Dhist(hist=self.h_hwQual, array=egs.hwQual, weights=weight)
+        self.h_hwQual = bh.fill_1Dhist(hist=self.h_hwQual, array=egs.hwQual, weights=weight)
         if 'tkIso' in egs.fields:
-            bh.fill_1Dhist(hist=self.h_tkIso, array=egs.tkIso, weights=weight)
+            self.h_tkIso = bh.fill_1Dhist(hist=self.h_tkIso, array=egs.tkIso, weights=weight)
         if 'pfIso' in egs.fields:
-            bh.fill_1Dhist(hist=self.h_pfIso, array=egs.pfIso, weights=weight)
+            self.h_pfIso = bh.fill_1Dhist(hist=self.h_pfIso, array=egs.pfIso, weights=weight)
         if 'tkIsoPV' in egs.fields:
-            bh.fill_1Dhist(hist=self.h_tkIsoPV, array=egs.tkIsoPV, weights=weight)
-            bh.fill_1Dhist(hist=self.h_pfIsoPV, array=egs.pfIsoPV, weights=weight)
+            self.h_tkIsoPV = bh.fill_1Dhist(hist=self.h_tkIsoPV, array=egs.tkIsoPV, weights=weight)
+            self.h_pfIsoPV = bh.fill_1Dhist(hist=self.h_pfIsoPV, array=egs.pfIsoPV, weights=weight)
         if 'compBDTScore' in egs.fields:
-            bh.fill_1Dhist(hist=self.h_compBdt, array=egs.compBDTScore, weights=weight)
+            self.h_compBdt = bh.fill_1Dhist(hist=self.h_compBdt, array=egs.compBDTScore, weights=weight)
         if 'idScore' in egs.fields:
-            bh.fill_1Dhist(hist=self.h_compBdt, array=expit(egs.idScore), weights=weight)
-        # print(ak.count(egs.pt, axis=1))
-        # print(egs.pt.type.show())
-        # print(ak.count(egs.pt, axis=1).type.show())
-        self.h_n.fill(ak.count(egs.pt, axis=1))
-        # bh.fill_1Dhist(hist=self.h_n, array=ak.count(egs.pt, axis=1), weights=weight)
-        # self.h_n.Fill()
+            self.h_compBdt = bh.fill_1Dhist(hist=self.h_compBdt, array=expit(egs.idScore), weights=weight)        
+            
+        #self.h_n = bh.all_histogram_actions_TH1F([f'{name}_n', '# objects per event', 100, 0, 100], [ak.count(egs.pt, axis=1), weight])
 
 
     def add_histos(self):
@@ -630,7 +644,6 @@ class EGHistos(BaseHistos):
         # self.h_pfIso = bh.TH1F(name+'_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
         # self.h_tkIsoPV = bh.TH1F(name+'_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2)
         # self.h_pfIsoPV = bh.TH1F(name+'_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
-
 
 class DecTkHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):

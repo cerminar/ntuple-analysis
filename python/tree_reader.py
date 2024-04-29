@@ -1,9 +1,13 @@
 import datetime
 import gc
+import profile
 import resource
 
 import awkward as ak
 import vector
+
+import coffea
+from coffea.nanoevents import NanoEventsFactory, NanoAODSchema, BaseSchema
 
 vector.register_awkward()
 
@@ -88,13 +92,12 @@ class TreeReader:
             if len(s) > 80: s = s[:80]
             print (type(x),'\n  ', s)
 
-
     def getDataFrame(self, prefix, entry_block, fallback=None):
         branches = [br for br in self._branches
                     if br.startswith(f'{prefix}_') and
                     br != f'{prefix}_n']
         names = ['_'.join(br.split('_')[1:]) for br in branches]
-        name_map = dict(zip(names, branches, strict=False))
+        name_map = dict(zip(names, branches))
         if len(branches) == 0:
             if fallback is not None:
                 return self.getDataFrame(prefix=fallback, entry_block=entry_block)
@@ -102,21 +105,28 @@ class TreeReader:
             print(f'stored branch prefixes are: {prefs}')
             raise ValueError(f'[TreeReader::getDataFrame] No branches with prefix: {prefix}')
 
-        akarray = self.tree.arrays(names,
-                                   library='ak',
-                                   aliases=name_map,
-                                   entry_start=self.file_entry,
-                                   entry_stop=self.file_entry+entry_block)
+        dask_akarray = NanoEventsFactory.from_root(
+                                   self.tree,
+                                   schemaclass=NanoAODSchema).events()
 
-        # print(akarray)
+        #akarray = self.tree.arrays(names, library='ak', aliases=name_map, entry_start=self.file_entry, entry_stop=self.file_entry+entry_block)
+        #print("[0] prefix to select: ", prefix)
+
+        print("ACTIVATING TREE READER... ")
+
+        dask_akarray = dask_akarray[prefix]     
+        #print("[1] Selected fields from prefix", dask_akarray.fields)   
+
+        dask_akarray = dask_akarray[names]
+
+        #print("[2] specific fields with names", dask_akarray.fields)
+        dask_akarray = dask_akarray[self.file_entry : self.file_entry + entry_block]
+
+        dask_akarray = dask_akarray.persist()
+
         records = {}
-        for field in akarray.fields:
-            records[field] = akarray[field]
-
-        if 'pt' in names and 'eta' in names and 'phi' in names:
-            if 'mass' not in names and 'energy' not in names:
-                records['mass'] = 0.*akarray['pt']
-            return vector.zip(records)
+        for field in dask_akarray.fields:
+            records[field] = dask_akarray[field]
 
         return ak.zip(records)
 
@@ -125,4 +135,3 @@ class TreeReader:
         # this would allow to handle the records and assign behaviours....
 
         # return akarray
-
