@@ -595,8 +595,17 @@ class Cluster3DHistos(BaseHistos):
 
 class EGHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
-        #print("INIT EG HISTOS")
-        self.name = name
+        if not root_file:
+            self.h_pt = bh.TH1F(f'{name}_pt', 'EG Pt (GeV); p_{T} [GeV]', 100, 0, 100)
+            self.h_eta = bh.TH1F(f'{name}_eta', 'EG eta; #eta;', 100, -4, 4)
+            self.h_energy = bh.TH1F(f'{name}_energy', 'EG energy (GeV); E [GeV]', 1000, 0, 1000)
+            self.h_hwQual = bh.TH1F(f'{name}_hwQual', 'EG energy (GeV); hwQual', 5, 0, 5)
+            self.h_tkIso = bh.TH1F(f'{name}_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2)
+            self.h_pfIso = bh.TH1F(f'{name}_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
+            self.h_tkIsoPV = bh.TH1F(f'{name}_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2)
+            self.h_pfIsoPV = bh.TH1F(f'{name}_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
+            self.h_n = bh.TH1F(f'{name}_n', '# objects per event', 100, 0, 100)
+            self.h_compBdt = bh.TH1F(f'{name}_compBdt', 'BDT Score Comp ID', 50, 0, 1)
 
         BaseHistos.__init__(self, name, root_file, debug)
 
@@ -605,43 +614,26 @@ class EGHistos(BaseHistos):
         weight = None
         if 'weight' in egs.fields:
             weight = egs.weight
-
-        #data = egs.pt.compute()
-        #print("l1Histos.py: bh is", type(bh), " DATA: ", data)
-
-        #tack = inspect.stack()
-        #print("l2THistos.py: TACK ", tack)
-
-        name = self.name
-       
-        #self.h_energy = all_histogram_actions_TH1F([f'{name}_energy', 'EG energy (GeV); E [GeV]', 1000, 0, 1000], [egs.energy, weight])
-        
-        #bh.fill_1Dhist(hist=self.h_pt,     array=egs.pt,     weights=weight)
-        self.h_pt = bh.all_histogram_actions_TH1F([f'{name}_pt', 'EG Pt (GeV); p_{T} [GeV]', 100, 0, 100], [egs.pt, weight])
-        #bh.fill_1Dhist(hist=self.h_eta,    array=egs.eta,    weights=weight)
-        self.h_eta = bh.all_histogram_actions_TH1F([f'{name}_eta', 'EG eta; #eta;', 100, -4, 4], [egs.eta, weight])
-        # bh.fill_1Dhist(hist=self.h_energy, array=egs.energy, weights=weight)
-        #bh.fill_1Dhist(hist=self.h_hwQual, array=egs.hwQual, weights=weight)
-        self.h_hwQual = bh.all_histogram_actions_TH1F([f'{name}_hwQual', 'EG energy (GeV); hwQual', 5, 0, 5], [egs.hwQual, weight])
-        if 'tkIso' in egs.fields:
-            self.h_tkIso = bh.all_histogram_actions_TH1F([f'{name}_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2], [egs.tkIso, weight])
-        if 'pfIso' in egs.fields:
-            self.h_pfIso = bh.all_histogram_actions_TH1F([f'{name}_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2], [egs.pfIso, weight])
-        if 'tkIsoPV' in egs.fields:
-            self.h_tkIsoPV = bh.all_histogram_actions_TH1F([f'{name}_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2], [egs.tkIsoPV, weight])
-            self.h_pfIsoPV = bh.all_histogram_actions_TH1F([f'{name}_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2], [egs.pfIsoPV, weight])
-        if 'compBDTScore' in egs.fields:
-            self.h_compBdt = bh.all_histogram_actions_TH1F([f'{name}_compBdt', 'BDT Score Comp ID', 50, 0, 1], [egs.compBDTScore, weight])            
-        if 'idScore' in egs.fields:
-            self.h_compBdt = bh.all_histogram_actions_TH1F([f'{name}_compBdt', 'BDT Score Comp ID', 50, 0, 1], [expit(egs.idScore), weight])        
             
-        # print(ak.count(egs.pt, axis=1))
-        # print(egs.pt.type.show())
-        # print(ak.count(egs.pt, axis=1).type.show())
-        #self.h_n.fill(ak.count(egs.pt, axis=1))
-        # bh.fill_1Dhist(hist=self.h_n, array=ak.count(egs.pt, axis=1), weights=weight)
-        # self.h_n.Fill()
+        self.h_pt = bh.fill_1Dhist(hist=self.h_pt,     array=egs.pt,     weights=weight)
+        
+        self.h_eta = bh.fill_1Dhist(hist=self.h_eta,    array=egs.eta,    weights=weight)
+        # bh.fill_1Dhist(hist=self.h_energy, array=egs.energy, weights=weight)
+        self.h_hwQual = bh.fill_1Dhist(hist=self.h_hwQual, array=egs.hwQual, weights=weight)
+        if 'tkIso' in egs.fields:
+            self.h_tkIso = bh.fill_1Dhist(hist=self.h_tkIso, array=egs.tkIso, weights=weight)
+        if 'pfIso' in egs.fields:
+            self.h_pfIso = bh.fill_1Dhist(hist=self.h_pfIso, array=egs.pfIso, weights=weight)
+        if 'tkIsoPV' in egs.fields:
+            self.h_tkIsoPV = bh.fill_1Dhist(hist=self.h_tkIsoPV, array=egs.tkIsoPV, weights=weight)
+            self.h_pfIsoPV = bh.fill_1Dhist(hist=self.h_pfIsoPV, array=egs.pfIsoPV, weights=weight)
+        if 'compBDTScore' in egs.fields:
+            self.h_compBdt = bh.fill_1Dhist(hist=self.h_compBdt, array=egs.compBDTScore, weights=weight)
+        if 'idScore' in egs.fields:
+            self.h_compBdt = bh.fill_1Dhist(hist=self.h_compBdt, array=expit(egs.idScore), weights=weight)        
+            
         #self.h_n = bh.all_histogram_actions_TH1F([f'{name}_n', '# objects per event', 100, 0, 100], [ak.count(egs.pt, axis=1), weight])
+
 
     def add_histos(self):
         self.h_pt.Add(self.h_pt_temp.GetValue())
@@ -652,7 +644,6 @@ class EGHistos(BaseHistos):
         # self.h_pfIso = bh.TH1F(name+'_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
         # self.h_tkIsoPV = bh.TH1F(name+'_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2)
         # self.h_pfIsoPV = bh.TH1F(name+'_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
-
 
 class DecTkHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
