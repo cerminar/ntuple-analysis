@@ -64,6 +64,7 @@ def analyze(params, batch_idx=-1):
     # -------------------------BOOK HISTOS------------------------------
 
     for plotter in plotter_collection:
+        plotter.print()
         plotter.book_histos()
 
     collection_manager = collections.EventManager()

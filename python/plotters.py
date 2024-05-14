@@ -23,6 +23,7 @@ import awkward as ak
 import numpy as np
 import pandas as pd
 import ROOT
+import math 
 
 from . import calibrations as calib
 from . import clusterTools as clAlgo
@@ -30,6 +31,9 @@ from . import l1THistos as histos
 from . import selections as selections
 from . import utils as utils
 
+from rich import print as pprint
+from rich.console import Console
+from rich.table import Table
 # import collections as collections
 # ROOT.gROOT.ProcessLine('#include "src/fastfilling.h"')
 
@@ -98,27 +102,20 @@ class BasePlotter:
     #     else:
     #         return '<{}, tp: {}>'.format(self.__class__.__name__,
     #                                      self.data_set.name)
+    def print(self):
+        table = Table(title=f'* Plotter: {self.__class__.__name__}', title_justify='left',title_style='bold on blue')
+        table.add_column('Data coll.', justify='right', style='cyan', no_wrap=True)
+        table.add_column('Data sel.', justify='left', style='cyan', no_wrap=True)
+        # table.add_column('Histo class', style='blue')
 
+        table.add_row(self.data_set.name, 
+                      ('\n').join(['-'+s.name for s in self.data_selections]),
+                    #   self.HistoClass.__name__
+                      )
+        console = Console()
+        console.print(table)
 
-class HGCCl3DRatePlotter(BasePlotter):
-    def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
-        self.h_rate = {}
-        super(HGCCl3DRatePlotter, self).__init__(tp_set, tp_selections)
-
-    def book_histos(self):
-        self.tp_set.activate()
-        tp_name = self.tp_set.name
-        for selection in self.tp_selections:
-            self.h_rate[selection.name] = histos.RateHistos(name=f'{tp_name}_{selection.name}')
-
-    def fill_histos(self, debug=0):
-        # print '------------------'
-        # print self.tp_set.name
-        for selection in self.tp_selections:
-            sel_clusters = self.tp_set.query(selection)
-            self.h_rate[selection.name].fill_many(sel_clusters.loc[sel_clusters['pt_em'].groupby(level='entry', group_keys=False).nlargest(n=1).index, ['pt_em']])
-            self.h_rate[selection.name].fill_norm(self.tp_set.new_read_nentries)
-
+        pass
 
 class GenericDataFramePlotter(BasePlotter):
     def __init__(self, HistoClass, data_set, selections=[selections.Selection('all')], pt_bins=None):
@@ -146,6 +143,19 @@ class GenericDataFramePlotter(BasePlotter):
             if not data_sel.all:
                 data = data[data_sel.selection(data)]
             self.h_set[data_sel.name].fill(data)
+
+    def print(self):
+        table = Table(title=f'* Plotter: {self.__class__.__name__}', title_justify='left',title_style='bold on blue')
+        table.add_column('Data coll.', justify='right', style='cyan', no_wrap=True)
+        table.add_column('Data sel.', justify='left', style='cyan', no_wrap=True)
+        table.add_column('Histo class', style='blue')
+
+        table.add_row(self.data_set.name, 
+                      ('\n').join(['-'+s.name for s in self.data_selections]),
+                      self.HistoClass.__name__
+                      )
+        console = Console()
+        console.print(table)
 
 
 class GenPlotter(GenericDataFramePlotter):
@@ -191,9 +201,6 @@ class DecTkPlotter(GenericDataFramePlotter):
     def __init__(self, tk_set, tk_selections=[selections.Selection('all')]):
         super(DecTkPlotter, self).__init__(histos.DecTkHistos, tk_set, tk_selections)
 
-class Cl3DPlotter(GenericDataFramePlotter):
-    def __init__(self, data_set, data_selections=[selections.Selection('all')]):
-        super(Cl3DPlotter, self).__init__(histos.Cluster3DHistos, data_set, data_selections)
 
 class TPPlotter(BasePlotter):
     def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
@@ -586,6 +593,24 @@ class GenericGenMatchPlotter(BasePlotter):
                                      self.data_set.name,
                                      debug)
 
+    def print(self):
+        table = Table(title=f'* Plotter: {self.__class__.__name__}', title_justify='left',title_style='bold on blue')
+        table.add_column('Data coll.', justify='right', style='cyan', no_wrap=True)
+        table.add_column('Data sel.', justify='left', style='cyan', no_wrap=True)
+        table.add_column('GEN coll.', style='blue')
+        table.add_column('GEN sel.', style='blue', justify='left')
+        table.add_column('DR cut', style='blue', justify='left')
+        table.add_column('GEN match', style='blue', justify='left')
+
+        table.add_row(self.data_set.name, 
+                      ('\n').join(['-'+s.name for s in self.data_selections]),
+                      self.gen_set.name,
+                      ('\n').join(['-'+s.name for s in self.gen_selections]),
+                      str(math.sqrt(self.dr2)),
+                      f'{self.gen_eta_phi_columns[0]},{self.gen_eta_phi_columns[1]}'
+                      )
+        console = Console()
+        console.print(table)
 
 class TrackGenMatchPlotter(GenericGenMatchPlotter):
     def __init__(self, data_set, gen_set,
@@ -629,61 +654,6 @@ class DecTrackGenMatchPlotter(GenericGenMatchPlotter):
             gen_eta_phi_columns=['eta', 'phi'])
 
 
-class Cl3DGenMatchPlotter(GenericGenMatchPlotter):
-    def __init__(self, data_set, gen_set,
-                 data_selections=[selections.Selection('all')],
-                 gen_selections=[selections.Selection('all')],
-                 pt_bins=None):
-        super(Cl3DGenMatchPlotter, self).__init__(histos.Cluster3DHistos, histos.ResoHistos,
-                                                  data_set, gen_set,
-                                                  data_selections, gen_selections,
-                                                  gen_eta_phi_columns=['caloeta', 'calophi'],
-                                                  pt_bins=pt_bins)
-
-
-class EGGenMatchPtWPSPlotter(GenericGenMatchPlotter):
-    def __init__(self, data_set, gen_set, gen_selections):
-        super(EGGenMatchPtWPSPlotter, self).__init__(
-            histos.EGHistos, histos.EGResoHistos,
-            data_set, gen_set,
-            [], gen_selections)
-
-    def book_histos(self):
-        calib_mgr = calib.CalibManager()
-        rate_pt_wps = calib_mgr.get_pt_wps()
-        self.data_selections = calib.rate_pt_wps_selections(
-            rate_pt_wps, self.data_set.name)
-        GenericGenMatchPlotter.book_histos(self)
-
-
-class HGCCl3DGenMatchPtWPSPlotter(GenericGenMatchPlotter):
-    def __init__(self, data_set, gen_set, gen_selections):
-        super(HGCCl3DGenMatchPtWPSPlotter, self).__init__(
-            histos.Cluster3DHistos, histos.ResoHistos,
-            data_set, gen_set,
-            [], gen_selections)
-
-    def book_histos(self):
-        calib_mgr = calib.CalibManager()
-        rate_pt_wps = calib_mgr.get_pt_wps()
-        self.data_selections = calib.rate_pt_wps_selections(
-            rate_pt_wps, self.data_set.name, 'pt_em')
-        GenericGenMatchPlotter.book_histos(self)
-
-
-class EGGenMatchPlotter(GenericGenMatchPlotter):
-    def __init__(self, data_set, gen_set,
-                 data_selections=[selections.Selection('all')],
-                 gen_selections=[selections.Selection('all')],
-                 gen_eta_phi_columns=('caloeta', 'calophi'),
-                 pt_bins=None):
-        super(EGGenMatchPlotter, self).__init__(histos.EGHistos, histos.EGResoHistos,
-                                                data_set, gen_set,
-                                                data_selections, gen_selections,
-                                                gen_eta_phi_columns=gen_eta_phi_columns,
-                                                pt_bins=pt_bins)
-
-
 class TkEGGenMatchPlotter(GenericGenMatchPlotter):
     def __init__(self, data_set, gen_set,
                  data_selections=[selections.Selection('all')],
@@ -691,15 +661,6 @@ class TkEGGenMatchPlotter(GenericGenMatchPlotter):
         super(TkEGGenMatchPlotter, self).__init__(histos.TkEGHistos, histos.EGResoHistos,
                                                   data_set, gen_set,
                                                   data_selections, gen_selections)
-
-
-class ResoNtupleMatchPlotter(GenericGenMatchPlotter):
-    def __init__(self, data_set, gen_set,
-                 data_selections=[selections.Selection('all')],
-                 gen_selections=[selections.Selection('all')]):
-        super(ResoNtupleMatchPlotter, self).__init__(histos.EGHistos, histos.ResoTuples,
-                                                data_set, gen_set,
-                                                data_selections, gen_selections, drcut=0.2)
 
 
 

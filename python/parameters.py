@@ -52,18 +52,25 @@ def get_collection_parameters(opt, cfgfile):
 
     collection_params = {}
     print('')
-    for collection, collection_data in cfgfile['collections'].items():
+
+    file_label = cfgfile['common']['file_label']
+
+    for collection, collection_data in [(i,d) for (i,d) in cfgfile.items() if i not in ['common', 'dataset', 'samples']]:
+        
         samples = cfgfile['samples'].keys()
         pprint(f'--- Collection: {collection} with samples: {samples}')
         sample_params = []
-
         plotters = []
+
         for plotter in collection_data['plotters']:
             plotters.extend(plotter)
 
+        if 'file_label' in collection_data:
+            file_label += collection_data['file_label']
+
         for sample in samples:
             events_per_job = -1
-            output_filename_base = f"histos_{sample}_{collection_data['file_label']}_{plot_version}"
+            output_filename_base = f"histos_{sample}_{file_label}_{plot_version}"
             out_file_name = f'{output_filename_base}i.root'
             if opt.BATCH:
                 events_per_job = cfgfile['samples'][sample]['events_per_job']
@@ -89,7 +96,11 @@ def get_collection_parameters(opt, cfgfile):
             priority = 2
             if 'priorities' in collection_data and sample in collection_data['priorities']:
                 priority = collection_data['priorities'][sample]
-
+            
+            job_flavor = None
+            if 'htc_jobflavor' in collection_data:
+                job_flavor = collection_data['htc_jobflavor']
+            
             params = Parameters(
                 {
                     'input_base_dir': cfgfile['dataset']['input_dir'],
@@ -107,7 +118,7 @@ def get_collection_parameters(opt, cfgfile):
                     'events_per_job': events_per_job,
                     'computeDensity': cfgfile['common']['run_density_computation'],
                     'plotters': plotters,
-                    'htc_jobflavor': collection_data['htc_jobflavor'],
+                    'htc_jobflavor': job_flavor,
                     'htc_priority': priority,
                     'weight_file': weight_file,
                     'debug': opt.DEBUG,

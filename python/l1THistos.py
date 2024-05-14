@@ -208,6 +208,57 @@ class BaseUpTuples(BaseHistos):
         return
 
 
+class RateHistos(BaseHistos):
+    def __init__(self, name, var='pt', root_file=None, debug=False):
+        if not root_file:
+            self.h_norm = bh.TH1F(
+                f'{name}_norm', 
+                '# of events', 
+                1, 1, 2)
+            self.h_pt = bh.TH1F(
+                f'{name}_pt', 
+                'rate above p_{T} thresh.; p_{T} [GeV]; rate [kHz];', 
+                100, 0, 100)
+            # self.h_ptVabseta = bh.TH2F(name+'_ptVabseta', 'Candidate p_{T} vs |#eta|; |#eta|; p_{T} [GeV];', 34, 1.4, 3.1, 100, 0, 100)
+        self.var = var
+
+        BaseHistos.__init__(self, name, root_file, debug)
+
+        if root_file is not None:
+            for attr_1d in [attr for attr in dir(self) if (attr.startswith('h_') and 'TH1' in getattr(self, attr).ClassName())]:
+                setattr(self, f'{attr_1d}_graph', GraphBuilder(self, attr_1d))
+
+        if root_file is not None:
+            self.normalize(2760.0*11246/1000)
+            # self.h_simenergy = bh.TH1F(name+'_energy', 'Digi sim-energy (GeV)', 100, 0, 2)
+
+    def fill(self, data):
+        # print(self.h_pt.axes[0])
+        if self.var == 'pt':
+            pt_max = ak.max(data.pt, axis=1)
+        else:
+            pt_max = ak.max(data[self.var], axis=1)
+        for thr,bin_center in zip(self.h_pt.axes[0].edges, self.h_pt.axes[0].centers, strict=False):
+        # for thr,bin_center in zip(self.h_pt.axes[0].edges[1:], self.h_pt.axes[0].centers):
+            self.h_pt.fill(bin_center, weight=ak.sum(pt_max>=thr))
+
+        # for ptf in range(0, int(pt)+1):
+        #     self.h_pt.Fill(ptf)
+        # self.h_ptVabseta.Fill(abs(eta), pt)
+
+    def fill_norm(self, many=1):
+        # print (f' fill rate norm: {many}')
+        self.h_norm.fill(1, weight=many)
+
+    def normalize(self, norm):
+        nev = self.h_norm.GetBinContent(1)
+        if(nev != norm):
+            print(f'normalize # ev {nev} to {norm}')
+            self.h_norm.Scale(norm/nev)
+            self.h_pt.Scale(norm/nev)
+            # self.h_ptVabseta.Scale(norm/nev)
+
+
 class BaseTuples(BaseHistos):
     def __init__(self, tuple_suffix, tuple_variables,
                  name, root_file=None, debug=False):
@@ -519,117 +570,6 @@ class ClusterHistos(BaseHistos):
         #     rnp.fill_hist(self.h_layerVnCoreCells, clsts[['layer', 'nCoreCells']])
 
 
-class Cluster3DHistos(BaseHistos):
-    def __init__(self, name, root_file=None, debug=False):
-        if not root_file:
-            # self.h_npt05 = bh.TH1F(
-            #     name+'_npt05', '# 3D Cluster Pt > 0.5 GeV; # 3D clusters in cone;', 1000, 0, 1000)
-            # self.h_npt20 = bh.TH1F(
-            #     name+'_npt20', '# 3D Cluster Pt > 2.0 GeV; # 3D clusters in cone;', 1000, 0, 1000)
-            self.h_pt = bh.TH1F(
-                f'{name}_pt', '3D Cluster Pt (GeV); p_{T} [GeV]', 100, 0, 100)
-            self.h_eta = bh.TH1F(f'{name}_eta', '3D Cluster eta; #eta;', 100, -4, 4)
-            # self.h_energy = bh.TH1F(name+'_energy', '3D Cluster energy (GeV); E [GeV]', 1000, 0, 1000)
-            # self.h_nclu = bh.TH1F(name+'_nclu', '3D Cluster # clusters; # 2D components;', 60, 0, 60)
-            # self.h_ncluVpt = bh.TH2F(name+'_ncluVpt', '3D Cluster # clusters vs pt; # 2D components; p_{T} [GeV]', 60, 0, 60, 100, 0, 100)
-            # self.h_showlenght = bh.TH1F(name+'_showlenght', '3D Cluster showerlenght', 60, 0, 60)
-            # self.h_firstlayer = bh.TH1F(name+'_firstlayer', '3D Cluster first layer', 30, 0, 30)
-            # self.h_sEtaEtaTot = bh.TH1F(name+'_sEtaEtaTot', '3D Cluster RMS Eta', 100, 0, 0.1)
-            # self.h_sEtaEtaMax = bh.TH1F(name+'_sEtaEtaMax', '3D Cluster RMS Eta (max)', 100, 0, 0.1)
-            # self.h_sPhiPhiTot = bh.TH1F(name+'_sPhiPhiTot', '3D Cluster RMS Phi', 100, 0, 2)
-            # self.h_sPhiPhiMax = bh.TH1F(name+'_sPhiPhiMax', '3D Cluster RMS Phi (max)', 100, 0, 2)
-            # self.h_sZZ = bh.TH1F(name+'_sZZ', '3D Cluster RMS Z ???', 100, 0, 10)
-            # self.h_eMaxOverE = bh.TH1F(name+'_eMaxOverE', '3D Cluster Emax/E', 100, 0, 1)
-            # self.h_HoE = bh.TH1F(name+'_HoE', '3D Cluster H/E', 20, 0, 2)
-            # self.h_iso0p2 = bh.TH1F(name+'_iso0p2', '3D Cluster iso DR 0.2(GeV); Iso p_{T} [GeV];', 100, 0, 100)
-            # self.h_isoRel0p2 = bh.TH1F(name+'_isoRel0p2', '3D Cluster relative iso DR 0.2; Rel. Iso;', 100, 0, 1)
-            # self.h_bdtPU = bh.TH1F(name+'_bdtPU', '3D Cluster bdt PU out; BDT-PU out;', 100, -1, 1)
-            # self.h_bdtPi = bh.TH1F(name+'_bdtPi', '3D Cluster bdt Pi out; BDT-Pi out;', 100, -1, 1)
-            # self.h_bdtEg = bh.TH1F(name+'_bdtEg', '3D Cluster bdt Pi out; BDT-EG out;', 100, -1, 1)
-
-        BaseHistos.__init__(self, name, root_file, debug)
-
-    def fill(self, cl3ds):
-        # self.h_npt05.Fill(len(cl3ds[cl3ds.pt > 0.5].index))
-        # self.h_npt20.Fill(len(cl3ds[cl3ds.pt > 2.0].index))
-
-        bh.fill_1Dhist(self.h_pt, cl3ds.pt)
-        bh.fill_1Dhist(self.h_eta, cl3ds.eta)
-        # bh.fill_1Dhist(self.h_energy, cl3ds.energy)
-        # bh.fill_1Dhist(self.h_nclu, cl3ds.nclu)
-        # bh.fill_2Dhist(self.h_ncluVpt, cl3ds[['nclu', 'pt']])
-        # bh.fill_1Dhist(self.h_showlenght, cl3ds.showerlength)
-        # bh.fill_1Dhist(self.h_firstlayer, cl3ds.firstlayer)
-        # bh.fill_1Dhist(self.h_sEtaEtaTot, cl3ds.seetot)
-        # bh.fill_1Dhist(self.h_sEtaEtaMax, cl3ds.seemax)
-        # bh.fill_1Dhist(self.h_sPhiPhiTot, cl3ds.spptot)
-        # bh.fill_1Dhist(self.h_sPhiPhiMax, cl3ds.sppmax)
-        # bh.fill_1Dhist(self.h_sZZ, cl3ds.szz)
-        # bh.fill_1Dhist(self.h_eMaxOverE, cl3ds.emaxe)
-        # bh.fill_1Dhist(self.h_HoE, cl3ds.hoe)
-        # if 'iso0p2' in cl3ds.fields:
-        #     bh.fill_1Dhist(self.h_iso0p2, cl3ds.iso0p2)
-        #     bh.fill_1Dhist(self.h_isoRel0p2, cl3ds.isoRel0p2)
-        # if 'bdt_pu' in cl3ds.fields:
-        #     bh.fill_1Dhist(self.h_bdtPU, cl3ds.bdt_pu)
-        # if 'bdt_pi' in cl3ds.fields:
-        #     bh.fill_1Dhist(self.h_bdtPi, cl3ds.bdt_pi)
-        # bh.fill_1Dhist(self.h_bdtEg, cl3ds.bdteg)
-
-
-class EGHistos(BaseHistos):
-    def __init__(self, name, root_file=None, debug=False):
-        if not root_file:
-            self.h_pt = bh.TH1F(f'{name}_pt', 'EG Pt (GeV); p_{T} [GeV]', 100, 0, 100)
-            self.h_eta = bh.TH1F(f'{name}_eta', 'EG eta; #eta;', 100, -4, 4)
-            self.h_energy = bh.TH1F(f'{name}_energy', 'EG energy (GeV); E [GeV]', 1000, 0, 1000)
-            self.h_hwQual = bh.TH1F(f'{name}_hwQual', 'EG energy (GeV); hwQual', 5, 0, 5)
-            self.h_tkIso = bh.TH1F(f'{name}_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2)
-            self.h_pfIso = bh.TH1F(f'{name}_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
-            self.h_tkIsoPV = bh.TH1F(f'{name}_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2)
-            self.h_pfIsoPV = bh.TH1F(f'{name}_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
-            self.h_n = bh.TH1F(f'{name}_n', '# objects per event', 100, 0, 100)
-            self.h_compBdt = bh.TH1F(f'{name}_compBdt', 'BDT Score Comp ID', 50, 0, 1)
-
-        BaseHistos.__init__(self, name, root_file, debug)
-
-    def fill(self, egs):
-        weight = None
-        if 'weight' in egs.fields:
-            weight = egs.weight
-
-        bh.fill_1Dhist(hist=self.h_pt,     array=egs.pt,     weights=weight)
-        bh.fill_1Dhist(hist=self.h_eta,    array=egs.eta,    weights=weight)
-        # bh.fill_1Dhist(hist=self.h_energy, array=egs.energy, weights=weight)
-        bh.fill_1Dhist(hist=self.h_hwQual, array=egs.hwQual, weights=weight)
-        if 'tkIso' in egs.fields:
-            bh.fill_1Dhist(hist=self.h_tkIso, array=egs.tkIso, weights=weight)
-        if 'pfIso' in egs.fields:
-            bh.fill_1Dhist(hist=self.h_pfIso, array=egs.pfIso, weights=weight)
-        if 'tkIsoPV' in egs.fields:
-            bh.fill_1Dhist(hist=self.h_tkIsoPV, array=egs.tkIsoPV, weights=weight)
-            bh.fill_1Dhist(hist=self.h_pfIsoPV, array=egs.pfIsoPV, weights=weight)
-        if 'compBDTScore' in egs.fields:
-            bh.fill_1Dhist(hist=self.h_compBdt, array=egs.compBDTScore, weights=weight)
-        if 'idScore' in egs.fields:
-            bh.fill_1Dhist(hist=self.h_compBdt, array=expit(egs.idScore), weights=weight)
-        # print(ak.count(egs.pt, axis=1))
-        # print(egs.pt.type.show())
-        # print(ak.count(egs.pt, axis=1).type.show())
-        self.h_n.fill(ak.count(egs.pt, axis=1))
-        # bh.fill_1Dhist(hist=self.h_n, array=ak.count(egs.pt, axis=1), weights=weight)
-        # self.h_n.Fill()
-
-
-    def add_histos(self):
-        self.h_pt.Add(self.h_pt_temp.GetValue())
-        self.h_eta.Add(self.h_eta_temp.GetValue())
-        self.h_energy.Add(self.h_energy_temp.GetValue())
-        self.h_hwQual.Add(self.h_hwQual_temp.GetValue())
-        # self.h_tkIso = bh.TH1F(name+'_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2)
-        # self.h_pfIso = bh.TH1F(name+'_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
-        # self.h_tkIsoPV = bh.TH1F(name+'_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2)
-        # self.h_pfIsoPV = bh.TH1F(name+'_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
 
 
 class DecTkHistos(BaseHistos):
@@ -980,105 +920,6 @@ class TriggerTowerResoHistos(BaseResoHistos):
             self.h_philwRes.Fill(target.philw - reference.phi)
 
 
-class ResoHistos(BaseResoHistos):
-    # @profile
-    def __init__(self, name, root_file=None, debug=False):
-        if not root_file:
-            # self.h_ptRes = bh.TH1F(
-            #     name+'_ptRes', '3D Cluster Pt reso (GeV); (p_{T}^{L1} - p_{T}^{GEN})/p_{T}^{GEN}',
-            #     100, -1, 1)
-            # # self.h_energyRes = bh.TH1F(name+'_energyRes', '3D Cluster Energy reso (GeV); E^{L1} - E^{GEN} [GeV]', 200, -100, 100)
-            # self.h_ptResVeta = bh.TH2F(
-            #     name+'_ptResVeta', '3D Cluster Pt reso (GeV) vs eta; #eta^{GEN}; p_{T}^{L1} - p_{T}^{GEN} [GeV];',
-            #     50, -3.5, 3.5, 20, -40, 40)
-            # # self.h_energyResVenergy = bh.TH2F(
-            # #     name+'_energyResVenergy',
-            # #     '3D Cluster E reso vs E; E^{GEN} [GeV]; (E^{L1} - E^{GEN})/E^{GEN};',
-            # #     100, 0, 1000, 100, -1.5, 1.5)
-            # # self.h_energyResVeta = bh.TH2F(
-            # #     name+'_energyResVeta',
-            # #     '3D Cluster E reso (GeV) vs eta; #eta^{GEN}; (E^{L1} - E^{GEN})/E^{GEN};',
-            # #     100, -3.5, 3.5, 100, -1.5, 1.5)
-            # # self.h_energyResVnclu = bh.TH2F(name+'_energyResVnclu', '3D Cluster E reso (GeV) vs # clusters; # 2D clus.; E^{L1} - E^{GEN} [GeV];', 50, 0, 50, 200, -100, 100)
-            # self.h_ptResVpt = bh.TH2F(
-            #     name+'_ptResVpt',
-            #     '3D Cluster Pt reso (GeV) vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1} - p_{T}^{GEN} [GeV];',
-            #     50, 0, 100, 200, -40, 40)
-            # self.h_ptResVnclu = bh.TH2F(name+'_ptResVnclu', '3D Cluster Pt reso (GeV) vs # clusters; # 2D clus.; p_{T}^{L1} - p_{T}^{GEN} [GeV];', 50, 0, 50, 200, -40, 40)
-
-            self.h_ptResp = bh.TH1F(
-                f'{name}_ptResp',
-                '3D Cluster Pt resp.; p_{T}^{L1}/p_{T}^{GEN}',
-                100, 0, 2)
-            self.h_ptRespVpt = bh.TH2F(
-                f'{name}_ptRespVpt',
-                '3D Cluster Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
-                50, 0, 100, 100, 0, 2)
-            self.h_ptRespVeta = bh.TH2F(
-                f'{name}_ptRespVeta',
-                '3D Cluster Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};',
-                20, -4, 4, 50, 0, 2)
-            # self.h_ptRespVnclu = bh.TH2F(
-            #     name+'_ptRespVnclu',
-            #     '3D Cluster Pt resp. vs # clus.; # 2D clust. ; p_{T}^{L1}/p_{T}^{GEN};',
-            #     50, 0, 100, 100, 0, 2)
-            # self.h_ptRespVetaVptL1 = ROOT.TH3F(
-            #     name+'_ptRespVetaVptL1',
-            #     '3D Cluster Pt resp. vs #eta and vs pT; #eta^{L1}; p_{T}^{L1} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
-            #     30, 1, 4, 50, 0, 100, 100, 0, 3)
-
-            # self.h_ptemResp = bh.TH1F(
-            #     name+'_ptemResp',
-            #     '3D Cluster Pt resp.; p_{T}^{L1}/p_{T}^{GEN}',
-            #     100, 0, 3)
-            # self.h_ptemRespVpt = bh.TH2F(
-            #     name+'_ptemRespVpt',
-            #     '3D Cluster Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
-            #     50, 0, 100, 100, 0, 3)
-
-            # self.h_coreEnergyResVnclu = bh.TH2F(name+'_coreEnergyResVnclu', '3D Cluster E reso (GeV) vs # clusters', 50, 0, 50, 200, -100, 100)
-            # self.h_corePtResVnclu = bh.TH2F(name+'_corePtResVnclu', '3D Cluster Pt reso (GeV) vs # clusters', 50, 0, 50, 200, -40, 40)
-            #
-            # self.h_coreEnergyRes = bh.TH1F(name+'_coreEnergyRes', '3D Cluster Energy reso CORE (GeV)', 200, -100, 100)
-            # self.h_corePtRes = bh.TH1F(name+'_corePtRes', '3D Cluster Pt reso CORE (GeV)', 200, -40, 40)
-
-            # self.h_centralEnergyRes = bh.TH1F(name+'_centralEnergyRes', '3D Cluster Energy reso CENTRAL (GeV)', 200, -100, 100)
-            self.h_etaRes = bh.TH1F(
-                f'{name}_etaRes',
-                '3D Cluster eta reso; #eta^{L1}-#eta^{GEN}',
-                100, -0.15, 0.15)
-            self.h_phiRes = bh.TH1F(
-                f'{name}_phiRes',
-                '3D Cluster phi reso; #phi^{L1}-#phi^{GEN}',
-                100, -0.15, 0.15)
-            self.h_drRes = bh.TH1F(
-                f'{name}_drRes',
-                '3D Cluster DR reso; #DeltaR^{L1}-#DeltaR^{GEN}',
-                100, 0, 0.1)
-            # self.h_n010 = bh.TH1F(
-            #     name+'_n010',
-            #     '# of 3D clus in 0.2 cone with pt>0.1GeV',
-            #     10, 0, 10)
-            # self.h_n025 = bh.TH1F(
-            #     name+'_n025',
-            #     '# of 3D clus in 0.2 cone with pt>0.25GeV',
-            #     10, 0, 10)
-
-        BaseResoHistos.__init__(self, name, root_file)
-
-    def fill(self, reference, target):
-        bh.fill_1Dhist(self.h_ptResp, target.pt/reference.pt)
-        bh.fill_2Dhist(self.h_ptRespVeta, reference.eta, target.pt/reference.pt)
-        bh.fill_2Dhist(self.h_ptRespVpt, reference.pt, target.pt/reference.pt)
-        if 'caloeta' in reference.fields:
-            bh.fill_1Dhist(self.h_etaRes, target.eta - reference.caloeta)
-            bh.fill_1Dhist(self.h_phiRes, target.phi - reference.calophi)
-            # self.h_drRes.Fill(np.sqrt((reference.exphi-target_phi)**2+(reference.exeta-target_eta)**2))
-
-        # if 'n010' in target:
-        #     self.h_n010.Fill(target_line.n010)
-        # if 'n025' in target:
-        #     self.h_n025.Fill(target_line.n025)
 
 
 class Reso2DHistos(BaseHistos):
@@ -1153,21 +994,21 @@ class DensityHistos(BaseHistos):
         self.h_nTCDensityVlayer.Fill(layer, nTCs)
 
 
-# for convenience we define some sets
-class HistoSetClusters:
-    def __init__(self, name, root_file=None, debug=False):
-        self.htc = TCHistos(f'h_tc_{name}', root_file, debug)
-        self.hcl2d = ClusterHistos(f'h_cl2d_{name}', root_file, debug)
-        self.hcl3d = Cluster3DHistos(f'h_cl3d_{name}', root_file, debug)
-        # if not root_file:
-        #     self.htc.annotateTitles(name)
-        #     self.hcl2d.annotateTitles(name)
-        #     self.hcl3d.annotateTitles(name)
+# # for convenience we define some sets
+# class HistoSetClusters:
+#     def __init__(self, name, root_file=None, debug=False):
+#         self.htc = TCHistos(f'h_tc_{name}', root_file, debug)
+#         self.hcl2d = ClusterHistos(f'h_cl2d_{name}', root_file, debug)
+#         self.hcl3d = Cluster3DHistos(f'h_cl3d_{name}', root_file, debug)
+#         # if not root_file:
+#         #     self.htc.annotateTitles(name)
+#         #     self.hcl2d.annotateTitles(name)
+#         #     self.hcl3d.annotateTitles(name)
 
-    def fill(self, tcs, cl2ds, cl3ds):
-        self.htc.fill(tcs)
-        self.hcl2d.fill(cl2ds)
-        self.hcl3d.fill(cl3ds)
+#     def fill(self, tcs, cl2ds, cl3ds):
+#         self.htc.fill(tcs)
+#         self.hcl2d.fill(cl2ds)
+#         self.hcl3d.fill(cl3ds)
 
 
 class HistoSetReso:
@@ -1463,76 +1304,6 @@ class DecTkResoHistos(BaseResoHistos):
         self.h_nMatch.Fill(n_matches)
 
 
-class EGResoHistos(BaseResoHistos):
-    def __init__(self, name, root_file=None, debug=False):
-        if not root_file:
-
-            self.h_ptResVpt = bh.TH2F(
-                f'{name}_ptResVpt',
-                'EG Pt reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];',
-                50, 0, 100,
-                100, -10, 10)
-            self.h_ptRes = bh.TH1F(
-                f'{name}_ptRes',
-                'EG Pt res.; (p_{T}^{L1}-p_{T}^{GEN})/p_{T}^{GEN}',
-                100, -1, 1)
-            self.h_ptResp = bh.TH1F(
-                f'{name}_ptResp',
-                'EG Pt resp.; p_{T}^{L1}/p_{T}^{GEN}',
-                100, 0, 3)
-            self.h_ptRespVpt = bh.TH2F(
-                f'{name}_ptRespVpt',
-                'EG Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
-                50, 0, 100,
-                100, 0, 3)
-            self.h_ptRespVeta = bh.TH2F(
-                f'{name}_ptRespVeta',
-                'EG Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};',
-                50, -4, 4,
-                100, 0, 3)
-
-            self.h_etaRes = bh.TH1F(
-                f'{name}_etaRes',
-                'EG eta reso; #eta^{L1}-#eta^{GEN}',
-                100, -0.1, 0.1)
-            self.h_phiRes = bh.TH1F(
-                f'{name}_phiRes',
-                'EG phi reso; #phi^{L1}-#phi^{GEN}',
-                100, -0.1, 0.1)
-
-            self.h_exetaRes = bh.TH1F(
-                f'{name}_exetaRes',
-                'EG eta reso; #eta^{L1}-#eta^{GEN}_{calo}',
-                100, -0.1, 0.1)
-            self.h_exphiRes = bh.TH1F(
-                f'{name}_exphiRes',
-                'EG phi reso; #phi^{L1}-#phi^{GEN}_{calo}',
-                100, -0.1, 0.1)
-
-            self.h_dzRes = bh.TH1F(
-                f'{name}_dzRes',
-                '#DeltaZ_{0} res; #DeltaZ_{0}^{L1}-#DeltaZ_{0}^{GEN}',
-                100, -10, 10)
-
-        BaseResoHistos.__init__(self, name, root_file, debug)
-
-    def fill(self, reference, target):
-        # FIXME: weights
-
-        bh.fill_1Dhist(self.h_ptRes, (target.pt-reference.pt)/reference.pt)
-        bh.fill_2Dhist(self.h_ptResVpt, reference.pt, target.pt-reference.pt)
-        bh.fill_1Dhist(self.h_ptResp, target.pt/reference.pt)
-        bh.fill_2Dhist(self.h_ptRespVeta, reference.eta, target.pt/reference.pt)
-        bh.fill_2Dhist(self.h_ptRespVpt, reference.pt, target.pt/reference.pt)
-        bh.fill_1Dhist(self.h_etaRes, target.eta - reference.eta)
-        bh.fill_1Dhist(self.h_phiRes, target.phi - reference.phi)
-        bh.fill_1Dhist(self.h_exetaRes, target.eta - reference.caloeta)
-        bh.fill_1Dhist(self.h_exphiRes, target.phi - reference.calophi)
-
-        # if 'tkZ0' in target.columns:
-        #     self.h_dzRes.Fill(target_line.tkZ0 - reference.ovz)
-
-
 class ClusterConeHistos(BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
@@ -1644,21 +1415,21 @@ class CalibrationHistos(BaseTuples):
 
 
 
-# for convenience we define some sets
-class HistoSetOccupancy:
-    def __init__(self, name, root_file=None, debug=False):
-        self.htc = TCHistos(f'h_tc_{name}', root_file, debug)
-        self.hcl2d = ClusterHistos(f'h_cl2d_{name}', root_file, debug)
-        self.hcl3d = Cluster3DHistos(f'h_cl3d_{name}', root_file, debug)
-        # if not root_file:
-        #     self.htc.annotateTitles(name)
-        #     self.hcl2d.annotateTitles(name)
-        #     self.hcl3d.annotateTitles(name)
+# # for convenience we define some sets
+# class HistoSetOccupancy:
+#     def __init__(self, name, root_file=None, debug=False):
+#         self.htc = TCHistos(f'h_tc_{name}', root_file, debug)
+#         self.hcl2d = ClusterHistos(f'h_cl2d_{name}', root_file, debug)
+#         self.hcl3d = Cluster3DHistos(f'h_cl3d_{name}', root_file, debug)
+#         # if not root_file:
+#         #     self.htc.annotateTitles(name)
+#         #     self.hcl2d.annotateTitles(name)
+#         #     self.hcl3d.annotateTitles(name)
 
-    def fill(self, tcs, cl2ds, cl3ds):
-        self.htc.fill(tcs)
-        self.hcl2d.fill(cl2ds)
-        self.hcl3d.fill(cl3ds)
+#     def fill(self, tcs, cl2ds, cl3ds):
+#         self.htc.fill(tcs)
+#         self.hcl2d.fill(cl2ds)
+#         self.hcl3d.fill(cl3ds)
 
 
 

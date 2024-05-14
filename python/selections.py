@@ -623,7 +623,7 @@ for wps,lab in wls:
             Selection(
                 f'EgBdt{lab}{wp}', 
                 f'BDT^{{eg}}_{{{lab}}}@{wp}%', 
-                f'bdteg > {cut}'))
+                lambda x,cut=float(cut) : x.egEmIdScore > cut))
 
 tphgc_pubdt_sel = [
     Selection('IDPuVeto', 'PU Veto', lambda ar: ar.pfPuIdPass),
@@ -663,132 +663,132 @@ menu_sel = [
 Selector.selection_primitives = sm.selections.copy()
 
 
-tp_rate_selections = (Selector('^Em|all')*('^Eta[^DA][BC]*[BCD]$|all'))()
-tp_match_selections = (Selector('^Em|all')*('^Pt[1-3]0$|all'))()
-tp_calib_selections = (Selector('^Em|all'))()
+# tp_rate_selections = (Selector('^Em|all')*('^Eta[^DA][BC]*[BCD]$|all'))()
+# tp_match_selections = (Selector('^Em|all')*('^Pt[1-3]0$|all'))()
+# tp_calib_selections = (Selector('^Em|all'))()
 
-tracks_selections = (Selector('^St[3-4]|all')*('^Pt[2-5]$|^Pt10$|all'))()
+# tracks_selections = (Selector('^St[3-4]|all')*('^Pt[2-5]$|^Pt10$|all'))()
 
-gen_ee_calib_selections = (Selector('GEN$')*('Ee')*('^Eta[BC]+[CD]$|all'))()
-gen_ee_selections = (Selector('GEN$')*('Ee')*('^Eta[BC]+[CD]$|all')+Selector('GEN$')*('Ee')*('^Pt15|^Pt30'))()
-gen_eb_selections = (Selector('^GEN$')*('^Pt15|^Pt30|all')+Selector('^GEN$')*('^EtaF'))()
-gen_ee_extrange_selections = (Selector('GEN$')*('Ee')*('^Eta[BC]+[CD]$|all')+Selector('GEN$')*('Ee')*('^Pt15|^Pt30'))()
-gen_ee_tk_selections = (Selector('GEN$')*('Ee$')*('EtaBC$|all')+Selector('GEN$')*('Ee$')*('Pt15|Pt30'))()
-gen_ele_ee_selections = (Selector('GEN11')*('^Eta[BC]+[CD]$|all')*('^Pt15|all'))()
-gen_ele_ee_tk_selections = (Selector('GEN11')*('^Eta[BC]+[C]$|all')*('^Pt15|all'))()
-gen_selections = (Selector('GEN$')*('^Eta[DF]$|^Eta[BC]+[CD]$|^Pt15$|^Pt30$|all'))()
-genpart_ele_genplotting = (Selector('GEN11$|all'))()
-gen_pid_eta_fbrem_ee_selections = (Selector('^GEN$')*('Ee')*('^Eta[BC]+[BCD]$')*('^Brem[HL]|all'))()
-eg_id_pt_eb_selections = (Selector('^LooseTk|all')*('^Pt[1-2][0]$|all'))()
-eg_id_pt_eb_selections_ext = (Selector('^LooseTk|all')*('^Pt[1-4][0,5]$|all'))()
-eg_id_pt_ee_selections = (Selector('^EGq[4-5]')*('^Pt[1-4][0]$|all'))()
-eg_id_pt_ee_selections_ext = (Selector('^EGq[4-5]')*('^Pt[1-4][0,5]$|all'))()
-gen_pid_ee_selections = (Selector('GEN$')*('Ee$'))()
+# gen_ee_calib_selections = (Selector('GEN$')*('Ee')*('^Eta[BC]+[CD]$|all'))()
+# gen_ee_selections = (Selector('GEN$')*('Ee')*('^Eta[BC]+[CD]$|all')+Selector('GEN$')*('Ee')*('^Pt15|^Pt30'))()
+# gen_eb_selections = (Selector('^GEN$')*('^Pt15|^Pt30|all')+Selector('^GEN$')*('^EtaF'))()
+# gen_ee_extrange_selections = (Selector('GEN$')*('Ee')*('^Eta[BC]+[CD]$|all')+Selector('GEN$')*('Ee')*('^Pt15|^Pt30'))()
+# gen_ee_tk_selections = (Selector('GEN$')*('Ee$')*('EtaBC$|all')+Selector('GEN$')*('Ee$')*('Pt15|Pt30'))()
+# gen_ele_ee_selections = (Selector('GEN11')*('^Eta[BC]+[CD]$|all')*('^Pt15|all'))()
+# gen_ele_ee_tk_selections = (Selector('GEN11')*('^Eta[BC]+[C]$|all')*('^Pt15|all'))()
+# gen_selections = (Selector('GEN$')*('^Eta[DF]$|^Eta[BC]+[CD]$|^Pt15$|^Pt30$|all'))()
+# genpart_ele_genplotting = (Selector('GEN11$|all'))()
+# gen_pid_eta_fbrem_ee_selections = (Selector('^GEN$')*('Ee')*('^Eta[BC]+[BCD]$')*('^Brem[HL]|all'))()
+# eg_id_pt_eb_selections = (Selector('^LooseTk|all')*('^Pt[1-2][0]$|all'))()
+# eg_id_pt_eb_selections_ext = (Selector('^LooseTk|all')*('^Pt[1-4][0,5]$|all'))()
+# eg_id_pt_ee_selections = (Selector('^EGq[4-5]')*('^Pt[1-4][0]$|all'))()
+# eg_id_pt_ee_selections_ext = (Selector('^EGq[4-5]')*('^Pt[1-4][0,5]$|all'))()
+# gen_pid_ee_selections = (Selector('GEN$')*('Ee$'))()
 
-simeg_ee_selections = (Selector('^EGq[4-5]$')*('^Pt[1-3][0]$|all'))()
-emueg_ee_selections = (Selector('^EGq[1-2]$')*('^Pt[1-3][0]$|all'))()
-# simeg_rate_ee_selections = (Selector('^EGq[4-5]$')*('^Eta[^DA][BC]*[BCD]$|all'))()
-# emueg_rate_ee_selections = (Selector('^EGq[1-3,6]$|^EGq[1,2]or[3]')*('^Eta[^DA][BC]*[BCD]$|all'))()
-simeg_match_ee_selections = (Selector('^EGq[4-5]$')*('^Pt[1-3][0]$|all'))()
-emueg_match_ee_selections = (Selector('^EGq[1,2]$')*('^Pt[1-2][0]$|all'))()
-eg_id_eta_ee_selections = (Selector('^EGq[4-5]')*('^Eta[BC]+[CD]$|all'))()
+# simeg_ee_selections = (Selector('^EGq[4-5]$')*('^Pt[1-3][0]$|all'))()
+# emueg_ee_selections = (Selector('^EGq[1-2]$')*('^Pt[1-3][0]$|all'))()
+# # simeg_rate_ee_selections = (Selector('^EGq[4-5]$')*('^Eta[^DA][BC]*[BCD]$|all'))()
+# # emueg_rate_ee_selections = (Selector('^EGq[1-3,6]$|^EGq[1,2]or[3]')*('^Eta[^DA][BC]*[BCD]$|all'))()
+# simeg_match_ee_selections = (Selector('^EGq[4-5]$')*('^Pt[1-3][0]$|all'))()
+# emueg_match_ee_selections = (Selector('^EGq[1,2]$')*('^Pt[1-2][0]$|all'))()
+# eg_id_eta_ee_selections = (Selector('^EGq[4-5]')*('^Eta[BC]+[CD]$|all'))()
 
-pfeg_tp_input_selections = (Selector('^PFinH')*('^Pt[1,2,5]$|all')*('^Em$|all'))()
-pfeg_ee_input_selections = (Selector('^PFinH')*('^Pt[1,2,5]$|all')*('^EGq[1]$|all'))()
-pfeg_eb_input_selections = (Selector('^PFinB|all')*('^Pt[1,2,5]$'))()
-pftkinput_selections = (Selector('^PFinBRL|^PFinHGC$')*('^TkPt'))()
-
-
-egid_ee_selections = (Selector('^EGq[4-5]'))()
-egid_ee_pfnf_selections = (Selector('^EGq[1-2]$'))()
-
-# EG selection quality and Pt EE
-
-eg_id_iso_sel = [
-    Selection('all'),
-    Selection('LooseTkID', 'LooseTkID', 'looseTkID'),
-    # Selection('Iso0p1', 'Iso0p1', '((tkIso <= 0.1) & (abs(eta) <= 1.479)) | ((tkIso <= 0.125) & (abs(eta) > 1.479))'),
-    ]
-
-if False:
-    eg_id_iso_sel.extend(read_isowp_sel('data/iso_wps.json', 'PFTkEmEB', 'EtaF'))
-
-# for iso_var in ['tkIso']:
-#     for cut in [0.1, 0.2, 0.3, 0.4, 0.5]:
-#         cut_str = str(cut).replace('.', 'p')
-#         eg_id_iso_sel.append(Selection(f'{iso_var}{cut_str}', f'{iso_var}<={cut}', f'{iso_var}<={cut}'))
-#
-# for iso_var in ['tkIsoPV']:
-#     for cut in [0.01, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3]:
-#         cut_str = str(cut).replace('.', 'p')
-#         eg_id_iso_sel.append(Selection(f'{iso_var}{cut_str}', f'{iso_var}<={cut}', f'{iso_var}<={cut}'))
+# pfeg_tp_input_selections = (Selector('^PFinH')*('^Pt[1,2,5]$|all')*('^Em$|all'))()
+# pfeg_ee_input_selections = (Selector('^PFinH')*('^Pt[1,2,5]$|all')*('^EGq[1]$|all'))()
+# pfeg_eb_input_selections = (Selector('^PFinB|all')*('^Pt[1,2,5]$'))()
+# pftkinput_selections = (Selector('^PFinBRL|^PFinHGC$')*('^TkPt'))()
 
 
-barrel_rate_selections = multiply_selections(eg_eta_eb_sel, eg_id_iso_sel)
-all_rate_selections = prune(eg_eta_sel+barrel_rate_selections)
+# egid_ee_selections = (Selector('^EGq[4-5]'))()
+# egid_ee_pfnf_selections = (Selector('^EGq[1-2]$'))()
 
-eg_barrel_rate_selections = [sel for sel in barrel_rate_selections if 'Iso' not in sel.name]
-eg_all_rate_selections = [sel for sel in all_rate_selections if 'Iso' not in sel.name]
+# # EG selection quality and Pt EE
 
-# eg_id_pt_eb_selections = []
-# eg_id_pt_eb_selections += multiply_selections(eg_id_eb_sel, tp_pt_sel)
+# eg_id_iso_sel = [
+#     Selection('all'),
+#     Selection('LooseTkID', 'LooseTkID', 'looseTkID'),
+#     # Selection('Iso0p1', 'Iso0p1', '((tkIso <= 0.1) & (abs(eta) <= 1.479)) | ((tkIso <= 0.125) & (abs(eta) > 1.479))'),
+#     ]
 
-eg_iso_sel = [
-    Selection('all'),
-    # Selection('Iso0p2', 'Iso0p2', 'tkIso <= 0.2'),
-    # Selection('Iso0p1', 'Iso0p1', 'tkIso <= 0.1'),
-    # Selection('Iso0p3', 'Iso0p3', 'tkIso <= 0.3'),
-    ]
+# if False:
+#     eg_id_iso_sel.extend(read_isowp_sel('data/iso_wps.json', 'PFTkEmEB', 'EtaF'))
 
-if False:
-    eg_iso_sel.extend(read_isowp_sel('data/iso_wps.json', 'PFTkEmEE', 'EtaABC'))
-
-
-# eg_id_iso_ee_sel = []
-# eg_id_iso_ee_sel += multiply_selections(eg_id_ee_selections, eg_iso_sel)
-# eg_id_iso_eta_ee_selections = []
-# eg_id_iso_eta_ee_selections += multiply_selections(eg_id_iso_ee_sel, tp_eta_ee_sel)
-# eg_id_iso_pt_ee_selections_ext = []
-# eg_id_iso_pt_ee_selections_ext += multiply_selections(eg_id_ee_selections, tp_pt_sel_ext)
-# eg_id_iso_pt_ee_selections_ext += eg_id_iso_ee_sel
-# eg_id_iso_pt_ee_selections_ext = prune(eg_id_iso_pt_ee_selections_ext)
-
-# print 'eg_id_iso_eta_ee_selections:'
-# print eg_id_iso_eta_ee_selections
-eg_id_iso_pt_eb_selections_ext = []
-# eg_id_iso_pt_eb_selections_ext += tp_pt_sel_ext
-eg_id_iso_pt_eb_selections_ext += multiply_selections(eg_id_pt_eb_selections_ext, eg_id_iso_sel)
+# # for iso_var in ['tkIso']:
+# #     for cut in [0.1, 0.2, 0.3, 0.4, 0.5]:
+# #         cut_str = str(cut).replace('.', 'p')
+# #         eg_id_iso_sel.append(Selection(f'{iso_var}{cut_str}', f'{iso_var}<={cut}', f'{iso_var}<={cut}'))
+# #
+# # for iso_var in ['tkIsoPV']:
+# #     for cut in [0.01, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3]:
+# #         cut_str = str(cut).replace('.', 'p')
+# #         eg_id_iso_sel.append(Selection(f'{iso_var}{cut_str}', f'{iso_var}<={cut}', f'{iso_var}<={cut}'))
 
 
-eg_iso_ee_wp = {
-    'tkIso0p2': [27, 16, 8],
-    'tkIsoPV0p06': [27, 19, 11]
-}
+# barrel_rate_selections = multiply_selections(eg_eta_eb_sel, eg_id_iso_sel)
+# all_rate_selections = prune(eg_eta_sel+barrel_rate_selections)
 
-eg_iso_ee_wp_sel = [
-    # Selection('tkIso0p2Pt10', 'tkIso <= 0.2 & p_{T}>10GeV', '(tkIso<=0.2)&(pt>10)'),
-    # Selection('tkIsoPV0p06Pt10', 'tkIsoPV <= 0.06 & p_{T}>10GeV', '(tkIsoPV<=0.06)&(pt>10)')
-]
+# eg_barrel_rate_selections = [sel for sel in barrel_rate_selections if 'Iso' not in sel.name]
+# eg_all_rate_selections = [sel for sel in all_rate_selections if 'Iso' not in sel.name]
 
-# print(isopt_sels)
-# fill_isowp_sel(eg_iso_ee_wp_sel, eg_iso_ee_wp)
+# # eg_id_pt_eb_selections = []
+# # eg_id_pt_eb_selections += multiply_selections(eg_id_eb_sel, tp_pt_sel)
 
-eg_iso_pt_ee_selections = []
-# eg_iso_pt_eb_selections = []
+# eg_iso_sel = [
+#     Selection('all'),
+#     # Selection('Iso0p2', 'Iso0p2', 'tkIso <= 0.2'),
+#     # Selection('Iso0p1', 'Iso0p1', 'tkIso <= 0.1'),
+#     # Selection('Iso0p3', 'Iso0p3', 'tkIso <= 0.3'),
+#     ]
 
-if False:
-    for iso_sel_name, pt_sel in read_isoptwp_sel('data/iso_pt_wps.json', 'PFNFtkEmEE'):
-        iso_sel = list(filter(lambda x: x.name == iso_sel_name, eg_id_iso_eta_ee_selections))[0]
-        eg_iso_pt_ee_selections.append(iso_sel+pt_sel)
-        # print(iso_sel+pt_sel)
-    #
-    for iso_sel_name, pt_sel in read_isoptwp_sel('data/iso_pt_wps.json', 'PFNFtkEmEB'):
-        iso_sel = list(filter(lambda x: x.name == iso_sel_name, barrel_rate_selections))[0]
-        eg_iso_pt_eb_selections.append(iso_sel+pt_sel)
-# else:
-#     eg_iso_pt_ee_selections += multiply_selections(eg_id_ee_selections, eg_iso_ee_wp_sel)
+# if False:
+#     eg_iso_sel.extend(read_isowp_sel('data/iso_wps.json', 'PFTkEmEE', 'EtaABC'))
 
-# EG selection quality and Pt EB
+
+# # eg_id_iso_ee_sel = []
+# # eg_id_iso_ee_sel += multiply_selections(eg_id_ee_selections, eg_iso_sel)
+# # eg_id_iso_eta_ee_selections = []
+# # eg_id_iso_eta_ee_selections += multiply_selections(eg_id_iso_ee_sel, tp_eta_ee_sel)
+# # eg_id_iso_pt_ee_selections_ext = []
+# # eg_id_iso_pt_ee_selections_ext += multiply_selections(eg_id_ee_selections, tp_pt_sel_ext)
+# # eg_id_iso_pt_ee_selections_ext += eg_id_iso_ee_sel
+# # eg_id_iso_pt_ee_selections_ext = prune(eg_id_iso_pt_ee_selections_ext)
+
+# # print 'eg_id_iso_eta_ee_selections:'
+# # print eg_id_iso_eta_ee_selections
+# eg_id_iso_pt_eb_selections_ext = []
+# # eg_id_iso_pt_eb_selections_ext += tp_pt_sel_ext
+# eg_id_iso_pt_eb_selections_ext += multiply_selections(eg_id_pt_eb_selections_ext, eg_id_iso_sel)
+
+
+# eg_iso_ee_wp = {
+#     'tkIso0p2': [27, 16, 8],
+#     'tkIsoPV0p06': [27, 19, 11]
+# }
+
+# eg_iso_ee_wp_sel = [
+#     # Selection('tkIso0p2Pt10', 'tkIso <= 0.2 & p_{T}>10GeV', '(tkIso<=0.2)&(pt>10)'),
+#     # Selection('tkIsoPV0p06Pt10', 'tkIsoPV <= 0.06 & p_{T}>10GeV', '(tkIsoPV<=0.06)&(pt>10)')
+# ]
+
+# # print(isopt_sels)
+# # fill_isowp_sel(eg_iso_ee_wp_sel, eg_iso_ee_wp)
+
+# eg_iso_pt_ee_selections = []
+# # eg_iso_pt_eb_selections = []
+
+# if False:
+#     for iso_sel_name, pt_sel in read_isoptwp_sel('data/iso_pt_wps.json', 'PFNFtkEmEE'):
+#         iso_sel = list(filter(lambda x: x.name == iso_sel_name, eg_id_iso_eta_ee_selections))[0]
+#         eg_iso_pt_ee_selections.append(iso_sel+pt_sel)
+#         # print(iso_sel+pt_sel)
+#     #
+#     for iso_sel_name, pt_sel in read_isoptwp_sel('data/iso_pt_wps.json', 'PFNFtkEmEB'):
+#         iso_sel = list(filter(lambda x: x.name == iso_sel_name, barrel_rate_selections))[0]
+#         eg_iso_pt_eb_selections.append(iso_sel+pt_sel)
+# # else:
+# #     eg_iso_pt_ee_selections += multiply_selections(eg_id_ee_selections, eg_iso_ee_wp_sel)
+
+# # EG selection quality and Pt EB
 
 
 if __name__ == '__main__':

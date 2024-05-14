@@ -1,102 +1,50 @@
 
 common:
   output_dir:
+    # support different output dirs depending on the machine name using dict like syntax
     default: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-    matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
-    Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
     triolet: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
-  output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
-  output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
   plot_version: v152C
   run_clustering: False
   run_density_computation: False
 # +AccountingGroup = "group_u_CMS.u_zh.users"
 # +AccountingGroup = "group_u_CMST3.all"
-
-collections:
-      
-  tps:
-    file_label:
-      tp
-    samples:
-      # - ele_flat2to100_PU0
-      # - ele_flat2to100_PU200
-      # - doubleele_flat1to100_PU0
-      - doublephoton_flat1to100_PU200
-      - doubleele_flat1to100_PU200
-      # - photon_flat8to150_PU0
-      # - photon_flat8to150_PU200
-      # - dyll_PU200
-    plotters:
-      - !!python/name:cfg.hgctps.hgc_tp_unmatched
-      - !!python/name:cfg.hgctps.hgc_tp_genmatched
-      - !!python/name:cfg.hgctps.hgc_tp_rate_pt_wps
-    htc_jobflavor:
-      microcentury
-    priorities:
-      doubleele_flat1to100_PU0: 2
-      doubleele_flat1to100_PU200: 7
-      doublephoton_flat1to100_PU200: 6
-    events_per_job:
-      doubleele_flat1to100_PU0: 10000
-      doubleele_flat1to100_PU200: 5000
-      doublephoton_flat1to100_PU200: 5000
-
-  cltkmatch:
-    file_label:
-      cltkmatch
-    samples:
-      # - ele_flat2to100_PU0
-      # - ele_flat2to100_PU200
-      # - doubleele_flat1to100_PU0
-      - doublephoton_flat1to100_PU200
-      - doubleele_flat1to100_PU200
-      # - photon_flat8to150_PU0
-      # - photon_flat8to150_PU200
-      # - dyll_PU200
-    plotters:
-      - !!python/name:cfg.hgctps.hgc_tp_tkmatch_genmatched
-    htc_jobflavor:
-      longlunch
-    priorities:
-      doubleele_flat1to100_PU0: 2
-      doubleele_flat1to100_PU200: 7
-      doublephoton_flat1to100_PU200: 6
-    events_per_job:
-      doubleele_flat1to100_PU0: 10000
-      doubleele_flat1to100_PU200: 4000
-      doublephoton_flat1to100_PU200: 5000
+  file_label: hgc
 
 
-  rate_tps:
-    file_label:
-      tprate
-    samples:
-      - nugun_alleta_pu200
-    plotters:
-      - !!python/name:cfg.hgctps.hgc_tp_rate
-    htc_jobflavor:
-      microcentury
-    priorities:
-      nugun_alleta_pu200: 6
-    events_per_job:
-      nugun_alleta_pu200: 20000
+unmatched:
+  plotters:
+    - !!python/name:cfg.hgctps.hgc_tp_unmatched
 
+genmatch: 
+  plotters:
+    - !!python/name:cfg.hgctps.hgc_tp_genmatched
+    - !!python/name:cfg.hgctps.hgc_tp_rate_pt_wps
 
-  zprime_eff_tps:
-      file_label:
-        tpzprime
-      samples:
-        - doubleele_flat1to100_PU200
-        - zprime_m6000_pu200
-      plotters:
-        - !!python/name:cfg.hgctps.hgc_tp_highpt_genmatched
-      htc_jobflavor:
-        longlunch
-      priorities:
-        doubleele_flat1to100_PU200: 7
-        zprime_m6000_pu200: 5
-      events_per_job:
-        doubleele_flat1to100_PU200: 1000
-        zprime_m6000_pu200: 5000
+rate:
+  plotters:
+    - !!python/name:cfg.hgctps.hgc_tp_rate
+  file_label: rate
+
+tkmatch: 
+  plotters:
+    - !!python/name:cfg.hgctps.hgc_tp_tkmatch_genmatched
+  file_label: tkmatch
+
+  # zprime_eff_tps:
+  #     file_label:
+  #       tpzprime
+  #     samples:
+  #       - doubleele_flat1to100_PU200
+  #       - zprime_m6000_pu200
+  #     plotters:
+  #       - !!python/name:cfg.hgctps.hgc_tp_highpt_genmatched
+  #     htc_jobflavor:
+  #       longlunch
+  #     priorities:
+  #       doubleele_flat1to100_PU200: 7
+  #       zprime_m6000_pu200: 5
+  #     events_per_job:
+  #       doubleele_flat1to100_PU200: 1000
+  #       zprime_m6000_pu200: 5000
   

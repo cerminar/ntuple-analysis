@@ -1,4 +1,5 @@
 from python import collections, plotters, selections, l1THistos, pf_regions
+import cfg.datasets.fastpuppi_collections as coll
 
 import python.boost_hist as bh
 import awkward as ak
@@ -138,13 +139,13 @@ pfin_tk_selections = (selections.Selector('^TkPt'))()
 
 l1tcorr_input_occ = [
     CorrOccupancyPlotter(
-        collections.hgc_cl3d_pfinputs,
+        coll.hgc_cl3d_pfinputs,
         pfin_hgc_tp_selections),
     # CorrOccupancyPlotter(
-    #     collections.EGStaEB_pfinputs,
+    #     coll.EGStaEB_pfinputs,
     #     pfin_eb_selections),
     # CorrOccupancyPlotter(
-    #     collections.tk_pfinputs,
+    #     coll.tk_pfinputs,
     #     pfin_tk_selections),
 ]
 
@@ -152,13 +153,13 @@ l1tcorr_input_occ = [
 
 l1tcorr_tkcl3dmatch_input_occ = [
     CorrOccupancyPlotter(
-        collections.tkCl3DMatch,
+        coll.tkCl3DMatch,
         pfin_tkcl3dmatch_selections),
     CorrOccupancyPlotter(
-        collections.hgc_cl3d_pfinputs,
+        coll.hgc_cl3d_pfinputs,
         pfin_hgc_tp_selections),
     CorrOccupancyPlotter(
-        collections.tk_pfinputs,
+        coll.tk_pfinputs,
         pfin_tk_selections),
 ]
 
@@ -168,48 +169,48 @@ l1tcorr_tkcl3dmatch_input_occ = [
 
 # # print('\n'.join([str(sel) for sel in hgc_tp_rate_selections]))
 # hgc_tp_unmatched = [
-#     plotters.Cl3DPlotter(collections.hgc_cl3d, hgc_tp_selections)
+#     plotters.Cl3DPlotter(coll.hgc_cl3d, hgc_tp_selections)
 # ]
 
 
 # hgc_tp_genmatched = [
 #     plotters.Cl3DGenMatchPlotter(
-#         collections.hgc_cl3d, collections.sim_parts,
+#         coll.hgc_cl3d, coll.sim_parts,
 #         hgc_tp_selections, gen_ee_selections)
 # ]
 
 
 # hgc_tp_rate = [
 #     plotters.HGCCl3DRatePlotter(
-#         collections.hgc_cl3d, hgc_tp_rate_selections),
+#         coll.hgc_cl3d, hgc_tp_rate_selections),
 # ]
 
 # hgc_tp_rate_pt_wps = [
 #     plotters.HGCCl3DGenMatchPtWPSPlotter(
-#         collections.hgc_cl3d, collections.sim_parts,
+#         coll.hgc_cl3d, coll.sim_parts,
 #         gen_ee_selections)
 # ]
 
 
 # correlator_occupancy_plotters = [
 #     plotters.CorrOccupancyPlotter(
-#         collections.tk_pfinputs, selections.pftkinput_selections),
+#         coll.tk_pfinputs, selections.pftkinput_selections),
 #     plotters.CorrOccupancyPlotter(
-#         collections.egs_EE_pf_reg, selections.pfinput_regions),
+#         coll.egs_EE_pf_reg, selections.pfinput_regions),
 #     plotters.CorrOccupancyPlotter(
-#         collections.tkeles_EE_pf_reg, selections.pfinput_regions),
+#         coll.tkeles_EE_pf_reg, selections.pfinput_regions),
 #     plotters.CorrOccupancyPlotter(
-#         collections.tkeles_EB_pf_reg, selections.pfinput_regions),
+#         coll.tkeles_EB_pf_reg, selections.pfinput_regions),
 #     plotters.CorrOccupancyPlotter(
-#         collections.tkem_EE_pf_reg, selections.pfinput_regions),
+#         coll.tkem_EE_pf_reg, selections.pfinput_regions),
 #     plotters.CorrOccupancyPlotter(
-#         collections.tkem_EB_pf_reg, selections.pfinput_regions),
+#         coll.tkem_EB_pf_reg, selections.pfinput_regions),
 #     plotters.CorrOccupancyPlotter(
-#         collections.eg_EE_pfinputs, selections.pfeg_ee_input_selections),
+#         coll.eg_EE_pfinputs, selections.pfeg_ee_input_selections),
 #     plotters.CorrOccupancyPlotter(
-#         collections.eg_EB_pfinputs, selections.pfeg_eb_input_selections),
+#         coll.eg_EB_pfinputs, selections.pfeg_eb_input_selections),
 #     plotters.CorrOccupancyPlotter(
-#         collections.cl3d_hm_pfinputs, selections.pfeg_tp_input_selections),
+#         coll.cl3d_hm_pfinputs, selections.pfeg_tp_input_selections),
 # ]
 
 for sel in pfin_hgc_tp_selections:

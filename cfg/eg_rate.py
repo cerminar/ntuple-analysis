@@ -1,66 +1,23 @@
-from python import collections, plotters, selections, l1THistos
+from python import collections, plotters, selections, calibrations
+from python import l1THistos as histos
 import python.boost_hist as bh
+import cfg.datasets.fastpuppi_collections as coll
 import awkward as ak
 import math
 
-class RateHistos(l1THistos.BaseHistos):
-    def __init__(self, name, root_file=None, debug=False):
-        if not root_file:
-            self.h_norm = bh.TH1F(
-                f'{name}_norm', 
-                '# of events', 
-                1, 1, 2)
-            self.h_pt = bh.TH1F(
-                f'{name}_pt', 
-                'rate above p_{T} thresh.; p_{T} [GeV]; rate [kHz];', 
-                100, 0, 100)
-            # self.h_ptVabseta = bh.TH2F(name+'_ptVabseta', 'Candidate p_{T} vs |#eta|; |#eta|; p_{T} [GeV];', 34, 1.4, 3.1, 100, 0, 100)
-
-        l1THistos.BaseHistos.__init__(self, name, root_file, debug)
-
-        if root_file is not None:
-            for attr_1d in [attr for attr in dir(self) if (attr.startswith('h_') and 'TH1' in getattr(self, attr).ClassName())]:
-                setattr(self, f'{attr_1d}_graph', l1THistos.GraphBuilder(self, attr_1d))
-
-        if root_file is not None:
-            self.normalize(2760.0*11246/1000)
-            # self.h_simenergy = bh.TH1F(name+'_energy', 'Digi sim-energy (GeV)', 100, 0, 2)
-
-    def fill(self, data):
-        # print(self.h_pt.axes[0])
-        pt_max = ak.max(data.pt, axis=1)
-        for thr,bin_center in zip(self.h_pt.axes[0].edges, self.h_pt.axes[0].centers, strict=False):
-        # for thr,bin_center in zip(self.h_pt.axes[0].edges[1:], self.h_pt.axes[0].centers):
-            self.h_pt.fill(bin_center, weight=ak.sum(pt_max>=thr))
-
-        # for ptf in range(0, int(pt)+1):
-        #     self.h_pt.Fill(ptf)
-        # self.h_ptVabseta.Fill(abs(eta), pt)
-
-    def fill_norm(self, many=1):
-        # print (f' fill rate norm: {many}')
-        self.h_norm.fill(1, weight=many)
-
-    def normalize(self, norm):
-        nev = self.h_norm.GetBinContent(1)
-        if(nev != norm):
-            print(f'normalize # ev {nev} to {norm}')
-            self.h_norm.Scale(norm/nev)
-            self.h_pt.Scale(norm/nev)
-            # self.h_ptVabseta.Scale(norm/nev)
 
 
-class RateHistoCounter(l1THistos.BaseHistos):
+class RateHistoCounter(histos.BaseHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
             self.h_norm = bh.TH1F(f'{name}_norm', '# of events', 1, 1, 2)
             self.h_rate = bh.TH1F(f'{name}_rate', '# passing events; rate [kHz];',  1, 1, 2)
 
-        l1THistos.BaseHistos.__init__(self, name, root_file, debug)
+        histos.BaseHistos.__init__(self, name, root_file, debug)
 
         if root_file is not None:
             for attr_1d in [attr for attr in dir(self) if (attr.startswith('h_') and 'TH1' in getattr(self, attr).ClassName())]:
-                setattr(self, f'{attr_1d}_graph', l1THistos.GraphBuilder(self, attr_1d))
+                setattr(self, f'{attr_1d}_graph', histos.GraphBuilder(self, attr_1d))
 
         if root_file is not None:
             self.normalize(2760.0*11246/1000)
@@ -140,7 +97,7 @@ class RatePlotter(plotters.BasePlotter):
         self.tp_set.activate()
         tp_name = self.tp_set.name
         for selection in self.tp_selections:
-            self.h_rate[selection.name] = RateHistos(name=f'{tp_name}_{selection.name}')
+            self.h_rate[selection.name] = histos.RateHistos(name=f'{tp_name}_{selection.name}')
 
     def fill_histos(self, debug=0):
         # print '------------------'
@@ -198,48 +155,9 @@ class DoubleObjRateCounter(BaseRateCounter):
 
 
 
-
-simeg_rate_ee_selections = (selections.Selector('^EGq[4-5]$')*('^Eta[^DA][BC]*[BCD]$|all'))()
-emueg_rate_ee_selections = (selections.Selector('^EGq[1,3]$')*('^Eta[A][BC]*[C]$')*('^Iso|all'))()
-
-emueg_fw_rate_ee_selections = (selections.Selector('^EGq[1,3]$')*('^Eta[A][BC]*[BCD]$|all')*('^Iso|all'))()
-emueg_rate_eb_selections = (selections.Selector('^LooseTkID$|all')*('^Eta[F]$')*('^Iso|all'))()
-
-
-# print(egid_eta_selections)
-
-# sim_eg_match_ee_selections = (selections.Selector('^EGq[4-5]$')*('^Pt[1-3][0]$|all'))()
-# gen_ee_tk_selections = (selections.Selector('GEN$')*('Ee$')*('^Eta[A-C]$|EtaBC$|all')+selections.Selector('GEN$')*('Ee$')*('Pt15|Pt30'))()
-# gen_ee_selections = (selections.Selector('GEN$')*('Ee')*('^Eta[BC]+[CD]$|^Eta[A-D]$|all')+selections.Selector('GEN$')*('Ee')*('^Pt15|^Pt30'))()
-tp_plotters = [
-    RatePlotter(collections.hgc_cl3d, selections.tp_rate_selections),
-    # RatePlotter(collections.cl3d_hm_calib, selections.tp_rate_selections),
-    # RatePlotter(collections.cl3d_hm_shapeDr, selections.tp_rate_selections),
-    # RatePlotter(collections.cl3d_hm_shapeDr_calib, selections.tp_rate_selections),
-    # RatePlotter(collections.cl3d_hm_shapeDr_calib_new, selections.tp_rate_selections),
-    # RatePlotter(collections.cl3d_hm_shapeDtDu_calib, selections.tp_rate_selections),
-    # RatePlotter(collections.cl3d_hm_emint, selections.tp_rate_selections),
-]
-
-
-eg_emu_plotters = [
-    RatePlotter(
-        collections.TkEmEE, emueg_rate_ee_selections),
-    RatePlotter(
-        collections.TkEmEB, selections.barrel_rate_selections),
-    RatePlotter(
-        collections.TkEleEE, emueg_rate_ee_selections),
-    RatePlotter(
-        collections.TkEleEB, selections.barrel_rate_selections),
-    # RatePlotter(
-    #     collections.tkem_EE_pfnf, selections.eg_id_iso_eta_ee_selections),
-    # RatePlotter(
-    #     collections.tkem_EB_pfnf, selections.barrel_rate_selections),
-]
-
 egid_eta_selections = (selections.Selector('^IDTightS|all')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[CD]$'))()
 egid_etatk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[C]$'))()
-egid_iso_etatk_selections = (selections.Selector('^IDTight[EP]|all')*selections.Selector('^Iso|all')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[C]$'))()
+egid_iso_etatk_selections = (selections.Selector('^IDTight[EP]$|all')*selections.Selector('^Iso|all')*selections.Selector('^Eta[F]$|^Eta[AF][ABCD]*[C]$'))()
 
 egid_menu_ele_selections = (selections.Selector('^MenuEle')*selections.Selector('^EtaE[BE]$|all'))()
 egid_menu_pho_selections = (selections.Selector('^MenuPho|^MenuSta')*selections.Selector('^EtaE[BE]$|all'))()
@@ -267,23 +185,23 @@ egid_iso_eta_eb_selections = (selections.Selector('^IDTight[EP]|all')*selections
 
 eg_emuCTl1_sta_plotters = [
     RatePlotter(
-        collections.EGStaEE, egid_eta_ee_selections),
+        coll.EGStaEE, egid_eta_ee_selections),
     RatePlotter(
-        collections.EGStaEB, egid_eta_eb_selections),
+        coll.EGStaEB, egid_eta_eb_selections),
 ]
 
 eg_emuCTl1_pho_plotters = [
     RatePlotter(
-        collections.TkEmEE, egid_iso_eta_eetk_selections),
+        coll.TkEmEE, egid_iso_eta_eetk_selections),
     RatePlotter(
-        collections.TkEmEB, egid_iso_eta_eb_selections),
+        coll.TkEmEB, egid_iso_eta_eb_selections),
 ]
 
 eg_emuCTl1_ele_plotters = [
     RatePlotter(
-        collections.TkEleEE, egid_iso_eta_eetk_selections_comp),
+        coll.TkEleEE, egid_iso_eta_eetk_selections_comp),
     RatePlotter(
-        collections.TkEleEB, egid_iso_eta_eb_selections),
+        coll.TkEleEB, egid_iso_eta_eb_selections),
 ]
 
 eg_emuCTl1_plotters = []
@@ -294,56 +212,55 @@ eg_emuCTl1_plotters.extend(eg_emuCTl1_ele_plotters)
 
 eg_emuCTl2_plotters = [
     RatePlotter(
-        collections.TkEmL2, egid_iso_etatk_selections),
+        coll.TkEmL2, egid_iso_etatk_selections),
     RatePlotter(
-        collections.TkEleL2, egid_iso_etatk_selections),
+        coll.TkEleL2, egid_iso_etatk_selections),
 ]
 
 eg_emuCTl1_ell_plotters = [
     RatePlotter(
-        collections.TkEleEllEE, egid_iso_eta_eetk_selections_comp),
+        coll.TkEleEllEE, egid_iso_eta_eetk_selections_comp),
 ]
 
 
 eg_emuCTl2_ell_plotters = [
     RatePlotter(
-        collections.TkEmL2Ell, egid_iso_etatk_selections),
+        coll.TkEmL2Ell, egid_iso_etatk_selections),
     RatePlotter(
-        collections.TkEleL2Ell, egid_iso_etatk_selections),
+        coll.TkEleL2Ell, egid_iso_etatk_selections),
 ]
 
 eg_menuSta_plotters = [
     RatePlotter(
-        collections.EGStaEE, egid_menu_sta_selections),
+        coll.EGStaEE, egid_menu_sta_selections),
     RatePlotter(
-        collections.EGStaEB, egid_menu_sta_selections),
+        coll.EGStaEB, egid_menu_sta_selections),
 ]
 
 eg_menuCTl2_plotters = [
     RatePlotter(
-        collections.TkEmL2, egid_menu_pho_selections),
+        coll.TkEmL2, egid_menu_pho_selections),
     RatePlotter(
-        collections.TkEleL2, egid_menu_ele_selections),
+        coll.TkEleL2, egid_menu_ele_selections),
 ]
 
 eg_menuCTl2_ell_plotters = [
     RatePlotter(
-        collections.TkEmL2Ell, egid_menu_pho_selections),
+        coll.TkEmL2Ell, egid_menu_pho_selections),
     RatePlotter(
-        collections.TkEleL2Ell, egid_menu_ele_selections),
+        coll.TkEleL2Ell, egid_menu_ele_selections),
 ]
-
 
 
 eg_menuCTl2_rate = [
     RateCounter(
-        collections.TkEmL2, egid_menu_pho_rate_selections),
+        coll.TkEmL2, egid_menu_pho_rate_selections),
     RateCounter(
-        collections.TkEleL2, egid_menu_ele_rate_selections),
+        coll.TkEleL2, egid_menu_ele_rate_selections),
     # RateCounter(
-    #     collections.TkEleL2Ell, egid_menu_ele_rate_selections),
+    #     coll.TkEleL2Ell, egid_menu_ele_rate_selections),
     DoubleObjRateCounter(
-        collections.DoubleTkEleL2, egid_menu_diele_rate_selections),
+        coll.DoubleTkEleL2, egid_menu_diele_rate_selections),
     DoubleObjRateCounter(
-        collections.DoubleTkEmL2, egid_menu_dipho_rate_selections)
+        coll.DoubleTkEmL2, egid_menu_dipho_rate_selections)
 ]

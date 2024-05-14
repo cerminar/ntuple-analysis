@@ -2,9 +2,11 @@ import sys
 
 import typer
 import yaml
+import importlib
+import pathlib
+
 from rich import print as pprint
 
-from cfg import *  #!FIXXX
 from python.analyzer import analyze
 from python.parameters import Parameters, get_collection_parameters
 from python.submission import to_HTCondor
@@ -29,18 +31,19 @@ Histograms:
 """
 
 
+
 @print_stats
 def analyzeNtuples(  # noqa: PLR0913
     configfile: str = typer.Option(..., '-f', '--file', help='specify the yaml configuration file'),
     datasetfile: str = typer.Option(
         ..., '-i', '--input-dataset', help='specify the yaml file defining the input dataset'
     ),
-    collection: str = typer.Option(..., '-c', '--collection', help='specify the collection to be processed'),
+    collection: str = typer.Option(..., '-p', '--plotters', help='specify the plotters to be run'),
     sample: str = typer.Option(
         ...,
         '-s',
         '--sample',
-        help='specify the sample (within the collection) to be processed ("all" to run the full collection)',
+        help='specify the sample to be processed',
     ),
     debug: int = typer.Option(0, '-d', '--debug', help='debug level'),
     nevents: int = typer.Option(10, '-n', '--nevents', help='# of events to process per sample'),
@@ -60,6 +63,12 @@ def analyzeNtuples(  # noqa: PLR0913
             return yaml.load(stream, Loader=yaml.FullLoader)
 
     cfgfile = {}
+
+    # we load the python module with the same name as the yaml file
+    pymoudule_path = pathlib.Path(configfile.split('.yaml')[0])
+    formatted_path = '.'.join(pymoudule_path.with_suffix('').parts)
+    sys.modules[formatted_path] = importlib.import_module(formatted_path)
+
     cfgfile.update(parse_yaml(configfile))
     cfgfile.update(parse_yaml(datasetfile))
 
@@ -83,13 +92,13 @@ def analyzeNtuples(  # noqa: PLR0913
     samples_to_process = []
 
     if not opt.COLLECTION:
-        print(f'\nAvailable collections: {collection_params.keys()}')
+        print(f'\nAvailable plotter collections: {collection_params.keys()}')
         sys.exit(0)
     if opt.COLLECTION not in collection_params:
-        print(f'ERROR: collection {opt.COLLECTION} not in the cfg file')
+        print(f'ERROR: plotter collection {opt.COLLECTION} not in the cfg file')
         sys.exit(10)
     if not opt.SAMPLE:
-        print(f'Collection: {opt.COLLECTION}, available samples: {collection_params[opt.COLLECTION]}')
+        print(f'Plotter collection: {opt.COLLECTION}, available samples: {collection_params[opt.COLLECTION]}')
         sys.exit(0)
 
     if opt.SAMPLE == 'all':

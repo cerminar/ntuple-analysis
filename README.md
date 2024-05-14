@@ -92,11 +92,23 @@ The main script is `analyzeNtuples.py`:
 
 An example of how to run it:
 
-`python analyzeNtuples.py -f cfg/hgctps.yaml -i cfg/datasets/ntp_v81.yaml -c tps -s doubleele_flat1to100_PU200 -n 1000 -d 0`
+`python analyzeNtuples.py -f cfg/egvalid.yaml -i cfg/datasets/ntpfp_131Xv3.yaml -p egmenu -s doubleele_flat1to100_PU200 -n 1000 -d 0`
 
 ## General idea
 
-Data are read in `collections` of objects corresponding to an `array` and are processed by `plotters` which creates set of histograms for different `selections` of the data `collections`.
+A configuration file specifies a collection of plotters which read some data and fill a set of plots for a list of data selections. In case gen matching is needed the same plots are filled for all the combinations of data and gen selections. The ouput histograms are saved in the output file following a naming convention:
+
+Data are represented by`collections` of objects. They are processed by `plotters` which creates set of histograms for different `selections` of the data `collections`.
+
+Histograms are saved in the output file with a name which is composed as follows:
+
+`<Histo class name>/<collection name>_<selection name>_<histo name>`
+
+In case gen matching is performed the naming convention becomes:
+
+`<Histo class name>/<collection name>_<selection name>_<gen collection name>_<gen selection name>_<histo name>`
+
+The histogram classes handle saving and reading histograms to/from file transparently.
 
 
 ### Configuration file
@@ -111,28 +123,30 @@ The other prividing
    - details of the input samples (location of the ntuple files)
 
 Example of configuration file can be found in:
- - [cfg/egplots.yaml](cfg/egplots.yaml)
- - [cfg/datasets/ntp_v92.yaml](cfg/datasets/ntp_v92.yaml)
+ - [cfg/egvalid.yaml](cfg/egvalid.yaml)
+ - [cfg/datasets/ntpfp_131Xv3.yaml](cfg/datasets/ntpfp_131Xv3.yaml)
 
+So you can run the same set of plotters on different input ntuples.
 
 ### Reading ntuple branches or creating derived ones
 
 The list of branches to be read and converted to `Awkward Arrays` format is specified in the module
 
-[collections](python/collections.py)
+[fastpuppi_collections.py](cfg/datasets/fastpuppi_collections.py)
 
 Instantiating an object of class `DFCollection`. What is actually read event by event depends anyhow on which plotters are actually instantiated (collections are read on-demand).
+For each collection a function adding columns beyond those in the root file can be defined.
 
 ### Selecting subsets of object collections
 Selections are defined as strings in the module:
 
 [selections](python/selections.py)
 
-Different collections are defined for different objects and/or different purposes. The selections have a `name` whcih is used for the histogram naming (see below). Selections are used by the plotters.
+Different collections are defined for different objects and/or different purposes. The selections have a `name` which is used for the histogram naming (see below). Selections are used by the plotters.
 Selections can be combined and retrieved via regular expressions in the configuration of the plotters.
 
 ### Adding a new plotter
-The actual functionality of accessing the objects, filtering them according to the `selections` and filling `histograms` is provided by the plotter classes defined in the module:
+The actual functionality of accessing the objects, filtering them according to the `selections` and filling `histograms` is provided by the plotter classes. The base ones are defined in the module:
 
 [plotters](python/plotters.py)
 
@@ -168,7 +182,7 @@ Of course you can use your favorite set of tools. I use mine [plot-drawing-tools
 I can't figure out how to do some manipulation using the `awkward array` or `uproot`....you can take a look at examples and play witht the arrays in:
 [plot-drawing-tools/blob/master/eventloop-uproot-ak.ipynb](https://github.com/cerminar/plot-drawing-tools/blob/master/eventloop-uproot-ak.ipynb)
 
-## Submitting to the batch system
+<!-- ## Submitting to the batch system
 
 Note that the script `analyzeNtuples.py` can be used to submit the jobs to the HTCondor batch system invoking the `-b` option. A dag configuration is created and you can actually submit it following the script output.
 
@@ -177,4 +191,4 @@ For each sample injected in the batch system a DAG is created. The DAG will subm
 However, if you don't want to wait (or you don't care) you can submit also a condor job that will run hadd periodically thus reducing dramatically the latency.
 For example:
 
-`condor_submit batch_single_empart_guns_tracks_v77/ele_flat2to100_PU0/batch_harvest.sub`
+`condor_submit batch_single_empart_guns_tracks_v77/ele_flat2to100_PU0/batch_harvest.sub` -->
