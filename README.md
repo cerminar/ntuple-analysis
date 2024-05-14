@@ -176,13 +176,27 @@ This is assumed in all the `plotters` and in the code to actually draw the histo
 python  analyzeNtuples.py -f cfg/eg_genmatch.yaml -i cfg/datasets/ntpfp_131Xv3.yaml -p egmenu  -s doubleele_flat1to100_PU200 -n 1000 -d 0
 ```
 
+- Runnig rate computations on e/g menu objects:
+```
+ python  analyzeNtuples.py -f cfg/eg_rate.yaml -i cfg/datasets/ntpfp_131Xv3.yaml -p rate_menu  -s doubleele_flat1to100_PU200 -n 1000 -d 0
+```
+
 - Running GEN matching to compute efficiency on HGC TPs objects:
 
 ``` 
 python  analyzeNtuples.py -f cfg/hgctps.yaml -i cfg/datasets/ntpfp_v100.yaml -p genmatch  -s doubleele_flat1to100_PU200 -n 1000 -d 0
 ```
 
+- Running rate computations on HGC clusters
+```
+python  analyzeNtuples.py -f cfg/hgctps.yaml -i cfg/datasets/ntpfp_v100.yaml -p rate  -s doubleele_flat1to100_PU200 -n 1000 -d 0
+```
 
+- Computing HGC cluster occupancies per CTL1 region
+
+```
+ python  analyzeNtuples.py -f cfg/l1ct_occupancy.yaml -i cfg/datasets/ntpfp_v100.yaml -p tps  -s doubleele_flat1to100_PU200 -n 1000 -d 0
+```
 
 ## Histogram drawing
 
