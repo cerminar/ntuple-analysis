@@ -162,9 +162,12 @@ ctl2_eg_selections = (selections.Selector('^IDTightE$|all')*('^EtaE[EB]$|all')+s
 
 
 
-hgc_tp_selections = (selections.Selector('^EgBdt*|^Em|all')*('PUId|all'))()
+hgc_tp_selections = (selections.Selector('^IDEm*|all')*('IDPuVeto|all')*('^Pt[2,3][0]$|all'))()
+
+# hgc_tp_selections = (selections.Selector('^EgBdt*|^Em|all')*('PUId|all'))()
+
 # hgc_tp_selections = (selections.Selector('^Eta[BC]+[CD]$|^Eta[A]$|all'))()
-hgc_tp_rate_selections = (selections.Selector('^EgBdt*|^Em|all')*('PUId|all')*('^Eta[ABC]+[CD]$|all'))()
+hgc_tp_rate_selections = (selections.Selector('^IDEm*|all')*('IDPuVeto|all')*('^Eta[ABC]+[CD]$|all'))()
 
 tkcl3dmatch_selections = (selections.Selector('PUId')*('^EgBdtLE|all')*('^Pt[1,2,5]$|all')*('^MTkPt[2-5]|all'))()
 
