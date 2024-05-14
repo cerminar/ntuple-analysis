@@ -158,7 +158,7 @@ The plotters access one or more collections, select them in several different wa
 ### Adding a new histogram
 Histograms are handled in the module:
 
-[l1THistos](python/l1THistos.py)
+[histos](python/histos.py)
 
 There are different classes of histograms depending on the input object and on the purpose.
 To add a new histogram to an existing class it is enough to add it in the corresponding constructor and in the `fill` module. The writing of the histos to files is handled transparently.
@@ -168,14 +168,33 @@ The histogram naming follows the convention:
 
 This is assumed in all the `plotters` and in the code to actually draw the histograms.
 
+## Examples
+
+- Running GEN matching to compute efficiency on e/g objects:
+
+```
+python  analyzeNtuples.py -f cfg/eg_genmatch.yaml -i cfg/datasets/ntpfp_131Xv3.yaml -p egmenu  -s doubleele_flat1to100_PU200 -n 1000 -d 0
+```
+
+- Running GEN matching to compute efficiency on HGC TPs objects:
+
+``` 
+python  analyzeNtuples.py -f cfg/hgctps.yaml -i cfg/datasets/ntpfp_v100.yaml -p genmatch  -s doubleele_flat1to100_PU200 -n 1000 -d 0
+```
+
+
 
 ## Histogram drawing
 
 Of course you can use your favorite set of tools. I use mine [plot-drawing-tools](https://github.com/cerminar/plot-drawing-tools), which is based on `jupyter notebooks`.
 
-`cd ntuple-analysis`
-`git clone git@github.com:cerminar/plot-drawing-tools.git`
-`jupyter-notebook`
+```
+cd ntuple-analysis
+git clone git@github.com:cerminar/plot-drawing-tools.git
+jupyter-notebook
+```
+
+
 
 ## HELP
 
