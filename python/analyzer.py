@@ -7,7 +7,7 @@ from rich import print as pprint
 
 import python.calibrations as calibs
 import python.file_manager as fm
-import python.l1THistos as Histos
+import python.histos as Histos
 import python.tree_reader as treereader
 from python import collections, timecounter
 

@@ -1,12 +1,11 @@
-from python import collections, plotters, selections, l1THistos, pf_regions
+from python import histos, plotters, selections, pf_regions
 import cfg.datasets.fastpuppi_collections as coll
-
 import python.boost_hist as bh
 import awkward as ak
 import numpy as np
 
 
-class CorrOccupancyHistos(l1THistos.BaseHistos):
+class CorrOccupancyHistos(histos.BaseHistos):
     class CorrBoardOccupancyHistos:
         def __init__(self, name, board):
             self.h_totOcc = bh.TH1F(
@@ -78,7 +77,7 @@ class CorrOccupancyHistos(l1THistos.BaseHistos):
                 setattr(self, f'h_{board}maxMult', bhs.h_maxMult)
                 self.board_histos.append(bhs)
 
-        l1THistos.BaseHistos.__init__(self, name, root_file, debug)
+        histos.BaseHistos.__init__(self, name, root_file, debug)
 
     def fill(self, objects):
         # print(objects.show())

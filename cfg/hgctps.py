@@ -1,6 +1,5 @@
-from python import collections, plotters, selections, calibrations
+from python import plotters, selections, calibrations, histos
 import cfg.datasets.fastpuppi_collections as coll
-from python import l1THistos as histos
 import python.boost_hist as bh
 
 # ------ Histogram classes ----------------------------------------------

@@ -27,7 +27,7 @@ import math
 
 from . import calibrations as calib
 from . import clusterTools as clAlgo
-from . import l1THistos as histos
+from . import histos as histos
 from . import selections as selections
 from . import utils as utils
 

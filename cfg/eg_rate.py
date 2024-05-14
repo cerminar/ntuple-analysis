@@ -1,5 +1,4 @@
-from python import collections, plotters, selections, calibrations
-from python import l1THistos as histos
+from python import plotters, selections, histos
 import python.boost_hist as bh
 import cfg.datasets.fastpuppi_collections as coll
 import awkward as ak
