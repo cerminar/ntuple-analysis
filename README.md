@@ -6,7 +6,8 @@ The tool is developed for the analysis of [FastPUPPI](https://github.com/p2l1pfp
 
 ## Pre-requisites: first time setup
 
-The tool can be run on any private machines using just `python`, `pip` and `virtualenvwrapper`.
+The tool can be run on any private machines using just `python`, `pip` and `venv`.
+For convenience, the procedure to manage venvs using  `virtualenvwrapper` is described.
 If you plan to run it on lxplus you might want to look at the point `1` below.
 
 ### 1. lxplus setup
@@ -96,11 +97,15 @@ An example of how to run it:
 
 ## General idea
 
-A configuration file specifies a collection of plotters which read some data and fill a set of plots for a list of data selections. In case gen matching is needed the same plots are filled for all the combinations of data and gen selections. The ouput histograms are saved in the output file following a naming convention:
+The analysis is defined by a `yaml` file and a `python` module of the same name. They define a number of collection of plotters which read some data and fill a set of plots for a list of data selections. In case gen matching is needed the same plots are filled for all the combinations of data and gen selections specified in the configuration.
+One of the collection is specified via command line arguments (`-p` option).
 
-Data are represented by`collections` of objects. They are processed by `plotters` which creates set of histograms for different `selections` of the data `collections`.
 
-Histograms are saved in the output file with a name which is composed as follows:
+Data are represented by `collections` of objects which can be read from `ROOT::TTree` files or filled on the fly. They are processed by `plotters` which creates set of histograms for different `selections` of the data `collections`.
+
+The `plotters`, the `histograms` and the various `selections` are defined in the configuration `python` file.
+
+The ouput histograms are saved in the output file following a naming convention:
 
 `<Histo class name>/<collection name>_<selection name>_<histo name>`
 
@@ -123,7 +128,7 @@ The other prividing
    - details of the input samples (location of the ntuple files)
 
 Example of configuration file can be found in:
- - [cfg/egvalid.yaml](cfg/egvalid.yaml)
+ - [cfg/eg_genmatch.yaml](cfg/eg_genmatch.yaml)
  - [cfg/datasets/ntpfp_131Xv3.yaml](cfg/datasets/ntpfp_131Xv3.yaml)
 
 So you can run the same set of plotters on different input ntuples.
@@ -134,8 +139,10 @@ The list of branches to be read and converted to `Awkward Arrays` format is spec
 
 [fastpuppi_collections.py](cfg/datasets/fastpuppi_collections.py)
 
-Instantiating an object of class `DFCollection`. What is actually read event by event depends anyhow on which plotters are actually instantiated (collections are read on-demand).
-For each collection a function adding columns beyond those in the root file can be defined.
+Instantiating objects of class `DFCollection`. What is actually read event by event depends anyhow on which plotters are actually instantiated (collections are read on-demand).
+For each collection, a function adding columns beyond those in the root file can be defined.
+
+New collections can be created for example combining those read from the root file.
 
 ### Selecting subsets of object collections
 Selections are defined as strings in the module:
