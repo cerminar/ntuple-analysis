@@ -11,6 +11,7 @@ from python.analyzer import analyze
 from python.parameters import Parameters, get_collection_parameters
 from python.submission import to_HTCondor
 from python.timecounter import print_stats
+import ROOT
 
 description = """
 Main script for L1 TP analysis.
@@ -27,7 +28,7 @@ Plotters:
     what to do with the data is handled in the `plotters` module
 Histograms:
     which histograms are produced is handled in the
-    `l1THistos` module (and the plotters).
+    `histos` module (and the plotters).
 """
 
 

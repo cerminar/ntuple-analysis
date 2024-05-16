@@ -109,13 +109,13 @@ class BasePlotter:
         # table.add_column('Histo class', style='blue')
 
         table.add_row(self.data_set.name, 
-                      ('\n').join(['-'+s.name for s in self.data_selections]),
+                      ('\n').join(['- '+s.name for s in self.data_selections]),
                     #   self.HistoClass.__name__
                       )
         console = Console()
         console.print(table)
 
-        pass
+        
 
 class GenericDataFramePlotter(BasePlotter):
     def __init__(self, HistoClass, data_set, selections=[selections.Selection('all')], pt_bins=None):
@@ -151,7 +151,7 @@ class GenericDataFramePlotter(BasePlotter):
         table.add_column('Histo class', style='blue')
 
         table.add_row(self.data_set.name, 
-                      ('\n').join(['-'+s.name for s in self.data_selections]),
+                      ('\n').join(['- '+s.name for s in self.data_selections]),
                       self.HistoClass.__name__
                       )
         console = Console()
@@ -603,9 +603,9 @@ class GenericGenMatchPlotter(BasePlotter):
         table.add_column('GEN match', style='blue', justify='left')
 
         table.add_row(self.data_set.name, 
-                      ('\n').join(['-'+s.name for s in self.data_selections]),
+                      ('\n').join(['- '+s.name for s in self.data_selections]),
                       self.gen_set.name,
-                      ('\n').join(['-'+s.name for s in self.gen_selections]),
+                      ('\n').join(['- '+s.name for s in self.gen_selections]),
                       str(math.sqrt(self.dr2)),
                       f'{self.gen_eta_phi_columns[0]},{self.gen_eta_phi_columns[1]}'
                       )

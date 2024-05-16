@@ -58,7 +58,7 @@ def get_collection_parameters(opt, cfgfile):
     for collection, collection_data in [(i,d) for (i,d) in cfgfile.items() if i not in ['common', 'dataset', 'samples']]:
         
         samples = cfgfile['samples'].keys()
-        pprint(f'--- Collection: {collection} with samples: {samples}')
+        pprint(f'--- Collection: [bold blue]{collection}[/] with samples: {samples}')
         sample_params = []
         plotters = []
 

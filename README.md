@@ -214,7 +214,7 @@ cd ntuple-analysis
 git clone git@github.com:cerminar/plot-drawing-tools.git
 jupyter-notebook
 ```
-
+Each object in ntuple analysis (`collections`, `selections`) has a label that can be directly used during the plotting by `plot-drawing-tools`.
 
 
 ## HELP
