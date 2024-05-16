@@ -175,6 +175,22 @@ The histogram naming follows the convention:
 
 This is assumed in all the `plotters` and in the code to actually draw the histograms.
 
+Histograms are coputed using boost histograms via the [hist](https://hist.readthedocs.io/en/latest/user-guide/notebooks/Histogram.html) but saved as ROOT histograms.
+
+## Histogram drawing
+
+Of course you can use your favorite set of tools: histograms are coputed using boost histograms via the [hist](https://hist.readthedocs.io/en/latest/user-guide/notebooks/Histogram.html) but saved as ROOT histograms.
+
+The [draw.py](draw.py) script allows to call different drawing modules defined for the various analysis modules. Given a list of files the will retrieve histograms by `collection` and by `selection` name and plot them. The resulting `png` and `pdf` files are saved to the target directory specified via command line.
+
+Additionally, interactive plotting can be done using the `jupyter notebooks` in [plot-drawing-tools](https://github.com/cerminar/plot-drawing-tools).
+
+```
+cd ntuple-analysis
+git clone git@github.com:cerminar/plot-drawing-tools.git
+jupyter-notebook
+```
+
 ## Examples
 
 - Running GEN matching to compute efficiency on e/g menu objects and draw plots:
@@ -209,16 +225,6 @@ python  analyzeNtuples.py -f cfg/hgctps.yaml -i cfg/datasets/ntpfp_v100.yaml -p 
  python  analyzeNtuples.py -f cfg/l1ct_occupancy.yaml -i cfg/datasets/ntpfp_v100.yaml -p tps  -s doubleele_flat1to100_PU200 -n 1000 -d 0
 ```
 
-## Histogram drawing
-
-Of course you can use your favorite set of tools. I use mine [plot-drawing-tools](https://github.com/cerminar/plot-drawing-tools), which is based on `jupyter notebooks`.
-
-```
-cd ntuple-analysis
-git clone git@github.com:cerminar/plot-drawing-tools.git
-jupyter-notebook
-```
-Each object in ntuple analysis (`collections`, `selections`) has a label that can be directly used during the plotting by `plot-drawing-tools`.
 
 
 ## HELP
