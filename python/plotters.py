@@ -622,17 +622,6 @@ class TrackGenMatchPlotter(GenericGenMatchPlotter):
                                                    gen_eta_phi_columns=['eta', 'phi'])
 
 
-class JetGenMatchPlotter(GenericGenMatchPlotter):
-    def __init__(self, data_set, gen_set,
-                 data_selections=[selections.Selection('all')],
-                 gen_selections=[selections.Selection('all')]):
-        super(JetGenMatchPlotter, self).__init__(histos.JetHistos, histos.JetResoHistos,
-                                                   data_set, gen_set,
-                                                   data_selections, gen_selections,
-                                                   gen_eta_phi_columns=['eta', 'phi'],
-                                                   drcut=0.3)
-
-
 class TrackGenMatchPlotter(GenericGenMatchPlotter):
     def __init__(self, data_set, gen_set,
                  data_selections=[selections.Selection('all')],

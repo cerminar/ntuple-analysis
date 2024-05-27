@@ -388,7 +388,7 @@ tk_pfinputs = DFCollection(
     debug=0)
 
 pfjets = DFCollection(
-    name='PFJets', label='PFJets',
+    name='PFJets', label='Ak4 PFJets',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='L1PFJets', entry_block=entry_block),
     print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
