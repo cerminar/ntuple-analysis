@@ -20,6 +20,10 @@ ctl2_tkeg_menu:
   plotters:
     - !!python/name:cfg.eg_genmatch.ctl2_tkeg_menu
 
+ctl2_tkeg_menu_tons:
+  plotters:
+    - !!python/name:cfg.eg_genmatch.ctl2_tkeg_menu_tons
+
 egsta_menu: 
   plotters:
     - !!python/name:cfg.eg_genmatch.egsta_menu
@@ -29,6 +33,16 @@ egmenu:
     - !!python/name:cfg.eg_genmatch.ctl2_tkeg_menu
     - !!python/name:cfg.eg_genmatch.egsta_menu
   file_label: menu
+
+ctl1_tkeg:
+  plotters:
+    - !!python/name:cfg.eg_genmatch.ctl1_tkeg
+  file_label: eg
+
+ctl2_tkeg:
+  plotters:
+    - !!python/name:cfg.eg_genmatch.ctl2_tkeg
+  file_label: eg
 
 
 

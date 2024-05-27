@@ -152,8 +152,9 @@ class EGGenMatchPtWPSPlotter(plotters.GenericGenMatchPlotter):
 
 # ------ Plotter instances
 
-gen_ee_tk_selections = (selections.Selector('GEN$')*('Ee$')*('^Eta[A-C]$|EtaBC$|all')+selections.Selector('GEN$')*('Ee$')*('Pt15|Pt30'))()
-gen_ee_selections = (selections.Selector('GEN$')*('Ee')*('^Eta[BC]+[CD]$|^Eta[A-D]$|all')+selections.Selector('GEN$')*('Ee')*('^Pt15|^Pt30'))()
+gen_ee_tk_selections = (selections.Selector('GEN$')*('^Eta[A-C]$|EtaBC$|all')+selections.Selector('GEN$')*('Pt15|Pt30'))()
+gen_ee_selections = (selections.Selector('GEN$')*('^Eta[BC]+[CD]$|^Eta[A-D]$|all')+selections.Selector('GEN$')*('^Pt15|^Pt30'))()
+gen_eb_selections = (selections.Selector('^GEN$')*('^Pt15|^Pt30|all')+selections.Selector('^GEN$')*('^EtaF'))()
 
 
 # FIXME: should become in newer versions
@@ -218,6 +219,28 @@ gen_menu_selections = (selections.Selector('GEN$')*('^EtaE[BE]$|all')+selections
 #     print(f'# of sels: {len(sels)}')
 #     for sel in sels:
 #         print(sel)
+
+
+ctl1_tkeg = [
+    EGGenMatchPlotter(
+        coll.TkEleEE, coll.gen,
+        egid_iso_tkele_selections, gen_ee_tk_selections),
+    EGGenMatchPlotter(
+        coll.TkEleEB, coll.gen,
+        egid_iso_tkele_selections, gen_eb_selections),
+]
+
+ctl2_tkeg = [
+    EGGenMatchPlotter(
+        coll.TkEleL2, coll.gen,
+        egid_iso_tkele_selections, gen_ee_tk_selections),
+    EGGenMatchPlotter(
+        coll.TkEleL2, coll.gen,
+        egid_iso_tkele_selections, gen_eb_selections),
+]
+
+
+
 
 # l1tc_emu_genmatched = [
 #     # EGGenMatchPlotter(
@@ -298,15 +321,16 @@ gen_menu_selections = (selections.Selector('GEN$')*('^EtaE[BE]$|all')+selections
 # ]
 
 do_tons = False
-egid_menu_ele_rate_selections = (selections.Selector('^SingleIsoTkEle|^SingleTkEle|^MenuEle')*('^EtaE[BE]$|all'))()
-egid_menu_pho_rate_selections = (selections.Selector('^SingleIsoTkPho|^SingleEGEle|^MenuSta|^MenuPho')*('^EtaE[BE]$|all'))()
-egid_menu_sta_rate_selections = (selections.Selector('^MenuSta|all')*('^EtaE[BE]$|all'))()
+# *('^EtaE[BE]$|all')
+egid_menu_ele_selections = (selections.Selector('^SingleIsoTkEle|^SingleTkEle|^MenuEle'))()
+egid_menu_pho_selections = (selections.Selector('^SingleIsoTkPho|^SingleEGEle|^MenuSta|^MenuPho'))()
+egid_menu_sta_selections = (selections.Selector('^MenuSta|all'))()
 
 if do_tons:
     print('Menu Turn-on selections are enabled!')
-    egid_menu_ele_rate_selections.extend((selections.Selector('^MenuEle')*('^EtaE[BE]$|all')*('^Pt[2-4]0$'))())
-    egid_menu_pho_rate_selections.extend((selections.Selector('^MenuPho')*('^EtaE[BE]$|all')*('^Pt[2-4]0$'))())
-    egid_menu_sta_rate_selections.extend((selections.Selector('^MenuSta')*('^EtaE[BE]$|all')*('^Pt[2-4]0$'))())
+    egid_menu_ele_selections.extend((selections.Selector('^MenuEle')*('^Pt[2-4]0$'))())
+    egid_menu_pho_selections.extend((selections.Selector('^MenuPho')*('^Pt[2-4]0$'))())
+    egid_menu_sta_selections.extend((selections.Selector('^MenuSta')*('^Pt[2-4]0$'))())
 
 
 
@@ -315,10 +339,37 @@ if do_tons:
 ctl2_tkeg_menu = [    
     EGGenMatchPlotter(
         coll.TkEmL2, coll.gen,
-        egid_menu_pho_rate_selections, gen_menu_selections),
+        egid_menu_pho_selections, gen_menu_selections),
     EGGenMatchPlotter(
         coll.TkEleL2, coll.gen,
-        egid_menu_ele_rate_selections, gen_menu_selections, 
+        egid_menu_ele_selections, gen_menu_selections, 
+        gen_eta_phi_columns=('eta', 'phi')
+        ),
+]
+egid_menu_ele_ton_selections = []
+egid_menu_pho_ton_selections = []
+egid_menu_sta_ton_selections = []
+
+egid_menu_ele_ton_selections.extend(egid_menu_ele_selections)
+egid_menu_pho_ton_selections.extend(egid_menu_pho_selections)
+egid_menu_sta_ton_selections.extend(egid_menu_sta_selections)
+
+egid_menu_ele_ton_selections.extend((selections.Selector('^MenuEle')*('^Pt[2-4]0$'))())
+egid_menu_pho_ton_selections.extend((selections.Selector('^MenuPho')*('^Pt[2-4]0$'))())
+egid_menu_sta_ton_selections.extend((selections.Selector('^MenuSta')*('^Pt[2-4]0$'))())
+
+egid_menu_ele_ton_selections = selections.prune(egid_menu_ele_ton_selections)
+egid_menu_pho_ton_selections = selections.prune(egid_menu_pho_ton_selections)
+egid_menu_sta_ton_selections = selections.prune(egid_menu_sta_ton_selections)
+
+
+ctl2_tkeg_menu_tons = [    
+    EGGenMatchPlotter(
+        coll.TkEmL2, coll.gen,
+        egid_menu_pho_ton_selections, gen_menu_selections),
+    EGGenMatchPlotter(
+        coll.TkEleL2, coll.gen,
+        egid_menu_ele_ton_selections, gen_menu_selections, 
         gen_eta_phi_columns=('eta', 'phi')
         ),
 ]
@@ -326,12 +377,11 @@ ctl2_tkeg_menu = [
 egsta_menu = [
     EGGenMatchPlotter(
         coll.EGStaEE, coll.gen,
-        egid_menu_sta_rate_selections, gen_menu_selections),
+        egid_menu_sta_selections, gen_menu_selections),
     EGGenMatchPlotter(
         coll.EGStaEB, coll.gen,
-        egid_menu_sta_rate_selections, gen_menu_selections),
+        egid_menu_sta_selections, gen_menu_selections),
 ]
-
 
 
 # l1tc_l2emu_ell_singlelepton_genmatched = [

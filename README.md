@@ -203,7 +203,7 @@ python draw.py -m cfg/eg_genmatch_draw.py -w egmenu_ele --input-files path/file1
 
 - Runnig rate computations on e/g menu objects:
 ```
- python  analyzeNtuples.py -f cfg/eg_rate.yaml -i cfg/datasets/ntpfp_131Xv3.yaml -p rate_menu  -s doubleele_flat1to100_PU200 -n 1000 -d 0
+ python  analyzeNtuples.py -f cfg/eg_rate.yaml -i cfg/datasets/ntpfp_131Xv3.yaml -p rate_menu  -s nugun_alleta_pu200 -n 1000 -d 0
 
  python draw.py -m cfg/eg_rate_draw.py -w menu_rate --input-files plots/histos_nugun_alleta_pu200_ratemenu_v160A.v131Xv1A.root:menu-v31,plots/histos_nugun_alleta_pu200_ratemenu_v160A.131Xv3.root:menu-v33 --target-dir /Users/cerminar/CERNbox/www/plots/test2/
 ```

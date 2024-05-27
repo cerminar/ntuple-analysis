@@ -18,10 +18,16 @@ def menu_rate_draw(hplot, smps, wc):
     menu = [   
         (['TkEleL2'], ['MenuEleLoose'], 'hRate_TkEleL2_MenuEleLoose'),
         (['TkEleL2'], ['MenuEleTight'], 'hRate_TkEleL2_MenuEleTight'),
+        (['TkEleL2'], ['MenuEleLooseEtaEE'], 'hRate_TkEleL2_MenuEleLooseEtaEE'),
+        (['TkEleL2'], ['MenuEleTightEtaEE'], 'hRate_TkEleL2_MenuEleTightEtaEE'),
+        (['TkEleL2'], ['MenuEleLooseEtaEB'], 'hRate_TkEleL2_MenuEleLooseEtaEB'),
+        (['TkEleL2'], ['MenuEleTightEtaEB'], 'hRate_TkEleL2_MenuEleTightEtaEB'),
         (['TkEleL2'], ['MenuEleIsoLoose'], 'hRate_TkEleL2_MenuEleIsoLoose'),
         (['TkEleL2'], ['MenuEleIsoTight'], 'hRate_TkEleL2_MenuEleIsoTight'),
         (['TkEleL2'], ['MenuEleIsoTight', 'MenuEleIsoLoose'], 'hRate_TkEleL2_MenuEleIso'),
         (['TkEmL2'], ['MenuPhoIso'], 'hRate_TkEmL2_MenuPhoIso'),
+        (['TkEmL2'], ['MenuPhoIsoEtaEE'], 'hRate_TkEmL2_MenuPhoIsoEtaEE'),
+        (['TkEmL2'], ['MenuPhoIsoEtaEB'], 'hRate_TkEmL2_MenuPhoIsoEtaEB'),
         (['EGStaEE'], ['MenuSta'], 'hRate_EGStaEE_MenuSta'),
         (['EGStaEB'], ['MenuSta'], 'hRate_EGStaEB_MenuSta'),
 
