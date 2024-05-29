@@ -67,7 +67,7 @@ class HGCIdTuples(histos.BaseUpTuples):
         tree_data = {}
         for var in vars:
             if var in data.fields:
-                tree_data[var] = data[var]
+                tree_data[var] = ak.flatten(ak.drop_none(data[var]))
         histos.BaseUpTuples.fill(self, tree_data)
 
 

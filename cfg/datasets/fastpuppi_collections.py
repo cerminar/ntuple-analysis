@@ -43,7 +43,7 @@ def cl3d_fixtures(clusters):
     mask_tight = 0b0001
     clusters['IDTightEm'] = np.bitwise_and(clusters.hwQual, mask_tight) > 0
     clusters['IDLooseEm'] = np.bitwise_and(clusters.hwQual, mask_loose) > 0
-    # clusters['eMax'] = clusters.emaxe*clusters.energy
+    clusters['eMax'] = clusters.emaxe*clusters.energy
     # clusters['meanz_scaled'] = clusters.meanz-320.
     # clusters['abseta'] =  np.abs(clusters.eta)
 
