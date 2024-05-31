@@ -6,20 +6,34 @@ The tool is developed for the analysis of [FastPUPPI](https://github.com/p2l1pfp
 
 ## Pre-requisites: first time setup
 
-The tool can be run on any private machines using just `python`, `pip` and `venv`.
-For convenience, the procedure to manage venvs using  `virtualenvwrapper` is described.
+The tool can be run on any private machines using just `python`, `ROOT`, `pip` and `venv`.
 If you plan to run it on lxplus you might want to look at the point `1` below.
 
-### 1. lxplus setup
+You can create a venv with different procedures, using explicitly `venv` (see paragraph `2` below) or using `virtualenvwrapper` (see paragraph `3`).
 
-This step is `lxplus` specific, givin access to a more recent `python` and `root` version.
+
+### 1. lxplus/cvmfs setup
+
+This step is `lxplus` specific, givin access to a more recent `python` (>= 3.9) and `ROOT` version.
 Edit/skip it accordingly for your specific system.
+The current configuration has been tested only on `el7` and `el8`.
 
 `source setup_lxplus.sh`
 
-### 2. install `virtualenvwrapper`
+### 2. Setup `venv`
 
-This stetp needs to be done **only once** for your account and can be done with whatever `python` version is in use in the system.
+```bash
+python3.9 -m venv <venvname>
+source <venvname>/bin/activate
+pip install -r requirements.txt
+```
+
+
+### 3. Setup using  `virtualenvwrapper`
+
+#### 3.1 Install `virtualenvwrapper`
+
+This stetp needs to be done **only once for your account** and can be done with whatever `python` version is in use in the system.
 
 For some reason the current `CMSSW` scrips seems to deliver an inconsistent setup of `virtualenv` and `virtualenvwrapper`, for this reason we force a new installation in `~/.local` using:
 
@@ -28,26 +42,18 @@ For some reason the current `CMSSW` scrips seems to deliver an inconsistent setu
 For a more complete overview of the procedure you can refer to
 `virtualenvwrapper` [installation instructions](https://virtualenvwrapper.readthedocs.io/en/latest/install.html)
 
-### 3. setup `virtualenvwrapper`
+#### 3.2 setup `virtualenvwrapper`
 
 For starting using virtualenvwrapper
 
 `source setVirtualEnvWrapper.sh`
 
-### 4. create a virtualenv for the project
+#### 3.3 create a virtualenv for the project
 
 The **first time** you will have to create the actual instance of the `virtualenv`:
 
 ``mkvirtualenv --system-site-packages
  -p `which python3.9` -r requirements.txt <venvname>``
-
-[requirements.txt](requirements.txt)
-
-You can use the file directly using for example:
-
-`pip install -r requirements.txt`
-
-*NOTE*: `python > 3.9` is a requirement.
 
 
 ## Setup after first installation
@@ -59,30 +65,25 @@ Edit/skip it accordingly for your specific system.
 
 `source setup_lxplus.sh`
 
-### 2. setup `virtualenvwrapper`
+### 2. Activate the virtualenv
 
-For starting using virtualenvwrapper
+Depending on how you created the virtualenv you need to activate it using one of the folloiwing:
 
-`source setVirtualEnvWrapper.sh`
-
-### 3. activate the `virtualenv`
-
-After this initial (once in a time) setup is done you can just activate the virtualenv calling:
-
-`workon  <venvname>`
-
-(`lsvirtualenv` is your friend in case you forgot the name).
-
-
-### Conda environment
-You can use also conda to install all the dependencies and root
+#### 2.1 Using `venv`
 
 ```bash
-conda create env_name python=3.11
-conda activate env_name
-conda install root              #In the conda-forge channel
-pip install -r requirements.txt
+source <venvname>/bin/activate
 ```
+
+#### 2.2 Using `virtualenvwrapper`
+
+For starting using virtualenvwrapper
+```bash
+`source setVirtualEnvWrapper.sh`
+`workon  <venvname>`
+```
+
+(`lsvirtualenv` is your friend in case you forgot the name).
 
 
 ## Running the analysis
@@ -195,14 +196,14 @@ jupyter-notebook
 
 - Running GEN matching to compute efficiency on e/g menu objects and draw plots:
 
-```
+```bash
 python  analyzeNtuples.py -f cfg/eg_genmatch.yaml -i cfg/datasets/ntpfp_131Xv3.yaml -p egmenu  -s doubleele_flat1to100_PU200 -n 1000 -d 0
 
 python draw.py -m cfg/eg_genmatch_draw.py -w egmenu_ele --input-files path/file1.root:label1,path/file2.root:label2 --target-dir /Users/cerminar/CERNbox/www/plots/test2/
 ```
 
 - Runnig rate computations on e/g menu objects:
-```
+```bash
  python  analyzeNtuples.py -f cfg/eg_rate.yaml -i cfg/datasets/ntpfp_131Xv3.yaml -p rate_menu  -s nugun_alleta_pu200 -n 1000 -d 0
 
  python draw.py -m cfg/eg_rate_draw.py -w menu_rate --input-files plots/histos_nugun_alleta_pu200_ratemenu_v160A.v131Xv1A.root:menu-v31,plots/histos_nugun_alleta_pu200_ratemenu_v160A.131Xv3.root:menu-v33 --target-dir /Users/cerminar/CERNbox/www/plots/test2/
@@ -210,22 +211,25 @@ python draw.py -m cfg/eg_genmatch_draw.py -w egmenu_ele --input-files path/file1
 
 - Running GEN matching to compute efficiency on HGC TPs objects:
 
-``` 
+``` bash
 python  analyzeNtuples.py -f cfg/hgctps.yaml -i cfg/datasets/ntpfp_v100.yaml -p genmatch  -s doubleele_flat1to100_PU200 -n 1000 -d 0
 ```
 
 - Running rate computations on HGC clusters
-```
+```bash
 python  analyzeNtuples.py -f cfg/hgctps.yaml -i cfg/datasets/ntpfp_v100.yaml -p rate  -s doubleele_flat1to100_PU200 -n 1000 -d 0
 ```
 
 - Computing HGC cluster occupancies per CTL1 region
 
-```
+```bash
  python  analyzeNtuples.py -f cfg/l1ct_occupancy.yaml -i cfg/datasets/ntpfp_v100.yaml -p tps  -s doubleele_flat1to100_PU200 -n 1000 -d 0
 ```
 
-
+- Producing a further `ROOT` ntuple with HGC clusters and matched GEN information (e.g. for model training)
+```bash
+python  analyzeNtuples.py -f cfg/hgcIdTuples.yaml -i cfg/datasets/ntpfp_131Xv3.yaml -p egid -s ttbar_PU200 -n 1000 -d 0
+```
 
 ## HELP
 
