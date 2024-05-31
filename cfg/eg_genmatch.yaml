@@ -1,0 +1,141 @@
+
+common:
+  output_dir:
+    # dictionary machine name -> directory to support different paths
+    default: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
+    triolet: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
+  plot_version: v200B
+  run_clustering: False
+  run_density_computation: False
+# +AccountingGroup = "group_u_CMS.u_zh.users"
+# +AccountingGroup = "group_u_CMST3.all"
+
+  file_label: eg
+
+ctl2_tkeg_menu:
+  plotters:
+    - !!python/name:cfg.eg_genmatch.ctl2_tkeg_menu
+
+ctl2_tkeg_menu_tons:
+  plotters:
+    - !!python/name:cfg.eg_genmatch.ctl2_tkeg_menu_tons
+
+egsta_menu: 
+  plotters:
+    - !!python/name:cfg.eg_genmatch.egsta_menu
+
+egmenu:
+  plotters:
+    - !!python/name:cfg.eg_genmatch.ctl2_tkeg_menu
+    - !!python/name:cfg.eg_genmatch.egsta_menu
+  file_label: menu
+
+ctl1_tkeg:
+  plotters:
+    - !!python/name:cfg.eg_genmatch.ctl1_tkeg
+  file_label: eg
+
+ctl2_tkeg:
+  plotters:
+    - !!python/name:cfg.eg_genmatch.ctl2_tkeg
+  file_label: eg
+
+
+
+  # egvalid_l1tc:
+  #   file_label:
+  #     eg
+  #   samples:
+  #     # - ele_flat2to100_PU0
+  #     # - ele_flat2to100_PU200
+  #     # - doubleele_flat1to100_PU0
+  #     - doublephoton_flat1to100_PU200
+  #     - doubleele_flat1to100_PU200
+  #     # - photon_flat8to150_PU0
+  #     # - photon_flat8to150_PU200
+  #     # - dyll_PU200
+  #   plotters:
+  #     - !!python/name:cfg.egvalid.l1tc_eg_genmatched
+  #     - !!python/name:cfg.egvalid.l1tc_rate_pt_wps
+  #     # - !!python/name:cfg.egvalid.l1tc_fw_eg_genmatched      
+  #   htc_jobflavor:
+  #     microcentury
+  #   priorities:
+  #     doubleele_flat1to100_PU0: 2
+  #     doubleele_flat1to100_PU200: 7
+  #     doublephoton_flat1to100_PU200: 6
+  #   events_per_job:
+  #     doubleele_flat1to100_PU0: 10000
+  #     doubleele_flat1to100_PU200: 10000
+  #     doublephoton_flat1to100_PU200: 10000
+
+
+  # # this is for ntuple version > v81
+  # egvalid_l1tc_emu:
+  #     file_label:
+  #       eg
+  #     samples:
+  #       # - ele_flat2to100_PU0
+  #       # - ele_flat2to100_PU200
+  #       # - doubleele_flat1to100_PU0
+  #       - doublephoton_flat1to100_PU200
+  #       - doubleele_flat1to100_PU200
+  #       # - photon_flat8to150_PU0
+  #       # - photon_flat8to150_PU200
+  #       # - dyll_PU200
+  #     plotters:
+  #       - !!python/name:cfg.egvalid.l1tc_emu_genmatched
+  #       # - !!python/name:cfg.egvalid.l1tc_emu_rate_pt_wps
+  #     htc_jobflavor:
+  #       longlunch
+  #     priorities:
+  #       doubleele_flat1to100_PU0: 2
+  #       doubleele_flat1to100_PU200: 7
+  #       doublephoton_flat1to100_PU200: 6
+  #     events_per_job:
+  #       doubleele_flat1to100_PU0: 10000
+  #       doubleele_flat1to100_PU200: 5000
+  #       doublephoton_flat1to100_PU200: 5000
+
+
+  # egvalid_l1tc_l1l2emu:
+  #     file_label:
+  #       eg
+  #     samples:
+  #       # - ele_flat2to100_PU0
+  #       # - ele_flat2to100_PU200
+  #       # - doubleele_flat1to100_PU0
+  #       - doublephoton_flat1to100_PU200
+  #       - doubleele_flat1to100_PU200
+  #       # - zprime_ee_PU200
+  #       # - photon_flat8to150_PU0
+  #       # - photon_flat8to150_PU200
+  #       # - dyll_PU200
+  #     plotters:
+  #       # - !!python/name:cfg.egvalid.l1tc_l1emu_eb_genmatched
+  #       # - !!python/name:cfg.egvalid.l1tc_l1emu_ee_genmatched
+  #       - !!python/name:cfg.egvalid.l1tc_l2emu_genmatched
+  #       # - !!python/name:cfg.egvalid.l1tc_l1emu_ee_ell_genmatched
+  #       # - !!python/name:cfg.egvalid.l1tc_l2emu_ell_genmatched
+  #       # - !!python/name:cfg.egvalid.l1tc_emu_rate_pt_wps
+  #     htc_jobflavor:
+  #       longlunch
+  #     priorities:
+  #       doubleele_flat1to100_PU0: 2
+  #       doubleele_flat1to100_PU200: 7
+  #       doublephoton_flat1to100_PU200: 6
+  #       zprime_ee_PU200: 5
+  #     events_per_job:
+  #       doubleele_flat1to100_PU0: 10000
+  #       doubleele_flat1to100_PU200: 1000
+  #       doublephoton_flat1to100_PU200: 1000
+  #       zprime_ee_PU200: 5000
+        
+  # egvalid_l1tc_l1emu_menu:
+  #     file_label:
+  #       egmenu
+  #     plotters:
+  #       - !!python/name:cfg.egvalid.l1tc_l2emu_singlelepton_genmatched
+  #       # - !!python/name:cfg.egvalid.l1tc_l2emu_ell_singlelepton_genmatched
+  #       # - !!python/name:cfg.egvalid.l1tc_l2emu_singlelepton_rate_pt_wps
+  

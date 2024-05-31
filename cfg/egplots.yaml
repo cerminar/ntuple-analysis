@@ -22,10 +22,11 @@ collections:
       # - ele_flat2to100_PU0
       # - ele_flat2to100_PU200
       # - doubleele_flat1to100_PU0
-      - doublephoton_flat1to100_PU200
+      # - doublephoton_flat1to100_PU200
       - doubleele_flat1to100_PU200
       - nugun_alleta_pu200
-      - ttbar_PU200
+      - zprime_m6000_pu200
+      # - ttbar_PU200
       # - photon_flat8to150_PU0
       # - photon_flat8to150_PU200
       # - dyll_PU200
@@ -39,27 +40,29 @@ collections:
       doublephoton_flat1to100_PU200: 6
       nugun_alleta_pu200: 6
       ttbar_PU200: 6
+      zprime_m6000_pu200: 1
     events_per_job:
       doubleele_flat1to100_PU0: 10000
       doubleele_flat1to100_PU200: 10000
       doublephoton_flat1to100_PU200: 10000
       nugun_alleta_pu200: 10000
       ttbar_PU200: 10000
+      zprime_m6000_pu200: 10000
 
 
   quantization_plots:
     file_label:
       egplots
-    samples:
-      # - ele_flat2to100_PU0
-      # - ele_flat2to100_PU200
-      # - doubleele_flat1to100_PU0
-      - doublephoton_flat1to100_PU200
-      - doubleele_flat1to100_PU200
-      - nugun_alleta_pu200
-      # - photon_flat8to150_PU0
-      # - photon_flat8to150_PU200
-      # - dyll_PU200
+    # samples:
+    #   # - ele_flat2to100_PU0
+    #   # - ele_flat2to100_PU200
+    #   # - doubleele_flat1to100_PU0
+    #   # - doublephoton_flat1to100_PU200
+    #   - doubleele_flat1to100_PU200
+    #   - nugun_alleta_pu200
+    #   # - photon_flat8to150_PU0
+    #   # - photon_flat8to150_PU200
+    #   # - dyll_PU200
     plotters:
       - !!python/name:cfg.egplots.quantization_plotters
     htc_jobflavor:

@@ -1,7 +1,7 @@
 # NOTE: fix of track extrapolation (digitized tracks with bitwise extrapolation)
 # branch:
 
-samples:
+dataset:
   input_dir:  /eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6/
   calib_version: calib-v134C
   version: 69A
@@ -10,6 +10,7 @@ samples:
   tree_name: l1CaloTriggerNtuplizer_egOnly/HGCalTriggerNtuple
   # tree_name: l1CaloTriggerNtuplizer/HGCalTriggerNtuple
 
+samples:
   doubleele_flat1to100_PU0:
     input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU0_v64E/
     events_per_job : 500

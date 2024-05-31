@@ -1,7 +1,4 @@
-from __future__ import absolute_import
-import python.plotters as plotters
-import python.collections as collections
-import python.selections as selections
+from python import collections, plotters, selections
 
 dectk_selections = (selections.Selector('^Eta[AB]*[BC]$|all')*('^Pt[1,2,5][0]$|all'))()
 dectk_match_selections = (selections.Selector('^Pt5$|^Pt[1,2,5][0]$|all'))()

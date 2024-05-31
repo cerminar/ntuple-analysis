@@ -14,29 +14,24 @@ Objects:
     can be used by plotters.
 """
 
-from __future__ import print_function
-from __future__ import absolute_import
-import pandas as pd
-import numpy as np
-import awkward as ak
-import ROOT
 import math
-import sys
-import vector
 
-vector.register_awkward()
-# import root_numpy.tmva as rnptmva
+import awkward as ak
+import numpy as np
+import pandas as pd
+import ROOT
+import xgboost
+from scipy.spatial import cKDTree
 
-from .utils import debugPrintOut
-import python.clusterTools as clAlgo
-from python.mp_pool import POOL
-import python.classifiers as classifiers
 import python.calibrations as calib
-import python.pf_regions as pf_regions
-from scipy.spatial import cKDTree    
-import python.selections as selections
+import python.clusterTools as clAlgo
+from python import classifiers, pf_regions, selections
 
-class WeightFile(object):
+# import root_numpy.tmva as rnptmva
+from .utils import debugPrintOut
+
+
+class WeightFile:
     def __init__(self, file_name):
         self.file_ = ROOT.TFile(file_name)
         self.cache_ = {}
@@ -50,7 +45,7 @@ class WeightFile(object):
         return histo.GetBinContent(bin_n)
 
 
-class EventManager(object):
+class EventManager:
     """
     EventManager.
 
@@ -74,13 +69,13 @@ class EventManager(object):
             self.collections.append(collection)
 
         def registerActiveCollection(self, collection):
-            print('[EventManager] registering collection as active: {}'.format(collection.name))
+            print(f'[EventManager] registering collection as active: {collection.name}')
             self.active_collections.append(collection)
 
         def read(self, event, debug):
             for collection in self.active_collections:
                 if debug >= 3:
-                    print('[EventManager] filling collection: {}'.format(collection.name))
+                    print(f'[EventManager] filling collection: {collection.name}')
                 collection.fill(event, self.weight_file, debug)
 
         def get_labels(self):
@@ -103,18 +98,19 @@ class EventManager(object):
         return setattr(self.instance, name)
 
 
-class DFCollection(object):
+class DFCollection:
     """
     [DFCollection]: collection of objects consumed by plotters.
 
-    This class represents the DataFrame of the objects which need to be plotted.
+    This class represents the data for the objects which need to be plotted.
     The objects are registered with the EventManager at creation time but they
-    are actually created/read event by event only if one plotter object activates
+    are actually created/read only if one plotter object activates
     them (or anotrher DFCollection depending on them) at booking time.
     As a result you can instantiate as many objects as needed and only those
     actually consumed by a plotter will be read.
 
     Args:
+    ----
         name (string): name which enters the histo name
         label (string): drawn on plots or legends
         filler_function (callable): function accepting event
@@ -164,9 +160,8 @@ class DFCollection(object):
             for coll in self.depends_on:
                 if common_block_size == -1:
                     common_block_size = coll.read_entry_block
-                else:
-                    if coll.read_entry_block != common_block_size:
-                        raise ValueError(f'Collection {self.name} depends on collections with different common_block_size!')
+                elif coll.read_entry_block != common_block_size:
+                    raise ValueError(f'Collection {self.name} depends on collections with different common_block_size!')
             if common_block_size != self.read_entry_block:
                 print(f'Collection {self.name}: common_block_size set to dependent value: {common_block_size}')
                 self.read_entry_block = common_block_size
@@ -210,99 +205,15 @@ class DFCollection(object):
     def fill_real(self, event, stride, weight_file=None, debug=0):
         self.df = self.filler_function(event, stride)
         if self.fixture_function is not None:
-            self.fixture_function(self.df)
+            self.df = self.fixture_function(self.df)
         if self.weight_function is not None:
             self.df = self.weight_function(self.df, weight_file)
-        self.entries = range(0,1000)# FIXME: self.df.index.get_level_values('entry').unique()
+        self.entries = range(1000)# FIXME: self.df.index.get_level_values('entry').unique()
         if debug > 2:
             print(f'read coll. {self.name} from entry: {event.file_entry} to entry: {event.file_entry+stride} (stride: {stride}), # rows: {len(self.df)}, # entries: {len(self.entries)}')
 
 
-def tkeg_fromcluster_fixture(tkegs):
-    # print tkegs
-    tkegs.loc[tkegs.hwQual == 1, 'hwQual'] = 3
 
-
-# NOTE: scorporate the part wich computes the layer_weights
-# (needed only by rthe calib plotters) from the rest (creating ad-hoc collections)
-# this should also allow for removing the tc dependency -> huge speedup in filling
-# FIXME: this needs to be ported to the new interface reading several entries at once
-def cl3d_layerEnergy_hoe(clusters, tcs):
-    """ """
-    if clusters.empty:
-        return clusters
-    do_compute_hoe = False
-    do_compute_layer_energy = False
-    if 'hoe' not in clusters.columns:
-        do_compute_hoe = True
-    if 'layer_energy' not in clusters.columns:
-        do_compute_layer_energy = True
-
-    def compute_layer_energy(cluster, do_layer_energy=True, do_hoe=False):
-        components = tcs[tcs.id.isin(cluster.clusters)]
-        hist, bins = np.histogram(components.layer.values,
-                                  bins=range(0, 29, 2),
-                                  weights=components.energy.values)
-        results = []
-        if do_layer_energy:
-            results.append(hist)
-        if do_hoe:
-            em_energy = np.sum(hist)
-            hoe = -1
-            if em_energy != 0:
-                hoe = max(0, cluster.energy - em_energy)/em_energy
-            results.append(hoe)
-        return results
-
-    if do_compute_hoe or do_compute_layer_energy:
-        new_columns = []
-        if do_compute_layer_energy:
-            new_columns.append('layer_energy')
-        if do_compute_hoe:
-            new_columns.append('hoe')
-        clusters[new_columns] = clusters.apply(
-            lambda cl: compute_layer_energy(
-                cl,
-                do_compute_layer_energy,
-                do_compute_hoe),
-            result_type='expand',
-            axis=1)
-    return clusters
-
-
-def cl3d_fixtures(clusters):
-    # print(clusters.columns)
-    # for backward compatibility
-    if clusters.empty:
-        # return
-        return clusters
-
-    clusters.rename(columns={'clusters_id': 'clusters',
-                             'clusters_n': 'nclu'},
-                    inplace=True)
-
-    # clusters['ptem'] = clusters.pt/(1+clusters.hoe)
-    # clusters['eem'] = clusters.energy/(1+clusters.hoe)
-    clusters['emax'] = clusters.emaxe*clusters.energy
-    clusters.loc[clusters.hoe == -1, ['hoe']] = 999
-    # print(clusters[clusters.hoe == -1][['hoe']])
-    # FIXME: replace
-    clusters['bdt_pu'] = 0.5
-    # clusters['bdt_pu'] = rnptmva.evaluate_reader(
-    #         classifiers.mva_pu_classifier_builder(), 
-    #         'BDT', 
-    #         clusters[['emax', 'emaxe', 'spptot', 'srrtot', 'ntc90']])
-
-    if False:
-        clusters['bdt_pi'] = rnptmva.evaluate_reader(
-            classifiers.mva_pi_classifier_builder(), 'BDT', clusters[['pt', 'eta', 'maxlayer', 'hoe', 'emaxe', 'szz']])
-    
-    clusters['pt_em'] = clusters.apply(lambda x: x.ipt[x.name[1]][1], axis=1)
-    clusters.drop('ipt', axis=1, inplace=True)
-    clusters.drop('ienergy', axis=1, inplace=True)
-    clusters['meanz_scaled'] = np.abs(clusters.meanz) - 320
-    # return
-    # return clusters
 
 
 def gen_fixtures(particles, mc_particles):
@@ -312,24 +223,7 @@ def gen_fixtures(particles, mc_particles):
     particles['pdgid'] = particles.pid
     particles['abseta'] = np.abs(particles.eta)
     particles['firstmother_pdgid'] = mc_particles.df.pdgid[particles[particles.gen != -1].gen-1]
-    # return particles
-
-
-def mc_fixtures(particles):
-    # print(['mc_fixtures'])
-    # print(particles)
-    # # particles['firstmother'] = particles.index.to_numpy()
-    particles['firstmother_pdgid'] = particles.pdgid
-    # return particles
-    # # FIXME: this is broken
-    # for particle in particles.itertuples():
-    #     print(particle.daughters)
-    #     if particle.daughters == [[], []]:
-    #         continue
-    #     particles.loc[particle.daughters, 'firstmother'] = particle.Index
-    #     particles.loc[particle.daughters, 'firstmother_pdgid'] = particle.pdgid
-    # return particles
-
+    return particles
 
 def tc_fixtures(tcs):
     # print tcs.columns
@@ -339,33 +233,7 @@ def tc_fixtures(tcs):
         tcs['abseta'] = np.abs(tcs.eta)
     # tcs['xproj'] = tcs.x/tcs.z
     # tcs['yproj'] = tcs.y/tcs.z
-    # return tcs
-
-
-def cl2d_fixtures(clusters):
-    clusters['ncells'] = 1
-    if not clusters.empty:
-        clusters['ncells'] = [len(x) for x in clusters.cells]
-    # return clusters
-
-
-def tower_fixtures(towers):
-    if towers.empty:
-        # print '***[compute_tower_data]:WARNING input data-frame is empty'
-        return towers
-
-    towers.eval('HoE = etHad/etEm', inplace=True)
-
-    def fill_momentum(tower):
-        vector = ROOT.TLorentzVector()
-        vector.SetPtEtaPhiE(tower.pt, tower.eta, tower.phi, tower.energy)
-        tower.momentum = vector
-        # print tower.pt, tower.momentum.Pt()
-        return tower
-
-    towers['momentum'] = ROOT.TLorentzVector()
-    towers = towers.apply(fill_momentum, axis=1)
-    return towers
+    return tcs
 
 
 def recluster_mp(cl3ds, tcs, cluster_size, cluster_function, pool):
@@ -444,7 +312,7 @@ def get_merged_cl3d(triggerClusters, pool, debug=0):
 
 def get_trackmatched_egs(egs, tracks, debug=0):
     entries = tracks.df.index.get_level_values('entry').union(egs.df.index.get_level_values('entry')).unique()
-    
+
     data = []
     index = []
     for entry in entries:
@@ -457,12 +325,12 @@ def get_trackmatched_egs(egs, tracks, debug=0):
             tk_match = tracks.df.loc[(entry, key[1])]
             index.append((entry, subentry))
             data_entry=[
-                eg_match.pt_em, 
-                eg_match.eta, 
-                eg_match.phi, 
-                eg_match.quality, 
-                eg_match.bdteg, 
-                eg_match.bdt_pu, 
+                eg_match.pt_em,
+                eg_match.eta,
+                eg_match.phi,
+                eg_match.quality,
+                eg_match.bdteg,
+                eg_match.bdt_pu,
                 tk_match.pt,
                 tk_match.eta,
                 tk_match.phi,
@@ -477,67 +345,14 @@ def get_trackmatched_egs(egs, tracks, debug=0):
 
             data.append(data_entry)
             subentry += 1
-    
+
     newcolumns = ['pt', 'eta', 'phi', 'quality', 'bdteg', 'bdt_pu']
     newcolumns.extend(['tkpt', 'tketa', 'tkphi', 'tkcaloeta', 'tkcalophi', 'tkz0', 'tkchi2', 'tkchi2red', 'dr', 'clidx', 'tkidx'])
-    
+
     newindex = pd.MultiIndex.from_tuples(index, names=egs.df.index.names)
     matched_egs = pd.DataFrame(data=data, columns=newcolumns, index=newindex)
 
     return matched_egs
-    # print(entries)
-
-
-
-    #      self.entries = self.df.index.get_level_values('entry').unique()
-    #     if debug > 2:
-    #         print(f'read coll. {self.name} from entry: {event.file_entry} to entry: {event.file_entry+stride} (stride: {stride}), # rows: {self.df.shape[0]}, # entries: {len(self.entries)}')
-
-    # def query(self, selection):
-    #     self.n_queries += 1
-    #     if selection.all or self.df.empty:
-    #         return self.df
-    #     if selection.selection not in self.cached_queries:
-    #         ret = self.df.query(selection.selection)
-    #         self.cached_queries[sys.intern(selection.selection)] = ret
-    #         entries = ret.index.get_level_values('entry').unique()
-    #         self.cached_entries[selection.hash] = entries
-    #         return ret
-    #     return self.cached_queries[selection.selection]
-
-    # def query_event(self, selection, idx):
-    #     self.n_queries += 1
-    
-    # FIXME: need to be ported to uproot multiindexing
-    #
-    #
-    # if egs.empty or tracks.empty:
-    #     return matched_egs
-    # best_match_indexes, allmatches = match_etaphi(egs[['eta', 'phi']],
-    #                                               tracks[['caloeta', 'calophi']],
-    #                                               tracks['pt'],
-    #                                               deltaR=0.1)
-    # for bestmatch_idxes in best_match_indexes.iteritems():
-    # #     bestmatch_eg = egs.loc[bestmatch_idxes[0]]
-    #     bestmatch_tk = tracks.loc[bestmatch_idxes[1]]
-    #     matched_egs = matched_egs.append({'pt': bestmatch_eg.pt,
-    #                                       'energy': bestmatch_eg.energy,
-    #                                       'eta': bestmatch_eg.eta,
-    #                                       'phi': bestmatch_eg.phi,
-    #                                       'hwQual: bestmatch_eg.hwQual,
-    #                                       'tkpt': bestmatch_tk.pt,
-    #                                       'tketa': bestmatch_tk.eta,
-    #                                       'tkphi': bestmatch_tk.phi,
-    #                                       'tkz0': bestmatch_tk.z0,
-    #                                       'tkchi2': bestmatch_tk.chi2,
-    #                                       'tkchi2Red': bestmatch_tk.chi2Red,
-    #                                       'tknstubs': bestmatch_tk.nStubs,
-    #                                       'deta': bestmatch_tk.eta - bestmatch_eg.eta,
-    #                                       'dphi': bestmatch_tk.phi - bestmatch_eg.phi,
-    #                                       'dr': math.sqrt((bestmatch_tk.phi-bestmatch_eg.phi)**2+(bestmatch_tk.eta-bestmatch_eg.eta)**2)},
-    #                                      ignore_index=True, sort=False)
-    return matched_egs
-
 
 def get_layer_calib_clusters(input_clusters,
                              layer_calib_factors,
@@ -626,9 +441,8 @@ def get_calibrated_clusters2(calib_factors, input_3Dclusters):
             # print calib_factor_tmp
             calib_factor = 1./calib_factor_tmp.calib.values[0]
         # print cluster
-        else:
-            if cluster.eta <= 2.8 and cluster.eta > 1.52 and cluster.pt > 4 and cluster.pt <= 100:
-                print(cluster[['pt', 'eta']])
+        elif cluster.eta <= 2.8 and cluster.eta > 1.52 and cluster.pt > 4 and cluster.pt <= 100:
+            print(cluster[['pt', 'eta']])
 
         cluster['pt2'] = cluster.pt*calib_factor
         return cluster
@@ -674,7 +488,7 @@ def tkele_fixture_ee(electrons):
     electrons['looseTkID'] = True
     electrons['photonID'] = True
     electrons['dpt'] = electrons.tkPt - electrons.pt
-    # return electrons
+    return electrons
 
 
 def tkele_fixture_eb(electrons):
@@ -685,27 +499,9 @@ def tkele_fixture_eb(electrons):
     electrons['looseTkID'] = ((hwqual.values >> 1) & 1) > 0
     electrons['photonID'] = ((hwqual.values >> 2) & 1) > 0
     electrons['dpt'] = electrons.tkPt - electrons.pt
-    # return electrons
+    return electrons
 
 
-def quality_flags(objs):
-    # print(objs.hwQual)
-    objs['hwQual'] = ak.values_astype(objs.hwQual, np.int32)
-    mask_tight_sta = 0b0001
-    mask_tight_ele = 0b0010
-    mask_tight_pho = 0b0100
-    mask_no_brem = 0b1000
-    objs['IDTightSTA'] = np.bitwise_and(objs.hwQual, mask_tight_sta) > 0
-    objs['IDTightEle'] = np.bitwise_and(objs.hwQual, mask_tight_ele) > 0
-    objs['IDTightPho'] = np.bitwise_and(objs.hwQual, mask_tight_pho) > 0
-    objs['IDNoBrem'] = np.bitwise_and(objs.hwQual, mask_no_brem) > 0
-    objs['IDBrem'] = np.bitwise_and(objs.hwQual, mask_no_brem) == 0
-    # return objs
-
-def quality_ele_fixtures(objs):
-    # print(objs)
-    objs['dpt'] = objs.tkPt - objs.pt
-    quality_flags(objs)
 
 
 def print_columns(df):
@@ -724,804 +520,58 @@ def gen_part_pt_weights(gen_parts, weight_file):
     return gen_parts
 
 
-def map2pfregions(objects, eta_var, phi_var, fiducial=False):
-    for ieta in range(0, pf_regions.regionizer.n_eta_regions()):
-        objects['eta_reg_{}'.format(ieta)] = False
-    for iphi in range(0, pf_regions.regionizer.n_phi_regions()):
-        objects['phi_reg_{}'.format(iphi)] = False
-
-    for ieta, eta_range in enumerate(pf_regions.regionizer.get_eta_boundaries(fiducial)):
-        query = '({} > {}) & ({} <= {})'.format(
-            eta_var,
-            eta_range[0],
-            eta_var,
-            eta_range[1]
-            )
-        region_objects = objects.query(query).index
-        objects.loc[region_objects, ['eta_reg_{}'.format(ieta)]] = True
-
-    for iphi, phi_range in enumerate(pf_regions.regionizer.get_phi_boundaries(fiducial)):
-        query = '({} > {}) & ({} <= {})'.format(
-            phi_var,
-            phi_range[0],
-            phi_var,
-            phi_range[1])
-        region_objects = objects.query(query).index
-        objects.loc[region_objects, ['phi_reg_{}'.format(iphi)]] = True
-
-    return objects
-
-
-def maptk2pfregions_in(objects):
-    return map2pfregions(objects, 'caloeta', 'calophi', fiducial=False)
-
-
-def mapcalo2pfregions_in(objects):
-    return map2pfregions(objects, 'eta', 'phi', fiducial=False)
-
-
-def mapcalo2pfregions_out(objects):
-    return map2pfregions(objects, 'eta', 'phi', fiducial=True)
-
-
-def decodedTk_fixtures(objects):
-    objects['deltaZ0'] = objects.z0 - objects.simz0
-    objects['deltaPt'] = objects.pt - objects.simpt
-    objects['deltaEta'] = objects.eta - objects.simeta
-    objects['deltaCaloEta'] = objects.caloeta - objects.simcaloeta
-    # have dphi between -pi and pi
-    comp_remainder = np.vectorize(math.remainder)
-    objects['deltaCaloPhi'] = comp_remainder(objects.calophi - objects.simcalophi, 2*np.pi)
-
-    objects['abseta'] = np.abs(objects.eta)
-    objects['simabseta'] = np.abs(objects.simeta)
-    return objects
-
-
-def build_double_obj(obj):
-    # we convert the ak.Array to ak.Record
-    # FIXME: this could be moved upstream for all collections!
-    obj['mass'] = 0.*obj.pt
-    data = {}
-    
-    # print(obj.fields)
-    for field in obj.fields:
-
-        if field in ['energy', 'exx', 'exy', 'weight',  'energy', 'dvx', 'dvy', 'dvz', 'ovx', 'ovy', 'ovz', 'mother', 'exphi', 'exeta', 'exx', 'exy', 'fbrem', 'fromBeamPipe','firstmother_pdgid']:
-            continue
-
-        data[field] = obj[field]
-        # print(field)
-        # print( obj[field])
-    obj_rec = vector.zip(data)
-    ret = ak.combinations(
-        array=obj_rec, 
-        n=2, 
-        axis=1,
-        fields=['leg0', 'leg1'])
-    # ret.show()
-    return ret
-
 
 calib_mgr = calib.CalibManager()
 
-gen = DFCollection(
-    name='GEN', label='GEN particles',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='gen', entry_block=entry_block),
-    fixture_function=mc_fixtures,
-    print_function=lambda df: df[['pdgid', 'pt', 'eta', 'phi']],
-    # print_function=lambda df: df[(df.pdgid==23 | (abs(df.pdgid)==15))],
-    max_print_lines=None,
-    debug=0)
-
-sim_parts = DFCollection(
-    name='SIM', label='SIM particles',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='simpart', entry_block=entry_block),
-    fixture_function=lambda gen_parts: gen_fixtures(gen_parts, gen),
-    # read_entry_block=10,
-    depends_on=[gen],
-    debug=0,
-    # print_function=lambda df: df[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'ovz', 'pid', 'gen', 'reachedEE', 'firstmother_pdgid']],
-    print_function=lambda df: df[['gen', 'pid', 'pt', 'eta', 'phi', 'mother', 'reachedEE', 'ovz', 'dvz', ]],
-    max_print_lines=None,
-    # print_function=lambda df: df.columns,
-    weight_function=gen_part_pt_weights)
-
-gen_parts = DFCollection(
-    name='GEN', label='GEN particles',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='genpart', entry_block=entry_block),
-    fixture_function=lambda gen_parts: gen_fixtures(gen_parts, gen),
-    # read_entry_block=10,
-    depends_on=[gen],
-    debug=0,
-    # print_function=lambda df: df[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'ovz', 'pid', 'gen', 'reachedEE', 'firstmother_pdgid']],
-    print_function=lambda df: df[['gen', 'pid',  'pt', 'eta', 'phi', 'mother', 'ovz', 'dvz', 'reachedEE']].sort_values(by='mother', ascending=False),
-    max_print_lines=None,
-    # print_function=lambda df: df.columns,
-    weight_function=gen_part_pt_weights)
-
-
-tcs = DFCollection(
-    name='TC', label='Trigger Cells',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='tc', entry_block=entry_block),
-    read_entry_block=200,
-    fixture_function=tc_fixtures, debug=0)
-
-tcs_truth = DFCollection(
-    name='TCTrue', label='Trigger Cells True',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='tctruth', entry_block=entry_block),
-    fixture_function=tc_fixtures)
-
-cl2d_def = DFCollection(
-    name='DEF2D', label='dRC2d',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='cl', entry_block=entry_block),
-    fixture_function=cl2d_fixtures)
-
-cl2d_truth = DFCollection(
-    name='DEF2DTrue', label='dRC2d True',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='cltruth', entry_block=entry_block),
-    fixture_function=cl2d_fixtures)
-
-cl3d_truth = DFCollection(
-    name='HMvDRTrue', label='HM+dR(layer) True Cl3d',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='cl3dtruth', entry_block=entry_block),
-    fixture_function=lambda clusters: cl3d_fixtures(clusters),
-    debug=0)
-
-cl3d_def = DFCollection(
-    name='DEF', label='dRC3d',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='cl3d', entry_block=entry_block),
-    fixture_function=lambda clusters: cl3d_fixtures(clusters))
-
-cl3d_def_nc = DFCollection(
-    name='DEFNC', label='dRC3d NewTh',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='cl3dNC', entry_block=entry_block),
-    fixture_function=lambda clusters: cl3d_fixtures(clusters))
-
-cl3d_hm = DFCollection(
-    name='HMvDR', label='HM+dR(layer) Cl3d',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='HMvDR', entry_block=entry_block, fallback='hmVRcl3d'),
-    fixture_function=lambda clusters: cl3d_fixtures(clusters),
-    read_entry_block=200,
-    debug=0,
-    print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'phi', 'quality', 'ienergy', 'ipt']].sort_values(by='pt', ascending=False))
-# cl3d_hm.activate()
-
-cl3d_hm_emint = DFCollection(
-    name='HMvDREmInt', label='HM+dR(layer) Cl3d EM Int',
-    filler_function=lambda event, entry_block: get_emint_clusters(cl3d_hm.df[cl3d_hm.df.quality > 0]),
-    # fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
-    depends_on=[cl3d_hm],
-    debug=0,
-    print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality', 'ienergy', 'ipt']].sort_values(by='pt', ascending=False)[:10])
-
-
-cl3d_hm_emint_merged = DFCollection(
-    name='HMvDREmIntMerged', label='HM+dR(layer) Cl3d EM Int Merged',
-    filler_function=lambda event, entry_block: get_merged_cl3d(cl3d_hm_emint.df[cl3d_hm.df.quality >= 0], POOL),
-    # fixture_function=lambda clusters: cl3d_fixtures(clusters, tcs.df),
-    depends_on=[cl3d_hm_emint],
-    debug=0,
-    print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality', 'ienergy', 'ipt']])
-# cl3d_hm_emint.activate()
-
-cl3d_hm_rebin = DFCollection(
-    name='HMvDRRebin', label='HM+dR(layer) rebin Cl3d ',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='hmVRcl3dRebin', entry_block=entry_block),
-    fixture_function=lambda clusters: cl3d_fixtures(clusters))
-
-cl3d_hm_stc = DFCollection(
-    name='HMvDRsTC', label='HM+dR(layer) SuperTC Cl3d ',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='hmVRcl3dSTC', entry_block=entry_block),
-    fixture_function=lambda clusters: cl3d_fixtures(clusters))
-
-cl3d_hm_nc0 = DFCollection(
-    name='HMvDRNC0', label='HM+dR(layer) Cl3d + NewTh0',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='hmVRcl3dNC0', entry_block=entry_block),
-    fixture_function=lambda clusters: cl3d_fixtures(clusters))
-
-cl3d_hm_nc1 = DFCollection(
-    name='HMvDRNC1', label='HM+dR(layer) Cl3d + NewTh1',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='hmVRcl3dNC1', entry_block=entry_block),
-    fixture_function=lambda clusters: cl3d_fixtures(clusters))
-
-cl3d_def_merged = DFCollection(
-    name='DEFMerged', label='dRC3d merged',
-    filler_function=lambda event, entry_block: get_merged_cl3d(cl3d_def.df[cl3d_def.df.quality > 0], POOL),
-    depends_on=[cl3d_def])
-
-cl3d_def_calib = DFCollection(
-    name='DEFCalib', label='dRC3d calib.',
-    filler_function=lambda event, entry_block: get_calibrated_clusters(calib.get_calib_factors(), cl3d_def.df),
-    depends_on=[cl3d_def])
-
-cl3d_hm_merged = DFCollection(
-    name='HMvDRMerged', label='HM+dR(layer) merged',
-    filler_function=lambda event, entry_block: get_merged_cl3d(cl3d_hm.df[cl3d_hm.df.quality >= 0], POOL),
-    depends_on=[cl3d_hm])
-
-cl3d_hm_fixed = DFCollection(
-    name='HMvDRfixed', label='HM fixed',
-    filler_function=lambda event, entry_block: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [999.]*52, POOL),
-    depends_on=[cl3d_hm, tcs], debug=0)
-
-cl3d_hm_cylind10 = DFCollection(
-    name='HMvDRcylind10', label='HM Cylinder 10cm',
-    filler_function=lambda event, entry_block: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [10.]*52, POOL),
-    depends_on=[cl3d_hm, tcs], debug=0)
-
-cl3d_hm_cylind5 = DFCollection(
-    name='HMvDRcylind5', label='HM Cylinder 5cm',
-    filler_function=lambda event, entry_block: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [5.]*52, POOL),
-    depends_on=[cl3d_hm, tcs], debug=0)
-
-cl3d_hm_cylind2p5 = DFCollection(
-    name='HMvDRcylind2p5', label='HM Cylinder 2.5cm',
-    filler_function=lambda event, entry_block: get_cylind_clusters_mp(cl3d_hm.df, tcs.df, [2.5]*52, POOL),
-    depends_on=[cl3d_hm, tcs],
-    debug=0)
-
-cl3d_hm_shape = DFCollection(
-    name='HMvDRshape', label='HM shape',
-    filler_function=lambda event, entry_block: get_cylind_clusters_mp(
-        cl3d_hm.df, tcs.df,
-        [1.]*2+[1.6]*2+[2.5]*2+[5.0]*2+[5.0]*2+[5.0]*2+[5.0]*2+[5.]*2+[6.]*2+[7.]*2+[7.2]*2+[7.4]*2+[7.2]*2+[7.]*2+[2.5]*25,
-        POOL),
-    depends_on=[cl3d_hm, tcs], debug=0)
-
-
-cl3d_hm_shapeDr = DFCollection(
-    name='HMvDRshapeDr', label='HM #Delta#rho < 0.015',
-    filler_function=lambda event, entry_block: get_dr_clusters_mp(
-        cl3d_hm.df[cl3d_hm.df.quality > 0],
-        tcs.df,
-        0.015,
-        POOL),
-    depends_on=[cl3d_hm, tcs],
-    debug=0,
-    print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality']].sort_values(by='pt', ascending=False)[:10])
-
-
-cl3d_hm_shapeDtDu = DFCollection(
-    name='HMvDRshapeDtDu', label='HM #Deltau #Deltat',
-    filler_function=lambda event, entry_block: get_dtdu_clusters_mp(
-        cl3d_hm.df[cl3d_hm.df.quality > 0],
-        tcs.df,
-        (0.015, 0.007),
-        POOL),
-    depends_on=[cl3d_hm, tcs],
-    debug=0,
-    print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'quality']].sort_values(by='pt', ascending=False)[:10])
-
-
-cl3d_hm_calib = DFCollection(
-    name='HMvDRCalib', label='HM calib.',
-    filler_function=lambda event, entry_block: get_layer_calib_clusters(
-        cl3d_hm.df,
-        calib_mgr.get_calibration('HMvDRCalib', 'layer_calibs')),
-    depends_on=[cl3d_hm, tcs],
-    debug=0)
-
-cl3d_hm_cylind10_calib = DFCollection(
-    name='HMvDRcylind10Calib', label='HM Cylinder 10cm calib.',
-    filler_function=lambda event, entry_block: get_layer_calib_clusters(
-        cl3d_hm_cylind10.df,
-        calib_mgr.get_calibration('HMvDRcylind10Calib', 'layer_calibs')),
-    depends_on=[cl3d_hm_cylind10, tcs], debug=0)
-
-cl3d_hm_cylind5_calib = DFCollection(
-    name='HMvDRcylind5Calib', label='HM Cylinder 5cm calib.',
-    filler_function=lambda event, entry_block: get_layer_calib_clusters(
-        cl3d_hm_cylind5.df,
-        calib_mgr.get_calibration('HMvDRcylind5Calib', 'layer_calibs')),
-    depends_on=[cl3d_hm_cylind5, tcs])
-
-cl3d_hm_cylind2p5_calib = DFCollection(
-    name='HMvDRcylind2p5Calib', label='HM Cylinder 2.5cm calib.',
-    filler_function=lambda event, entry_block: get_layer_calib_clusters(
-        cl3d_hm_cylind2p5.df,
-        calib_mgr.get_calibration('HMvDRcylind2p5Calib', 'layer_calibs')),
-    depends_on=[cl3d_hm_cylind2p5, tcs], debug=0)
-
-cl3d_hm_fixed_calib = DFCollection(
-    name='HMvDRfixedCalib', label='HM fixed calib.',
-    filler_function=lambda event, entry_block: get_layer_calib_clusters(
-        cl3d_hm_fixed.df,
-        calib_mgr.get_calibration('HMvDRfixedCalib', 'layer_calibs')),
-    depends_on=[cl3d_hm_fixed, tcs], debug=0)
-
-cl3d_hm_shape_calib = DFCollection(
-    name='HMvDRshapeCalib', label='HM shape calib.',
-    filler_function=lambda event, entry_block: get_layer_calib_clusters(
-        cl3d_hm_shape.df,
-        calib_mgr.get_calibration('HMvDRshapeCalib', 'layer_calibs')),
-    depends_on=[cl3d_hm_shape, tcs],
-    debug=0,
-    print_function=lambda df: df[['id', 'pt', 'eta', 'quality']])
-
-cl3d_hm_shapeDr_calib = DFCollection(
-    name='HMvDRshapeDrCalib', label='HM #Delta#rho < 0.015 calib.',
-    filler_function=lambda event, entry_block: get_layer_calib_clusters(
-        cl3d_hm_shapeDr.df,
-        calib_mgr.get_calibration('HMvDRshapeDrCalib', 'layer_calibs'),
-        calib_mgr.get_calibration('HMvDRshapeDrCalib', 'eta_calibs'),
-        debug=False),
-    depends_on=[cl3d_hm_shapeDr, tcs],
-    debug=0,
-    print_function=lambda df: df[['id', 'pt', 'eta', 'quality']])
-
-cl3d_hm_shapeDr_calib_new = DFCollection(
-    name='HMvDRshapeDrCalibNew', label='HM #Delta#rho < 0.015 calib.',
-    filler_function=lambda event, entry_block: get_layer_calib_clusters(
-        cl3d_hm_shapeDr.df,
-        calib_mgr.get_calibration('HMvDRshapeDrCalibNew', 'layer_calibs'),
-        calib_mgr.get_calibration('HMvDRshapeDrCalibNew', 'eta_calibs'),
-        debug=False),
-    depends_on=[cl3d_hm_shapeDr, tcs],
-    debug=0,
-    print_function=lambda df: df[['id', 'pt', 'eta', 'quality']])
-
-cl3d_hm_shapeDtDu_calib = DFCollection(
-    name='HMvDRshapeDtDuCalib', label='HM #Deltat#Deltau calib.',
-    filler_function=lambda event, entry_block: get_layer_calib_clusters(
-        cl3d_hm_shapeDr.df,
-        calib_mgr.get_calibration('HMvDRshapeDtDuCalib', 'layer_calibs'),
-        calib_mgr.get_calibration('HMvDRshapeDtDuCalib', 'eta_calibs'),
-        debug=False),
-    depends_on=[cl3d_hm_shapeDtDu, tcs],
-    debug=0,
-    print_function=lambda df: df[['id', 'pt', 'eta', 'quality']])
-
-
-cl3d_hm_calib_merged = DFCollection(
-    name='HMvDRCalibMerged', label='HM calib. merged',
-    filler_function=lambda event, entry_block: get_merged_cl3d(cl3d_hm_calib.df[cl3d_hm_calib.df.quality > 0], POOL),
-    depends_on=[cl3d_hm_calib])
-
-cl3d_hm_shape_calib_merged = DFCollection(
-    name='HMvDRshapeCalibMerged', label='HM shape calib. merged',
-    filler_function=lambda event, entry_block: get_merged_cl3d(cl3d_hm_shape_calib.df[cl3d_hm_shape_calib.df.quality > 0], POOL),
-    depends_on=[cl3d_hm_shape_calib])
-
-cl3d_hm_cylind2p5_calib_merged = DFCollection(
-    name='HMvDRcylind2p5CalibMerged', label='HM cyl. 2.5cms calib. merged',
-    filler_function=lambda event, entry_block: get_merged_cl3d(cl3d_hm_cylind2p5_calib.df[cl3d_hm_cylind2p5_calib.df.quality > 0], POOL),
-    depends_on=[cl3d_hm_cylind2p5_calib])
-
-cl3d_hm_shape_calib1 = DFCollection(
-    name='HMvDRshapeCalib1', label='HM shape calib. dedx',
-    filler_function=lambda event, entry_block: get_layer_calib_clusters(cl3d_hm_shape.df, [1.527]+[1.]*12+[1.98]),
-    depends_on=[cl3d_hm_shape, tcs], debug=0)
-
-cl3d_hm_fixed_calib1 = DFCollection(
-    name='HMvDRfixedCalib1', label='HM fixed calib. dedx',
-    filler_function=lambda event, entry_block: get_layer_calib_clusters(cl3d_hm_fixed.df, [1.527]+[1.]*12+[1.98]),
-    depends_on=[cl3d_hm_fixed, tcs], debug=0)
-
-cl3d_hm_cylind10_calib1 = DFCollection(
-    name='HMvDRcylind10Calib1', label='HM Cylinder 10cm calib. dedx',
-    filler_function=lambda event, entry_block: get_layer_calib_clusters(cl3d_hm_cylind10.df, [1.527]+[1.]*12+[1.98]),
-    depends_on=[cl3d_hm_cylind10, tcs], debug=0)
-
-cl3d_hm_cylind5_calib1 = DFCollection(
-    name='HMvDRcylind5Calib1', label='HM Cylinder 5cm calib. dedx',
-    filler_function=lambda event, entry_block: get_layer_calib_clusters(cl3d_hm_cylind5.df, [1.527]+[1.]*12+[1.98]),
-    depends_on=[cl3d_hm_cylind5, tcs])
-
-cl3d_hm_cylind2p5_calib1 = DFCollection(
-    name='HMvDRcylind2p5Calib1', label='HM Cylinder 2.5cm calib. dedx',
-    filler_function=lambda event, entry_block: get_layer_calib_clusters(cl3d_hm_cylind2p5.df, [1.527]+[1.]*12+[1.98]),
-    depends_on=[cl3d_hm_cylind2p5, tcs], debug=0)
-
-towers_tcs = DFCollection(
-    name='TT', label='TT (TC)',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='tower', entry_block=entry_block),
-    fixture_function=tower_fixtures)
-
-towers_sim = DFCollection(
-    name='SimTT', label='TT (sim)',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='simTower', entry_block=entry_block),
-    fixture_function=tower_fixtures)
-
-towers_hgcroc = DFCollection(
-    name='HgcrocTT', label='TT (HGCROC)',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='hgcrocTower', entry_block=entry_block),
-    fixture_function=tower_fixtures)
-
-towers_wafer = DFCollection(
-    name='WaferTT', label='TT (Wafer)',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='waferTower', entry_block=entry_block),
-    fixture_function=tower_fixtures)
-
-egs = DFCollection(
-    name='EG', label='EG',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='egammaEE', entry_block=entry_block),
-    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
-    fixture_function=fake_endcap_quality,
-    debug=0)
-
-egs_brl = DFCollection(
-    name='EGBRL', label='EG barrel',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='egammaEB', entry_block=entry_block),
-    fixture_function=barrel_quality,
-    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
-    debug=0)
-
-egs_all = DFCollection(
-    name='EGALL', label='EG all',
-    filler_function=lambda event, entry_block: select_and_merge_collections(
-        barrel=egs_brl.df,
-        endcap=egs.df),
-    print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(
-        by='hwQual', ascending=False)[:10],
-    debug=0,
-    depends_on=[egs, egs_brl])
-
-tracks = DFCollection(
-    name='L1Trk', label='L1Track',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='l1Trk', entry_block=entry_block),
-    print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
-    debug=0)
-
-tracks_emu = DFCollection(
-    name='L1TrkEmu', label='L1Track EMU',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='l1trackemu', entry_block=entry_block),
-    debug=0)
-
-
-tkeles = DFCollection(
-    name='TkEle', label='TkEle',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='tkEle', entry_block=entry_block),
-    fixture_function=fake_endcap_quality,
-    debug=0)
-
-tkelesEL = DFCollection(
-    name='tkEleEE', label='TkEle (Ell.) EE',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='tkEleEE', entry_block=entry_block),
-    fixture_function=fake_endcap_quality,
-    debug=0)
-
-tkisoeles = DFCollection(
-    name='TkIsoEle', label='TkIsoEle',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='tkIsoEle', entry_block=entry_block))
-
-
-
-tkegs_shape_calib = DFCollection(
-    name='TkEGshapeCalib', label='TkEGshapecalib',
-    filler_function=lambda event, entry_block: get_trackmatched_egs(egs=cl3d_hm_shape_calib.df, tracks=tracks.df),
-    # fixture_function=tkeg_fromcluster_fixture,
-    depends_on=[cl3d_hm_shape_calib, tracks],
-    debug=0)
-# tkegs_shape_calib.activate()
-
-tkegs_emu = DFCollection(
-    name='TkEGEmu', label='TkEG Emu',
-    filler_function=lambda event, entry_block: get_trackmatched_egs(egs=egs.df, tracks=tracks_emu.df),
-    depends_on=[egs, tracks_emu])
-
-tkeles_brl = DFCollection(
-    name='TkEleBRL', label='TkEle barrel',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='tkEleBARREL', entry_block=entry_block),
-    fixture_function=barrel_quality,
-    debug=0)
-
-tkelesEL_brl = DFCollection(
-    name='tkEleEB', label='TkEle (Ell.) EB',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='tkEleEB', entry_block=entry_block),
-    fixture_function=tkele_fixture_eb,
-    debug=0)
-
-tkelesEL_all = DFCollection(
-    name='tkEleEllAll', label='TkEle Ell. match all',
-    filler_function=lambda event, entry_block: select_and_merge_collections(
-        barrel=tkelesEL_brl.df,
-        endcap=tkelesEL.df),
-    debug=0,
-    depends_on=[tkelesEL, tkelesEL_brl])
-
-tkeles_all = DFCollection(
-    name='TkEleALL', label='TkEle all',
-    filler_function=lambda event, entry_block: merge_collections(
-        barrel=tkeles_brl.df,
-        endcap=tkeles.df[tkeles.df.hwQual == 5]),
-    debug=0,
-    depends_on=[tkeles, tkeles_brl])
+# --- FP collections
+
+# --------------
+
+
+# -- FP
+
+
+# sim_parts = DFCollection(
+#     name='SIM', label='SIM particles',
+#     filler_function=lambda event, entry_block: event.getDataFrame(
+#         prefix='simpart', entry_block=entry_block),
+#     fixture_function=lambda gen_parts: gen_fixtures(gen_parts, gen),
+#     # read_entry_block=10,
+#     depends_on=[gen],
+#     debug=0,
+#     # print_function=lambda df: df[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'ovz', 'pid', 'gen', 'reachedEE', 'firstmother_pdgid']],
+#     print_function=lambda df: df[['gen', 'pid', 'pt', 'eta', 'phi', 'mother', 'reachedEE', 'ovz', 'dvz', ]],
+#     max_print_lines=None,
+#     # print_function=lambda df: df.columns,
+#     weight_function=gen_part_pt_weights)
+
+# gen_parts = DFCollection(
+#     name='GEN', label='GEN particles',
+#     filler_function=lambda event, entry_block: event.getDataFrame(
+#         prefix='genpart', entry_block=entry_block),
+#     fixture_function=lambda gen_parts: gen_fixtures(gen_parts, gen),
+#     # read_entry_block=10,
+#     depends_on=[gen],
+#     debug=0,
+#     # print_function=lambda df: df[['eta', 'phi', 'pt', 'energy', 'mother', 'fbrem', 'ovz', 'pid', 'gen', 'reachedEE', 'firstmother_pdgid']],
+#     print_function=lambda df: df[['gen', 'pid',  'pt', 'eta', 'phi', 'mother', 'ovz', 'dvz', 'reachedEE']].sort_values(by='mother', ascending=False),
+#     max_print_lines=None,
+#     # print_function=lambda df: df.columns,
+#     weight_function=gen_part_pt_weights)
+
+
+# tcs = DFCollection(
+#     name='TC', label='Trigger Cells',
+#     filler_function=lambda event, entry_block: event.getDataFrame(
+#         prefix='tc', entry_block=entry_block),
+#     read_entry_block=200,
+#     fixture_function=tc_fixtures, debug=0)
 
 # try to cleanup a bit
 
-egs_EE = DFCollection(
-    name='EgEE', label='EG EE (sim)',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='egammaEE', entry_block=entry_block),
-    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
-    fixture_function=fake_endcap_quality,
-    read_entry_block=100,
-    debug=0)
-
-egs_EB = DFCollection(
-    name='EgEB', label='EG EB',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='egammaEB', entry_block=entry_block),
-    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
-    fixture_function=barrel_quality,
-    read_entry_block=200,
-    debug=0)
-
-egs_EE_pf = DFCollection(
-    name='PFEgEE', label='EG EE (old EMU)',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='PFegammaEE', entry_block=entry_block),
-    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
-    # fixture_function=mapcalo2pfregions,
-    fixture_function=fake_endcap_quality,
-    debug=0)
-
-egs_EE_pfnf = DFCollection(
-    name='PFNFEgEE', label='EG EE',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='PFNFegammaEE', entry_block=entry_block),
-    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
-    # fixture_function=mapcalo2pfregions,
-    fixture_function=fake_endcap_quality,
-    debug=0)
-
-
-EGStaEE = DFCollection(
-    name='EGStaEE', label='EG EE',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='EGStaEE', entry_block=entry_block),
-    print_function=lambda df: df.loc[(abs(df.eta) > 2.4), ['energy', 'pt', 'eta', 'phi','hwQual']].sort_values(by='pt', ascending=False)[:10],
-    # fixture_function=mapcalo2pfregions,
-    fixture_function=quality_flags,
-    debug=0)
-
-
-EGStaEB = DFCollection(
-    name='EGStaEB', label='EG EB',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='EGStaEB', entry_block=entry_block),
-    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
-    fixture_function=quality_flags,
-    # read_entry_block=200,
-    debug=0)
-
-
-
-tkeles_EE = DFCollection(
-    name='tkEleEE', label='TkEle EE (sim)',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='tkEleEE', entry_block=entry_block),
-    fixture_function=tkele_fixture_ee,
-    debug=0)
-
-tkeles_EB = DFCollection(
-    name='tkEleEB', label='TkEle EB',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='tkEleEB', entry_block=entry_block),
-    fixture_function=tkele_fixture_eb,
-    debug=0)
-
-tkeles_EE_pf = DFCollection(
-    name='PFtkEleEE', label='TkEle EE (old EMU)',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='PFtkEleEE', entry_block=entry_block),
-    fixture_function=tkele_fixture_ee,
-    debug=0)
-
-tkeles_EB_pf = DFCollection(
-    name='PFtkEleEB', label='TkEle EB (old EMU)',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='PFtkEleEB', entry_block=entry_block),
-    fixture_function=tkele_fixture_eb,
-    debug=0)
-
-tkeles_EE_pfnf = DFCollection(
-    name='PFNFtkEleEE', label='TkEle EE',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='PFNFtkEleEE', entry_block=entry_block),
-    fixture_function=tkele_fixture_ee,
-    debug=0)
-
-tkeles_EB_pfnf = DFCollection(
-    name='PFNFtkEleEB', label='TkEle EB',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='PFNFtkEleEB', entry_block=entry_block),
-    fixture_function=tkele_fixture_eb,
-    debug=0)
-
-TkEleEE = DFCollection(
-    name='TkEleEE', label='TkEle EE',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='TkEleEE', entry_block=entry_block),
-    fixture_function=quality_ele_fixtures,
-    print_function=lambda df:df.columns,
-    debug=0)
-
-# Index(['pt', 'energy', 'eta', 'phi', 'tkIso', 'pfIso', 'puppiIso', 'tkChi2',
-#        'tkPt', 'tkZ0', 'compBDTScore', 'compBdt', 'compHoe', 'compSrrtot',
-#        'compDeta', 'compDphi', 'compDpt', 'compMeanz', 'compNstubs',
-#        'compChi2RPhi', 'compChi2RZ', 'compChi2Bend', 'dpt', 'hwQual',
-#        'IDTightSTA', 'IDTightEle', 'IDTightPho', 'IDNoBrem', 'IDBrem'],
-#       dtype='object')
-
-TkEleEB = DFCollection(
-    name='TkEleEB', label='TkEle EB',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='TkEleEB', entry_block=entry_block),
-    fixture_function=quality_ele_fixtures,
-    debug=0)
-
-TkEleEllEE = DFCollection(
-    name='TkEleEllEE', label='TkEle EE (Ell.)',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='TkEleEllEE', entry_block=entry_block),
-    fixture_function=quality_ele_fixtures,
-    debug=0)
 
 
 # --------
-
-tkem_EE = DFCollection(
-    name='tkEmEE', label='TkEm EE (sim)',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='tkEmEE', entry_block=entry_block),
-    fixture_function=fake_endcap_quality,
-    read_entry_block=100,
-    debug=0)
-
-tkem_EB = DFCollection(
-    name='tkEmEB', label='TkEm EB',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='tkEmEB', entry_block=entry_block),
-    fixture_function=barrel_quality,
-    read_entry_block=200,
-    debug=0)
-
-tkem_EE_pf = DFCollection(
-    name='PFtkEmEE', label='TkEm EE (old EMU)',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='PFtkEmEE', entry_block=entry_block),
-    fixture_function=fake_endcap_quality,
-    debug=0)
-
-tkem_EB_pf = DFCollection(
-    name='PFtkEmEB', label='TkEm EB (old EMU)',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='PFtkEmEB', entry_block=entry_block),
-    fixture_function=barrel_quality,
-    read_entry_block=200,
-    debug=0)
-
-tkem_EE_pfnf = DFCollection(
-    name='PFNFtkEmEE', label='TkEm EE',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='PFNFtkEmEE', entry_block=entry_block),
-    fixture_function=fake_endcap_quality,
-    debug=0)
-
-tkem_EB_pfnf = DFCollection(
-    name='PFNFtkEmEB', label='TkEm EB',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='PFNFtkEmEB', entry_block=entry_block),
-    fixture_function=barrel_quality,
-    read_entry_block=500,
-    debug=0)
-
-TkEmEEOldID = DFCollection(
-    name='TkEmEE', label='TkEm EE',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='TkEmEE', entry_block=entry_block),
-    fixture_function=fake_endcap_quality,
-    debug=0)
-
-TkEmEBOldID = DFCollection(
-    name='TkEmEB', label='TkEm EB',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='TkEmEB', entry_block=entry_block),
-    fixture_function=barrel_quality,
-    read_entry_block=500,
-    debug=0)
-
-TkEleEEOldID = DFCollection(
-    name='TkEleEE', label='TkEle EE',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='TkEleEE', entry_block=entry_block),
-    fixture_function=tkele_fixture_ee,
-    debug=0)
-
-TkEleEBOldID = DFCollection(
-    name='TkEleEB', label='TkEle EB',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='TkEleEB', entry_block=entry_block),
-    fixture_function=tkele_fixture_eb,
-    debug=0)
-
-TkEmEE = DFCollection(
-    name='TkEmEE', label='TkEm EE',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='TkEmEE', entry_block=entry_block),
-    print_function=lambda df: df.loc[(abs(df.eta) > 2.4), ['energy', 'pt', 'eta', 'phi','hwQual']].sort_values(by='pt', ascending=False)[:10],
-    fixture_function=quality_flags,
-    debug=0)
-
-TkEmEB = DFCollection(
-    name='TkEmEB', label='TkEm EB',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='TkEmEB', entry_block=entry_block),
-    fixture_function=quality_flags,
-    # read_entry_block=200,
-    debug=0)
-
-TkEmL2 = DFCollection(
-    name='TkEmL2', label='TkEm L2',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='L2TkEm', entry_block=entry_block),
-    fixture_function=quality_flags,
-    debug=0)
-
-TkEleL2 = DFCollection(
-    name='TkEleL2', label='TkEle L2',
-    filler_function=lambda event, entry_block : event.getDataFrame(
-        prefix='L2TkEle', entry_block=entry_block),
-    fixture_function=quality_ele_fixtures,
-    debug=0)
-
-TkEmL2Ell = DFCollection(
-    name='TkEmL2Ell', label='TkEm L2 (ell.)',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='L2TkEmEll', entry_block=entry_block),
-    fixture_function=quality_flags,
-    debug=0)
-
-TkEleL2Ell = DFCollection(
-    name='TkEleL2Ell', label='TkEle L2 (ell.)',
-    filler_function=lambda event, entry_block : event.getDataFrame(
-        prefix='L2TkEleEll', entry_block=entry_block),
-    fixture_function=quality_ele_fixtures,
-    debug=0)
-
-DoubleTkEleL2 = DFCollection(
-    name='DoubleTkEleL2', label='DoubleTkEle L2',
-    filler_function=lambda event, entry_block: build_double_obj(obj=TkEleL2.df),
-    # fixture_function=,
-    depends_on=[TkEleL2],
-    debug=0)
-
-DoubleTkEmL2 = DFCollection(
-    name='DoubleTkEmL2', label='DoubleTkEm L2',
-    filler_function=lambda event, entry_block: build_double_obj(obj=TkEmL2.df),
-    # fixture_function=,
-    depends_on=[TkEmL2],
-    debug=0)
 
 
 def dy_gen_selection(gen):
@@ -1530,138 +580,34 @@ def dy_gen_selection(gen):
     print(gen)
 
 
-selected_gen_parts = DFCollection(
-    name='SelectedSimParts', label='Double Sim e/g',
-    filler_function=lambda event, entry_block: dy_gen_selection(gen.df),
-    # fixture_function=,
-    depends_on=[gen],
-    debug=0)
+# selected_gen_parts = DFCollection(
+#     name='SelectedSimParts', label='Double Sim e/g',
+#     filler_function=lambda event, entry_block: dy_gen_selection(gen.df),
+#     # fixture_function=,
+#     depends_on=[gen],
+#     debug=0)
 
 
-SelectedSimParts = DFCollection(
-    name='SelectedSimParts', label='Double Sim e/g',
-    filler_function=lambda event, entry_block: sim_parts.df[selections.Selector('^GEN$').one().selection(sim_parts.df)],
-    # fixture_function=,
-    depends_on=[sim_parts],
-    debug=0)
+# SelectedSimParts = DFCollection(
+#     name='SelectedSimParts', label='Double Sim e/g',
+#     filler_function=lambda event, entry_block: sim_parts.df[selections.Selector('^GEN$').one().selection(sim_parts.df)],
+#     # fixture_function=,
+#     depends_on=[sim_parts],
+#     debug=0)
 
 
-DoubleSimEle = DFCollection(
-    name='DoubleSimEle', label='Double Sim e/g',
-    filler_function=lambda event, entry_block: build_double_obj(obj=selected_gen_parts),
-    # fixture_function=,
-    depends_on=[selected_gen_parts],
-    debug=0)
+# DoubleSimEle = DFCollection(
+#     name='DoubleSimEle', label='Double Sim e/g',
+#     filler_function=lambda event, entry_block: build_double_obj(obj=gen_highestpt_ele.df),
+#     # fixture_function=,
+#     depends_on=[gen_highestpt_ele],
+#     debug=0)
+# # DoubleSimEle.activate()
 
 
 
-egs_EE_pf_reg = DFCollection(
-    name='PFOutEgEE', label='EG EE (old EMU)',
-    filler_function=lambda event, entry_block: egs_EE_pf.df,
-    print_function=lambda df: df[[
-        'pt', 'eta', 'hwQual',
-        'eta_reg_0', 'eta_reg_1', 'eta_reg_2', 'eta_reg_3',
-        'eta_reg_4', 'eta_reg_5', 'eta_reg_6', 'eta_reg_7',
-        'eta_reg_8', 'eta_reg_9', 'eta_reg_10']].sort_values(by='eta', ascending=False)[:10],
-    fixture_function=mapcalo2pfregions_out,
-    depends_on=[egs_EE_pf],
-    debug=0)
-
-tkeles_EE_pf_reg = DFCollection(
-    name='PFOuttkEleEE', label='TkEle EE (old EMU)',
-    filler_function=lambda event, entry_block: tkeles_EE_pf.df,
-    fixture_function=mapcalo2pfregions_out,
-    depends_on=[tkeles_EE_pf],
-    debug=0)
-
-tkeles_EB_pf_reg = DFCollection(
-    name='PFOuttkEleEB', label='TkEle EB (old EMU)',
-    filler_function=lambda event, entry_block: tkeles_EB_pf.df,
-    fixture_function=mapcalo2pfregions_out,
-    depends_on=[tkeles_EB_pf],
-    debug=0)
-
-tkem_EE_pf_reg = DFCollection(
-    name='PFOuttkEmEE', label='TkEm EE (old EMU)',
-    filler_function=lambda event, entry_block: tkem_EE_pf.df,
-    fixture_function=mapcalo2pfregions_out,
-    depends_on=[tkem_EE_pf],
-    debug=0)
-
-tkem_EB_pf_reg = DFCollection(
-    name='PFOuttkEmEB', label='TkEm EB (old EMU)',
-    filler_function=lambda event, entry_block: tkem_EB_pf.df,
-    fixture_function=mapcalo2pfregions_out,
-    depends_on=[tkem_EB_pf],
-    debug=0)
-
-tk_pfinputs = DFCollection(
-    name='L1TrkPfIn', label='L1Track Input',
-    filler_function=lambda event, entry_block: tracks.df,
-    fixture_function=maptk2pfregions_in,
-    depends_on=[tracks],
-    debug=0)
-
-eg_EE_pfinputs = DFCollection(
-    name='egEEPFin', label='EG EE Input',
-    filler_function=lambda event, entry_block: egs_EE.df,
-    fixture_function=mapcalo2pfregions_in,
-    depends_on=[egs_EE],
-    debug=0)
-
-eg_EB_pfinputs = DFCollection(
-    name='egEBPFin', label='EG EB Input',
-    filler_function=lambda event, entry_block: egs_EB.df,
-    fixture_function=mapcalo2pfregions_in,
-    depends_on=[egs_EB],
-    debug=0)
-
-cl3d_hm_pfinputs = DFCollection(
-    name='HMvDRPFin', label='HMvDR Input',
-    filler_function=lambda event, entry_block: cl3d_hm.df,
-    fixture_function=mapcalo2pfregions_in,
-    depends_on=[cl3d_hm],
-    debug=0)
-
-decTk = DFCollection(
-    name='PFDecTk', label='decoded Tk',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='pfdtk', entry_block=entry_block),
-    fixture_function=decodedTk_fixtures,
-    debug=0)
 
 
-hgc_cl3d = DFCollection(
-    name='HGCCl3d', label='HGC Cl3d',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='Cl3D', entry_block=entry_block, fallback='HMvDR'),
-    fixture_function=lambda clusters: cl3d_fixtures(clusters),
-    # read_entry_block=500,
-    debug=0,
-    print_function=lambda df: df[['id', 'energy', 'pt', 'eta', 'phi', 'quality', 'pt_em', 'bdt_pu']].sort_values(by='pt', ascending=False))
-# hgc_cl3d.activate()
-
-hgc_cl3d_pfinputs = DFCollection(
-    name='HGCCl3dPfIN', label='HGC Cl3d L1TC IN',
-    filler_function=lambda event, entry_block: hgc_cl3d.df,
-    fixture_function=mapcalo2pfregions_in,
-    depends_on=[hgc_cl3d],
-    debug=0)
-
-EGStaEB_pfinputs = DFCollection(
-    name='EGStaEBPFin', label='EG EB  L1TC IN',
-    filler_function=lambda event, entry_block: EGStaEB.df,
-    fixture_function=mapcalo2pfregions_in,
-    depends_on=[EGStaEB],
-    print_function=lambda df: df.loc[~(df.eta_reg_4 | df.eta_reg_5 | df.eta_reg_6 | df.eta_reg_7 | df.eta_reg_8 | df.eta_reg_9), ['eta', 'phi', 'eta_reg_0', 'eta_reg_1', 'eta_reg_2', 'eta_reg_3', 'eta_reg_4', 'eta_reg_5', 'eta_reg_6', 'eta_reg_7', 'eta_reg_8', 'eta_reg_9', 'eta_reg_10', 'eta_reg_11', 'eta_reg_12', 'eta_reg_13']].sort_values(by='eta', ascending=False),
-    debug=0)
-
-tkCl3DMatch = DFCollection(
-    name='TkCl3DMatch', label='TkCl3DMatch',
-    filler_function=lambda event, entry_block: get_trackmatched_egs(egs=hgc_cl3d, tracks=tracks),
-    fixture_function=mapcalo2pfregions_in,    
-    depends_on=[hgc_cl3d, tracks],
-    debug=0)
 # tkCl3DMatch.activate()
 
 
@@ -1709,43 +655,4 @@ class TPSet:
         self.cl3ds.activate()
 
 
-tp_def = TPSet(tcs, cl2d_def, cl3d_def)
-tp_truth = TPSet(tcs, tcs, cl3d_truth)
-tp_def_nc = TPSet(tcs, cl2d_def, cl3d_def_nc)
-tp_def_merged = TPSet(tcs, cl2d_def, cl3d_def_merged)
-tp_def_calib = TPSet(tcs, cl2d_def, cl3d_def_calib)
-tp_hm_vdr = TPSet(tcs, tcs, cl3d_hm)
-tp_hm_fixed = TPSet(tcs, tcs, cl3d_hm_fixed)
-tp_hm_shape = TPSet(tcs, tcs, cl3d_hm_shape)
-tp_hm_shapeDr = TPSet(tcs, tcs, cl3d_hm_shapeDr)
-tp_hm_shapeDtDu = TPSet(tcs, tcs, cl3d_hm_shapeDtDu)
-tp_hm_shapeDtDu_calib = TPSet(tcs, tcs, cl3d_hm_shapeDtDu_calib)
-tp_hm_emint = TPSet(tcs, tcs, cl3d_hm_emint)
-tp_hm_cylind10 = TPSet(tcs, tcs, cl3d_hm_cylind10)
-tp_hm_cylind5 = TPSet(tcs, tcs, cl3d_hm_cylind5)
-tp_hm_cylind2p5 = TPSet(tcs, tcs, cl3d_hm_cylind2p5)
-tp_hm_fixed_calib = TPSet(tcs, tcs, cl3d_hm_fixed_calib)
-tp_hm_shape_calib = TPSet(tcs, tcs, cl3d_hm_shape_calib)
-tp_hm_shapeDr_calib = TPSet(tcs, tcs, cl3d_hm_shapeDr_calib)
-tp_hm_shapeDr_calib_new = TPSet(tcs, tcs, cl3d_hm_shapeDr_calib_new)
-tp_hm_calib = TPSet(tcs, tcs, cl3d_hm_calib)
-tp_hm_cylind10_calib = TPSet(tcs, tcs, cl3d_hm_cylind10_calib)
-tp_hm_cylind5_calib = TPSet(tcs, tcs, cl3d_hm_cylind5_calib)
-tp_hm_cylind2p5_calib = TPSet(tcs, tcs, cl3d_hm_cylind2p5_calib)
-tp_hm_shape_calib_merged = TPSet(tcs, tcs, cl3d_hm_shape_calib_merged)
-tp_hm_calib_merged = TPSet(tcs, tcs, cl3d_hm_calib_merged)
-# tp_hm_cylind10_calib = TPSet(tcs, tcs, cl3d_hm_cylind10_calib)
-# tp_hm_cylind5_calib = TPSet(tcs, tcs, cl3d_hm_cylind5_calib)
-tp_hm_cylind2p5_calib_merged = TPSet(tcs, tcs, cl3d_hm_cylind2p5_calib_merged)
-
-tp_hm_fixed_calib1 = TPSet(tcs, tcs, cl3d_hm_fixed_calib1)
-tp_hm_shape_calib1 = TPSet(tcs, tcs, cl3d_hm_shape_calib1)
-tp_hm_cylind10_calib1 = TPSet(tcs, tcs, cl3d_hm_cylind10_calib1)
-tp_hm_cylind5_calib1 = TPSet(tcs, tcs, cl3d_hm_cylind5_calib1)
-tp_hm_cylind2p5_calib1 = TPSet(tcs, tcs, cl3d_hm_cylind2p5_calib1)
-tp_hm_vdr_rebin = TPSet(tcs, tcs, cl3d_hm_rebin)
-tp_hm_vdr_stc = TPSet(tcs, tcs, cl3d_hm_stc)
-tp_hm_vdr_nc0 = TPSet(tcs, tcs, cl3d_hm_nc0)
-tp_hm_vdr_nc1 = TPSet(tcs, tcs, cl3d_hm_nc1)
-tp_hm_vdr_merged = TPSet(tcs, tcs, cl3d_hm_merged)
-tp_hm_emint_merged = TPSet(tcs, tcs, cl3d_hm_emint_merged)
+# tp_hm_vdr = TPSet(tcs, tcs, cl3d_hm)

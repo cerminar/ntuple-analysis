@@ -1,6 +1,7 @@
+import awkward as ak
 import hist
 from hist import Hist
-import awkward as ak
+
 
 def TH1F(name, title, nbins, bin_low, bin_high):
     b_axis_name = 'X'
@@ -10,8 +11,8 @@ def TH1F(name, title, nbins, bin_low, bin_high):
     b_name = title_split[0]
     b_label = name
     return Hist(
-        hist.axis.Regular(bins=nbins, start=bin_low, stop=bin_high, name=b_axis_name), 
-        label=b_label, 
+        hist.axis.Regular(bins=nbins, start=bin_low, stop=bin_high, name=b_axis_name),
+        label=b_label,
         name=b_name,
         storage=hist.storage.Weight()
         )
@@ -27,12 +28,32 @@ def TH2F(name, title, x_nbins, x_bin_low, x_bin_high, y_nbins, y_bin_low, y_bin_
     b_name = title_split[0]
     b_label = name
     return Hist(
-        hist.axis.Regular(bins=x_nbins, start=x_bin_low, stop=x_bin_high, name=b_x_axis_name), 
-        hist.axis.Regular(bins=y_nbins, start=y_bin_low, stop=y_bin_high, name=b_y_axis_name), 
-        label=b_label, 
+        hist.axis.Regular(bins=x_nbins, start=x_bin_low, stop=x_bin_high, name=b_x_axis_name),
+        hist.axis.Regular(bins=y_nbins, start=y_bin_low, stop=y_bin_high, name=b_y_axis_name),
+        label=b_label,
         name=b_name,
         storage=hist.storage.Weight()
         )
+
+
+def TH2F_category(name, title, x_categories, y_nbins, y_bin_low, y_bin_high):
+    b_x_axis_name = 'X'
+    b_y_axis_name = 'Y'
+    title_split = title.split(';')
+    if len(title_split) > 1:
+        b_x_axis_name = title_split[1]
+    if len(title_split) > 2:
+        b_y_axis_name = title_split[2]
+    b_name = title_split[0]
+    b_label = name
+    return Hist(
+        hist.axis.StrCategory(x_categories, name=b_x_axis_name),
+        hist.axis.Regular(bins=y_nbins, start=y_bin_low, stop=y_bin_high, name=b_y_axis_name),
+        label=b_label,
+        name=b_name,
+        storage=hist.storage.Weight()
+        )
+
 
 def fill_1Dhist(hist, array, weights=None):
     flar = ak.drop_none(ak.flatten(array))

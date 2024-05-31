@@ -1,7 +1,7 @@
 # NOTE: fix of track extrapolation (digitized tracks with bitwise extrapolation)
 # branch:
 
-samples:
+dataset:
   input_dir:  /eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/ntuples/
   calib_version: calib-v134C
   version: 84C
@@ -16,6 +16,7 @@ samples:
   #   events_per_job : 500
   #   # gen_selections: !!python/name:python.selections.genpart_photon_selections
 
+samples:
   doubleele_flat1to100_PU200:
     input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU200_v84C/
     events_per_job : 200

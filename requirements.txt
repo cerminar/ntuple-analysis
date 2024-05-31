@@ -18,3 +18,4 @@ uproot==5.0.7
 uproot4==4.0.0
 snakeviz==2.2.0
 pandas==2.0.1
+typer[all]

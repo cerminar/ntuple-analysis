@@ -1,8 +1,4 @@
-from __future__ import absolute_import
-import python.plotters as plotters
-import python.collections as collections
-import python.selections as selections
-
+from python import collections, plotters, selections
 
 # simple_selections = (selections.Selector('^EGq[4-5]$')*('^Pt[1-3][0]$|all'))()
 
@@ -14,5 +10,5 @@ compid_plotters = [
     plotters.CompCatTuplePlotter(collections.TkEleEE, collections.sim_parts, comp_selections, sim_selections)
 ]
 
-for sel in sim_selections:
-    print(sel)
+# for sel in sim_selections:
+#     print(sel)

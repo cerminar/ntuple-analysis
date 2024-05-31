@@ -1,7 +1,7 @@
 import math
 
 
-class PFRegionizer(object):
+class PFRegionizer:
     def __init__(self):
         # setup the regions
         self.eta_boundaries_fiducial_ = [-5, -4, -3, -2.5, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.5, 3, 4, 5]
@@ -30,7 +30,7 @@ class PFRegionizer(object):
             self.eta_centers.append(eta_low_fiducial+(eta_high_fiducial-eta_low_fiducial)/2.)
             self.eta_boundaries_fiducial.append((eta_low_fiducial, eta_high_fiducial))
 
-        for iphi in range(0, 9):
+        for iphi in range(9):
             phiCenter = (iphi+0.5)*phiWidth-math.pi
             self.phi_centers.append(phiCenter)
             # print iphi,phiCenter
@@ -75,12 +75,12 @@ class PFRegionizer(object):
 regionizer = PFRegionizer()
 
 regions = {
-    'ALL': range(0, regionizer.n_eta_regions()),
+    'ALL': range(regionizer.n_eta_regions()),
     'BRL': [4, 5, 6, 7, 8, 9],
     'HGC': [3, 10],
     'HGCNoTk': [2, 11],
     'HF': [0, 1, 12, 13]
 }
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     print(' | '.join([f'eta_reg_{r}' for r in regions['HGC']]))

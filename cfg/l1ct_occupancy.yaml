@@ -2,46 +2,17 @@
 common:
   output_dir:
     default: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-    matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
-    Matterhorn: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
     triolet: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
-  output_dir_local: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
-  output_dir_lx: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
-  plot_version: v152D
+  plot_version: v0
   run_clustering: False
   run_density_computation: False
-# +AccountingGroup = "group_u_CMS.u_zh.users"
-# +AccountingGroup = "group_u_CMST3.all"
+  file_label: l1ct
 
-collections:
-      
-  tps:
-    file_label:
-      l1ct
-    samples:
-      - ttbar_PU200
-    plotters:
-      - !!python/name:cfg.l1ct_occupancy.l1tcorr_input_occ
-    htc_jobflavor:
-      workday
-    priorities:
-      ttbar_PU200: 7
-    events_per_job:
-      ttbar_PU200: 10000
+tps:
+  plotters:
+    - !!python/name:cfg.l1ct_occupancy.l1tcorr_input_occ
 
-  cl3dmatch:
-    file_label:
-      l1ctmatch
-    samples:
-      - ttbar_PU200
-      - doubleele_flat1to100_PU200
-    plotters:
-      - !!python/name:cfg.l1ct_occupancy.l1tcorr_tkcl3dmatch_input_occ
-    htc_jobflavor:
-      workday
-    priorities:
-      ttbar_PU200: 7
-      doubleele_flat1to100_PU200: 6
-    events_per_job:
-      ttbar_PU200: 5000
-      doubleele_flat1to100_PU200: 5000
+cl3dmatch:
+  file_label: match
+  plotters:
+    - !!python/name:cfg.l1ct_occupancy.l1tcorr_tkcl3dmatch_input_occ
