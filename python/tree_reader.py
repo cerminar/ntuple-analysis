@@ -94,7 +94,7 @@ class TreeReader:
                     if br.startswith(f'{prefix}_') and
                     br != f'{prefix}_n']
         names = ['_'.join(br.split('_')[1:]) for br in branches]
-        name_map = dict(zip(names, branches, strict=False))
+        name_map = dict(zip(names, branches))
         if len(branches) == 0:
             if fallback is not None:
                 return self.getDataFrame(prefix=fallback, entry_block=entry_block)

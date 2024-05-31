@@ -612,7 +612,7 @@ version = 'v10_3151'
 
 wps = working_points_histomax[version]
 labels = ['LE', 'HE']
-wls = zip(wps, labels, strict=False)
+wls = zip(wps, labels)
 # for i,
 tphgc_egbdt_sel = []
 
