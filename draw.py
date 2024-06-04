@@ -58,6 +58,7 @@ def draw(
     pymoudule_path = pathlib.Path(module)
     formatted_path = '.'.join(pymoudule_path.with_suffix('').parts)
     draw_module = importlib.import_module(formatted_path)
+    histo_classes, wc_label, draw_func = draw_module.what(what)
 
 
     samples = []
@@ -77,7 +78,8 @@ def draw(
     labels_dict.update(selm.get_labels())
 
     hplot = HPlot(samples, labels_dict)
-    hplot.create_histo_proxies(draw_module.histo_class)
+    for histo_class in histo_classes:
+        hplot.create_histo_proxies(histo_class)
 
 
     if do_pt_rate_wps:
@@ -108,13 +110,13 @@ def draw(
 
     base_dir = target_dir.split(project_dir)[0]
     wc = wp.WebPageCreator(
-        topic_dir=draw_module.wc_label, 
+        topic_dir=wc_label, 
         project_dir=project_dir, 
         base_dir=base_dir, 
         tmp_dir=os.environ['TMPDIR'],
         samples=samples)
     
-    draw_func = getattr(draw_module, f'{what}_draw')
+    # draw_func = getattr(draw_module, f'{what}_draw')
     draw_func(hplot, smps, wc)
     wc.publish()
 

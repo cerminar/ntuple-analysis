@@ -131,6 +131,16 @@ def build_double_obj(obj):
     # ret.show()
     return ret
 
+def double_obj_fixtures(obj):
+    # for the rate computation we assign the low-pt leg pt as pt of the pair
+    obj['pt'] = obj.leg1.pt
+    return obj
+
+def double_electron_fixtures(obj):
+    obj = double_obj_fixtures(obj)
+    obj['dz'] = np.abs(obj.leg0.vz - obj.leg1.vz)
+    return obj
+
 def map2pfregions(objects, eta_var, phi_var, fiducial=False):
     for ieta, eta_range in enumerate(pf_regions.regionizer.get_eta_boundaries(fiducial)):
         # print(f'eta_reg_{ieta}')
@@ -312,14 +322,14 @@ TkEleL2Ell = DFCollection(
 DoubleTkEleL2 = DFCollection(
     name='DoubleTkEleL2', label='DoubleTkEle L2',
     filler_function=lambda event, entry_block: build_double_obj(obj=TkEleL2.df),
-    # fixture_function=,
+    fixture_function=double_electron_fixtures,
     depends_on=[TkEleL2],
     debug=0)
 
 DoubleTkEmL2 = DFCollection(
     name='DoubleTkEmL2', label='DoubleTkEm L2',
     filler_function=lambda event, entry_block: build_double_obj(obj=TkEmL2.df),
-    # fixture_function=,
+    fixture_function=double_obj_fixtures,
     depends_on=[TkEmL2],
     debug=0)
 
