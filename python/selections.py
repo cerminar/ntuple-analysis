@@ -14,6 +14,7 @@ import re
 import numpy as np
 
 from python import pf_regions
+from rich import print as pprint
 
 
 class PID:
@@ -193,11 +194,11 @@ def prune(selection_list):
     return ret
 
 
-def build_DiObj_selection(name, label, selection_leg0, selection_leg1):
+def build_DiObj_selection(name, label, selection_leg0, selection_leg1, selection_glb=Selection('all')):
     return Selection(
         name,
         label,
-        lambda array: selection_leg0.selection(array.leg0) & selection_leg1.selection(array.leg1))
+        lambda array: selection_leg0.selection(array.leg0) & selection_leg1.selection(array.leg1) & selection_glb.selection(array))
         # FIXME: it was (leg0 sel. | leg1 sel.) instead of &
 
 
@@ -248,6 +249,24 @@ def read_isoptwp_sel(file_name, obj_name):
             ret_sel.append((iso_sel, Selection(f'@{rate_point}kHz', f'@{rate_point}kHz', f'pt>={pt_cut}')))
     return ret_sel
 
+
+def read_iso_flateffwp_sel(file_name):
+    pwd = os.path.dirname(__file__)
+    filename = os.path.join(pwd, '..', file_name)
+    iso_wps = {}
+    
+    with open(filename) as f:
+        iso_wps = json.load(f)
+    # pprint(iso_wps)
+
+    'IsoPhoIDTightEB@'
+    for eta in ['EE','EB']:
+        wps = iso_wps[f'GENEta{eta}']['IDTightPho']
+        for (eff, bins) in wps.items():
+            pass
+        #     print(eff, bins)
+        # pprint(wps)
+    return
 
 class Selector:
     # common to all instances of the object
@@ -551,6 +570,10 @@ tp_id_sel = [
     Selection('IDLooseEm', 'Loose-EM', lambda array: array.IDLooseEm),
     ]
 
+dz_sel = [
+    Selection('Dz1', '|#DeltaZ|<1cm', lambda array: array.dz < 1)
+]
+
 
 
 comp_id_sel = [
@@ -650,13 +673,19 @@ menu_sel = [
     ((Selector('^EtaEB')&('^IsoEleEB')&('^PtIsoEleEB28'))|(Selector('^EtaEE')&('^IsoEleEE')&('^IDTightE$')&('^PtIsoEleEE28'))).one('SingleIsoTkEle28Tight', 'SingleIsoTkEle28Tight'),
     ((Selector('^EtaEB')&('^IDTightE$')&('^PtEleEB36'))|(Selector('^EtaEE')&('^IDTightE$')&('^PtEleEE36'))).one('SingleTkEle36', 'SingleTkEle36'),
     ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB36'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE36'))).one('SingleIsoTkPho36', 'SingleIsoTkPho36'),
+    ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB22'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE22'))).one('SingleIsoTkPho22', 'SingleIsoTkPho22'),
+    ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB12'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE12'))).one('SingleIsoTkPho12', 'SingleIsoTkPho12'),
     ((Selector('^EtaEB')&('^IDTightE$')&('^PtStaEB51'))|(Selector('^EtaEE')&('^IDTightP')&('^PtStaEE51'))).one('SingleEGEle51', 'SingleEGEle51'),
     build_DiObj_selection('DoubleIsoTkPho22-12', 'DoubleIsoTkPho22-12',
                           ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB22'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE22'))).one(),
                           ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB12'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE12'))).one()),
+    build_DiObj_selection('MenuDoubleIsoTkPho22-X', 'DoubleIsoTkPho22-X',
+                          ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB22'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE22'))).one(),
+                          ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP'))).one()),
     build_DiObj_selection('DoubleTkEle25-12', 'DoubleTkEle25-12',
                           ((Selector('^EtaEB')&('^IDTightE$')&('^PtEleEB25'))|(Selector('^EtaEE')&('^PtEleEE25'))).one(),
-                          ((Selector('^EtaEB')&('^IDTightE$')&('^PtEleEB12'))|(Selector('^EtaEE')&('^PtEleEE12'))).one())
+                          ((Selector('^EtaEB')&('^IDTightE$')&('^PtEleEB12'))|(Selector('^EtaEE')&('^PtEleEE12'))).one(),
+                          Selector('^Dz1$').one())
 
 ]
 # repeat the call: we want the menu selections to be avaialble via the selectors

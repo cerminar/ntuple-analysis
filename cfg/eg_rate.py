@@ -161,6 +161,7 @@ egid_iso_etatk_selections = (selections.Selector('^IDTight[EP]$|all')*selections
 egid_menu_ele_selections = (selections.Selector('^MenuEle')*selections.Selector('^EtaE[BE]$|all'))()
 egid_menu_pho_selections = (selections.Selector('^MenuPho|^MenuSta')*selections.Selector('^EtaE[BE]$|all'))()
 egid_menu_sta_selections = (selections.Selector('^MenuSta')*selections.Selector('^EtaE[BE]$|all'))()
+egid_menu_dipho_selections = (selections.Selector('^MenuDoubleIsoTkPho22'))()
 
 
 egid_menu_ele_rate_selections = (selections.Selector('^SingleIsoTkEle|^SingleTkEle')*selections.Selector('^EtaE[BE]$|all'))()
@@ -241,6 +242,9 @@ eg_menuCTl2_plotters = [
         coll.TkEmL2, egid_menu_pho_selections),
     RatePlotter(
         coll.TkEleL2, egid_menu_ele_selections),
+    RatePlotter(
+        coll.DoubleTkEmL2, egid_menu_dipho_selections),
+    
 ]
 
 eg_menuCTl2_ell_plotters = [
