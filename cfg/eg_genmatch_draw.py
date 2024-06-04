@@ -2,7 +2,16 @@ import cfg.eg_genmatch
 import python.histos as histos
 from python.draw.drawingTools import *
 
-histo_class = histos.HistoSetEff
+
+
+
+def what(what):
+    match what:
+        case 'egmenu_ele':
+            return [histos.HistoSetEff], 'eff', egmenu_ele_draw
+
+
+
 
 draw_config=tdr_config
 draw_config.marker_size = 1
@@ -13,7 +22,6 @@ draw_config.additional_text = [(0.13, 0.91, '#scale[1.5]{CMS} #scale[1.]{Phase-2
                     (0.69, 0.91, '14TeV, 200 PU')]
 
 
-wc_label = 'eff'
 
 def egmenu_ele_draw(hplot, smps, wc):
 
