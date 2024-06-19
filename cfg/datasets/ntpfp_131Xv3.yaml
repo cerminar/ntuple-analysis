@@ -1,7 +1,6 @@
 # l1t offline recipe for 2024 AR preparation:
 dataset:
   input_dir:  /eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/fp_ntuples/
-  calib_version: calib-v134C
   version: 131Xv3
 
   # tree_name: hgcalTriggerNtuplizer/HGCalTriggerNtuple
@@ -13,6 +12,9 @@ dataset:
   #   input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU0_v64E/
   #   events_per_job : 500
   #   # gen_selections: !!python/name:python.selections.genpart_photon_selections
+calibrations:
+  hgc_empt_calib: data/calibrations/calib-v134C.json
+  rate_pt_wps: data/rate_pt_wps_v152B.90A.json
 
 samples:
   doubleele_flat1to100_PU200:

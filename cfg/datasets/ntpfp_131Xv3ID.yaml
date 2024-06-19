@@ -1,0 +1,27 @@
+dataset:
+  input_dir:  /eos/cms/store/cmst3/group/l1tr/kypark/2June2024/
+  tree_name: Events
+  version: 131Xv3ID
+
+
+calibrations:
+  hgc_empt_calib: data/calibrations/calib-v134C.json
+  rate_pt_wps: data/rate_pt_wps_v152B.90A.json
+
+samples:
+
+  doubleele_flat1to100_PU200:
+    input_sample_dir: DoubleElectron_FlatPt-1To100_PU200/FP/v131Xv3I
+    events_per_job : 200
+
+  doublephoton_flat1to100_PU200:
+    input_sample_dir: DoublePhoton_FlatPt-1To100_PU200/FP/v131Xv3I
+    events_per_job : 200
+
+  nugun_alleta_pu200:
+    input_sample_dir: NuGunAllEta_PU200/FP/v131Xv3I
+    events_per_job: 300
+
+  ttbar_PU200:
+    input_sample_dir: TT_PU200/FP/v131Xv3I
+    events_per_job: 200

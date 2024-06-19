@@ -1,11 +1,13 @@
 # datasets for tracker failure scenario studies
 dataset:
   input_dir:  /eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/fp_ntuples/
-  calib_version: calib-v134C
   version: 101A
 
   # tree_name: hgcalTriggerNtuplizer/HGCalTriggerNtuple
   tree_name: Events
+
+
+calibrations:
   rate_pt_wps: data/rate_pt_wps_v152B.90A.json
   # tree_name: l1CaloTriggerNtuplizer/HGCalTriggerNtuple
 

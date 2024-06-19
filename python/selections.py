@@ -370,6 +370,25 @@ def compare_selections(sel1, sel2):
 
     return ret
 
+def rate_pt_wps_selections(wps, obj, pt_var='pt'):
+    data_selections = []
+    # gen_selections = []
+    sm = selections.SelectionManager()
+    if obj in wps.keys():
+     #    print(wps[obj])
+        for obj_sel_name, pt_wps in wps[obj].items():
+            # print(f'WPS for {obj_sel_name}:')
+            for rate, pt_cut in wps[obj][obj_sel_name].items():
+                # print(f'   rate: {rate}kHz, pt cut: {pt_cut}GeV')
+                pt_sel = selections.Selection(
+                    f'@{rate}kHz', f'p_{{T}}^{{TOBJ}}>={pt_cut}GeV (@{rate}kHz)', lambda ar, pt_cut=pt_cut : ar.pt >= pt_cut)
+                obj_sel = selections.Selector(f'^{obj_sel_name}$', sm.selections)()[0]
+
+                # print(obj_sel*pt_sel)
+                data_selections.append(obj_sel&pt_sel)
+                # gen_selections.append(selections.Selection('all'))
+    return data_selections
+
 
 # TP selections
 

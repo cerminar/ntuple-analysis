@@ -3,14 +3,14 @@
 
 dataset:
   input_dir:  /eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/ntuples/
-  calib_version: calib-v134C
   version: 71A
 
   # tree_name: hgcalTriggerNtuplizer/HGCalTriggerNtuple
   tree_name: l1EGTriggerNtuplizer_l1tCorr/HGCalTriggerNtuple
-  rate_pt_wps: data/rate_pt_wps_v150A.70B.json
-  # tree_name: l1CaloTriggerNtuplizer/HGCalTriggerNtuple
 
+calibrations:
+  rate_pt_wps: data/rate_pt_wps_v150A.70B.json
+  
   # doubleele_flat1to100_PU0:
   #   input_sample_dir: DoubleElectron_FlatPt-1To100/DoubleElectron_FlatPt-1To100_PU0_v64E/
   #   events_per_job : 500

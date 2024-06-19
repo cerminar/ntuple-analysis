@@ -143,8 +143,8 @@ class EGGenMatchPtWPSPlotter(plotters.GenericGenMatchPlotter):
 
     def book_histos(self):
         calib_mgr = calibrations.CalibManager()
-        rate_pt_wps = calib_mgr.get_pt_wps()
-        self.data_selections = calibrations.rate_pt_wps_selections(
+        rate_pt_wps = calib_mgr.get_calib('rate_pt_wps')
+        self.data_selections = selections.rate_pt_wps_selections(
             rate_pt_wps, self.data_set.name)
         plotters.GenericGenMatchPlotter.book_histos(self)
 
