@@ -66,7 +66,7 @@ def get_collection_parameters(opt, cfgfile):
             plotters.extend(plotter)
 
         if 'file_label' in collection_data:
-            file_label += collection_data['file_label']
+            file_label = cfgfile['common']['file_label']+collection_data['file_label']
 
         for sample in samples:
             events_per_job = -1
