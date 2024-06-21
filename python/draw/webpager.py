@@ -73,9 +73,31 @@ class WebPageCreator(object):
                     print(f' .  file: {source} missing!')
         
         if self.sample_file:
-            shutil.copyfile(self.sample_file, os.path.join(self.topic_path, 'samples.txt'))
+            self.append_sample_file()
 
         return
 
 
+    def append_sample_file(self):
+        target_path = os.path.join(self.topic_path, 'samples.txt')
+
+        # Read the content of the target file if it exists
+        if os.path.exists(target_path):
+            with open(target_path, 'r') as target:
+                target_lines = set(target.readlines())
+        else:
+            target_lines = set()
+
+        # Read the content of the source file
+        with open(self.sample_file, 'r') as source:
+            source_lines = source.readlines()
+
+        # Filter out the lines that are already in the target file
+        new_lines = [line for line in source_lines if line not in target_lines]
+
+        # Append the new lines to the target file
+        with open(target_path, 'a') as target:
+            target.writelines(new_lines)
+
+        return
     

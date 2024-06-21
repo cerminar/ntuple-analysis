@@ -64,7 +64,7 @@ def draw(
     samples = []
     smps = []
 
-    extract_samples('ele', input_files, samples)
+    extract_samples('smp', input_files, samples)
     smps = [s.type for s in samples]
 
     for smp in samples:
