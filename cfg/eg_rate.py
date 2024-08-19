@@ -267,3 +267,18 @@ eg_menuCTl2_rate = [
     DoubleObjRateCounter(
         coll.DoubleTkEmL2, egid_menu_dipho_rate_selections)
 ]
+
+
+
+egid_ctl2_pho_selections = (
+    selections.Selector('^MenuPho|^MenuSta')*('^EtaE[BE]$|all')+
+    selections.Selector('^L2IDPho')*('^L2Iso|^IsoPho9[468]$|all')*('^EtaE[BE]$|^EtaEE[abc]|all'))()
+egid_ctl2_dipho_selections = (selections.Selector('^MenuDoubleIsoTkPho22|^MenuDoubleIsoOneTkPho22|^MenuDoubleIso9[02468]TkPho22|^MenuDoubleTkPho22'))()
+
+eg_ctl2_pho_iso_plotters = [
+    RatePlotter(
+        coll.TkEmL2IsoWP, egid_ctl2_pho_selections),
+    RatePlotter(
+        coll.DoubleTkEmL2IsoWP, egid_ctl2_dipho_selections),
+    
+]

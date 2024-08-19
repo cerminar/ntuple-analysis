@@ -3,7 +3,10 @@ import numpy as np
 import math
 
 from python.collections import DFCollection
+
 from python import pf_regions
+from python import calibrations
+from python import selections
 
 def mc_fixtures(particles):
     particles['abseta'] = np.abs(particles.eta)
@@ -100,6 +103,7 @@ def quality_flags(objs):
     objs['IDTightSTA'] = np.bitwise_and(objs.hwQual, mask_tight_sta) > 0
     objs['IDTightEle'] = np.bitwise_and(objs.hwQual, mask_tight_ele) > 0
     objs['IDTightPho'] = np.bitwise_and(objs.hwQual, mask_tight_pho) > 0
+    objs['IDLoosePho'] = True
     objs['IDNoBrem'] = np.bitwise_and(objs.hwQual, mask_no_brem) > 0
     objs['IDBrem'] = np.bitwise_and(objs.hwQual, mask_no_brem) == 0
     return objs
@@ -164,6 +168,43 @@ def mapcalo2pfregions_in(objects):
 def mapcalo2pfregions_out(objects):
     return map2pfregions(objects, 'eta', 'phi', fiducial=True)
 
+
+def compute_flateff_iso_wps(objs):
+    calib_mgr = calibrations.CalibManager()
+    wps = calib_mgr.get_calib('iso_flateff_wps')
+    pt_bins = wps['pt_bins']
+    obj_count = ak.num(objs)
+    obj_flat = ak.flatten(objs)
+    obj_flat['iso_pt_bin'] = np.digitize(obj_flat.pt, pt_bins)
+    effs = [90, 92, 94, 96, 98]
+    # print(ak.count(obj_flat))
+    for eff in effs:
+        # ak arrays can not be changed in place apart from adding an entire new field
+        # we use an array to do the computation and then add it as a field
+        wp_ar = np.full(ak.count(obj_flat), False, dtype=bool)
+        # print(f'EFF: {eff}')
+        for eta_sel, eta_wps in wps['TkEmL2'].items():
+            e_sel = selections.Selector(f'^Eta{eta_sel}$').one()
+            for id_sel,ideta_wps in eta_wps.items():
+                i_sel = selections.Selector(f'^{id_sel}$').one()
+                # print(e_sel)
+                # print(i_sel)
+
+
+                sel_obj_flat = obj_flat[e_sel.selection(obj_flat) & i_sel.selection(obj_flat)]
+                iso_thrs = ideta_wps[str(eff)]
+                # print(iso_thrs)
+                # print(e_sel.selection(obj_flat) & i_sel.selection(obj_flat))
+                # print(wp_ar[e_sel.selection(obj_flat) & i_sel.selection(obj_flat)])
+                # print(np.array([iso_thrs[idx-1] for idx in sel_obj_flat.iso_pt_bin]))
+                # print(sel_obj_flat.tkIso)
+                # print(sel_obj_flat.tkIso < np.array([iso_thrs[idx-1] for idx in sel_obj_flat.iso_pt_bin]))
+                wp_ar[e_sel.selection(obj_flat) & i_sel.selection(obj_flat)] = sel_obj_flat.tkIso < np.array([iso_thrs[idx-1] for idx in sel_obj_flat.iso_pt_bin])
+        # print(wp_ar)
+        obj_flat = ak.with_field(obj_flat, wp_ar, f'tkIso{eff}')
+
+    objs = ak.unflatten(obj_flat, obj_count)
+    return objs
 
 gen_ele = DFCollection(
     name='GEN', label='GEN particles (ele)',
@@ -404,4 +445,17 @@ pfjets = DFCollection(
     print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
     debug=0)
 
+TkEmL2IsoWP = DFCollection(
+    name='TkEmL2IsoWP', label='TkEm L2',
+    filler_function=lambda event, entry_block: TkEmL2.df,
+    fixture_function=compute_flateff_iso_wps,
+    depends_on=[TkEmL2],
+    debug=0)
+# TkEmL2IsoWP.activate()
 
+DoubleTkEmL2IsoWP = DFCollection(
+    name='DoubleTkEmL2IsoWP', label='DoubleTkEm L2',
+    filler_function=lambda event, entry_block: build_double_obj(obj=TkEmL2IsoWP.df),
+    fixture_function=double_obj_fixtures,
+    depends_on=[TkEmL2IsoWP],
+    debug=0)

@@ -212,7 +212,7 @@ egid_iso_tkele_comp_selections = (selections.Selector('^IDTight[E]$|^IDComp|all'
 gen_selections = (selections.Selector('GEN$')*('^Eta[F]$|^Eta[AF][ABCD]*[C]$|all')+selections.Selector('GEN$')*('^Pt15|^Pt30'))()
 
 # gen_menu_selections = (selections.Selector('GEN$')*('^EtaE[BE]$|all')+selections.Selector('GEN$')*('^Pt10to25$|^Pt25'))()
-gen_menu_selections = (selections.Selector('GEN$')*('^EtaE[BE]$|all')+selections.Selector('GEN$')*('^Pt15$|^Pt30$'))()
+gen_menu_selections = (selections.Selector('GEN$')*('^EtaE[BE]$|^EtaEE[abc]$|all')+selections.Selector('GEN$')*('^Pt15$|^Pt30$|^Pt10to25$'))()
 
 # for sels in [gen_selections, selections.gen_selections]:
 #     print('--------------------')
@@ -381,6 +381,20 @@ egsta_menu = [
     EGGenMatchPlotter(
         coll.EGStaEB, coll.gen,
         egid_menu_sta_selections, gen_menu_selections),
+]
+
+
+
+egid_ctl2_pho_selections = (
+    selections.Selector('^L2IDPho')*('^L2Iso|^IsoPho9[02468]$|all') + 
+    selections.Selector('^Iso@9[02468]TkPho[12]2$|IsoTkPho[12]2$'))()
+gen_ctl2_selections = (selections.Selector('GEN$')*('^EtaE[BE]$|^EtaEE[abc]$|all')+selections.Selector('GEN$')*('^Pt15$|^Pt30$|^Pt10to25$'))()
+
+
+ctl2_tkem_iso = [
+    EGGenMatchPlotter(
+    coll.TkEmL2IsoWP, coll.gen,
+    egid_ctl2_pho_selections, gen_ctl2_selections),
 ]
 
 

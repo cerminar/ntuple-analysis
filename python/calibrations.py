@@ -20,8 +20,8 @@ class CalibManager:
     """
     CalibManager.
 
-    Manages the calibration data ensuring they are read only once
-    and coherently served to the collections when/if needed.
+    Manages the calibration data ensuring coherent versioning, reading from json
+    and coherently serving them to the rest of the code when/if needed.
     
     Reads generic dictionaries from JSON files and maps them to a key for retrieval 
     in the rest of the code.
@@ -43,6 +43,7 @@ class CalibManager:
                     errno.ENOENT, os.strerror(errno.ENOENT), rel_filename)
 
         def get_calib(self, calib_name):
+            # FIXME: could cache the JSON data
             calibs = {}
             with open(self.calib_files[calib_name]) as f:
                 calibs = json.load(f)
