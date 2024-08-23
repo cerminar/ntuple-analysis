@@ -420,6 +420,7 @@ class GenParticleExtraHistos(GenParticleHistos):
         self.h_n.fill(ak.count(particles.pt, axis=1))
         bh.fill_1Dhist(hist=self.h_pdgid,
                        array=particles.pdgid)
+        GenParticleHistos.fill(self, particles)
 
 
 class DigiHistos(BaseHistos):
