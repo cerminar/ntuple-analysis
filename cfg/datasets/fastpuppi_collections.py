@@ -94,6 +94,8 @@ def cl3d_fixtures(clusters):
     return clusters
 
 def quality_flags(objs):
+    # print(objs.type.show())
+    # print('end')
     # print(objs.hwQual)
     objs['hwQual'] = ak.values_astype(objs.hwQual, np.int32)
     mask_tight_sta = 0b0001
@@ -143,6 +145,12 @@ def double_obj_fixtures(obj):
 def double_electron_fixtures(obj):
     obj = double_obj_fixtures(obj)
     obj['dz'] = np.abs(obj.leg0.vz - obj.leg1.vz)
+    return obj
+
+
+def gen_diele_fixtures(obj):
+    obj['mass'] = (obj.leg0 + obj.leg1).mass
+    obj['ptPair'] = (obj.leg0 + obj.leg1).pt
     return obj
 
 def map2pfregions(objects, eta_var, phi_var, fiducial=False):
@@ -458,4 +466,12 @@ DoubleTkEmL2IsoWP = DFCollection(
     filler_function=lambda event, entry_block: build_double_obj(obj=TkEmL2IsoWP.df),
     fixture_function=double_obj_fixtures,
     depends_on=[TkEmL2IsoWP],
+    debug=0)
+
+gen_diele = DFCollection(
+    name='GENDiEle', label='GEN ee',
+    filler_function=lambda event, entry_block: build_double_obj(obj=gen_ele.df),
+    # print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    fixture_function=gen_diele_fixtures,
+    depends_on=[gen_ele],
     debug=0)
