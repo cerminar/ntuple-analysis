@@ -73,7 +73,7 @@ class GenDiElePlotter(plotters.GenericDataFramePlotter):
 
 # ------ Plotter instances
 
-gen_diele_selections = [selections.Selection('all')]
+gen_diele_selections = selections.Selector('^DiGEN$')()
 
 
 

@@ -722,6 +722,14 @@ menu_sel = [
 
 ]
 
+
+digen_sele = [
+    build_DiObj_selection('DiGEN', 'Di-GEN prompt',
+                          (Selector('^GEN$')).one(),
+                          (Selector('^GEN$')).one()),
+]
+
+
 for eff in [90, 92, 94, 96, 98]:
     menu_sel.append(build_DiObj_selection(f'MenuDoubleIso{eff}TkPho22-X', f'DoubleIso{eff}TkPho22-X',
                         ((Selector('^EtaEB')&(f'^IsoPho{eff}')&('^IDTightE$')&('^PtIsoPhoEB22'))|(Selector('^EtaEE$')&(f'^IsoPho{eff}')&('^IDTightP')&('^PtIsoPhoEE22'))).one(),
