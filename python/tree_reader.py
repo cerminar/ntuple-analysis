@@ -116,7 +116,7 @@ class TreeReader:
         if 'pt' in names and 'eta' in names and 'phi' in names:
             if 'mass' not in names and 'energy' not in names:
                 records['mass'] = 0.*akarray['pt']
-            return vector.zip(records)
+            return ak.zip(records, with_name="Momentum4D")
 
         return ak.zip(records)
 
