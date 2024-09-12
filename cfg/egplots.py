@@ -1,4 +1,21 @@
-from python import collections, plotters, selections
+from python import plotters, selections, calibrations, histos
+import python.boost_hist as bh
+import cfg.datasets.fastpuppi_collections as coll
+import awkward as ak
+import math
+import numpy as np
+
+
+# ------ Histogram classes ----------------------------------------------
+from cfg.eg_genmatch import EGHistos
+
+
+# ------ Plotter classes ------------------------------------------------
+
+class EGPlotter(plotters.GenericDataFramePlotter):
+    def __init__(self, eg_set, eg_selections=[selections.Selection('all')]):
+        super(EGPlotter, self).__init__(EGHistos, eg_set, eg_selections)
+
 
 # simple_selections = (selections.Selector('^EGq[4-5]$')*('^Pt[1-3][0]$|all'))()
 
@@ -15,8 +32,6 @@ l1tc_simple_plotters = [
     # plotters.TkElePlotter(collections.TkEleL2, egid_iso_etatk_selections),
 
     # plotters.EGPlotter(collections.TkEleEE, sta_selection),
-    plotters.EGPlotter(collections.TkEleL2, simple_selections),
-    plotters.EGPlotter(collections.TkEmL2, simple_selections),
 
     # plotters.EGPlotter(collections.TkEmEE, sta_selection),
     # plotters.EGPlotter(collections.TkEmEB, sta_selection),
@@ -24,9 +39,15 @@ l1tc_simple_plotters = [
     # plotters.EGPlotter(collections.EGStaEB, sta_selection),
     ]
 
+l1ct_tkegl2_plotters = [
+    EGPlotter(coll.TkEleL2, simple_selections),
+    EGPlotter(coll.TkEmL2, simple_selections),
+]
+
+
 quantization_plotters = [
-    plotters.QuantizationPlotter(collections.hgc_cl3d,  simple_selections, ['pt', 'hoe', 'srrtot', 'meanz_scaled']),
-    plotters.QuantizationPlotter(collections.tracks,  simple_selections, ['nStubs', 'chi2'])
+    plotters.QuantizationPlotter(coll.hgc_cl3d,  simple_selections, ['pt', 'hoe', 'srrtot', 'meanz_scaled']),
+    plotters.QuantizationPlotter(coll.tracks,  simple_selections, ['nStubs', 'chi2'])
 
 ]
 

@@ -35,19 +35,24 @@ def menu_ratecounter_draw(hplot, smps, wc):
         (['TkEleL2'], ['SingleIsoTkEle28', 'SingleIsoTkEle28EtaEB', 'SingleIsoTkEle28EtaEE'], {}),
         (['TkEleL2'], ['SingleIsoTkEle28Tight', 'SingleIsoTkEle28TightEtaEB', 'SingleIsoTkEle28TightEtaEE'], {}),
         (['TkEmL2'], ['SingleIsoTkPho36', 'SingleIsoTkPho36EtaEB', 'SingleIsoTkPho36EtaEE'], {}),
+        (['EGSta'], ['SingleEGEle51', 'SingleEGEle51EtaEB', 'SingleEGEle51EtaEE'], {}),
+
     ]
     menu_double = [
         (['DoubleTkEleL2'], ['DoubleTkEle25-12'], {}),
         (['DoubleTkEmL2'], ['DoubleIsoTkPho22-12'], {}),
+        (['DoubleEGSta'], ['DoubleStaEG37-24'], {}),
+        (['DoubleTkEleEGSta'], ['DoubleIsoTkEleStaEG22-12'], {}),
+
     ]
 
 
     for smp in smps:
-        for obj, sels in menu_single:
+        for obj, sels, opts in menu_single:
             singleobjcounter(hplot, smp_table, smp, obj, sels)
 
     for smp in smps:
-        for obj, sels in menu_double:
+        for obj, sels, opts in menu_double:
             doubleobjcounter(hplot, smp_table, smp, obj, sels)
 
     for smp in smps:
@@ -95,6 +100,7 @@ def menu_rate_draw(hplot, smps, wc):
         (['TkEleL2'], ['MenuEleTightEtaEB'], 'hRate_TkEleL2_MenuEleTightEtaEB', {}),
         (['TkEleL2'], ['MenuEleIsoLoose'], 'hRate_TkEleL2_MenuEleIsoLoose', {}),
         (['TkEleL2'], ['MenuEleIsoTight'], 'hRate_TkEleL2_MenuEleIsoTight', {}),
+        (['TkEleL2'], ['MenuEleIsoTightEtaEB'], 'hRate_TkEleL2_MenuEleIsoTightEtaEB', {}),
         (['TkEleL2'], ['MenuEleIsoTight', 'MenuEleIsoLoose'], 'hRate_TkEleL2_MenuEleIso', {}),
         (['TkEmL2'], ['MenuPhoIso'], 'hRate_TkEmL2_MenuPhoIso', {}),
         (['TkEmL2'], ['MenuPhoIsoEtaEE'], 'hRate_TkEmL2_MenuPhoIsoEtaEE', {}),
@@ -152,7 +158,7 @@ def draw_rate(hplot, smps, wc, draw_style, configs):
             y_min=opts.get('y_min', 0.5), 
             y_max=opts.get('y_max', 40000),
             x_min=opts.get('x_min', 0.), 
-            x_max=opts.get('x_max', 100.),
+            x_max=opts.get('x_max', 60.),
             y_min_ratio=opts.get('y_min_ratio', 0.8), 
             y_max_ratio=opts.get('y_max_ratio', 1.2),
             y_log=opts.get('y_log', True), 

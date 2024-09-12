@@ -7,6 +7,7 @@ from python.collections import DFCollection
 from python import pf_regions
 from python import calibrations
 from python import selections
+from python.utils import gen_match
 
 def mc_fixtures(particles):
     particles['abseta'] = np.abs(particles.eta)
@@ -47,6 +48,9 @@ def cl3d_fixtures(clusters):
     clusters['IDTightEm'] = np.bitwise_and(clusters.hwQual, mask_tight) > 0
     clusters['IDLooseEm'] = np.bitwise_and(clusters.hwQual, mask_loose) > 0
     clusters['eMax'] = clusters.emaxe*clusters.energy
+    # clusters['passMcPuId'] = clusters.multiClassPuIdScore < 0.4878136
+    clusters['passMcEmId'] = clusters.multiClassEmIdScore > 0.115991354
+
     # clusters['meanz_scaled'] = clusters.meanz-320.
     # clusters['abseta'] =  np.abs(clusters.eta)
 
@@ -128,6 +132,15 @@ def decodedTk_fixtures(objects):
     objects['simabseta'] = np.abs(objects.simeta)
     return objects
 
+def build_double_cross_obj(obj1, obj2):
+    ret = ak.cartesian(
+        arrays={'leg0': obj1, 'leg1': obj2},
+        axis=1,
+        )
+    # ret.show()
+    return ret
+
+
 def build_double_obj(obj):
     ret = ak.combinations(
         array=obj,
@@ -137,9 +150,14 @@ def build_double_obj(obj):
     # ret.show()
     return ret
 
+def build_double_gen_obj(obj):
+    obj = ak.sort(obj, axis=1, ascending=False)
+    return build_double_obj(obj)
+
 def double_obj_fixtures(obj):
     # for the rate computation we assign the low-pt leg pt as pt of the pair
     obj['pt'] = obj.leg1.pt
+    obj['dr'] = obj.leg0.deltaR(obj.leg1)
     return obj
 
 def double_electron_fixtures(obj):
@@ -151,7 +169,20 @@ def double_electron_fixtures(obj):
 def gen_diele_fixtures(obj):
     obj['mass'] = (obj.leg0 + obj.leg1).mass
     obj['ptPair'] = (obj.leg0 + obj.leg1).pt
+    obj['dr'] = obj.leg0.deltaR(obj.leg1)
     return obj
+
+def diele_fixtures(obj):
+    print(obj.leg0.fields)
+    obj['mass'] = (obj.leg0 + obj.leg1).mass
+    obj['ptPair'] = (obj.leg0 + obj.leg1).pt
+    obj['sign'] = obj.leg0.charge * obj.leg1.charge
+    obj['dz'] = np.fabs(obj.leg0.vz - obj.leg1.vz)
+    obj['dr'] = obj.leg0.deltaR(obj.leg1)
+
+    return obj
+
+
 
 def map2pfregions(objects, eta_var, phi_var, fiducial=False):
     for ieta, eta_range in enumerate(pf_regions.regionizer.get_eta_boundaries(fiducial)):
@@ -213,6 +244,9 @@ def compute_flateff_iso_wps(objs):
 
     objs = ak.unflatten(obj_flat, obj_count)
     return objs
+
+def merge_collections(obj1, obj2):
+    return ak.concatenate([obj1, obj2], axis=1)
 
 gen_ele = DFCollection(
     name='GEN', label='GEN particles (ele)',
@@ -308,7 +342,6 @@ TkEleEE = DFCollection(
     print_function=lambda df:df.columns,
     debug=0)
 
-
 TkEleEB = DFCollection(
     name='TkEleEB', label='TkEle EB',
     filler_function=lambda event, entry_block: event.getDataFrame(
@@ -382,6 +415,8 @@ DoubleTkEmL2 = DFCollection(
     depends_on=[TkEmL2],
     debug=0)
 
+
+
 EGStaEE = DFCollection(
     name='EGStaEE', label='EG EE',
     filler_function=lambda event, entry_block: event.getDataFrame(
@@ -401,6 +436,30 @@ EGStaEB = DFCollection(
     # read_entry_block=200,
     debug=0)
 
+EGSta = DFCollection(
+    name='EGSta', label='EG Sta',
+    filler_function=lambda event, entry_block: merge_collections(EGStaEB.df, EGStaEE.df),
+    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
+    # fixture_function=quality_flags,
+    depends_on=[EGStaEB, EGStaEE],
+    # read_entry_block=200,
+    debug=0)
+
+DoubleEGSta = DFCollection(
+    name='DoubleEGSta', label='DoubleEGSta',
+    filler_function=lambda event, entry_block: build_double_obj(obj=EGSta.df),
+    fixture_function=double_obj_fixtures,
+    depends_on=[EGSta],
+    debug=0)
+
+DoubleTkEleEGSta = DFCollection(
+    name='DoubleTkEleEGSta', label='DoubleTkEleEGSta',
+    filler_function=lambda event, entry_block: build_double_cross_obj(obj1=TkEleL2.df, obj2=EGSta.df),
+    fixture_function=double_obj_fixtures,
+    depends_on=[TkEleL2, EGSta],
+    debug=0)
+# DoubleTkEleEGSta.activate()
+
 decTk = DFCollection(
     name='PFDecTk', label='decoded Tk',
     filler_function=lambda event, entry_block: event.getDataFrame(
@@ -409,12 +468,12 @@ decTk = DFCollection(
     debug=0)
 
 
-tkCl3DMatch = DFCollection(
-    name='TkCl3DMatch', label='TkCl3DMatch',
-    filler_function=lambda event, entry_block: get_trackmatched_egs(egs=hgc_cl3d, tracks=tracks),
-    # fixture_function=mapcalo2pfregions_in,
-    depends_on=[hgc_cl3d, tracks],
-    debug=0)
+# tkCl3DMatch = DFCollection(
+#     name='TkCl3DMatch', label='TkCl3DMatch',
+#     filler_function=lambda event, entry_block: get_trackmatched_egs(egs=hgc_cl3d, tracks=tracks),
+#     # fixture_function=mapcalo2pfregions_in,
+#     depends_on=[hgc_cl3d, tracks],
+#     debug=0)
 
 
 hgc_cl3d_pfinputs = DFCollection(
@@ -470,8 +529,50 @@ DoubleTkEmL2IsoWP = DFCollection(
 
 gen_diele = DFCollection(
     name='GENDiEle', label='GEN ee',
-    filler_function=lambda event, entry_block: build_double_obj(obj=gen_ele.df),
+    filler_function=lambda event, entry_block: build_double_gen_obj(obj=gen_ele.df),
     # print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
     fixture_function=gen_diele_fixtures,
     depends_on=[gen_ele],
     debug=0)
+
+diTkEle = DFCollection(
+    name='DiTkEle', label='Di-TkEle',
+    filler_function=lambda event, entry_block: build_double_obj(obj=TkEleL2.df),
+    # print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    fixture_function=diele_fixtures,
+    depends_on=[TkEleL2],
+    debug=0)
+
+diTkEm = DFCollection(
+    name='DiTkEm', label='Di-TkEm',
+    filler_function=lambda event, entry_block: build_double_obj(obj=TkEmL2.df),
+    # print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    fixture_function=diele_fixtures,
+    depends_on=[TkEmL2],
+    debug=0)
+
+
+def build_gen_matched(gen, obj, eta_phi=('eta', 'phi'), dr=0.1):
+    match_idx = gen_match(gen, obj)
+    selected_objs = [obj[idx[1]] for idx in match_idx]
+    print(selected_objs)
+    ret = ak.concatenate(selected_objs, axis=1)
+    ret = ak.drop_none(ret)
+    return ret
+
+TkEleL2_GENMatched = DFCollection(
+    name='TkEleL2Matched', label='TkEleL2 GEN-matched',
+    filler_function=lambda event, entry_block: build_gen_matched(gen=gen_ele.df, obj=TkEleL2.df, eta_phi=('eta', 'phi'), dr=0.1),
+    # print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    # fixture_function=diele_fixtures,
+    depends_on=[gen_ele, TkEleL2],
+    debug=0)
+
+diTkEle_GENMatched = DFCollection(
+    name='DiTkEleMatched', label='Di-TkEle GEN-matched',
+    filler_function=lambda event, entry_block: build_double_obj(obj=TkEleL2_GENMatched.df),
+    # print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    fixture_function=diele_fixtures,
+    depends_on=[TkEleL2_GENMatched],
+    debug=0)
+

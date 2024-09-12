@@ -40,4 +40,5 @@ rate_counter_menu:
   plotters:
     # - !!python/name:cfg.eg_rate.eg_emu_plotters
     - !!python/name:cfg.eg_rate.eg_menuCTl2_rate
+    - !!python/name:cfg.eg_rate.eg_menuSta_rate
 

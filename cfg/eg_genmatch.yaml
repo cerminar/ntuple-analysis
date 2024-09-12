@@ -33,18 +33,18 @@ egmenu:
 ctl1_tkeg:
   plotters:
     - !!python/name:cfg.eg_genmatch.ctl1_tkeg
-  file_label: eg
+  # file_label: eg
 
 ctl2_tkeg:
   plotters:
     - !!python/name:cfg.eg_genmatch.ctl2_tkeg
-  file_label: eg
+    - !!python/name:cfg.eg_genmatch.egsta
+  # file_label: eg
 
 ctl2_tkem_iso:
   plotters:
     - !!python/name:cfg.eg_genmatch.ctl2_tkem_iso
   file_label: iso
-
 
   # egvalid_l1tc:
   #   file_label:
