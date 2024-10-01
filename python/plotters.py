@@ -187,11 +187,6 @@ class TrackPlotter(GenericDataFramePlotter):
         super(TrackPlotter, self).__init__(histos.TrackHistos, trk_set, track_selections)
 
 
-class EGPlotter(GenericDataFramePlotter):
-    def __init__(self, eg_set, eg_selections=[selections.Selection('all')]):
-        super(EGPlotter, self).__init__(histos.EGHistos, eg_set, eg_selections)
-
-
 class TTPlotter(GenericDataFramePlotter):
     def __init__(self, tt_set, tt_selections=[selections.Selection('all')]):
         super(TTPlotter, self).__init__(histos.TriggerTowerHistos, tt_set, tt_selections)
@@ -515,6 +510,8 @@ class GenericGenMatchPlotter(BasePlotter):
         # fill histo with all selected GEN particles before any match
         h_gen.fill(gen)
 
+        #FIXME: use utils.gen_match 
+
         # perform the matching
         match_eta = ak.cartesian([objects.eta, gen[self.gen_eta_phi_columns[0]]])
         match_phi = ak.cartesian([objects.phi, gen[self.gen_eta_phi_columns[1]]])
@@ -522,11 +519,17 @@ class GenericGenMatchPlotter(BasePlotter):
         match_idx = ak.argcartesian([objects.eta, gen.eta])
 
         obj_eta, gen_eta = ak.unzip(match_eta)
+
         obj_phi, gen_phi = ak.unzip(match_phi)
         obj_pt, gen_pt = ak.unzip(match_pt)
         obj_idx, gen_idx = ak.unzip(match_idx)
         dpt = np.abs(obj_pt - gen_pt)
-        dr2 = (obj_eta-gen_eta)**2+(obj_phi-gen_phi)**2
+
+        # dphi = obj_phi-gen_phi
+        dphi = utils.angle_range(obj_phi-gen_phi)
+        # dphi = ak.where(dphi>np.pi, dphi-2*np.pi, dphi)
+        # dphi = np.where(dphi<-np.pi, dphi+2*np.pi, dphi)
+        dr2 = (obj_eta-gen_eta)**2+(dphi)**2
         match = ak.Array(data={'ele_idx': obj_idx, 'gen_idx': gen_idx, 'dpt': dpt, 'dr2': dr2})
         dr_match=match[match.dr2<self.dr2]
         for genid in np.unique(ak.flatten(dr_match.gen_idx)):
