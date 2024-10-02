@@ -97,7 +97,7 @@ def menu_rate_draw(hplot, smps, wc):
         (['TkEleL2'], ['MenuEleLooseEtaEE'], 'hRate_TkEleL2_MenuEleLooseEtaEE', {}),
         (['TkEleL2'], ['MenuEleTightEtaEE'], 'hRate_TkEleL2_MenuEleTightEtaEE', {}),
         (['TkEleL2'], ['MenuEleLooseEtaEB'], 'hRate_TkEleL2_MenuEleLooseEtaEB', {}),
-        (['TkEleL2'], ['MenuEleTightEtaEB'], 'hRate_TkEleL2_MenuEleTightEtaEB', {}),
+        (['TkEleL2'], ['MenuEleTightEtaEB'], 'hRate_TkEleL2_MenuEleTightEtaEB', {'x_min': 20, 'x_max': 40, 'y_min_diff': -5, 'y_max_diff': 5, 'v_lines': [29.0]}),
         (['TkEleL2'], ['MenuEleIsoLoose'], 'hRate_TkEleL2_MenuEleIsoLoose', {}),
         (['TkEleL2'], ['MenuEleIsoTight'], 'hRate_TkEleL2_MenuEleIsoTight', {}),
         (['TkEleL2'], ['MenuEleIsoTightEtaEB'], 'hRate_TkEleL2_MenuEleIsoTightEtaEB', {}),

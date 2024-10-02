@@ -7,7 +7,7 @@ from python.collections import DFCollection
 from python import pf_regions
 from python import calibrations
 from python import selections
-from python.utils import gen_match
+from python import utils
 
 def mc_fixtures(particles):
     particles['abseta'] = np.abs(particles.eta)
@@ -160,6 +160,18 @@ def double_obj_fixtures(obj):
     obj['dr'] = obj.leg0.deltaR(obj.leg1)
     return obj
 
+def double_tkeleegsta_fixtures(obj):
+    # for the rate computation we assign the low-pt leg pt as pt of the pair
+    # obj['pt'] = obj.leg1.pt
+    # FIXME: this should be computed using etacalo an phicalo for the tkele...
+    
+    dphi = utils.angle_range(obj.leg0.caloPhi - obj.leg1.phi)
+    deta = obj.leg0.caloEta - obj.leg1.eta
+    obj['dr'] = np.sqrt(dphi**2+deta**2)
+    return obj
+
+
+
 def double_electron_fixtures(obj):
     obj = double_obj_fixtures(obj)
     obj['dz'] = np.abs(obj.leg0.vz - obj.leg1.vz)
@@ -179,7 +191,8 @@ def diele_fixtures(obj):
     obj['sign'] = obj.leg0.charge * obj.leg1.charge
     obj['dz'] = np.fabs(obj.leg0.vz - obj.leg1.vz)
     obj['dr'] = obj.leg0.deltaR(obj.leg1)
-
+    obj['dphi'] = np.fabs(obj.leg0.deltaphi(obj.leg1))
+    obj['idScore'] = obj.leg0.idScore + obj.leg1.idScore    
     return obj
 
 
@@ -455,7 +468,7 @@ DoubleEGSta = DFCollection(
 DoubleTkEleEGSta = DFCollection(
     name='DoubleTkEleEGSta', label='DoubleTkEleEGSta',
     filler_function=lambda event, entry_block: build_double_cross_obj(obj1=TkEleL2.df, obj2=EGSta.df),
-    fixture_function=double_obj_fixtures,
+    fixture_function=double_tkeleegsta_fixtures,
     depends_on=[TkEleL2, EGSta],
     debug=0)
 # DoubleTkEleEGSta.activate()
@@ -553,9 +566,8 @@ diTkEm = DFCollection(
 
 
 def build_gen_matched(gen, obj, eta_phi=('eta', 'phi'), dr=0.1):
-    match_idx = gen_match(gen, obj)
+    match_idx = utils.gen_match(gen, obj)
     selected_objs = [obj[idx[1]] for idx in match_idx]
-    print(selected_objs)
     ret = ak.concatenate(selected_objs, axis=1)
     ret = ak.drop_none(ret)
     return ret
