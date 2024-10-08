@@ -87,8 +87,24 @@ def angle_range(angle):
     return angle
 
 
+# def elliptic_match(obj1, obj2, 
+#                    eta_phi_vars1=('eta', 'phi'), eta_phi_vars2=('eta', 'phi'), 
+#                    deta=0.01, dphi=0.1):
+#     """ 
+#         perform the matching and returns pairs of indexes (obj1_index, obj2_index) 
+#     """
+#     match_eta = ak.cartesian([objects.eta, gen[gen_eta_phi[0]]])
+#     match_phi = ak.cartesian([objects.phi, gen[gen_eta_phi[1]]])
+#     match_pt = ak.cartesian([objects.pt, gen.pt])
+#     match_idx = ak.argcartesian([objects.eta, gen.eta])
+
+#     return ret
+
+
 def gen_match(gen, objects, gen_eta_phi=('eta', 'phi'), dr=0.1):
-    # perform the matching and returns pairs of indexes (gen_index, object_index)
+    """
+        perform the matching and returns pairs of indexes (gen_index, object_index)
+    """
     match_eta = ak.cartesian([objects.eta, gen[gen_eta_phi[0]]])
     match_phi = ak.cartesian([objects.phi, gen[gen_eta_phi[1]]])
     match_pt = ak.cartesian([objects.pt, gen.pt])
