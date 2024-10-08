@@ -21,8 +21,8 @@ draw_config.marker_size = 1
 draw_config.legend_size=(0.5, 0.3)
 draw_config.legend_position=(0.12, 0.15)
 draw_config.marker_styles.append(10)
-draw_config.additional_text = [(0.13, 0.91, '#scale[1.5]{CMS} #scale[1.]{Phase-2 Simulation}'),
-                    (0.69, 0.91, '14TeV, 200 PU')]
+draw_config.additional_text = [(0.13, 0.91, '#scale[1.5]{CMS} #it{#scale[1.]{Phase-2 Simulation}}'),
+                    (0.69, 0.91, '#it{14TeV}, 200 PU')]
 
 
 
