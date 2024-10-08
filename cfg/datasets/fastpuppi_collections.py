@@ -120,16 +120,16 @@ def quality_ele_fixtures(objs):
     return quality_flags(objs)
 
 def decodedTk_fixtures(objects):
-    objects['deltaZ0'] = objects.z0 - objects.simz0
-    objects['deltaPt'] = objects.pt - objects.simpt
-    objects['deltaEta'] = objects.eta - objects.simeta
-    objects['deltaCaloEta'] = objects.caloeta - objects.simcaloeta
-    # have dphi between -pi and pi
-    comp_remainder = np.vectorize(math.remainder)
-    objects['deltaCaloPhi'] = comp_remainder(objects.calophi - objects.simcalophi, 2*np.pi)
+    # objects['deltaZ0'] = objects.z0 - objects.simz0
+    # objects['deltaPt'] = objects.pt - objects.simpt
+    # objects['deltaEta'] = objects.eta - objects.simeta
+    # objects['deltaCaloEta'] = objects.caloeta - objects.simcaloeta
+    # # have dphi between -pi and pi
+    # comp_remainder = np.vectorize(math.remainder)
+    # objects['deltaCaloPhi'] = comp_remainder(objects.calophi - objects.simcalophi, 2*np.pi)
 
     objects['abseta'] = np.abs(objects.eta)
-    objects['simabseta'] = np.abs(objects.simeta)
+    # objects['simabseta'] = np.abs(objects.simeta)
     return objects
 
 def build_double_cross_obj(obj1, obj2):
@@ -397,8 +397,10 @@ TkEleL2 = DFCollection(
     name='TkEleL2', label='TkEle L2',
     filler_function=lambda event, entry_block : event.getDataFrame(
         prefix='TkEleL2', entry_block=entry_block, fallback='L2TkEle'),
+    print_function=lambda df: df[np.abs(df.eta) < 1.479][['pt', 'eta', 'phi', 'mass', 'hwQual', 'vz', 'caloEta', 'caloPhi']],
     fixture_function=quality_ele_fixtures,
     debug=0)
+# TkEleL2.activate()
 
 TkEmL2Ell = DFCollection(
     name='TkEmL2Ell', label='TkEm L2 (ell.)',
@@ -473,21 +475,153 @@ DoubleTkEleEGSta = DFCollection(
     debug=0)
 # DoubleTkEleEGSta.activate()
 
-decTk = DFCollection(
-    name='PFDecTk', label='decoded Tk',
+decTkHgcal = DFCollection(
+    name='DecTkHgcal', label='decoded Tk',
     filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='pfdtk', entry_block=entry_block),
+        prefix='DecTkHgcal', entry_block=entry_block),
     fixture_function=decodedTk_fixtures,
     debug=0)
 
+decTkBarrel = DFCollection(
+    name='DecTkBarrel', label='decoded Tk',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='DecTkBarrel', entry_block=entry_block),
+    print_function=lambda df: df[np.isclose(df.eta, -0.667969, 0.01)],
+    fixture_function=decodedTk_fixtures,
+    debug=0)
 
-# tkCl3DMatch = DFCollection(
-#     name='TkCl3DMatch', label='TkCl3DMatch',
-#     filler_function=lambda event, entry_block: get_trackmatched_egs(egs=hgc_cl3d, tracks=tracks),
-#     # fixture_function=mapcalo2pfregions_in,
-#     depends_on=[hgc_cl3d, tracks],
-#     debug=0)
+def get_trackmatched_egs(egs, tracks, deta=0.03, dphi=0.3):
 
+    # compute cartesian pairs
+    # add cluster ID
+    # compute pair quantities
+    # select on the basis of the ellipsis size
+    # sort on cluster ID
+    # compute cluster ID counts
+    # flatten out the event level both the pairs and the cluster count
+    # group by cluster count
+    # sort on dpt and flag the best score
+    # flatten out the by cluster grouping
+    # regroup by event
+    # select the pairs whcih have been flagged
+
+    # compute cartesian pairs
+    match_id = ak.argcartesian(arrays={'i0': tracks, 'i1': egs}, 
+                               axis=1)
+    match = ak.cartesian(arrays={'tk': tracks, 'cl': egs},
+                         axis=1)
+     # add cluster ID
+    match['cl_id'] = match_id.i1
+    # compute pair quantities
+    match['deta'] = match.tk.caloEta - match.cl.eta
+    match['dphi'] = utils.angle_range(match.tk.caloPhi - match.cl.phi)
+    match['dpt'] = np.abs(match.tk.pt - match.cl.pt)
+    match['ell'] = ((match.dphi/dphi)**2)+((match.deta/deta)**2)
+    # match['best'] = True
+    # select on the basis of the ellipsis size
+    sel_pairs = match[match.ell < 1]
+    # sort on cluster ID
+    sorted_sel_pairs = sel_pairs[ak.argsort(sel_pairs.cl_id, axis=1)]
+    # compute cluster ID counts
+    clid_counts = ak.run_lengths(sorted_sel_pairs.cl_id)
+    # compute event counts
+    event_counts = ak.num(sorted_sel_pairs)
+    
+    # flatten out the event level both the pairs and the cluster count
+    flat_clid_counts = ak.flatten(clid_counts)
+    flat_sorted_sel_pairs = ak.flatten(sorted_sel_pairs)
+    # group by cluster count
+    bycl_sorted_sel_pairs = ak.unflatten(flat_sorted_sel_pairs, flat_clid_counts)
+    # find smalles dpt and flag the best score
+    # bycl_sorted_sel_pairs[ak.argmin(bycl_sorted_sel_pairs.dpt, axis=1, keepdims=True)]['best'] = True
+    
+    # bycl_sorted_sel_pairs['isbest'] = ak.where(ak.argmin(bycl_sorted_sel_pairs.dpt, axis=1, keepdims=True), True, False)
+
+    min_indices = ak.argmin(bycl_sorted_sel_pairs.dpt, axis=1, keepdims=True)
+    
+    # Mask the elements that are not the minimum by using ak.mask
+    masked_array = ak.where(ak.local_index(bycl_sorted_sel_pairs.dpt, axis=1) == min_indices, True, False)
+    
+    bycl_sorted_sel_pairs['isBest'] = masked_array
+
+# bycl_sorted_sel_pairs
+
+    # flatten out the by cluster grouping
+    flat_flagged_sorted_sel_pairs = ak.flatten(bycl_sorted_sel_pairs)
+    # regroup by event
+    flagged_sorted_sel_pairs = ak.unflatten(flat_flagged_sorted_sel_pairs, event_counts)
+    # select the pairs whcih have been flagged
+
+    # best_match = flagged_sorted_sel_pairs[flagged_sorted_sel_pairs.best]
+    best_match = flagged_sorted_sel_pairs[flagged_sorted_sel_pairs.isBest]
+
+    # print(best_match)
+    # print(best_match.type.show())
+#  ret = ak.cartesian(
+#         arrays={'leg0': obj1, 'leg1': obj2},
+#         axis=1,
+#         )
+
+
+
+#     print(match_id)
+#     print(match_id.type.show())
+#     # sort on cluster index
+#     sorted_match_idx = match_id[ak.argsort(match_id.i1, axis=1)]
+#     cluster_run_lenghts = ak.run_lengths(sorted_match_idx.i1)
+
+#     print(cluster_run_lenghts)
+#     print(cluster_run_lenghts.type.show())
+#     tk_calo_pairs = build_double_cross_obj(tracks, egs)
+#     tk_calo_pairs['deta'] = tk_calo_pairs.leg0.caloEta - tk_calo_pairs.leg1.eta
+#     tk_calo_pairs['dphi'] = utils.angle_range(tk_calo_pairs.leg0.caloPhi - tk_calo_pairs.leg1.phi)
+#     tk_calo_pairs['dpt'] = np.abs(tk_calo_pairs.leg0.pt - tk_calo_pairs.leg1.pt)
+#     tk_calo_pairs['ell'] = ((tk_calo_pairs.dphi/dphi)**2)+((tk_calo_pairs.deta/deta)**2)
+#     sorted_tk_calo_pairs = tk_calo_pairs[ak.argsort(match_id.i1, axis=1)]
+#     sorted_tk_calo_pairs['best'] = False
+#     # count the entries per event
+#     counts = ak.num(sorted_tk_calo_pairs)
+#     # flatten the pairs
+#     flattened_sorted_tk_calo_pairs = ak.flatten(sorted_tk_calo_pairs)
+
+#     # print(sorted_tk_calo_pairs)
+#     # print(sorted_tk_calo_pairs.type.show())
+
+#     # re-group by cluster ID
+#     grouped_tk_calo_pairs = ak.unflatten(flattened_sorted_tk_calo_pairs, cluster_run_lenghts)
+#     print(grouped_tk_calo_pairs)
+#     print(grouped_tk_calo_pairs.type.show())
+
+#     sel_pairs = tk_calo_pairs[tk_calo_pairs.ell < 1]
+#     print(sel_pairs)
+#     print(sel_pairs.type.show())
+    
+#     # for
+
+#     best_match = sel_pairs[ak.argmin(sel_pairs.dpt, axis=1, keepdims=True)]
+#     best_match = ak.drop_none(best_match)
+    ret = ak.zip(
+        {"pt": best_match.cl.pt, 
+         "eta": best_match.tk.eta, 
+         "phi":  best_match.tk.phi, 
+         "mass": best_match.tk.mass,
+         "hwQual": best_match.cl.hwQual,
+         "vz": best_match.tk.vz,
+         "caloEta": best_match.cl.eta,
+         "caloPhi": best_match.cl.phi,}, 
+         with_name="Momentum4D")
+    
+    return ret
+
+
+tkClMatchBarrel = DFCollection(
+    name='tkClMatchBarrel', label='TkClMatch',
+    filler_function=lambda event, entry_block: get_trackmatched_egs(egs=EGStaEB.df, tracks=decTkBarrel.df),
+    # fixture_function=mapcalo2pfregions_in,
+    print_function=lambda df: df.sort_values(by='pt', ascending=False),
+    depends_on=[EGStaEB, decTkBarrel],
+    debug=0)
+# tkClMatchBarrel.activate()
 
 hgc_cl3d_pfinputs = DFCollection(
     name='HGCCl3dPfIN', label='HGC Cl3d L1TC IN',
@@ -551,7 +685,7 @@ gen_diele = DFCollection(
 diTkEle = DFCollection(
     name='DiTkEle', label='Di-TkEle',
     filler_function=lambda event, entry_block: build_double_obj(obj=TkEleL2.df),
-    # print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    # print_function=lambda df: df[df.abseta < 1.49],
     fixture_function=diele_fixtures,
     depends_on=[TkEleL2],
     debug=0)
@@ -566,7 +700,7 @@ diTkEm = DFCollection(
 
 
 def build_gen_matched(gen, obj, eta_phi=('eta', 'phi'), dr=0.1):
-    match_idx = utils.gen_match(gen, obj)
+    match_idx = utils.gen_match(gen, obj, eta_phi)
     selected_objs = [obj[idx[1]] for idx in match_idx]
     ret = ak.concatenate(selected_objs, axis=1)
     ret = ak.drop_none(ret)
