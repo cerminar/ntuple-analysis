@@ -65,9 +65,10 @@ def get_collection_parameters(opt, cfgfile):
         for plotter in collection_data['plotters']:
             plotters.extend(plotter)
 
+        file_label = cfgfile['common']['file_label']
         if 'file_label' in collection_data:
             file_label = cfgfile['common']['file_label']+collection_data['file_label']
-
+            
         for sample in samples:
             events_per_job = -1
             output_filename_base = f"histos_{sample}_{file_label}_{plot_version}"
