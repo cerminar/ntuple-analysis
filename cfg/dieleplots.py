@@ -72,6 +72,7 @@ class DiEleHistos(histos.BaseHistos):
             self.h_etaSubLead = bh.TH1F(f'{name}_etaSubLead', 'Pt (GeV); p_{T} [GeV]', 50, 0, 4)
             self.h_mass = bh.TH1F(f'{name}_mass', 'mass (GeV); mass [GeV]', 150, 0, 300)
             self.h_dR = bh.TH1F(f'{name}_dR', '#DeltaR; #DeltaR', 50, 0, 7)
+            self.h_dPhi = bh.TH1F(f'{name}_dPhi', '#Delta#phi; #Delta#phi', 50, 0, 4)
 
             # self.h_eta = bh.TH1F(f'{name}_eta', 'EG eta; #eta;', 100, -4, 4)
             # self.h_energy = bh.TH1F(f'{name}_energy', 'EG energy (GeV); E [GeV]', 1000, 0, 1000)
@@ -83,6 +84,10 @@ class DiEleHistos(histos.BaseHistos):
 
             # self.h_pfIsoPV = bh.TH1F(f'{name}_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
             self.h_n = bh.TH1F(f'{name}_n', '# objects per event', 100, 0, 100)
+
+            self.h_idScoreLead = bh.TH1F(f'{name}_idScoreLead', 'ID BDT Score Lead', 50, -1, 1)
+            self.h_idScoreSubLead = bh.TH1F(f'{name}_idScoreSubLead', 'ID BDT Score Lead', 50, -1, 1)
+
             # self.h_compBdt = bh.TH1F(f'{name}_compBdt', 'BDT Score Comp ID', 50, 0, 1)
 
         histos.BaseHistos.__init__(self, name, root_file, debug)
@@ -99,18 +104,25 @@ class DiEleHistos(histos.BaseHistos):
         bh.fill_1Dhist(hist=self.h_etaSubLead,     array=np.abs(egs.leg1.eta),     weights=weight)
         bh.fill_1Dhist(hist=self.h_mass,     array=egs.mass,     weights=weight)
         bh.fill_1Dhist(hist=self.h_dR,     array=egs.dr,     weights=weight)
+        bh.fill_1Dhist(hist=self.h_dPhi,     array=egs.dphi,     weights=weight)
 
         # bh.fill_1Dhist(hist=self.h_eta,    array=egs.eta,    weights=weight)
         # # bh.fill_1Dhist(hist=self.h_energy, array=egs.energy, weights=weight)
         # bh.fill_1Dhist(hist=self.h_hwQual, array=egs.hwQual, weights=weight)
-        print(egs.leg0.fields)
+        # print(egs.leg0.fields)
         if 'tkIso' in egs.leg0.fields:
             bh.fill_1Dhist(hist=self.h_tkIsoLead, array=egs.leg0.tkIso, weights=weight)
             bh.fill_1Dhist(hist=self.h_tkIsoSubLead, array=egs.leg1.tkIso, weights=weight)
         if 'pfIso' in egs.leg0.fields:
             bh.fill_1Dhist(hist=self.h_pfIsoLead, array=egs.leg0.pfIso, weights=weight)
             bh.fill_1Dhist(hist=self.h_pfIsoSubLead, array=egs.leg1.pfIso, weights=weight)
-
+        if 'idScore' in egs.leg0.fields:
+            bh.fill_1Dhist(hist=self.h_idScoreLead, 
+                           array=egs.leg0.idScore, 
+                           weights=weight)
+            bh.fill_1Dhist(hist=self.h_idScoreSubLead, 
+                           array=egs.leg1.idScore, 
+                           weights=weight)
 
         # if 'pfIso' in egs.fields:
         #     bh.fill_1Dhist(hist=self.h_pfIso, array=egs.pfIso, weights=weight)
@@ -152,17 +164,25 @@ sm = selections.SelectionManager()
 
 diele_sel = [
     selections.Selection('DiElePt5', 'p_{t}^{leg}>5',  lambda ar: (ar.leg0.pt > 5) & (ar.leg1.pt > 5)),
-    selections.Selection('DiElePt5OS', 'p_{t}^{leg}>5 & OS',  lambda ar: (ar.leg0.pt > 5) & (ar.leg1.pt > 5) & (ar.sign < 1)),
-    # selections.Selection('DiElePt5OSDz1', 'p_{t}^{leg}>5 & OS & #DeltaZ<1cm',  lambda ar: (ar.leg0.pt > 5) & (ar.leg1.pt > 5) & (ar.sign < 1)) & ,
+    # selections.Selection('DiElePt5OS', 'p_{t}^{leg}>5 & OS',  lambda ar: (ar.leg0.pt > 5) & (ar.leg1.pt > 5) & (ar.sign < 1)),
+    # selections.Selection('DiElePt5OSDz1', 'p_{t}^{leg}>5 & OS & #DeltaZ<1cm',  lambda ar: (ar.leg0.pt > 5) & (ar.leg1.pt > 5) & (ar.sign < 1) &  (ar.dz < 1)),
 
 
-    selections.Selection('DiElePt5B2B', 'p_{t}^{leg}>5',  lambda ar: (ar.leg0.pt > 5) & (ar.leg1.pt > 5)),
+    # selections.Selection('DiElePt5B2B', 'p_{t}^{leg}>5',  lambda ar: (ar.leg0.pt > 5) & (ar.leg1.pt > 5)),
 
     selections.Selection('DiEleOS', 'OS',  lambda ar: ar.sign < 1),
     selections.Selection('DiEleOSDZ', 'OS + DZ<1',  lambda ar: ((ar.sign < 1) & (ar.dz < 1))),
-    selections.Selection('DiEleOSDZPt5', 'OS + DZ<1 + Pt5',  lambda ar: ((ar.sign < 1) & (ar.dz < 1) & (ar.leg0.pt > 5) & (ar.leg1.pt > 5))),
+    selections.Selection('DiEleOSDZId', 'OS + DZ<1 + ID',  lambda ar: ((ar.sign < 1) & (ar.dz < 1) & (ar.leg0.idScore > 0.1) & (ar.leg1.idScore > 0.1))),
+    selections.Selection('DiEleOSDZIdPt5', 'OS + DZ<1 + ID + Pt>5',  lambda ar: ((ar.sign < 1) & (ar.dz < 1) & (ar.leg0.idScore > 0.1) & (ar.leg1.idScore > 0.1) & (ar.leg0.pt > 5) & (ar.leg1.pt > 5))),
+
+    selections.Selection('DiEleOSDZPt5', 'OS + DZ<1 + Pt>5',  lambda ar: ((ar.sign < 1) & (ar.dz < 1) & (ar.leg0.pt > 5) & (ar.leg1.pt > 5))),
 
 ]
+
+bestsel = [
+    selections.Selection('BestScore', 'BestScore', lambda ar: ak.firsts(ak.argsort(ar.idScore, axis=1, ascending=False), axis=1)
+]
+
 selections.Selector.selection_primitives = sm.selections.copy()
 
 gen_diele_selections = selections.Selector('^DiGEN$')()
@@ -179,5 +199,18 @@ diele_plots = [
     DiElePlotter(
         coll.diTkEle_GENMatched,
         diele_selections),
+
+]
+
+diele_plots_mb = [
+    GenDiElePlotter(
+        coll.gen_diele,
+        gen_diele_selections),
+    DiElePlotter(
+        coll.diTkEle,
+        diele_selections),
+    # DiElePlotter(
+    #     coll.diTkEle_GENMatched,
+    #     diele_selections),
 
 ]

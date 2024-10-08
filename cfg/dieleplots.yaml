@@ -15,4 +15,9 @@ common:
 diele_plots:
   plotters:
     - !!python/name:cfg.dieleplots.diele_plots
-  file_label: gen
+  # file_label: gen
+
+diele_plots_mb:
+  plotters:
+    - !!python/name:cfg.dieleplots.diele_plots_mb
+  # file_label: gen
