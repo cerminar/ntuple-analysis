@@ -1,7 +1,7 @@
-# l1t offline recipe for 2024 AR preparation:
+# For Scouting studies: Composite ID in EB (tight WP), Multiclass as in DPS + new Composite ID in EE
 dataset:
   input_dir:  /eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/fp_ntuples/
-  version: 131Xv3U
+  version: 131Xv9A
 
   # tree_name: hgcalTriggerNtuplizer/HGCalTriggerNtuple
   tree_name: Events
@@ -18,7 +18,7 @@ calibrations:
 
 samples:
   doubleele_flat1to100_PU200:
-    input_sample_dir: DoubleElectron_FlatPt-1To100_PU200/FP/v131Xv3U
+    input_sample_dir: DoubleElectron_FlatPt-1To100_PU200/FP/v131Xv9A
     events_per_job : 200
 
   # zprime_m6000_pu200:
@@ -27,7 +27,7 @@ samples:
   # # 
 
   nugun_alleta_pu200:
-    input_sample_dir: NuGunAllEta_PU200/FP/v131Xv3U
+    input_sample_dir: NuGunAllEta_PU200/FP/v131Xv9A
     # input_sample_dir: NuGunAllEta_PU200/NTP/v80A/
     # input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v47/191105_135050/0000/
     events_per_job: 300
@@ -54,5 +54,5 @@ samples:
   #   events_per_job : 200
 
   HAHM_ZdToEE_m15_pu200:
-    input_sample_dir: HAHM_ZdToEE_m15_pu200/FP/v131Xv3U
+    input_sample_dir: HAHM_ZdToEE_m15_pu200/FP/v131Xv9A
     events_per_job : 200

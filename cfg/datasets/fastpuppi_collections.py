@@ -185,7 +185,7 @@ def gen_diele_fixtures(obj):
     return obj
 
 def diele_fixtures(obj):
-    print(obj.leg0.fields)
+    # print(obj.leg0.fields)
     obj['mass'] = (obj.leg0 + obj.leg1).mass
     obj['ptPair'] = (obj.leg0 + obj.leg1).pt
     obj['sign'] = obj.leg0.charge * obj.leg1.charge

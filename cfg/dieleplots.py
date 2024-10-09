@@ -49,11 +49,11 @@ class GenDiEleHistos(histos.BaseHistos):
         bh.fill_1Dhist(hist=self.h_dPhi,     array=np.abs(egs.leg0.deltaphi(egs.leg1)),     weights=weight)
         bh.fill_1Dhist(hist=self.h_dEta,     array=np.abs(egs.leg0.deltaeta(egs.leg1)),     weights=weight)
 
-        print(egs.leg0.eta)
-        print(egs.leg1.eta)
+        # print(egs.leg0.eta)
+        # print(egs.leg1.eta)
 
-        print(egs.leg0.eta*egs.leg1.eta)
-        print((egs.leg0.eta*egs.leg1.eta)>0)
+        # print(egs.leg0.eta*egs.leg1.eta)
+        # print((egs.leg0.eta*egs.leg1.eta)>0)
         bh.fill_1Dhist(hist=self.h_etaSign,     array=((egs.leg0.eta*egs.leg1.eta)>0),     weights=weight)
 
         # bh.fill_1Dhist(hist=self.h_eta,    array=egs.eta,    weights=weight)
@@ -136,7 +136,9 @@ class DiEleHistos(histos.BaseHistos):
         # # print(ak.count(egs.pt, axis=1))
         # # print(egs.pt.type.show())
         # # print(ak.count(egs.pt, axis=1).type.show())
+
         self.h_n.fill(ak.count(egs.mass, axis=1))
+        
         # # bh.fill_1Dhist(hist=self.h_n, array=ak.count(egs.pt, axis=1), weights=weight)
         # # self.h_n.Fill()
 
@@ -161,32 +163,64 @@ class DiElePlotter(plotters.GenericDataFramePlotter):
 
 # ------ Plotter instances
 sm = selections.SelectionManager()
+# Selector.selection_primitives = sm.selections.copy()
+
+diobjsel = [
+    selections.Selection('OS', 'O.S.', lambda ar: ar.sign < 1),
+    selections.Selection('Dz1', '|#Delta z|<1cm', lambda ar: ar.dz < 1),
+    selections.Selection('IDScore0p1', 'score_{ID}>0.1', lambda ar: ar.idScore > 0.1),
+]
+
+best_pair_sel = [
+    selections.Selection('OS', 'O.S.', lambda ar: ar.sign < 1),
+]
+
+selections.Selector.selection_primitives = sm.selections.copy()
 
 diele_sel = [
-    selections.Selection('DiElePt5', 'p_{t}^{leg}>5',  lambda ar: (ar.leg0.pt > 5) & (ar.leg1.pt > 5)),
+    selections.build_DiObj_selection('DiElePt5', 'p_{T}^{leg}>5GeV',
+                                     (selections.Selector('^Pt5$')).one(),
+                                     (selections.Selector('^Pt5$')).one()),
+    # selections.build_DiObj_selection('DiEle', '',
+    #                                  (selections.Selector('^all$')).one(),
+    #                                  (selections.Selector('^all$')).one()),
+    # selections.build_DiObj_selection('DiEleID', '',
+    #                                  (selections.Selector('^IDScore0p1$')).one(),
+    #                                  (selections.Selector('^IDScore0p1$')).one()),
+    # selections.build_DiObj_selection('DiEleIDPt5', '',
+    #                                  (selections.Selector('^IDScore0p1$')*('^Pt5$')).one(),
+    #                                  (selections.Selector('^IDScore0p1$')*('^Pt5$')).one()),
+    
+
+
+
+    # selections.Selection('DiElePt5', 'p_{t}^{leg}>5',  lambda ar: (ar.leg0.pt > 5) & (ar.leg1.pt > 5)),
     # selections.Selection('DiElePt5OS', 'p_{t}^{leg}>5 & OS',  lambda ar: (ar.leg0.pt > 5) & (ar.leg1.pt > 5) & (ar.sign < 1)),
     # selections.Selection('DiElePt5OSDz1', 'p_{t}^{leg}>5 & OS & #DeltaZ<1cm',  lambda ar: (ar.leg0.pt > 5) & (ar.leg1.pt > 5) & (ar.sign < 1) &  (ar.dz < 1)),
 
 
     # selections.Selection('DiElePt5B2B', 'p_{t}^{leg}>5',  lambda ar: (ar.leg0.pt > 5) & (ar.leg1.pt > 5)),
 
-    selections.Selection('DiEleOS', 'OS',  lambda ar: ar.sign < 1),
-    selections.Selection('DiEleOSDZ', 'OS + DZ<1',  lambda ar: ((ar.sign < 1) & (ar.dz < 1))),
-    selections.Selection('DiEleOSDZId', 'OS + DZ<1 + ID',  lambda ar: ((ar.sign < 1) & (ar.dz < 1) & (ar.leg0.idScore > 0.1) & (ar.leg1.idScore > 0.1))),
-    selections.Selection('DiEleOSDZIdPt5', 'OS + DZ<1 + ID + Pt>5',  lambda ar: ((ar.sign < 1) & (ar.dz < 1) & (ar.leg0.idScore > 0.1) & (ar.leg1.idScore > 0.1) & (ar.leg0.pt > 5) & (ar.leg1.pt > 5))),
+    # selections.Selection('DiEleOS', 'OS',  lambda ar: ar.sign < 1),
+    # selections.Selection('DiEleOSDZ', 'OS + DZ<1',  lambda ar: ((ar.sign < 1) & (ar.dz < 1))),
+    # selections.Selection('DiEleOSDZId', 'OS + DZ<1 + ID',  lambda ar: ((ar.sign < 1) & (ar.dz < 1) & (ar.leg0.idScore > 0.1) & (ar.leg1.idScore > 0.1))),
+    # selections.Selection('DiEleOSDZIdPt5', 'OS + DZ<1 + ID + Pt>5',  lambda ar: ((ar.sign < 1) & (ar.dz < 1) & (ar.leg0.idScore > 0.1) & (ar.leg1.idScore > 0.1) & (ar.leg0.pt > 5) & (ar.leg1.pt > 5))),
 
-    selections.Selection('DiEleOSDZPt5', 'OS + DZ<1 + Pt>5',  lambda ar: ((ar.sign < 1) & (ar.dz < 1) & (ar.leg0.pt > 5) & (ar.leg1.pt > 5))),
+    # selections.Selection('DiEleOSDZPt5', 'OS + DZ<1 + Pt>5',  lambda ar: ((ar.sign < 1) & (ar.dz < 1) & (ar.leg0.pt > 5) & (ar.leg1.pt > 5))),
 
 ]
 
 bestsel = [
-    selections.Selection('BestScore', 'BestScore', lambda ar: ak.firsts(ak.argsort(ar.idScore, axis=1, ascending=False), axis=1)
+    selections.Selection('BestID', 'best-pair(IDScore)', lambda ar: ak.argmax(ar.idScore, axis=1, keepdims=True)),
+    selections.Selection('BestB2B', 'best-pair(B2B)', lambda ar: ak.argmax(ar.dphi, axis=1, keepdims=True)),
+    selections.Selection('BestPt', 'best-pair(p_{T}^{pair})', lambda ar: ak.argmax(ar.ptPair, axis=1, keepdims=True)),
+
 ]
 
 selections.Selector.selection_primitives = sm.selections.copy()
 
 gen_diele_selections = selections.Selector('^DiGEN$')()
-diele_selections = selections.Selector('all|^DiEle')()
+diele_selections = (selections.Selector('^DiEle|all')*('^OS$|all')*('^Dz1$|all')*('^IDScore|all')*('Best|all'))()
 
 
 diele_plots = [
