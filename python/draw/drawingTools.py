@@ -266,6 +266,39 @@ class RatioPlot(object):
             stuff.append(self.histo)
 
 
+class DiffPlot(object):
+    def __init__(self, id_tar, h_tar, id_ref, h_ref):
+        global stuff
+        self.id_tar = id_tar
+        self.id_ref = id_ref
+        if 'TH' in h_tar.ClassName():
+            self.histo = h_tar - h_ref
+        elif 'TGraph' in h_tar.ClassName():
+            if h_tar.GetN() != h_ref.GetN():
+                raise ValueError(f'[DiffPlot] target and reference {h_tar.ClassName()} objs have different # of points: ({h_tar.GetN() } and {h_ref.GetN()} resp.)')
+            npoints = h_tar.GetN()
+            x_ref_buf = h_ref.GetX()
+            x_ref_buf.reshape((npoints,))
+            x_ref = array.array('d', x_ref_buf)
+            x_tar_buf = h_ref.GetX()
+            x_tar_buf.reshape((npoints,))
+            x_tar = array.array('d', x_tar_buf)
+            y_ref_buf = h_ref.GetY()
+            y_ref_buf.reshape((npoints,))
+            y_ref = array.array('d', y_ref_buf)
+            y_tar_buf = h_tar.GetY()
+            y_tar_buf.reshape((npoints,))
+            y_tar = array.array('d', y_tar_buf)
+            y_diff = y_tar - y_ref
+            for id in range(0, npoints):
+                if x_tar[id] != x_ref[id]:
+                    raise ValueError(f'[DiffPlot] num and den {h_tar.ClassName()} objs have diff. ascissa {x_tar[id]} and {x_ref[id]} for point {id}')
+                # print(f'{id}: y_num: {y_num[id]} y_den: {y_den[id]}')
+
+            self.histo = ROOT.TGraph(npoints, x_tar, array.array('d', y_diff))
+            stuff.append(self.histo)
+
+
 class DrawMachine(object):
     def __init__(self, config):
         global stuff
@@ -277,6 +310,7 @@ class DrawMachine(object):
         self.canvas = None
         self.legend = None
         self.ratio_histos = []
+        self.diff_histos = []
         return
 
     def addHistos(self, histograms, labels):
@@ -335,7 +369,11 @@ class DrawMachine(object):
         for hist in self.ratio_histos:
             self.formatHisto(hist.id_num, hist.histo, options)
 
-    def createCanvas(self, do_ratio=False):
+    def formatDiffHistos(self, options=''):
+        for hist in self.diff_histos:
+            self.formatHisto(hist.id_tar, hist.histo, options)
+
+    def createCanvas(self, do_ratio_or_diff=False):
         if self.canvas is not None:
             return
 
@@ -352,7 +390,7 @@ class DrawMachine(object):
             c_width = 1000.
             c_height = 500*ydiv
             pad_ix = list(range(1, len(self.histos)+1))
-        elif do_ratio:
+        elif do_ratio_or_diff:
             c_height = c_height*1.2
             xdiv = 1
             ydiv = 2
@@ -374,7 +412,7 @@ class DrawMachine(object):
                                   self.config.canvas_margins_div[2],
                                   self.config.canvas_margins_div[3])
 
-        if not do_ratio:
+        if not do_ratio_or_diff:
             self.canvas.cd()
         else:
             self.canvas.cd(1)
@@ -418,6 +456,19 @@ class DrawMachine(object):
         except Exception as inst:
             print(f"***Warning: Ratio plot can not be added: {str(inst)}")
 
+    def addDiffHisto(self, id_tar, id_ref):
+        if len(self.diff_histos) != 0:
+            if id_ref not in [rh.id_ref for rh in self.diff_histos]:
+                print(f'***Warning: diff histo can not be added, since id_ref: {id_ref} != from existing diff plots!')
+                return
+        try:
+            diff = DiffPlot(id_tar, self.histos[id_tar], id_ref, self.histos[id_ref])
+            self.diff_histos.append(diff)
+        except Exception as inst:
+            print(f"***Warning: Diff plot can not be added: {str(inst)}")
+
+
+
     def draw(self,
              text,
              options='',
@@ -438,8 +489,14 @@ class DrawMachine(object):
              y_max_ratio=1.3,
              h_lines_ratio=[0.9, 1.1],
              y_axis_label_ratio=None,
+             do_diff=False,
+             y_min_diff=-1000.,
+             y_max_diff=1000.,
+             h_lines_diff=[0.0],
+             y_axis_label_diff=None,
              ratio_histos_manipulator=None,
-             histos_manipulator=None):
+             histos_manipulator=None,
+             diff_histos_manipulator=None):
 
         global p_idx
         global stuff
@@ -447,12 +504,15 @@ class DrawMachine(object):
         if len(self.ratio_histos) == 0:
             do_ratio = False
 
+        if len(self.diff_histos) == 0:
+            do_diff = False
+
         opt = options
         if type(options) != list:
             opt = [options]*len(self.histos)
 
         self.formatHistos(opt)
-        pad_idx = self.createCanvas(do_ratio=do_ratio)
+        pad_idx = self.createCanvas(do_ratio_or_diff=(do_ratio or do_diff))
         if self.overlay:
             self.createLegend()
 
@@ -478,40 +538,65 @@ class DrawMachine(object):
                 r_y_axis_label = y_axis_label_ratio
             # r_y_axis_label = '#splitline{{ratio}}{{#scale[0.5]{{to {}}}}}'.format(
                 # self.labels[self.ratio_histos[0].id_den])
-            r_pad_idx = [2]*len(self.ratio_histos)
             self.formatRatioHistos()
-            r_drawn_histos = self.drawHistos(
-                r_pad_idx, 
-                [rh.histo for rh in self.ratio_histos], 
-                text='', options=['']*len(self.ratio_histos), norm=False, do_profile=False)
-            stuff.append(r_drawn_histos)
-            self.formatAxis(
-                r_drawn_histos, 
-                y_min_ratio, y_max_ratio, 
-                x_min, x_max, 
-                r_y_axis_label, x_axis_label=drawn_histos[0].GetXaxis().GetTitle())
-            self.canvas.Update()
-            for hist in r_drawn_histos:
-                ROOT.gPad.SetTicks(1,1)
-                hist.GetXaxis().SetTitleSize(0.15)
-                hist.GetXaxis().SetTitleOffset(1)
-                hist.GetXaxis().SetTickLength(0.1)
-                hist.GetYaxis().CenterTitle()
-                hist.GetYaxis().SetTitleSize(0.1)
-                hist.GetXaxis().SetLabelSize(0.15)
-                hist.GetYaxis().SetTitleOffset(0.3)
-                hist.GetYaxis().SetNdivisions(2)
-                hist.GetYaxis().SetLabelSize(0.1)
+            self.draw_support_pad(self.ratio_histos, 
+                                  x_min, x_max, 
+                                  y_min_ratio, y_max_ratio, 
+                                  h_lines_ratio, 
+                                  ratio_histos_manipulator, 
+                                  drawn_histos, 
+                                  r_y_axis_label)
+        elif do_diff:
+            ROOT.gROOT.ForceStyle()
+            d_y_axis_label = f'#splitline{{diff to}}{{{self.labels[self.diff_histos[0].id_ref]}}}'
+            if y_axis_label_diff is not None:
+                d_y_axis_label = y_axis_label_diff
+            self.formatDiffHistos()
+            self.draw_support_pad(self.diff_histos, 
+                                  x_min, x_max, 
+                                  y_min_diff, y_max_diff, 
+                                  h_lines_diff, 
+                                  diff_histos_manipulator, 
+                                  drawn_histos, 
+                                  d_y_axis_label)
 
-            if ratio_histos_manipulator:
-                ratio_histos_manipulator(r_drawn_histos)
-
-            self.canvas.Update()
-
-            self.drawLines(r_pad_idx, y_log=False, x_log=False, v_lines=[], h_lines=h_lines_ratio)
 
         self.canvas.Draw()
         return
+
+
+    def draw_support_pad(self, support_histos, x_min, x_max, y_min_sup, y_max_sup, h_lines_sup, sup_histos_manipulator, drawn_histos, s_y_axis_label):
+        s_pad_idx = [2]*len(support_histos)
+        s_drawn_histos = self.drawHistos(
+                s_pad_idx, 
+                [rh.histo for rh in support_histos], 
+                text='', options=['']*len(support_histos), norm=False, do_profile=False)
+        stuff.append(s_drawn_histos)
+        self.formatAxis(
+                s_drawn_histos, 
+                y_min_sup, y_max_sup, 
+                x_min, x_max, 
+                s_y_axis_label, x_axis_label=drawn_histos[0].GetXaxis().GetTitle())
+        self.canvas.Update()
+        for hist in s_drawn_histos:
+            ROOT.gPad.SetTicks(1,1)
+            hist.GetXaxis().SetTitleSize(0.15)
+            hist.GetXaxis().SetTitleOffset(1)
+            hist.GetXaxis().SetTickLength(0.1)
+            hist.GetYaxis().CenterTitle()
+            hist.GetYaxis().SetTitleSize(0.1)
+            hist.GetXaxis().SetLabelSize(0.15)
+            hist.GetYaxis().SetTitleOffset(0.3)
+            hist.GetYaxis().SetNdivisions(2)
+            hist.GetYaxis().SetLabelSize(0.1)
+
+        if sup_histos_manipulator:
+            sup_histos_manipulator(s_drawn_histos)
+
+        self.canvas.Update()
+
+        self.drawLines(s_pad_idx, y_log=False, x_log=False, v_lines=[], h_lines=h_lines_sup)
+
 
     def drawLines(self, pad_idx, y_log, x_log, v_lines, h_lines):
         self.canvas.Update()
@@ -538,10 +623,10 @@ class DrawMachine(object):
                     aline.SetLineStyle(2)
                     aline.Draw("same")
                     stuff.append(aline)
-            if y_log:
-                ROOT.gPad.SetLogy()
-            if x_log:
-                ROOT.gPad.SetLogx()
+            # if y_log:
+            ROOT.gPad.SetLogy(y_log)
+            # if x_log:
+            ROOT.gPad.SetLogx(x_log)
             ROOT.gPad.Update()
 
     def drawText(self, pad_idx, text):

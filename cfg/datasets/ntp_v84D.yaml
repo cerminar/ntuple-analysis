@@ -3,11 +3,13 @@
 
 dataset:
   input_dir:  /eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/ntuples/
-  calib_version: calib-v134C
   version: 84D
 
   # tree_name: hgcalTriggerNtuplizer/HGCalTriggerNtuple
   tree_name: l1EGTriggerNtuplizer_l1tCorr/L1TEGTriggerNtuple
+
+
+calibrations:
   rate_pt_wps: data/rate_pt_wps_v152B.82B.json
   # tree_name: l1CaloTriggerNtuplizer/HGCalTriggerNtuple
 

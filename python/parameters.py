@@ -55,7 +55,7 @@ def get_collection_parameters(opt, cfgfile):
 
     file_label = cfgfile['common']['file_label']
 
-    for collection, collection_data in [(i,d) for (i,d) in cfgfile.items() if i not in ['common', 'dataset', 'samples']]:
+    for collection, collection_data in [(i,d) for (i,d) in cfgfile.items() if i not in ['common', 'dataset', 'samples', 'calibrations']]:
         
         samples = cfgfile['samples'].keys()
         pprint(f'--- Collection: [bold blue]{collection}[/] with samples: {samples}')
@@ -65,9 +65,10 @@ def get_collection_parameters(opt, cfgfile):
         for plotter in collection_data['plotters']:
             plotters.extend(plotter)
 
+        file_label = cfgfile['common']['file_label']
         if 'file_label' in collection_data:
-            file_label += collection_data['file_label']
-
+            file_label = cfgfile['common']['file_label']+collection_data['file_label']
+            
         for sample in samples:
             events_per_job = -1
             output_filename_base = f"histos_{sample}_{file_label}_{plot_version}"
@@ -89,10 +90,6 @@ def get_collection_parameters(opt, cfgfile):
             if 'weights' in collection_data and sample in collection_data['weights']:
                 weight_file = collection_data['weights'][sample]
 
-            rate_pt_wps = None
-            if 'rate_pt_wps' in cfgfile['dataset']:
-                rate_pt_wps = cfgfile['dataset']['rate_pt_wps']
-
             priority = 2
             if 'priorities' in collection_data and sample in collection_data['priorities']:
                 priority = collection_data['priorities'][sample]
@@ -112,8 +109,7 @@ def get_collection_parameters(opt, cfgfile):
                     'clusterize': cfgfile['common']['run_clustering'],
                     'eventsToDump': [],
                     'version': plot_version,
-                    'calib_version': cfgfile['dataset']['calib_version'],
-                    'rate_pt_wps': rate_pt_wps,
+                    'calib_files': cfgfile['calibrations'],
                     'maxEvents': int(opt.NEVENTS),
                     'events_per_job': events_per_job,
                     'computeDensity': cfgfile['common']['run_density_computation'],

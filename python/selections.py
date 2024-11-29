@@ -12,6 +12,7 @@ import os
 import re
 
 import numpy as np
+import python.calibrations as calibs
 
 from python import pf_regions
 from rich import print as pprint
@@ -370,6 +371,25 @@ def compare_selections(sel1, sel2):
 
     return ret
 
+def rate_pt_wps_selections(wps, obj, pt_var='pt'):
+    data_selections = []
+    # gen_selections = []
+    sm = selections.SelectionManager()
+    if obj in wps.keys():
+     #    print(wps[obj])
+        for obj_sel_name, pt_wps in wps[obj].items():
+            # print(f'WPS for {obj_sel_name}:')
+            for rate, pt_cut in wps[obj][obj_sel_name].items():
+                # print(f'   rate: {rate}kHz, pt cut: {pt_cut}GeV')
+                pt_sel = selections.Selection(
+                    f'@{rate}kHz', f'p_{{T}}^{{TOBJ}}>={pt_cut}GeV (@{rate}kHz)', lambda ar, pt_cut=pt_cut : ar.pt >= pt_cut)
+                obj_sel = selections.Selector(f'^{obj_sel_name}$', sm.selections)()[0]
+
+                # print(obj_sel*pt_sel)
+                data_selections.append(obj_sel&pt_sel)
+                # gen_selections.append(selections.Selection('all'))
+    return data_selections
+
 
 # TP selections
 
@@ -401,6 +421,8 @@ tp_pt_sel_ext = [
 
 tp_tccluster_match_selections = [
     Selection('Pt5to10', '5 <= p_{T}^{TOBJ} < 10GeV', lambda array: (array.pt < 10) & (array.pt >= 5)),
+    Selection('Pt5to15', '5 <= p_{T}^{TOBJ} < 15GeV', lambda array: (array.pt < 15) & (array.pt >= 5)),
+
     Selection('Pt10to20', '10 <= p_{T}^{TOBJ} #leq 20GeV', lambda array: (array.pt < 20) & (array.pt >= 10)),
     Selection('Pt10to25', '10 #leq p_{T}^{TOBJ} < 25GeV', lambda array: (array.pt < 25) & (array.pt >= 10))
 ]
@@ -417,7 +439,7 @@ tp_eta_ee_sel = [
     Selection('EtaBC', '1.52 < |#eta^{TOBJ}| #leq 2.4', lambda array: (abs(array.eta) > 1.52) &  (abs(array.eta) <= 2.4)),
     Selection('EtaBCD', '1.52 < |#eta^{TOBJ}| #leq 2.8', lambda array: (abs(array.eta) > 1.52) &  (abs(array.eta) <= 2.8)),
     # Selection('EtaBCDE', '1.52 < |#eta^{TOBJ}| < 3', '1.52 < abs(eta) < 3')
-                     ]
+                    ]
 
 genpart_ele_selections = [
     Selection('Ele', 'e^{#pm}', lambda array: abs(array.pdgid) == PID.electron)]
@@ -448,9 +470,9 @@ eta_sel = [
 
 gen_pid_sel = [
     Selection('GEN', '', 
-              lambda ar: ((np.abs(ar.pdgid) == PID.electron ) | (np.abs(ar.pdgid) == PID.photon)) & (ar.prompt >= 2)),
+            lambda ar: ((np.abs(ar.pdgid) == PID.electron ) | (np.abs(ar.pdgid) == PID.photon)) & (ar.prompt >= 2)),
     Selection('GENPi', '', 
-              lambda ar: ((np.abs(ar.pdgid) == PID.pion )) & (ar.prompt >= 2))
+            lambda ar: ((np.abs(ar.pdgid) == PID.pion )) & (ar.prompt >= 2))
 ]
 
 gen_jet_sel = [
@@ -475,6 +497,11 @@ eg_eta_sel = [
     Selection('all'),
     Selection('EtaEB', '|#eta^{TOBJ}| <= 1.479', lambda ar: abs(ar.eta) <= 1.479),
     Selection('EtaEE', '1.479 < |#eta^{TOBJ}| <= 2.4', lambda ar: (abs(ar.eta) > 1.479) & (abs(ar.eta) <= 2.4)),
+    Selection('EtaEEa', '1.479 < |#eta^{TOBJ}| <= 1.52', lambda ar: (abs(ar.eta) > 1.479) & (abs(ar.eta) <= 1.52)),
+    Selection('EtaEEb', '1.52 < |#eta^{TOBJ}| <= 2.3', lambda ar: (abs(ar.eta) > 1.52) & (abs(ar.eta) <= 2.3)),
+    Selection('EtaEEc', '2.3 < |#eta^{TOBJ}| <= 2.4', lambda ar: (abs(ar.eta) > 2.3) & (abs(ar.eta) <= 2.4)),
+    Selection('EtaEEFwd', '1.479 < |#eta^{TOBJ}| <= 3.0', lambda ar: (abs(ar.eta) > 1.479) & (abs(ar.eta) <= 3.0)),
+
 ]
 
 pfinput_regions = [
@@ -521,26 +548,71 @@ pfeginput_pt = [
     Selection('Pt5', 'p_{T}^{TOBJ}#geq5GeV', lambda ar: ar.pt >= 5),
 ]
 
-# FIXME: these should be done using the actual online to offline threshold scaling from turn-ons
+
+def scaling_offline2online_pt(obj, sel, pt):
+    # abspath
+    script_dir = os.path.dirname(os.path.abspath(__file__)) #<-- absolute dir the script is in
+    rel_path = "../data/scalings/scaling_ARv38.json"
+# abs_file_path = os.path.join(script_dir, rel_path)
+    #FIXME: this should come from confing yaml file...
+    with open(os.path.join(script_dir, rel_path)) as f:
+        scaling_data = json.load(f)
+
+    scaling = scaling_data[obj][sel]
+    return (pt-float(scaling['b']))/float(scaling['a'])
+
 menu_thresh_pt = [
-    Selection('PtStaEB51', 'p_{T}^{TOBJ}#geq51GeV', lambda ar: ar.pt >= 40.7),
-    Selection('PtStaEE51', 'p_{T}^{TOBJ}#geq51GeV', lambda ar: ar.pt >= 39.6),
-    Selection('PtEleEB36', 'p_{T}^{TOBJ}#geq36GeV', lambda ar: ar.pt >= 29.8),
-    Selection('PtEleEE36', 'p_{T}^{TOBJ}#geq36GeV', lambda ar: ar.pt >= 28.5),
-    Selection('PtEleEB25', 'p_{T}^{TOBJ}#geq25GeV', lambda ar: ar.pt >= 20.3),
-    Selection('PtEleEE25', 'p_{T}^{TOBJ}#geq25GeV', lambda ar: ar.pt >= 19.5),
-    Selection('PtEleEB12', 'p_{T}^{TOBJ}#geq12GeV', lambda ar: ar.pt >= 9.1),
-    Selection('PtEleEE12', 'p_{T}^{TOBJ}#geq12GeV', lambda ar: ar.pt >= 8.8),
+    Selection('PtStaEB51', 'p_{T}^{TOBJ}#geq51GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('EGSta', 'EtaEB', 51): ar.pt >= ptcut),
+    Selection('PtStaEE51', 'p_{T}^{TOBJ}#geq51GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('EGSta', 'EtaEE', 51): ar.pt >= ptcut),
+    Selection('PtStaEB37', 'p_{T}^{TOBJ}#geq37GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('EGSta', 'EtaEB', 37): ar.pt >= ptcut),
+    Selection('PtStaEE37', 'p_{T}^{TOBJ}#geq37GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('EGSta', 'EtaEE', 37): ar.pt >= ptcut),
+    Selection('PtStaEB24', 'p_{T}^{TOBJ}#geq24GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('EGSta', 'EtaEB', 24): ar.pt >= ptcut),
+    Selection('PtStaEE24', 'p_{T}^{TOBJ}#geq24GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('EGSta', 'EtaEE', 24): ar.pt >= ptcut),
+    Selection('PtStaEB12', 'p_{T}^{TOBJ}#geq12GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('EGSta', 'EtaEB', 12): ar.pt >= ptcut),
+    Selection('PtStaEE12', 'p_{T}^{TOBJ}#geq12GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('EGSta', 'EtaEE', 12): ar.pt >= ptcut),
 
-    Selection('PtIsoEleEB28', 'p_{T}^{TOBJ}#geq28GeV', lambda ar: ar.pt >= 23.),
-    Selection('PtIsoEleEE28', 'p_{T}^{TOBJ}#geq28GeV', lambda ar: ar.pt >= 22.1),
-    Selection('PtIsoPhoEB36', 'p_{T}^{TOBJ}#geq36GeV', lambda ar: ar.pt >= 30.4),
-    Selection('PtIsoPhoEE36', 'p_{T}^{TOBJ}#geq36GeV', lambda ar: ar.pt >= 29.0),
+    Selection('PtEleEB36', 'p_{T}^{TOBJ}#geq36GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('TkEleL2', 'EtaEB', 36): ar.pt >= ptcut),
+    Selection('PtEleEE36', 'p_{T}^{TOBJ}#geq36GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('TkEleL2', 'EtaEE', 36): ar.pt >= ptcut),
+    Selection('PtEleEB25', 'p_{T}^{TOBJ}#geq25GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('TkEleL2', 'EtaEB', 25): ar.pt >= ptcut),
+    Selection('PtEleEE25', 'p_{T}^{TOBJ}#geq25GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('TkEleL2', 'EtaEE', 25): ar.pt >= ptcut),
+    Selection('PtEleEB12', 'p_{T}^{TOBJ}#geq12GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('TkEleL2', 'EtaEB', 12): ar.pt >= ptcut),
+    Selection('PtEleEE12', 'p_{T}^{TOBJ}#geq12GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('TkEleL2', 'EtaEE', 12): ar.pt >= ptcut),
 
-    Selection('PtIsoPhoEB22', 'p_{T}^{TOBJ}#geq22GeV', lambda ar: ar.pt >= 17.6),
-    Selection('PtIsoPhoEE22', 'p_{T}^{TOBJ}#geq22GeV', lambda ar: ar.pt >= 15.9),
-    Selection('PtIsoPhoEB12', 'p_{T}^{TOBJ}#geq12GeV', lambda ar: ar.pt >= 8.5),
-    Selection('PtIsoPhoEE12', 'p_{T}^{TOBJ}#geq12GeV', lambda ar: ar.pt >= 6.),
+    Selection('PtIsoEleEB28', 'p_{T}^{TOBJ}#geq28GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('TkEleL2', 'EtaEB', 28): ar.pt >= ptcut),
+    Selection('PtIsoEleEE28', 'p_{T}^{TOBJ}#geq28GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('TkEleL2', 'EtaEE', 28): ar.pt >= ptcut),
+    Selection('PtIsoEleEB22', 'p_{T}^{TOBJ}#geq22GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('TkEleL2', 'EtaEB', 22): ar.pt >= ptcut),
+    Selection('PtIsoEleEE22', 'p_{T}^{TOBJ}#geq22GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('TkEleL2', 'EtaEE', 22): ar.pt >= ptcut),
+
+    Selection('PtIsoPhoEB36', 'p_{T}^{TOBJ}#geq36GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('TkEmL2', 'IsoEtaEB', 36): ar.pt >= ptcut),
+    Selection('PtIsoPhoEE36', 'p_{T}^{TOBJ}#geq36GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('TkEmL2', 'IsoEtaEE', 36): ar.pt >= ptcut),
+    Selection('PtIsoPhoEB22', 'p_{T}^{TOBJ}#geq22GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('TkEmL2', 'IsoEtaEB', 22): ar.pt >= ptcut),
+    Selection('PtIsoPhoEE22', 'p_{T}^{TOBJ}#geq22GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('TkEmL2', 'IsoEtaEE', 22): ar.pt >= ptcut),
+    Selection('PtIsoPhoEB12', 'p_{T}^{TOBJ}#geq12GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('TkEmL2', 'IsoEtaEB', 12): ar.pt >= ptcut),
+    Selection('PtIsoPhoEE12', 'p_{T}^{TOBJ}#geq12GeV', 
+            lambda ar, ptcut=scaling_offline2online_pt('TkEmL2', 'IsoEtaEE', 12): ar.pt >= ptcut),
 ]
 
 
@@ -557,6 +629,7 @@ eg_id_sel = [
     Selection('IDTightS', 'Tight-STA', lambda array: array.IDTightSTA),
     Selection('IDTightE', 'Tight-TkEle', lambda array: array.IDTightEle),
     Selection('IDTightP', 'Tight-TkEm', lambda array: array.IDTightPho),
+    Selection('IDLooseP', 'Loose-TkEm', lambda array: array.IDLoosePho),
     Selection('IDNoBrem', 'NoBrem', lambda array: array.IDNoBrem),
     Selection('IDBrem', 'Brem', lambda array: array.IDNoBrem == False),
 
@@ -574,7 +647,9 @@ dz_sel = [
     Selection('Dz1', '|#DeltaZ|<1cm', lambda array: array.dz < 1)
 ]
 
-
+dR_sel = [
+    Selection('DRg0p1', '#DeltaR>0.1', lambda array: array.dr >0.1)
+]
 
 comp_id_sel = [
     Selection('IDCompWP955', 'CompID WP 0.955', lambda ar: ar.compBDTScore > -0.7318549872638138), #, epsilon_b = 0.0985
@@ -601,30 +676,34 @@ iso_sel = [
     Selection('IsoEleEB', 'iso_{tk}<=0.13', lambda ar: ar.tkIso <= 0.13),
     Selection('IsoEleEE', 'iso_{tk}<=0.28', lambda ar: ar.tkIso <= 0.28),
     Selection('IsoPhoEB', 'iso_{tk}<=0.25', lambda ar: ar.tkIso <= 0.25),
-    Selection('IsoPhoEE', 'iso_{tk}<=0.205', lambda ar: ar.tkIso <= 0.205),
+    Selection('IsoPhoEE', 'iso_{tk}<=0.205', lambda ar: ar.tkIso <= 0.205),    
     # Selection('IsoEleMenu', 'iso_{tk}<=(0.13,0.28)', '((abs(eta) < 1.479) & (tkIso <= 0.13)) | ((abs(eta) > 1.479) & (tkIso <= 0.28))'),
     # Selection('IsoPhoMenu', 'iso_{tk}<=(0.25,0.205)', '((abs(eta) < 1.479) & (tkIso <= 0.25)) | ((abs(eta) > 1.479) & (tkIso <= 0.205))'),
     ]
 
-
+iso_sel_flateff = []
+for eff in [90, 92, 94, 96, 98]:
+    iso_sel_flateff.append(
+        Selection(f'IsoPho{eff}', f'iso_{{tk}}@{eff}\%', lambda ar, e=eff: getattr(ar, f'tkIso{e}'))
+    )
 
 working_points_histomax = {
         'v10_3151': [
                 # Low eta
                 {
-                 '900': 0.9903189,
-                 '950': 0.9646683,
-                 '975': 0.8292287,
-                 '995': -0.7099538,
+                '900': 0.9903189,
+                '950': 0.9646683,
+                '975': 0.8292287,
+                '995': -0.7099538,
                 },
                 # High eta
                 {
-                 '900': 0.9932326,
-                 '950': 0.9611762,
-                 '975': 0.7616282,
-                 '995': -0.9163715,
+                '900': 0.9932326,
+                '950': 0.9611762,
+                '975': 0.7616282,
+                '995': -0.9163715,
                 }
-             ]
+            ]
         }
 
 
@@ -662,32 +741,88 @@ Selector.selection_primitives = sm.selections.copy()
 
 
 menu_sel = [
-    ((Selector('^EtaEB')&('^IDTightE$'))|(Selector('^EtaEE')&('^IDTightS$'))).one('MenuSta', 'TightID'),
-    ((Selector('^EtaEB')&('^IsoEleEB$'))|(Selector('^EtaEE')&('^IsoEleEE')&('^IDTightE$'))).one('MenuEleIsoTight', 'Iso TightID'),
-    ((Selector('^EtaEB')&('^IsoEleEB$'))|(Selector('^EtaEE')&('^IsoEleEE'))).one('MenuEleIsoLoose', 'Iso LooseID'),
-    ((Selector('^EtaEB')&('^IDTightE$'))|(Selector('^EtaEE')&('^IDTightE$'))).one('MenuEleTight', 'TightID'),
-    ((Selector('^EtaEB')&('^IDTightE$$'))|(Selector('^EtaEE'))).one('MenuEleLoose', 'LooseID'),
-    ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP'))).one('MenuPhoIso', 'Iso'),
+    ((Selector('^EtaEB')&('^IDTightE$'))|(Selector('^EtaEE$')&('^IDTightS$'))).one('MenuSta', 'TightID'),
+    # ((Selector('^EtaEB')&('^IsoEleEB$'))|(Selector('^EtaEE$')&('^IsoEleEE')&('^IDTightE$'))).one('MenuEleIsoTight', 'Iso TightID'),
+    # ((Selector('^EtaEB')&('^IsoEleEB$'))|(Selector('^EtaEE$')&('^IsoEleEE'))).one('MenuEleIsoLoose', 'Iso LooseID'),
+    ((Selector('^EtaEB')&('^IDTightE$')&('^IsoEleEB$'))|(Selector('^EtaEE$')&('^IsoEleEE')&('^IDTightE$'))).one('MenuEleIsoTight', 'Iso TightID'),
+    ((Selector('^EtaEB')&('^IDTightE$')&('^IsoEleEB$'))|(Selector('^EtaEE$')&('^IsoEleEE'))).one('MenuEleIsoLoose', 'Iso LooseID'),
+
+    ((Selector('^EtaEB')&('^IDTightE$'))|(Selector('^EtaEE$')&('^IDTightE$'))).one('MenuEleTight', 'TightID'),
+    ((Selector('^EtaEB')&('^IDTightE$$'))|(Selector('^EtaEE$'))).one('MenuEleLoose', 'LooseID'),
+    ((Selector('^EtaEB')&('^IDTightE$'))|(Selector('^EtaEE$')&('^IDTightP'))).one('MenuPho', 'no-iso'),
+    ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$'))|(Selector('^EtaEE$')&('^IsoPhoEE')&('^IDTightP'))).one('MenuPhoIso', 'Iso'),
     # Rate selections
-    ((Selector('^EtaEB')&('^IsoEleEB')&('^PtIsoEleEB28'))|(Selector('^EtaEE')&('^IsoEleEE')&('^PtIsoEleEE28'))).one('SingleIsoTkEle28', 'SingleIsoTkEle28'),
-    ((Selector('^EtaEB')&('^IsoEleEB')&('^PtIsoEleEB28'))|(Selector('^EtaEE')&('^IsoEleEE')&('^IDTightE$')&('^PtIsoEleEE28'))).one('SingleIsoTkEle28Tight', 'SingleIsoTkEle28Tight'),
-    ((Selector('^EtaEB')&('^IDTightE$')&('^PtEleEB36'))|(Selector('^EtaEE')&('^IDTightE$')&('^PtEleEE36'))).one('SingleTkEle36', 'SingleTkEle36'),
-    ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB36'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE36'))).one('SingleIsoTkPho36', 'SingleIsoTkPho36'),
-    ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB22'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE22'))).one('SingleIsoTkPho22', 'SingleIsoTkPho22'),
-    ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB12'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE12'))).one('SingleIsoTkPho12', 'SingleIsoTkPho12'),
-    ((Selector('^EtaEB')&('^IDTightE$')&('^PtStaEB51'))|(Selector('^EtaEE')&('^IDTightP')&('^PtStaEE51'))).one('SingleEGEle51', 'SingleEGEle51'),
+    ((Selector('^EtaEB')&('^IDTightE$')&('^IsoEleEB')&('^PtIsoEleEB28'))|(Selector('^EtaEE$')&('^IsoEleEE')&('^PtIsoEleEE28'))).one('SingleIsoTkEle28', 'SingleIsoTkEle28'),
+    ((Selector('^EtaEB')&('^IDTightE$')&('^IsoEleEB')&('^PtIsoEleEB28'))|(Selector('^EtaEE$')&('^IsoEleEE')&('^IDTightE$')&('^PtIsoEleEE28'))).one('SingleIsoTkEle28Tight', 'SingleIsoTkEle28Tight'),
+    # ((Selector('^EtaEB')&('^IsoEleEB')&('^PtIsoEleEB28'))|(Selector('^EtaEE$')&('^IsoEleEE')&('^PtIsoEleEE28'))).one('SingleIsoTkEle28', 'SingleIsoTkEle28'),
+    # ((Selector('^EtaEB')&('^IsoEleEB')&('^PtIsoEleEB28'))|(Selector('^EtaEE$')&('^IsoEleEE')&('^IDTightE$')&('^PtIsoEleEE28'))).one('SingleIsoTkEle28Tight', 'SingleIsoTkEle28Tight'),
+    ((Selector('^EtaEB')&('^IDTightE$')&('^PtEleEB36'))|(Selector('^EtaEE$')&('^IDTightE$')&('^PtEleEE36'))).one('SingleTkEle36', 'SingleTkEle36'),
+    ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB36'))|(Selector('^EtaEE$')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE36'))).one('SingleIsoTkPho36', 'SingleIsoTkPho36'),
+    ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB22'))|(Selector('^EtaEE$')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE22'))).one('SingleIsoTkPho22', 'SingleIsoTkPho22'),
+    ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB12'))|(Selector('^EtaEE$')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE12'))).one('SingleIsoTkPho12', 'SingleIsoTkPho12'),
+    ((Selector('^EtaEB')&('^IDTightE$')&('^PtStaEB51'))|(Selector('^EtaEE$')&('^IDTightS')&('^PtStaEE51'))).one('SingleEGEle51', 'SingleEGEle51'),
     build_DiObj_selection('DoubleIsoTkPho22-12', 'DoubleIsoTkPho22-12',
-                          ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB22'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE22'))).one(),
-                          ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB12'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE12'))).one()),
+                        ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB22'))|(Selector('^EtaEE$')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE22'))).one(),
+                        ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB12'))|(Selector('^EtaEE$')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE12'))).one()),
     build_DiObj_selection('MenuDoubleIsoTkPho22-X', 'DoubleIsoTkPho22-X',
-                          ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB22'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE22'))).one(),
-                          ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$'))|(Selector('^EtaEE')&('^IsoPhoEE')&('^IDTightP'))).one()),
+                        ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB22'))|(Selector('^EtaEE$')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE22'))).one(),
+                        ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$'))|(Selector('^EtaEE$')&('^IsoPhoEE')&('^IDTightP'))).one()),
     build_DiObj_selection('DoubleTkEle25-12', 'DoubleTkEle25-12',
-                          ((Selector('^EtaEB')&('^IDTightE$')&('^PtEleEB25'))|(Selector('^EtaEE')&('^PtEleEE25'))).one(),
-                          ((Selector('^EtaEB')&('^IDTightE$')&('^PtEleEB12'))|(Selector('^EtaEE')&('^PtEleEE12'))).one(),
-                          Selector('^Dz1$').one())
+                        ((Selector('^EtaEB')&('^IDTightE$')&('^PtEleEB25'))|(Selector('^EtaEE$')&('^PtEleEE25'))).one(),
+                        ((Selector('^EtaEB')&('^IDTightE$')&('^PtEleEB12'))|(Selector('^EtaEE$')&('^PtEleEE12'))).one(),
+                        Selector('^Dz1$').one()),
+    build_DiObj_selection('MenuDoubleTkPho22-X', 'DoubleTkPho22-X',
+                        ((Selector('^EtaEB')&('^IDTightE$')&('^PtIsoPhoEB22'))|(Selector('^EtaEE$')&('^IDTightP')&('^PtIsoPhoEE22'))).one(),
+                        ((Selector('^EtaEB')&('^IDTightE$'))|(Selector('^EtaEE$')&('^IDTightP'))).one()),
+    build_DiObj_selection('MenuDoubleIsoOneTkPho22-X', 'DoubleIsoOneTkPho22-X',
+                        ((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB22'))|(Selector('^EtaEE$')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE22'))).one(),
+                        ((Selector('^EtaEB')&('^IDTightE$'))|(Selector('^EtaEE$')&('^IDTightP'))).one()),
+    build_DiObj_selection('DoubleStaEG37-24', 'DoubleStaEG37-24',
+                        ((Selector('^EtaEB')&('^IDTightE$')&('^PtStaEB37'))|(Selector('^EtaEE$')&('^IDTightS')&('^PtStaEE37'))).one(),
+                        ((Selector('^EtaEB')&('^IDTightE$')&('^PtStaEB24'))|(Selector('^EtaEE$')&('^IDTightS')&('^PtStaEE24'))).one()),
+    build_DiObj_selection('DoubleIsoTkEleStaEG22-12', 'DoubleIsoTkEleStaEG22-12',
+                        ((Selector('^EtaEB')&('^IDTightE$')&('^IsoEleEB$')&('^PtIsoEleEB22'))|(Selector('^EtaEE$')&('^IsoEleEE$')&('^PtIsoEleEE22'))).one(),
+                        ((Selector('^EtaEB')&('^IDTightE$')&('^IDTightE$')&('^PtStaEB12'))|(Selector('^EtaEE$')&('^IDTightS')&('^PtStaEE12'))).one(),
+                        Selector('^DRg0p1').one()),
+    # build_DiObj_selection('DoubleIsoTkEleStaEG22-12', 'DoubleIsoTkEleStaEG22-12',
+    #                     ((Selector('^EtaEB')&('^IsoEleEB$')&('^PtIsoEleEB22'))|(Selector('^EtaEE$')&('^IsoEleEE$')&('^PtIsoEleEE22'))).one(),
+    #                     ((Selector('^EtaEB')&('^IDTightE$')&('^PtStaEB12'))|(Selector('^EtaEE$')&('^IDTightS')&('^PtStaEE12'))).one(),
+    #                     Selector('^DRg0p1').one()),
+                        
 
 ]
+
+
+digen_sele = [
+    build_DiObj_selection('DiGEN', 'Di-GEN prompt',
+                        (Selector('^GEN$')).one(),
+                        (Selector('^GEN$')).one()),
+]
+
+
+for eff in [90, 92, 94, 96, 98]:
+    menu_sel.append(build_DiObj_selection(f'MenuDoubleIso{eff}TkPho22-X', f'DoubleIso{eff}TkPho22-X',
+                        ((Selector('^EtaEB')&(f'^IsoPho{eff}')&('^IDTightE$')&('^PtIsoPhoEB22'))|(Selector('^EtaEE$')&(f'^IsoPho{eff}')&('^IDTightP')&('^PtIsoPhoEE22'))).one(),
+                        ((Selector('^EtaEB')&(f'^IsoPho{eff}')&('^IDTightE$'))|(Selector('^EtaEE$')&(f'^IsoPho{eff}')&('^IDTightP'))).one()))
+    
+    
+    
+    menu_sel.append(((Selector('^EtaEB')&(f'^IsoPho{eff}')&('^IDTightE$')&('^PtIsoPhoEB22'))|(Selector('^EtaEE$')&(f'^IsoPho{eff}')&('^IDTightP')&('^PtIsoPhoEE22'))).one(f'Iso@{eff}TkPho22', f'p_{{T}}>22, iso@{eff}'))
+    menu_sel.append(((Selector('^EtaEB')&(f'^IsoPho{eff}')&('^IDTightE$')&('^PtIsoPhoEB12'))|(Selector('^EtaEE$')&(f'^IsoPho{eff}')&('^IDTightP')&('^PtIsoPhoEE12'))).one(f'Iso@{eff}TkPho12', f'p_{{T}}>12, iso@{eff}'))
+    menu_sel.append(((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB12'))|(Selector('^EtaEE$')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE12'))).one(f'IsoTkPho12', 'p_{T}>12, iso@Menu'))
+    menu_sel.append(((Selector('^EtaEB')&('^IsoPhoEB')&('^IDTightE$')&('^PtIsoPhoEB22'))|(Selector('^EtaEE$')&('^IsoPhoEE')&('^IDTightP')&('^PtIsoPhoEE22'))).one(f'IsoTkPho22', 'p_{T}>22, iso@Menu'))
+
+
+
+ctl2_sel = [
+    
+    ((Selector('^EtaEB')&('^IDTightE$'))|(Selector('^EtaEE$'))).one('L2IDPhoL', 'ID-loose'),
+    ((Selector('^EtaEB')&('^IDTightE$'))|(Selector('^EtaEE$')&('^IDTightP'))).one('L2IDPhoT', 'ID-tight'),
+    ((Selector('^EtaEB')&('^IsoPhoEB'))|(Selector('^EtaEE$')&('^IsoPhoEE'))).one('L2Iso', 'iso'),
+]
+
+
+
 # repeat the call: we want the menu selections to be avaialble via the selectors
 Selector.selection_primitives = sm.selections.copy()
 

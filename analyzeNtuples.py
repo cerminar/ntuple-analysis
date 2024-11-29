@@ -7,8 +7,8 @@ import pathlib
 
 from rich import print as pprint
 
-from python.analyzer import analyze
 from python.parameters import Parameters, get_collection_parameters
+from python.analyzer import analyze
 from python.submission import to_HTCondor
 from python.timecounter import print_stats
 import ROOT
@@ -48,7 +48,7 @@ def analyzeNtuples(  # noqa: PLR0913
     ),
     debug: int = typer.Option(0, '-d', '--debug', help='debug level'),
     nevents: int = typer.Option(10, '-n', '--nevents', help='# of events to process per sample'),
-    batch: int = typer.Option(None, '-b', '--batch', help='submit the jobs via CONDOR'),
+    batch: bool = typer.Option(None, '-b', '--batch', help='submit the jobs via CONDOR'),
     run: str = typer.Option(None, '-r', '--run', help='the batch_id to run (need to be used with the option -b)'),
     outdir: str = typer.Option(None, '-o', '--outdir', help='override the output directory for the files'),
     local: bool = typer.Option(False, '-l', '--local', help='run the batch on local resources'),

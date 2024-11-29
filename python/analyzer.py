@@ -49,9 +49,8 @@ def analyze(params, batch_idx=-1):
     files_with_protocol = [fm.get_eos_protocol(file_name) + file_name for file_name in input_files]
 
     calib_manager = calibs.CalibManager()
-    calib_manager.set_calibration_version(params.calib_version)
-    if params.rate_pt_wps:
-        calib_manager.set_pt_wps_version(params.rate_pt_wps)
+    for calib_name, file_name in params.calib_files.items():
+        calib_manager.set_calib_file(calib_name, file_name)
 
     output = up.recreate(params.output_filename)
     hm = Histos.HistoManager()

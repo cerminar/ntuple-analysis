@@ -3,7 +3,11 @@ import numpy as np
 import math
 
 from python.collections import DFCollection
+
 from python import pf_regions
+from python import calibrations
+from python import selections
+from python import utils
 
 def mc_fixtures(particles):
     particles['abseta'] = np.abs(particles.eta)
@@ -44,6 +48,9 @@ def cl3d_fixtures(clusters):
     clusters['IDTightEm'] = np.bitwise_and(clusters.hwQual, mask_tight) > 0
     clusters['IDLooseEm'] = np.bitwise_and(clusters.hwQual, mask_loose) > 0
     clusters['eMax'] = clusters.emaxe*clusters.energy
+    # clusters['passMcPuId'] = clusters.multiClassPuIdScore < 0.4878136
+    clusters['passMcEmId'] = clusters.multiClassEmIdScore > 0.115991354
+
     # clusters['meanz_scaled'] = clusters.meanz-320.
     # clusters['abseta'] =  np.abs(clusters.eta)
 
@@ -91,6 +98,8 @@ def cl3d_fixtures(clusters):
     return clusters
 
 def quality_flags(objs):
+    # print(objs.type.show())
+    # print('end')
     # print(objs.hwQual)
     objs['hwQual'] = ak.values_astype(objs.hwQual, np.int32)
     mask_tight_sta = 0b0001
@@ -100,6 +109,7 @@ def quality_flags(objs):
     objs['IDTightSTA'] = np.bitwise_and(objs.hwQual, mask_tight_sta) > 0
     objs['IDTightEle'] = np.bitwise_and(objs.hwQual, mask_tight_ele) > 0
     objs['IDTightPho'] = np.bitwise_and(objs.hwQual, mask_tight_pho) > 0
+    objs['IDLoosePho'] = True
     objs['IDNoBrem'] = np.bitwise_and(objs.hwQual, mask_no_brem) > 0
     objs['IDBrem'] = np.bitwise_and(objs.hwQual, mask_no_brem) == 0
     return objs
@@ -110,17 +120,26 @@ def quality_ele_fixtures(objs):
     return quality_flags(objs)
 
 def decodedTk_fixtures(objects):
-    objects['deltaZ0'] = objects.z0 - objects.simz0
-    objects['deltaPt'] = objects.pt - objects.simpt
-    objects['deltaEta'] = objects.eta - objects.simeta
-    objects['deltaCaloEta'] = objects.caloeta - objects.simcaloeta
-    # have dphi between -pi and pi
-    comp_remainder = np.vectorize(math.remainder)
-    objects['deltaCaloPhi'] = comp_remainder(objects.calophi - objects.simcalophi, 2*np.pi)
+    # objects['deltaZ0'] = objects.z0 - objects.simz0
+    # objects['deltaPt'] = objects.pt - objects.simpt
+    # objects['deltaEta'] = objects.eta - objects.simeta
+    # objects['deltaCaloEta'] = objects.caloeta - objects.simcaloeta
+    # # have dphi between -pi and pi
+    # comp_remainder = np.vectorize(math.remainder)
+    # objects['deltaCaloPhi'] = comp_remainder(objects.calophi - objects.simcalophi, 2*np.pi)
 
     objects['abseta'] = np.abs(objects.eta)
-    objects['simabseta'] = np.abs(objects.simeta)
+    # objects['simabseta'] = np.abs(objects.simeta)
     return objects
+
+def build_double_cross_obj(obj1, obj2):
+    ret = ak.cartesian(
+        arrays={'leg0': obj1, 'leg1': obj2},
+        axis=1,
+        )
+    # ret.show()
+    return ret
+
 
 def build_double_obj(obj):
     ret = ak.combinations(
@@ -131,15 +150,52 @@ def build_double_obj(obj):
     # ret.show()
     return ret
 
+def build_double_gen_obj(obj):
+    obj = ak.sort(obj, axis=1, ascending=False)
+    return build_double_obj(obj)
+
 def double_obj_fixtures(obj):
     # for the rate computation we assign the low-pt leg pt as pt of the pair
     obj['pt'] = obj.leg1.pt
+    obj['dr'] = obj.leg0.deltaR(obj.leg1)
     return obj
+
+def double_tkeleegsta_fixtures(obj):
+    # for the rate computation we assign the low-pt leg pt as pt of the pair
+    # obj['pt'] = obj.leg1.pt
+    # FIXME: this should be computed using etacalo an phicalo for the tkele...
+    
+    dphi = utils.angle_range(obj.leg0.caloPhi - obj.leg1.phi)
+    deta = obj.leg0.caloEta - obj.leg1.eta
+    obj['dr'] = np.sqrt(dphi**2+deta**2)
+    return obj
+
+
 
 def double_electron_fixtures(obj):
     obj = double_obj_fixtures(obj)
     obj['dz'] = np.abs(obj.leg0.vz - obj.leg1.vz)
     return obj
+
+
+def gen_diele_fixtures(obj):
+    obj['mass'] = (obj.leg0 + obj.leg1).mass
+    obj['ptPair'] = (obj.leg0 + obj.leg1).pt
+    obj['dr'] = obj.leg0.deltaR(obj.leg1)
+    return obj
+
+def diele_fixtures(obj):
+    # print(obj.leg0.fields)
+    obj['mass'] = (obj.leg0 + obj.leg1).mass
+    obj['ptPair'] = (obj.leg0 + obj.leg1).pt
+    obj['sign'] = obj.leg0.charge * obj.leg1.charge
+    obj['dz'] = np.fabs(obj.leg0.vz - obj.leg1.vz)
+    obj['dr'] = obj.leg0.deltaR(obj.leg1)
+    obj['dphi'] = np.fabs(obj.leg0.deltaphi(obj.leg1))
+    obj['idScore'] = obj.leg0.idScore + obj.leg1.idScore    
+    return obj
+
+
 
 def map2pfregions(objects, eta_var, phi_var, fiducial=False):
     for ieta, eta_range in enumerate(pf_regions.regionizer.get_eta_boundaries(fiducial)):
@@ -164,6 +220,46 @@ def mapcalo2pfregions_in(objects):
 def mapcalo2pfregions_out(objects):
     return map2pfregions(objects, 'eta', 'phi', fiducial=True)
 
+
+def compute_flateff_iso_wps(objs):
+    calib_mgr = calibrations.CalibManager()
+    wps = calib_mgr.get_calib('iso_flateff_wps')
+    pt_bins = wps['pt_bins']
+    obj_count = ak.num(objs)
+    obj_flat = ak.flatten(objs)
+    obj_flat['iso_pt_bin'] = np.digitize(obj_flat.pt, pt_bins)
+    effs = [90, 92, 94, 96, 98]
+    # print(ak.count(obj_flat))
+    for eff in effs:
+        # ak arrays can not be changed in place apart from adding an entire new field
+        # we use an array to do the computation and then add it as a field
+        wp_ar = np.full(ak.count(obj_flat), False, dtype=bool)
+        # print(f'EFF: {eff}')
+        for eta_sel, eta_wps in wps['TkEmL2'].items():
+            e_sel = selections.Selector(f'^Eta{eta_sel}$').one()
+            for id_sel,ideta_wps in eta_wps.items():
+                i_sel = selections.Selector(f'^{id_sel}$').one()
+                # print(e_sel)
+                # print(i_sel)
+
+
+                sel_obj_flat = obj_flat[e_sel.selection(obj_flat) & i_sel.selection(obj_flat)]
+                iso_thrs = ideta_wps[str(eff)]
+                # print(iso_thrs)
+                # print(e_sel.selection(obj_flat) & i_sel.selection(obj_flat))
+                # print(wp_ar[e_sel.selection(obj_flat) & i_sel.selection(obj_flat)])
+                # print(np.array([iso_thrs[idx-1] for idx in sel_obj_flat.iso_pt_bin]))
+                # print(sel_obj_flat.tkIso)
+                # print(sel_obj_flat.tkIso < np.array([iso_thrs[idx-1] for idx in sel_obj_flat.iso_pt_bin]))
+                wp_ar[e_sel.selection(obj_flat) & i_sel.selection(obj_flat)] = sel_obj_flat.tkIso < np.array([iso_thrs[idx-1] for idx in sel_obj_flat.iso_pt_bin])
+        # print(wp_ar)
+        obj_flat = ak.with_field(obj_flat, wp_ar, f'tkIso{eff}')
+
+    objs = ak.unflatten(obj_flat, obj_count)
+    return objs
+
+def merge_collections(obj1, obj2):
+    return ak.concatenate([obj1, obj2], axis=1)
 
 gen_ele = DFCollection(
     name='GEN', label='GEN particles (ele)',
@@ -259,7 +355,6 @@ TkEleEE = DFCollection(
     print_function=lambda df:df.columns,
     debug=0)
 
-
 TkEleEB = DFCollection(
     name='TkEleEB', label='TkEle EB',
     filler_function=lambda event, entry_block: event.getDataFrame(
@@ -302,8 +397,10 @@ TkEleL2 = DFCollection(
     name='TkEleL2', label='TkEle L2',
     filler_function=lambda event, entry_block : event.getDataFrame(
         prefix='TkEleL2', entry_block=entry_block, fallback='L2TkEle'),
+    print_function=lambda df: df[np.abs(df.eta) < 1.479][['pt', 'eta', 'phi', 'mass', 'hwQual', 'vz', 'caloEta', 'caloPhi']],
     fixture_function=quality_ele_fixtures,
     debug=0)
+# TkEleL2.activate()
 
 TkEmL2Ell = DFCollection(
     name='TkEmL2Ell', label='TkEm L2 (ell.)',
@@ -333,6 +430,8 @@ DoubleTkEmL2 = DFCollection(
     depends_on=[TkEmL2],
     debug=0)
 
+
+
 EGStaEE = DFCollection(
     name='EGStaEE', label='EG EE',
     filler_function=lambda event, entry_block: event.getDataFrame(
@@ -352,21 +451,177 @@ EGStaEB = DFCollection(
     # read_entry_block=200,
     debug=0)
 
-decTk = DFCollection(
-    name='PFDecTk', label='decoded Tk',
+EGSta = DFCollection(
+    name='EGSta', label='EG Sta',
+    filler_function=lambda event, entry_block: merge_collections(EGStaEB.df, EGStaEE.df),
+    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
+    # fixture_function=quality_flags,
+    depends_on=[EGStaEB, EGStaEE],
+    # read_entry_block=200,
+    debug=0)
+
+DoubleEGSta = DFCollection(
+    name='DoubleEGSta', label='DoubleEGSta',
+    filler_function=lambda event, entry_block: build_double_obj(obj=EGSta.df),
+    fixture_function=double_obj_fixtures,
+    depends_on=[EGSta],
+    debug=0)
+
+DoubleTkEleEGSta = DFCollection(
+    name='DoubleTkEleEGSta', label='DoubleTkEleEGSta',
+    filler_function=lambda event, entry_block: build_double_cross_obj(obj1=TkEleL2.df, obj2=EGSta.df),
+    fixture_function=double_tkeleegsta_fixtures,
+    depends_on=[TkEleL2, EGSta],
+    debug=0)
+# DoubleTkEleEGSta.activate()
+
+decTkHgcal = DFCollection(
+    name='DecTkHgcal', label='decoded Tk',
     filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='pfdtk', entry_block=entry_block),
+        prefix='DecTkHgcal', entry_block=entry_block),
     fixture_function=decodedTk_fixtures,
     debug=0)
 
-
-tkCl3DMatch = DFCollection(
-    name='TkCl3DMatch', label='TkCl3DMatch',
-    filler_function=lambda event, entry_block: get_trackmatched_egs(egs=hgc_cl3d, tracks=tracks),
-    # fixture_function=mapcalo2pfregions_in,
-    depends_on=[hgc_cl3d, tracks],
+decTkBarrel = DFCollection(
+    name='DecTkBarrel', label='decoded Tk',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='DecTkBarrel', entry_block=entry_block),
+    print_function=lambda df: df[np.isclose(df.eta, -0.667969, 0.01)],
+    fixture_function=decodedTk_fixtures,
     debug=0)
 
+def get_trackmatched_egs(egs, tracks, deta=0.03, dphi=0.3):
+
+    # compute cartesian pairs
+    # add cluster ID
+    # compute pair quantities
+    # select on the basis of the ellipsis size
+    # sort on cluster ID
+    # compute cluster ID counts
+    # flatten out the event level both the pairs and the cluster count
+    # group by cluster count
+    # sort on dpt and flag the best score
+    # flatten out the by cluster grouping
+    # regroup by event
+    # select the pairs whcih have been flagged
+
+    # compute cartesian pairs
+    match_id = ak.argcartesian(arrays={'i0': tracks, 'i1': egs}, 
+                               axis=1)
+    match = ak.cartesian(arrays={'tk': tracks, 'cl': egs},
+                         axis=1)
+     # add cluster ID
+    match['cl_id'] = match_id.i1
+    # compute pair quantities
+    match['deta'] = match.tk.caloEta - match.cl.eta
+    match['dphi'] = utils.angle_range(match.tk.caloPhi - match.cl.phi)
+    match['dpt'] = np.abs(match.tk.pt - match.cl.pt)
+    match['ell'] = ((match.dphi/dphi)**2)+((match.deta/deta)**2)
+    # match['best'] = True
+    # select on the basis of the ellipsis size
+    sel_pairs = match[match.ell < 1]
+    # sort on cluster ID
+    sorted_sel_pairs = sel_pairs[ak.argsort(sel_pairs.cl_id, axis=1)]
+    # compute cluster ID counts
+    clid_counts = ak.run_lengths(sorted_sel_pairs.cl_id)
+    # compute event counts
+    event_counts = ak.num(sorted_sel_pairs)
+    
+    # flatten out the event level both the pairs and the cluster count
+    flat_clid_counts = ak.flatten(clid_counts)
+    flat_sorted_sel_pairs = ak.flatten(sorted_sel_pairs)
+    # group by cluster count
+    bycl_sorted_sel_pairs = ak.unflatten(flat_sorted_sel_pairs, flat_clid_counts)
+    # find smalles dpt and flag the best score
+    # bycl_sorted_sel_pairs[ak.argmin(bycl_sorted_sel_pairs.dpt, axis=1, keepdims=True)]['best'] = True
+    
+    # bycl_sorted_sel_pairs['isbest'] = ak.where(ak.argmin(bycl_sorted_sel_pairs.dpt, axis=1, keepdims=True), True, False)
+
+    min_indices = ak.argmin(bycl_sorted_sel_pairs.dpt, axis=1, keepdims=True)
+    
+    # Mask the elements that are not the minimum by using ak.mask
+    masked_array = ak.where(ak.local_index(bycl_sorted_sel_pairs.dpt, axis=1) == min_indices, True, False)
+    
+    bycl_sorted_sel_pairs['isBest'] = masked_array
+
+# bycl_sorted_sel_pairs
+
+    # flatten out the by cluster grouping
+    flat_flagged_sorted_sel_pairs = ak.flatten(bycl_sorted_sel_pairs)
+    # regroup by event
+    flagged_sorted_sel_pairs = ak.unflatten(flat_flagged_sorted_sel_pairs, event_counts)
+    # select the pairs whcih have been flagged
+
+    # best_match = flagged_sorted_sel_pairs[flagged_sorted_sel_pairs.best]
+    best_match = flagged_sorted_sel_pairs[flagged_sorted_sel_pairs.isBest]
+
+    # print(best_match)
+    # print(best_match.type.show())
+#  ret = ak.cartesian(
+#         arrays={'leg0': obj1, 'leg1': obj2},
+#         axis=1,
+#         )
+
+
+
+#     print(match_id)
+#     print(match_id.type.show())
+#     # sort on cluster index
+#     sorted_match_idx = match_id[ak.argsort(match_id.i1, axis=1)]
+#     cluster_run_lenghts = ak.run_lengths(sorted_match_idx.i1)
+
+#     print(cluster_run_lenghts)
+#     print(cluster_run_lenghts.type.show())
+#     tk_calo_pairs = build_double_cross_obj(tracks, egs)
+#     tk_calo_pairs['deta'] = tk_calo_pairs.leg0.caloEta - tk_calo_pairs.leg1.eta
+#     tk_calo_pairs['dphi'] = utils.angle_range(tk_calo_pairs.leg0.caloPhi - tk_calo_pairs.leg1.phi)
+#     tk_calo_pairs['dpt'] = np.abs(tk_calo_pairs.leg0.pt - tk_calo_pairs.leg1.pt)
+#     tk_calo_pairs['ell'] = ((tk_calo_pairs.dphi/dphi)**2)+((tk_calo_pairs.deta/deta)**2)
+#     sorted_tk_calo_pairs = tk_calo_pairs[ak.argsort(match_id.i1, axis=1)]
+#     sorted_tk_calo_pairs['best'] = False
+#     # count the entries per event
+#     counts = ak.num(sorted_tk_calo_pairs)
+#     # flatten the pairs
+#     flattened_sorted_tk_calo_pairs = ak.flatten(sorted_tk_calo_pairs)
+
+#     # print(sorted_tk_calo_pairs)
+#     # print(sorted_tk_calo_pairs.type.show())
+
+#     # re-group by cluster ID
+#     grouped_tk_calo_pairs = ak.unflatten(flattened_sorted_tk_calo_pairs, cluster_run_lenghts)
+#     print(grouped_tk_calo_pairs)
+#     print(grouped_tk_calo_pairs.type.show())
+
+#     sel_pairs = tk_calo_pairs[tk_calo_pairs.ell < 1]
+#     print(sel_pairs)
+#     print(sel_pairs.type.show())
+    
+#     # for
+
+#     best_match = sel_pairs[ak.argmin(sel_pairs.dpt, axis=1, keepdims=True)]
+#     best_match = ak.drop_none(best_match)
+    ret = ak.zip(
+        {"pt": best_match.cl.pt, 
+         "eta": best_match.tk.eta, 
+         "phi":  best_match.tk.phi, 
+         "mass": best_match.tk.mass,
+         "hwQual": best_match.cl.hwQual,
+         "vz": best_match.tk.vz,
+         "caloEta": best_match.cl.eta,
+         "caloPhi": best_match.cl.phi,}, 
+         with_name="Momentum4D")
+    
+    return ret
+
+
+tkClMatchBarrel = DFCollection(
+    name='tkClMatchBarrel', label='TkClMatch',
+    filler_function=lambda event, entry_block: get_trackmatched_egs(egs=EGStaEB.df, tracks=decTkBarrel.df),
+    # fixture_function=mapcalo2pfregions_in,
+    print_function=lambda df: df.sort_values(by='pt', ascending=False),
+    depends_on=[EGStaEB, decTkBarrel],
+    debug=0)
+# tkClMatchBarrel.activate()
 
 hgc_cl3d_pfinputs = DFCollection(
     name='HGCCl3dPfIN', label='HGC Cl3d L1TC IN',
@@ -404,4 +659,66 @@ pfjets = DFCollection(
     print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
     debug=0)
 
+TkEmL2IsoWP = DFCollection(
+    name='TkEmL2IsoWP', label='TkEm L2',
+    filler_function=lambda event, entry_block: TkEmL2.df,
+    fixture_function=compute_flateff_iso_wps,
+    depends_on=[TkEmL2],
+    debug=0)
+# TkEmL2IsoWP.activate()
+
+DoubleTkEmL2IsoWP = DFCollection(
+    name='DoubleTkEmL2IsoWP', label='DoubleTkEm L2',
+    filler_function=lambda event, entry_block: build_double_obj(obj=TkEmL2IsoWP.df),
+    fixture_function=double_obj_fixtures,
+    depends_on=[TkEmL2IsoWP],
+    debug=0)
+
+gen_diele = DFCollection(
+    name='GENDiEle', label='GEN ee',
+    filler_function=lambda event, entry_block: build_double_gen_obj(obj=gen_ele.df),
+    # print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    fixture_function=gen_diele_fixtures,
+    depends_on=[gen_ele],
+    debug=0)
+
+diTkEle = DFCollection(
+    name='DiTkEle', label='Di-TkEle',
+    filler_function=lambda event, entry_block: build_double_obj(obj=TkEleL2.df),
+    # print_function=lambda df: df[df.abseta < 1.49],
+    fixture_function=diele_fixtures,
+    depends_on=[TkEleL2],
+    debug=0)
+
+diTkEm = DFCollection(
+    name='DiTkEm', label='Di-TkEm',
+    filler_function=lambda event, entry_block: build_double_obj(obj=TkEmL2.df),
+    # print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    fixture_function=diele_fixtures,
+    depends_on=[TkEmL2],
+    debug=0)
+
+
+def build_gen_matched(gen, obj, eta_phi=('eta', 'phi'), dr=0.1):
+    match_idx = utils.gen_match(gen, obj, eta_phi)
+    selected_objs = [obj[idx[1]] for idx in match_idx]
+    ret = ak.concatenate(selected_objs, axis=1)
+    ret = ak.drop_none(ret)
+    return ret
+
+TkEleL2_GENMatched = DFCollection(
+    name='TkEleL2Matched', label='TkEleL2 GEN-matched',
+    filler_function=lambda event, entry_block: build_gen_matched(gen=gen_ele.df, obj=TkEleL2.df, eta_phi=('eta', 'phi'), dr=0.1),
+    # print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    # fixture_function=diele_fixtures,
+    depends_on=[gen_ele, TkEleL2],
+    debug=0)
+
+diTkEle_GENMatched = DFCollection(
+    name='DiTkEleMatched', label='Di-TkEle GEN-matched',
+    filler_function=lambda event, entry_block: build_double_obj(obj=TkEleL2_GENMatched.df),
+    # print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    fixture_function=diele_fixtures,
+    depends_on=[TkEleL2_GENMatched],
+    debug=0)
 

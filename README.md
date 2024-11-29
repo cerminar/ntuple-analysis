@@ -14,7 +14,7 @@ You can create a venv with different procedures, using explicitly `venv` (see pa
 
 ### 1. lxplus/cvmfs setup
 
-This step is `lxplus` specific, givin access to a more recent `python` (>= 3.9) and `ROOT` version.
+This step is `lxplus` specific, givin access to a more recent `python` (>= 3.10) and `ROOT` version.
 Edit/skip it accordingly for your specific system.
 The current configuration has been tested only on `el7` and `el8`.
 
@@ -23,7 +23,7 @@ The current configuration has been tested only on `el7` and `el8`.
 ### 2. Setup `venv`
 
 ```bash
-python3.9 -m venv <venvname>
+python3.10 -m venv <venvname>
 source <venvname>/bin/activate
 pip install -r requirements.txt
 ```
@@ -53,7 +53,7 @@ For starting using virtualenvwrapper
 The **first time** you will have to create the actual instance of the `virtualenv`:
 
 ``mkvirtualenv --system-site-packages
- -p `which python3.9` -r requirements.txt <venvname>``
+ -p `which python3.10` -r requirements.txt <venvname>``
 
 
 ## Setup after first installation
@@ -237,6 +237,13 @@ python  analyzeNtuples.py -f cfg/hgctps.yaml -i cfg/datasets/ntpfp_v100.yaml -p 
 - Producing a further `ROOT` ntuple with HGC clusters and matched GEN information (e.g. for model training)
 ```bash
 python  analyzeNtuples.py -f cfg/hgcIdTuples.yaml -i cfg/datasets/ntpfp_131Xv3.yaml -p egid -s ttbar_PU200 -n 1000 -d 0
+```
+
+- Computing efficiency on jets
+```bash
+python  analyzeNtuples.py -f cfg/jets.yaml -i cfg/datasets/ntpfp_131Xv3.yaml -p ak4_jets -s ttbar_PU200 -n -1 -d 0
+
+python draw.py -m cfg/jets_draw.py  --target-dir /Users/cerminar/CERNbox/www/plots/tj  -w eff --input-files /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/histos_ttbar_PU200_jets_v200A.131Xv3i.root:test
 ```
 
 ## HELP

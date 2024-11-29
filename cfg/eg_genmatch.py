@@ -15,10 +15,13 @@ class EGHistos(histos.BaseHistos):
             self.h_hwQual = bh.TH1F(f'{name}_hwQual', 'EG energy (GeV); hwQual', 5, 0, 5)
             self.h_tkIso = bh.TH1F(f'{name}_tkIso', 'Iso; rel-iso_{tk}', 100, 0, 2)
             self.h_pfIso = bh.TH1F(f'{name}_pfIso', 'Iso; rel-iso_{pf}', 100, 0, 2)
+            self.h_puppiIso = bh.TH1F(f'{name}_puppiIso', 'Iso; rel-iso_{puppi}', 100, 0, 2)
+
             self.h_tkIsoPV = bh.TH1F(f'{name}_tkIsoPV', 'Iso; rel-iso^{PV}_{tk}', 100, 0, 2)
             self.h_pfIsoPV = bh.TH1F(f'{name}_pfIsoPV', 'Iso; rel-iso^{PV}_{pf}', 100, 0, 2)
+
             self.h_n = bh.TH1F(f'{name}_n', '# objects per event', 100, 0, 100)
-            self.h_compBdt = bh.TH1F(f'{name}_compBdt', 'BDT Score Comp ID', 50, 0, 1)
+            self.h_idScore = bh.TH1F(f'{name}_idScore', 'ID BDT Score', 50, -1, 1)
 
         histos.BaseHistos.__init__(self, name, root_file, debug)
 
@@ -35,13 +38,15 @@ class EGHistos(histos.BaseHistos):
             bh.fill_1Dhist(hist=self.h_tkIso, array=egs.tkIso, weights=weight)
         if 'pfIso' in egs.fields:
             bh.fill_1Dhist(hist=self.h_pfIso, array=egs.pfIso, weights=weight)
+        if 'puppiIso' in egs.fields:
+            bh.fill_1Dhist(hist=self.h_puppiIso, array=egs.puppiIso, weights=weight)
         if 'tkIsoPV' in egs.fields:
             bh.fill_1Dhist(hist=self.h_tkIsoPV, array=egs.tkIsoPV, weights=weight)
             bh.fill_1Dhist(hist=self.h_pfIsoPV, array=egs.pfIsoPV, weights=weight)
         if 'compBDTScore' in egs.fields:
             bh.fill_1Dhist(hist=self.h_compBdt, array=egs.compBDTScore, weights=weight)
         if 'idScore' in egs.fields:
-            bh.fill_1Dhist(hist=self.h_compBdt, array=expit(egs.idScore), weights=weight)
+            bh.fill_1Dhist(hist=self.h_idScore, array=egs.idScore, weights=weight)
         # print(ak.count(egs.pt, axis=1))
         # print(egs.pt.type.show())
         # print(ak.count(egs.pt, axis=1).type.show())
@@ -143,8 +148,8 @@ class EGGenMatchPtWPSPlotter(plotters.GenericGenMatchPlotter):
 
     def book_histos(self):
         calib_mgr = calibrations.CalibManager()
-        rate_pt_wps = calib_mgr.get_pt_wps()
-        self.data_selections = calibrations.rate_pt_wps_selections(
+        rate_pt_wps = calib_mgr.get_calib('rate_pt_wps')
+        self.data_selections = selections.rate_pt_wps_selections(
             rate_pt_wps, self.data_set.name)
         plotters.GenericGenMatchPlotter.book_histos(self)
 
@@ -152,9 +157,6 @@ class EGGenMatchPtWPSPlotter(plotters.GenericGenMatchPlotter):
 
 # ------ Plotter instances
 
-gen_ee_tk_selections = (selections.Selector('GEN$')*('^Eta[A-C]$|EtaBC$|all')+selections.Selector('GEN$')*('Pt15|Pt30'))()
-gen_ee_selections = (selections.Selector('GEN$')*('^Eta[BC]+[CD]$|^Eta[A-D]$|all')+selections.Selector('GEN$')*('^Pt15|^Pt30'))()
-gen_eb_selections = (selections.Selector('^GEN$')*('^Pt15|^Pt30|all')+selections.Selector('^GEN$')*('^EtaF'))()
 
 
 # FIXME: should become in newer versions
@@ -201,6 +203,19 @@ l1tc_fw_match_ee_selections = (selections.Selector('^EGq[2,4]or[3,5]$')*('^Pt[1-
 # ]
 
 
+
+
+gen_selections = (selections.Selector('GEN$')*('^Eta[F]$|^Eta[AF][ABCD]*[C]$|all')+selections.Selector('GEN$')*('^Pt15|^Pt30'))()
+
+# gen_menu_selections = (selections.Selector('GEN$')*('^EtaE[BE]$|all')+selections.Selector('GEN$')*('^Pt10to25$|^Pt25'))()
+gen_menu_selections = (selections.Selector('GEN$')*('^EtaE[BE]$|^EtaEE[abc]$|all')+selections.Selector('GEN$')*('^Pt15$|^Pt30$|^Pt10to25$'))()
+
+# for sels in [gen_selections, selections.gen_selections]:
+#     print('--------------------')
+#     print(f'# of sels: {len(sels)}')
+#     for sel in sels:
+#         print(sel)
+
 egid_sta_selections = (selections.Selector('^IDTightS|all')*('^Pt[1-3][0]$|all'))()
 # egid_iso_tkele_selections = (selections.Selector('^IDTight[E]|all')*('^Pt[1-3][0]$|all')*('^Iso0p[1-2]|all'))()
 # egid_iso_tkpho_selections = (selections.Selector('^IDTight[P]|all')*('^Pt[1-3][0]$|all')*('^Iso0p[1-2]|all'))()
@@ -209,17 +224,13 @@ egid_iso_tkpho_selections = (selections.Selector('^IDTight[P]$|all')*('^Pt[1-3][
 egid_iso_tkele_comp_selections = (selections.Selector('^IDTight[E]$|^IDComp|all')*('^Pt[1-3][0]$|all'))()
 
 
-gen_selections = (selections.Selector('GEN$')*('^Eta[F]$|^Eta[AF][ABCD]*[C]$|all')+selections.Selector('GEN$')*('^Pt15|^Pt30'))()
+gen_ee_tk_selections = (selections.Selector('GEN$')*('^Eta[A-C]$|EtaBC$|all')+selections.Selector('GEN$')*('Pt15|Pt30'))()
+gen_ee_eb_tk_selections = (selections.Selector('^GEN$')*('^Pt5to1[05]$|^Pt30|all')+selections.Selector('^GEN$')*('^EtaE[EB]$|^EtaEE[abc]$'))()
+gen_ee_selections = (selections.Selector('^GEN$')*('^Pt5to1[05]$|^Pt30|all')+selections.Selector('^GEN$')*('^EtaEE[abc]$|^EtaEEFwd$'))()
+gen_eb_selections = (selections.Selector('^GEN$')*('^Pt5to1[05]$|^Pt30|all')+selections.Selector('^GEN$')*('^EtaEB$'))()
 
-# gen_menu_selections = (selections.Selector('GEN$')*('^EtaE[BE]$|all')+selections.Selector('GEN$')*('^Pt10to25$|^Pt25'))()
-gen_menu_selections = (selections.Selector('GEN$')*('^EtaE[BE]$|all')+selections.Selector('GEN$')*('^Pt15$|^Pt30$'))()
-
-# for sels in [gen_selections, selections.gen_selections]:
-#     print('--------------------')
-#     print(f'# of sels: {len(sels)}')
-#     for sel in sels:
-#         print(sel)
-
+for sel in gen_eb_selections:
+    print (sel)
 
 ctl1_tkeg = [
     EGGenMatchPlotter(
@@ -232,14 +243,22 @@ ctl1_tkeg = [
 
 ctl2_tkeg = [
     EGGenMatchPlotter(
-        coll.TkEleL2, coll.gen,
-        egid_iso_tkele_selections, gen_ee_tk_selections),
+        coll.TkEmL2, coll.gen,
+        egid_iso_tkpho_selections, gen_ee_eb_tk_selections),
     EGGenMatchPlotter(
         coll.TkEleL2, coll.gen,
-        egid_iso_tkele_selections, gen_eb_selections),
+        egid_iso_tkele_selections, gen_ee_eb_tk_selections,
+        gen_eta_phi_columns=('eta', 'phi')),
 ]
 
-
+egsta = [
+    EGGenMatchPlotter(
+        coll.EGStaEB, coll.gen,
+        egid_sta_selections, gen_eb_selections),
+    EGGenMatchPlotter(
+        coll.EGStaEE, coll.gen,
+        egid_sta_selections, gen_ee_selections),
+]
 
 
 # l1tc_emu_genmatched = [
@@ -381,6 +400,20 @@ egsta_menu = [
     EGGenMatchPlotter(
         coll.EGStaEB, coll.gen,
         egid_menu_sta_selections, gen_menu_selections),
+]
+
+
+
+egid_ctl2_pho_selections = (
+    selections.Selector('^L2IDPho')*('^L2Iso|^IsoPho9[02468]$|all') + 
+    selections.Selector('^Iso@9[02468]TkPho[12]2$|IsoTkPho[12]2$'))()
+gen_ctl2_selections = (selections.Selector('GEN$')*('^EtaE[BE]$|^EtaEE[abc]$|all')+selections.Selector('GEN$')*('^Pt15$|^Pt30$|^Pt10to25$'))()
+
+
+ctl2_tkem_iso = [
+    EGGenMatchPlotter(
+    coll.TkEmL2IsoWP, coll.gen,
+    egid_ctl2_pho_selections, gen_ctl2_selections),
 ]
 
 

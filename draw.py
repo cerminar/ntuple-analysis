@@ -64,7 +64,7 @@ def draw(
     samples = []
     smps = []
 
-    extract_samples('ele', input_files, samples)
+    extract_samples('smp', input_files, samples)
     smps = [s.type for s in samples]
 
     for smp in samples:
@@ -85,15 +85,15 @@ def draw(
     if do_pt_rate_wps:
         calib_mgr = calib.CalibManager()
         calib_mgr.set_pt_wps_version('data/rate_pt_wps_v160A.91G.json')
-        rate_pt_wps = calib_mgr.get_pt_wps()
+        rate_pt_wps = calib_mgr.get_calib('rate_pt_wps')
         print(rate_pt_wps)
-        data_selections = calib.rate_pt_wps_selections(
+        data_selections = selections.rate_pt_wps_selections(
         rate_pt_wps, 'TkEleEE')
         # data_selections = calib.rate_pt_wps_selections(
         # rate_pt_wps, 'TkEleL2')
-        data_selections = calib.rate_pt_wps_selections(
+        data_selections = selections.rate_pt_wps_selections(
         rate_pt_wps, 'TkEmL2')
-        data_selections = calib.rate_pt_wps_selections(
+        data_selections = selections.rate_pt_wps_selections(
         rate_pt_wps, 'TkEleL2')
 
         for sel in data_selections:

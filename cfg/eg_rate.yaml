@@ -27,9 +27,18 @@ rate_menu:
     - !!python/name:cfg.eg_rate.eg_menuCTl2_plotters
     # - !!python/name:cfg.eg_rate.eg_menuCTl2_ell_plotters
 
+rate_pho_iso:
+  file_label:
+    iso
+  plotters:
+    - !!python/name:cfg.eg_rate.eg_ctl2_pho_iso_plotters
+
+
+
 rate_counter_menu:
   file_label: count
   plotters:
     # - !!python/name:cfg.eg_rate.eg_emu_plotters
     - !!python/name:cfg.eg_rate.eg_menuCTl2_rate
+    - !!python/name:cfg.eg_rate.eg_menuSta_rate
 

@@ -1,7 +1,6 @@
 
 dataset:
   input_dir:  /eos/cms/store/cmst3/group/l1tr/cerminar/hgcal/CMSSW1110pre6/
-  calib_version: calib-v134C
   version: 68C
 
   # tree_name: hgcalTriggerNtuplizer/HGCalTriggerNtuple

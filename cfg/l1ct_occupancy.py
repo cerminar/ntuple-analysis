@@ -124,7 +124,20 @@ class CorrOccupancyPlotter(plotters.BasePlotter):
             self.h_occ[tp_sel.name].fill(objects)
 
 
-pfin_hgc_tp_selections = (selections.Selector('^IDEm*|all')*('IDPuVeto|all')*('^Pt[1,2,5]$|all'))()
+
+
+# ------ Plotter instances
+sm = selections.SelectionManager()
+
+multiclassID_sel = [
+    selections.Selection('IDPuVetoMC', 'Pass MC PU veto',  lambda ar: ar.multiClassPuIdScore < 0.4878136),
+    selections.Selection('IDEmMC', 'Pass MC EM ID',  lambda ar: ar.multiClassEmIdScore > 0.115991354),
+
+]
+selections.Selector.selection_primitives = sm.selections.copy()
+
+
+pfin_hgc_tp_selections = (selections.Selector('^IDEm*|all')*('IDPuVeto*|all')*('^Pt[1,2,5]$|all'))()
 pfin_tkcl3dmatch_selections = (selections.Selector('PUId')*('^EgBdtLE|all')*('^Pt[1,2,5]$|all')*('^MTkPt[1-5]|all'))()
 pfin_eb_selections = (selections.Selector('^Pt[1,2,5]$'))()
 pfin_tk_selections = (selections.Selector('^TkPt'))()
