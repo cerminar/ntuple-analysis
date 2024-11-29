@@ -97,6 +97,7 @@ class DiEleHistos(histos.BaseHistos):
         weight = None
         if 'weight' in egs.fields:
             weight = egs.weight
+        
         bh.fill_1Dhist(hist=self.h_ptPair,     array=egs.ptPair,     weights=weight)
         bh.fill_1Dhist(hist=self.h_ptLead,     array=egs.leg0.pt,     weights=weight)
         bh.fill_1Dhist(hist=self.h_etaLead,     array=np.abs(egs.leg0.eta),     weights=weight)
@@ -105,7 +106,7 @@ class DiEleHistos(histos.BaseHistos):
         bh.fill_1Dhist(hist=self.h_mass,     array=egs.mass,     weights=weight)
         bh.fill_1Dhist(hist=self.h_dR,     array=egs.dr,     weights=weight)
         bh.fill_1Dhist(hist=self.h_dPhi,     array=egs.dphi,     weights=weight)
-
+        # print(self.h_mass.counts())
         # bh.fill_1Dhist(hist=self.h_eta,    array=egs.eta,    weights=weight)
         # # bh.fill_1Dhist(hist=self.h_energy, array=egs.energy, weights=weight)
         # bh.fill_1Dhist(hist=self.h_hwQual, array=egs.hwQual, weights=weight)
@@ -155,11 +156,36 @@ class GenDiElePlotter(plotters.GenericDataFramePlotter):
 
 class DiElePlotter(plotters.GenericDataFramePlotter):
     def __init__(self, data_set,
-                 data_selections=[selections.Selection('all')],):
+                 data_selections=[selections.Selection('all')],
+                 data_selections_best=[selections.Selection('all')]):
+        self.best_sels = data_selections_best
+        self.d_sels = data_selections
+        all_data_sels = selections.multiply_selections(data_selections, data_selections_best)
         super(DiElePlotter, self).__init__(DiEleHistos,
                                                 data_set,
-                                                data_selections)
+                                                all_data_sels)
 
+    def fill_histos(self, debug=0):
+        for data_sel in self.d_sels:
+            data = self.data_set.df
+            if not data_sel.all:
+                data = data[data_sel.selection(data)]
+            hname = data_sel.name
+            for bs in self.best_sels:
+                if not bs.all:
+                    # print('BEFORE')
+                    # print(data)
+                    # print(bs.selection(data))
+                    data = ak.drop_none(data[bs.selection(data)], axis=1)
+                    
+                    # print(data)
+                    if not data_sel.all:
+                        hname = data_sel.name + bs.name
+                    else:
+                        hname = bs.name
+                    # print(hname)
+                self.h_set[hname].fill(data)
+                    # print(self.h_set[hname])
 
 # ------ Plotter instances
 sm = selections.SelectionManager()
@@ -181,6 +207,10 @@ diele_sel = [
     selections.build_DiObj_selection('DiElePt5', 'p_{T}^{leg}>5GeV',
                                      (selections.Selector('^Pt5$')).one(),
                                      (selections.Selector('^Pt5$')).one()),
+    selections.build_DiObj_selection('DiElePt5EtaEB', 'p_{T}^{leg}>5GeV EB',
+                                     (selections.Selector('^Pt5$')*('^EtaEB$')).one(),
+                                     (selections.Selector('^Pt5$')*('^EtaEB$')).one()),
+
     # selections.build_DiObj_selection('DiEle', '',
     #                                  (selections.Selector('^all$')).one(),
     #                                  (selections.Selector('^all$')).one()),
@@ -220,8 +250,8 @@ bestsel = [
 selections.Selector.selection_primitives = sm.selections.copy()
 
 gen_diele_selections = selections.Selector('^DiGEN$')()
-diele_selections = (selections.Selector('^DiEle|all')*('^OS$|all')*('^Dz1$|all')*('^IDScore|all')*('Best|all'))()
-
+diele_selections = (selections.Selector('^DiEle|all')*('^OS$|all')*('^Dz1$|all')*('^IDScore|all'))()
+best_selections = (selections.Selector('^Best|all'))()
 
 diele_plots = [
     GenDiElePlotter(
@@ -229,10 +259,12 @@ diele_plots = [
         gen_diele_selections),
     DiElePlotter(
         coll.diTkEle,
-        diele_selections),
+        diele_selections,
+        best_selections),
     DiElePlotter(
         coll.diTkEle_GENMatched,
-        diele_selections),
+        diele_selections,
+        best_selections),
 
 ]
 
@@ -242,7 +274,8 @@ diele_plots_mb = [
         gen_diele_selections),
     DiElePlotter(
         coll.diTkEle,
-        diele_selections),
+        diele_selections,
+        best_selections),
     # DiElePlotter(
     #     coll.diTkEle_GENMatched,
     #     diele_selections),
