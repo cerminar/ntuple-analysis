@@ -1,3 +1,4 @@
+# OBSOLETE: for darts hackathon
 dataset:
   input_dir:  /eos/cms/store/cmst3/group/l1tr/kypark/2June2024/
   tree_name: Events

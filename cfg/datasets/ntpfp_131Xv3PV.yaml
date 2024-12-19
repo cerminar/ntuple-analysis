@@ -1,4 +1,4 @@
-# l1t offline recipe for 2024 AR preparation:
+# OBSOLETE: Composite ID integration
 dataset:
   input_dir:  /eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/fp_ntuples/
   version: 131Xv3S

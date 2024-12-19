@@ -1,4 +1,4 @@
-# l1t offline recipe for 2024 AR preparation:
+# OBSOLETE: for darts hackathon
 dataset:
   input_dir:  /eos/cms/store/group/cmst3/group/l1tr/kypark/
   version: 131Xv3KP
