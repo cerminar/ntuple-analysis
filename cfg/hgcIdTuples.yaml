@@ -4,21 +4,23 @@ common:
     # dictionary machine name -> directory to support different paths
     default: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
     triolet: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
-  plot_version: v160A
+  plot_version: v200A
   run_clustering: False
   run_density_computation: False
-# +AccountingGroup = "group_u_CMS.u_zh.users"
-# +AccountingGroup = "group_u_CMST3.all"
-  file_label: compid
+
+  file_label: hgcid
 
 egid:
   plotters:
     - !!python/name:cfg.hgcIdTuples.egid_plotters
+  file_label: eg
 
 puid:
   plotters:
     - !!python/name:cfg.hgcIdTuples.pu_plotters
+  file_label: pu
 
 piid:
   plotters:
     - !!python/name:cfg.hgcIdTuples.piid_plotters
+  file_label: pi

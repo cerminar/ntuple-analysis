@@ -722,3 +722,27 @@ diTkEle_GENMatched = DFCollection(
     depends_on=[TkEleL2_GENMatched],
     debug=0)
 
+decHadCaloBarrel= DFCollection(
+    name='DecHadCaloBarrel', label='DecHadCaloBarrel',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='DecHadCaloBarrel', entry_block=entry_block),
+    # fixture_function=lambda clusters: cl3d_fixtures(clusters),
+    # read_entry_block=500,
+    debug=0,
+    # print_function=lambda df: df[['rho', 'eta', 'phi', 'hwQual', 'ptEm', 'egbdtscore', 'pubdtscore', 'egbdtscoreproba', 'pubdtscoreproba', 'pfPuIdScore', 'egEmIdScore']].sort_values(by='rho', ascending=False)
+    print_function=lambda df: df.columns
+    )
+# decHadCaloBarrel.activate()
+
+decHadCaloEndcap= DFCollection(
+    name='DecHadCaloEndcap', label='DecHadCaloEndcap',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='DecHadCaloHGCal', entry_block=entry_block),
+    # fixture_function=lambda clusters: cl3d_fixtures(clusters),
+    # read_entry_block=500,
+    debug=0,
+    # print_function=lambda df: df[['rho', 'eta', 'phi', 'hwQual', 'ptEm', 'egbdtscore', 'pubdtscore', 'egbdtscoreproba', 'pubdtscoreproba', 'pfPuIdScore', 'egEmIdScore']].sort_values(by='rho', ascending=False)
+    print_function=lambda df: df.columns
+    )
+# decHadCaloEndcap.activate()
+
