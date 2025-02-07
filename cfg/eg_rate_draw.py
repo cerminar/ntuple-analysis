@@ -6,6 +6,8 @@ import tabulate
 
 def what(what):
     match what:
+        case 'ctl2_rate':
+            return [histos.RateHistos], 'ctl2_rate', ctl2_rate_draw
         case 'menu_rate':
             return [histos.RateHistos], 'menu_rate', menu_rate_draw
         case 'menu_ratecounter':
@@ -92,22 +94,40 @@ def singleobjcounter(hplot, smp_table, smp, obj, sels):
 
 def menu_rate_draw(hplot, smps, wc):
     menu = [   
-        (['TkEleL2'], ['MenuEleLoose'], 'hRate_TkEleL2_MenuEleLoose', {}),
-        (['TkEleL2'], ['MenuEleTight'], 'hRate_TkEleL2_MenuEleTight', {}),
-        (['TkEleL2'], ['MenuEleLooseEtaEE'], 'hRate_TkEleL2_MenuEleLooseEtaEE', {}),
-        (['TkEleL2'], ['MenuEleTightEtaEE'], 'hRate_TkEleL2_MenuEleTightEtaEE', {}),
-        (['TkEleL2'], ['MenuEleLooseEtaEB'], 'hRate_TkEleL2_MenuEleLooseEtaEB', {}),
-        (['TkEleL2'], ['MenuEleTightEtaEB'], 'hRate_TkEleL2_MenuEleTightEtaEB', {'x_min': 20, 'x_max': 40, 'y_min_diff': -5, 'y_max_diff': 5, 'v_lines': [29.0]}),
-        (['TkEleL2'], ['MenuEleIsoLoose'], 'hRate_TkEleL2_MenuEleIsoLoose', {}),
-        (['TkEleL2'], ['MenuEleIsoTight'], 'hRate_TkEleL2_MenuEleIsoTight', {}),
-        (['TkEleL2'], ['MenuEleIsoTightEtaEB'], 'hRate_TkEleL2_MenuEleIsoTightEtaEB', {}),
-        (['TkEleL2'], ['MenuEleIsoTight', 'MenuEleIsoLoose'], 'hRate_TkEleL2_MenuEleIso', {}),
-        (['TkEmL2'], ['MenuPhoIso'], 'hRate_TkEmL2_MenuPhoIso', {}),
-        (['TkEmL2'], ['MenuPhoIsoEtaEE'], 'hRate_TkEmL2_MenuPhoIsoEtaEE', {}),
-        (['TkEmL2'], ['MenuPhoIsoEtaEB'], 'hRate_TkEmL2_MenuPhoIsoEtaEB', {}),
-        (['EGStaEE'], ['MenuSta'], 'hRate_EGStaEE_MenuSta', {}),
-        (['EGStaEB'], ['MenuSta'], 'hRate_EGStaEB_MenuSta', {}),
-        (['DoubleTkEmL2'], ['MenuDoubleIsoTkPho22-X'], 'hRate_DoubleTkEmL2_DoubleIsoTkPho22-X', {})
+        (['TkEleL2'], ['MenuEleLoose'], 'TkEleL2_MenuEleLoose', {}),
+        (['TkEleL2'], ['MenuEleTight'], 'TkEleL2_MenuEleTight', {}),
+        (['TkEleL2'], ['MenuEleLooseEtaEE'], 'TkEleL2_MenuEleLooseEtaEE', {}),
+        (['TkEleL2'], ['MenuEleTightEtaEE'], 'TkEleL2_MenuEleTightEtaEE', {}),
+        (['TkEleL2'], ['MenuEleLooseEtaEB'], 'TkEleL2_MenuEleLooseEtaEB', {}),
+        (['TkEleL2'], ['MenuEleTightEtaEB'], 'TkEleL2_MenuEleTightEtaEB', {'x_min': 20, 'x_max': 40, 'y_min_diff': -5, 'y_max_diff': 5, 'v_lines': [29.0]}),
+        (['TkEleL2'], ['MenuEleIsoLoose'], 'TkEleL2_MenuEleIsoLoose', {}),
+        (['TkEleL2'], ['MenuEleIsoTight'], 'TkEleL2_MenuEleIsoTight', {}),
+        (['TkEleL2'], ['MenuEleIsoTightEtaEB'], 'TkEleL2_MenuEleIsoTightEtaEB', {}),
+        (['TkEleL2'], ['MenuEleIsoTight', 'MenuEleIsoLoose'], 'TkEleL2_MenuEleIso', {}),
+        (['TkEmL2'], ['MenuPhoIso'], 'TkEmL2_MenuPhoIso', {}),
+        (['TkEmL2'], ['MenuPhoIsoEtaEE'], 'TkEmL2_MenuPhoIsoEtaEE', {}),
+        (['TkEmL2'], ['MenuPhoIsoEtaEB'], 'TkEmL2_MenuPhoIsoEtaEB', {}),
+        (['EGStaEE'], ['MenuSta'], 'EGStaEE_MenuSta', {}),
+        (['EGStaEB'], ['MenuSta'], 'EGStaEB_MenuSta', {}),
+        (['DoubleTkEmL2'], ['MenuDoubleIsoTkPho22-X'], 'DoubleTkEmL2_DoubleIsoTkPho22-X', {})
+    ]
+    draw_rate(hplot, smps, wc, draw_style=draw_config, configs=menu)
+
+def ctl2_rate_draw(hplot, smps, wc):
+    menu = [
+        (['TkEleL2'],       ['all'],                    'TkEleL2_all',          {}),
+        (['TkEleL2'],       ['EtaEB'],                  'TkEleL2_EtaEB',        {}),
+        (['TkEleL2'],       ['EtaEE'],                  'TkEleL2_EtaEE',        {}),
+        (['TkEleL2'],       ['IDTightE'],               'TkEleL2_IDTightE',          {}),
+        (['TkEleL2'],       ['IDTightEEtaEB'],          'TkEleL2_IDTightEEtaEB',        {}),
+        (['TkEleL2'],       ['IDTightEEtaEE'],          'TkEleL2_IDTightEEtaEE',        {}),
+
+        (['TkEmL2'],       ['all'],                    'TkEmL2_all',          {}),
+        (['TkEmL2'],       ['EtaEB'],                  'TkEmL2_EtaEB',        {}),
+        (['TkEmL2'],       ['EtaEE'],                  'TkEmL2_EtaEE',        {}),
+        (['TkEmL2'],       ['IDTightP'],               'TkEmL2_IDTightP',          {}),
+        (['TkEmL2'],       ['IDTightPEtaEB'],          'TkEmL2_IDTightPEtaEB',        {}),
+        (['TkEmL2'],       ['IDTightPEtaEE'],          'TkEmL2_IDTightPEtaEE',        {}),
 
     ]
     draw_rate(hplot, smps, wc, draw_style=draw_config, configs=menu)
@@ -115,16 +135,12 @@ def menu_rate_draw(hplot, smps, wc):
 
 def rate_pho_iso_draw(hplot, smps, wc):
     menu = [   
-        (['TkEmL2IsoWP'], ['MenuPhoIso'], 'hRate_TkEmL2_MenuPhoIso', {}),
-        (['TkEmL2IsoWP'], ['MenuPhoIsoEtaEE'], 'hRate_TkEmL2_MenuPhoIsoEtaEE', {}),
-        (['TkEmL2IsoWP'], ['MenuPhoIsoEtaEB'], 'hRate_TkEmL2_MenuPhoIsoEtaEB', {}),
-        (['TkEmL2IsoWP'], ['L2IDPhoL', 'L2IDPhoT', 'L2IDPhoLL2Iso', 'L2IDPhoTL2Iso'], 'hRate_TkEmL2_Pho', {}),
-        (['TkEmL2IsoWP'], ['L2IDPhoL', 'L2IDPhoLL2Iso', 'L2IDPhoLIsoPho90','L2IDPhoLIsoPho92','L2IDPhoLIsoPho94','L2IDPhoLIsoPho96', 'L2IDPhoLIsoPho98'], 'hRate_TkEmL2_PhoIsoFlatEff', {'y_min_diff': -200, 'y_max_diff': 0}),
-
-        (['DoubleTkEmL2IsoWP'], 
-         ['MenuDoubleIsoTkPho22-X', 'MenuDoubleIso94TkPho22-X','MenuDoubleIso90TkPho22-X','MenuDoubleIso92TkPho22-X','MenuDoubleIso94TkPho22-X','MenuDoubleIso96TkPho22-X', 'MenuDoubleIso98TkPho22-X', 'MenuDoubleIsoOneTkPho22-X', 'MenuDoubleTkPho22-X'], 
-         'hRate_DoubleTkEmL2_DoubleTkPho22-X', {'y_min': 0.5, 'y_max': 1000, 'x_min': 0, 'x_max': 40, 'v_lines': [12]})
-
+        (['TkEmL2IsoWP'],       ['MenuPhoIso'],                    'TkEmL2_MenuPhoIso',                    {}),
+        (['TkEmL2IsoWP'],       ['MenuPhoIsoEtaEE'],               'TkEmL2_MenuPhoIsoEtaEE',               {}),
+        (['TkEmL2IsoWP'],       ['MenuPhoIsoEtaEB'],               'TkEmL2_MenuPhoIsoEtaEB',               {}),
+        (['TkEmL2IsoWP'],       ['L2IDPhoL', 'L2IDPhoT', 'L2IDPhoLL2Iso', 'L2IDPhoTL2Iso'], 'TkEmL2_Pho', {}),
+        (['TkEmL2IsoWP'],       ['L2IDPhoL', 'L2IDPhoLL2Iso', 'L2IDPhoLIsoPho90','L2IDPhoLIsoPho92','L2IDPhoLIsoPho94','L2IDPhoLIsoPho96', 'L2IDPhoLIsoPho98'], 'TkEmL2_PhoIsoFlatEff', {'y_min_diff': -200, 'y_max_diff': 0}),
+        (['DoubleTkEmL2IsoWP'], ['MenuDoubleIsoTkPho22-X', 'MenuDoubleIso94TkPho22-X','MenuDoubleIso90TkPho22-X','MenuDoubleIso92TkPho22-X','MenuDoubleIso94TkPho22-X','MenuDoubleIso96TkPho22-X', 'MenuDoubleIso98TkPho22-X', 'MenuDoubleIsoOneTkPho22-X', 'MenuDoubleTkPho22-X'], 'DoubleTkEmL2_DoubleTkPho22-X', {'y_min': 0.5, 'y_max': 1000, 'x_min': 0, 'x_max': 40, 'v_lines': [12]})
     ]
     draw_rate(hplot, smps, wc, draw_style=draw_config, configs=menu)
 
@@ -170,4 +186,4 @@ def draw_rate(hplot, smps, wc, draw_style, configs):
             y_min_diff=opts.get('y_min_diff', 0.), 
             y_max_diff=opts.get('y_max_diff', 100.),
             do_diff=opts.get('do_diff', True))
-        dm.toWeb(name=h_name, page_creator=wc)
+        dm.toWeb(name=f'hRate_{h_name}', page_creator=wc)

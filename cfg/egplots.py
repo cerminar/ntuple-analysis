@@ -19,7 +19,7 @@ class EGPlotter(plotters.GenericDataFramePlotter):
 
 # simple_selections = (selections.Selector('^EGq[4-5]$')*('^Pt[1-3][0]$|all'))()
 
-simple_selections = (selections.Selector('^Pt[1-5]$|all')*('^EtaE[EB]$|all'))()
+simple_selections = (selections.Selector('^Pt[1-5]$|all')*('^EtaE[EB]$|all')*('^IDTight[EPS]$|all'))()
 sta_selection = (selections.Selector('^IDTight[EPS]|all')*selections.Selector('^Pt5|all')*selections.Selector('^EtaABC$|all'))()
 # print(f"simple_selections: {simple_selections}")
 

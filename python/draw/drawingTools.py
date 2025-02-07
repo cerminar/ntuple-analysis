@@ -662,7 +662,7 @@ class DrawMachine(object):
 
             self.canvas.cd(pad_idx[hidx])    
             d_hist = hist
-            if norm:
+            if norm and not hist.Integral() == 0:
                 d_hist = hist.DrawNormalized(opt, 1.)
             else:
                 d_hist.Draw(opt)

@@ -57,7 +57,7 @@ class EGHistos(histos.BaseHistos):
 class EGResoHistos(histos.BaseResoHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-
+            eta_phi_lsb = math.pi / (2*360.)
             self.h_ptResVpt = bh.TH2F(
                 f'{name}_ptResVpt',
                 'EG Pt reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];',
@@ -85,11 +85,11 @@ class EGResoHistos(histos.BaseResoHistos):
             self.h_etaRes = bh.TH1F(
                 f'{name}_etaRes',
                 'EG eta reso; #eta^{L1}-#eta^{GEN}',
-                100, -0.1, 0.1)
+                50, -25*eta_phi_lsb, 25*eta_phi_lsb)
             self.h_phiRes = bh.TH1F(
                 f'{name}_phiRes',
                 'EG phi reso; #phi^{L1}-#phi^{GEN}',
-                100, -0.1, 0.1)
+                50, -25*eta_phi_lsb, 25*eta_phi_lsb)
 
             self.h_exetaRes = bh.TH1F(
                 f'{name}_exetaRes',
@@ -111,7 +111,7 @@ class EGResoHistos(histos.BaseResoHistos):
         # FIXME: weights
 
         bh.fill_1Dhist(self.h_ptRes, (target.pt-reference.pt)/reference.pt)
-        bh.fill_2Dhist(self.h_ptResVpt, reference.pt, target.pt-reference.pt)
+        # bh.fill_2Dhist(self.h_ptResVpt, reference.pt, target.pt-reference.pt)
         bh.fill_1Dhist(self.h_ptResp, target.pt/reference.pt)
         bh.fill_2Dhist(self.h_ptRespVeta, reference.eta, target.pt/reference.pt)
         bh.fill_2Dhist(self.h_ptRespVpt, reference.pt, target.pt/reference.pt)
