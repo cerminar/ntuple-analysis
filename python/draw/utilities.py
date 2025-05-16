@@ -1,10 +1,19 @@
-# %load ./python/utilities.py
+# %load ../python/draw/utilities.py
 import uuid
 import ROOT
-from drawingTools import draw
+# from drawingTools import draw
 import math
 import numpy as np
 
+
+stuff = []
+cache = None
+def histo_median(histo):
+    prob = np.array([0.5])
+    q = np.array([0.])
+    y = histo.GetQuantiles(1, q, prob)
+    median = q[0]
+    return [median]
 
 def effSigma(hist):
     xaxis = hist.GetXaxis()
@@ -45,7 +54,7 @@ def effSigma(hist):
 
     widmin = 9999999.
     # scan the window center
-    for iscan in range(-nrms, nrms+1):
+    for iscan in range(int(-nrms), int(nrms)+1):
         ibm = int((ave-xmin)/bwid+1+iscan)
         x = (ibm-0.5) * bwid + xmin
         xj = x
@@ -85,6 +94,14 @@ def effSigma(hist):
         print("effsigma: Error of type {}".format(ierr))
 
     return widmin
+
+def histo_medianAndEffSigma(histo):
+    prob = np.array([0.5])
+    q = np.array([0.])
+    y = histo.GetQuantiles(1, q, prob)
+    median = q[0]
+    eff_sigma = effSigma(histo)
+    return (median, eff_sigma)
 
 
 def quantiles(yswz, zeroSuppress=True):
@@ -235,6 +252,7 @@ def computeResolution(histo2d,
                       y_axis_range,
                       fit_function,
                       result_index,
+                      draw_bins=False,
                       cache=None):
     global stuff
 
@@ -275,8 +293,9 @@ def computeResolution(histo2d,
         x_low = h2d.GetXaxis().GetBinLowEdge(x_bin_low)
         x_high = h2d.GetXaxis().GetBinUpEdge(x_bin_high)
 #         print 'x_low: {} x_high: {}'.format(x_low, x_high)
-        draw([y_proj], labels=['fit'], text='BIN: ({}, {}) = ({}, {}) GeV, RES: {}'.format(
-                                            x_bin_low, x_bin_high, x_low, x_high, 0))
+        if draw_bins:
+            draw([y_proj], labels=['fit'], text='BIN: ({}, {}) = ({}, {}) GeV, RES: {}'.format(
+                                                x_bin_low, x_bin_high, x_low, x_high, 0))
 
         fit_result = get_results(histo2d.GetName(),
                                  y_proj,
@@ -285,16 +304,52 @@ def computeResolution(histo2d,
                                  cache)
 #         draw([y_proj], labels=['fit'], text='BIN: ({}, {}) = ({}, {}) GeV, RES: {}'.format(
 #                                             x_bin_low, x_bin_high, x_low, x_high, fit_result[result_index]))
+        binwidth = x_high - x_low
+        bincenter = (x_low + x_high) / 2
 
         h2d.SetAxisRange(x_low, x_high)
         x_mean = h2d.GetMean()
+        # print(f'x_low: {x_low}, x_high: {x_high}, x_mean: {x_mean}, binwidth: {binwidth}, bincenter: {bincenter}')
         x.append(x_mean)
-        ex_l.append(0)
-        ex_h.append(0)
+        ex_l.append(x_mean-x_low)
+        ex_h.append(x_high-x_mean)
         y.append(fit_result[result_index])
-        ey_l.append(0)
-        ey_h.append(0)
+        if result_index == 0 and y_proj.GetEntries() > 0:
+            # we use the effective sigma
+            ey_l.append(1.253*fit_result[1]/math.sqrt(y_proj.GetEntries()))
+            ey_h.append(1.253*fit_result[1]/math.sqrt(y_proj.GetEntries()))
+        else:
+            ey_l.append(0)
+            ey_h.append(0)
     return x, y, ex_l, ex_h, ey_l, ey_h
+
+
+def computeResolution_mean(histo2d,
+                          bin_limits=[(3, 6), (7, 12), (13, 23), (24, 34), (35, 49), (50, 100)],
+                          draw_bins=False,
+                          cache=None):
+
+    return computeResolution(histo2d,
+                             bin_limits,
+                             y_axis_range = (0,3),
+                             fit_function = histo_medianAndEffSigma,    
+                             result_index = 0,
+                             draw_bins = draw_bins,
+                             cache = cache)
+
+def computeResolution_effSigma(histo2d,
+                               bin_limits=[(3, 6), (7, 12), (13, 23), (24, 34), (35, 49), (50, 100)],
+                               draw_bins=False,
+                               cache=None):
+
+    return computeResolution(histo2d,
+                             bin_limits,
+                             y_axis_range = (0,3),
+                             fit_function = histo_medianAndEffSigma,    
+                             result_index = 1,
+                             draw_bins = draw_bins,
+                             cache = cache)
+
 
 
 def computeEResolution(h2d_orig,

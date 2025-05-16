@@ -666,7 +666,7 @@ class DrawMachine(object):
                 d_hist = hist.DrawNormalized(opt, 1.)
             else:
                 d_hist.Draw(opt)
-
+            p_idx = 0
             if do_profile:
                 p_idx += 1
                 prof = d_hist.ProfileX(d_hist.GetName()+'_prof_'+str(p_idx),
