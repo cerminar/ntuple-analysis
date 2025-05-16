@@ -784,6 +784,11 @@ menu_sel = [
                         ((Selector('^EtaEB')&('^IDTightE$')&('^IsoEleEB$')&('^PtIsoEleEB22'))|(Selector('^EtaEE$')&('^IsoEleEE$')&('^PtIsoEleEE22'))).one(),
                         ((Selector('^EtaEB')&('^IDTightE$')&('^IDTightE$')&('^PtStaEB12'))|(Selector('^EtaEE$')&('^IDTightS')&('^PtStaEE12'))).one(),
                         Selector('^DRg0p1').one()),
+    build_DiObj_selection('New-DoubleIsoTkEleStaEG22-12', 'New DoubleIsoTkEleStaEG22-12',
+                        ((Selector('^EtaEB')&('^IDTightE$')&('^IsoEleEB$')&('^PtIsoEleEB22'))|(Selector('^EtaEE$')&('^IDTightE$')&('^IsoEleEE$')&('^PtIsoEleEE22'))).one(),
+                        ((Selector('^EtaEB')&('^IDTightE$')&('^PtStaEB12'))|(Selector('^EtaEE$')&('^IDTightS')&('^PtStaEE12'))).one(),
+                        Selector('^DRg0p1').one()),
+    
     # build_DiObj_selection('DoubleIsoTkEleStaEG22-12', 'DoubleIsoTkEleStaEG22-12',
     #                     ((Selector('^EtaEB')&('^IsoEleEB$')&('^PtIsoEleEB22'))|(Selector('^EtaEE$')&('^IsoEleEE$')&('^PtIsoEleEE22'))).one(),
     #                     ((Selector('^EtaEB')&('^IDTightE$')&('^PtStaEB12'))|(Selector('^EtaEE$')&('^IDTightS')&('^PtStaEE12'))).one(),

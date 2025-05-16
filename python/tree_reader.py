@@ -69,9 +69,14 @@ class TreeReader:
         return True
 
     def printEntry(self):
-        print(f'--- File entry: {self.file_entry}, global entry: {self.global_entry}, tot # events: {self.n_tot_entries} @ {datetime.datetime.now()}, MaxRSS {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000000.0:.2f} Mb')
+        evtIndex = self.tree.arrays(['run', 'luminosityBlock', 'event'], library='pd', entry_start=self.file_entry, entry_stop=self.file_entry+1)
+        row = evtIndex.iloc[0]
+
+        print(f'--- File entry: {self.file_entry}, glb. entry: {self.global_entry}, tot evts.: {self.n_tot_entries} (e:{row["event"]} l:{row["luminosityBlock"]} r:{row["run"]}) @ {datetime.datetime.now().replace(microsecond=0)}, MaxRSS {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000000.0:.2f} Mb')
         # print(self.tree.keys())
-        # print(self.tree.arrays(['run', 'lumi', 'event'], library='pd', entry_start=self.file_entry, entry_stop=self.file_entry+1))
+        # print(f"run={row['run']}, lumi={row['luminosityBlock']}, event={row['event']}")
+        # print(.to_dict())
+        # print(f'')
         # self.dump_garbage()
 
     def dump_garbage(self):

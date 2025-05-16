@@ -209,16 +209,17 @@ class BaseUpTuples(BaseHistos):
 
 
 class RateHistos(BaseHistos):
-    def __init__(self, name, var='pt', root_file=None, debug=False):
+    def __init__(self, name, var='pt', bin_range=(0, 100), root_file=None, debug=False):
         if not root_file:
             self.h_norm = bh.TH1F(
                 f'{name}_norm', 
                 '# of events', 
                 1, 1, 2)
+            n_bins = int((bin_range[1] - bin_range[0]) / 1)
             self.h_pt = bh.TH1F(
                 f'{name}_pt', 
                 'rate above p_{T} thresh.; p_{T} [GeV]; rate [kHz];', 
-                100, 0, 100)
+                n_bins, bin_range[0], bin_range[1])
             # self.h_ptVabseta = bh.TH2F(name+'_ptVabseta', 'Candidate p_{T} vs |#eta|; |#eta|; p_{T} [GeV];', 34, 1.4, 3.1, 100, 0, 100)
         self.var = var
 
@@ -1193,38 +1194,6 @@ class TCClusterMatchHistos(BaseHistos):
         rnp.fill_hist(self.h_dtVdu, tcs[['dt', 'du']])
         rnp.fill_hist(self.h_dtVdu2, tcs[['dt', 'du']], tcs['ef'])
         # self.h_fbremVabseta.Fill(cluster.abseta, cluster.fbrem)
-
-
-
-class QuantizationHistos(BaseHistos):
-    def __init__(self, name, features=None, root_file=None, debug=False):
-        if not root_file:
-            self.features = features
-            self.h_features = bh.TH2F_category(
-                f'{name}_features',
-                'features; feature; value',
-                 self.features,
-                 1000, -1000, 1000)
-            self.h_featuresLog2 = bh.TH2F_category(
-                f'{name}_featuresLog2',
-                'featuresLog2; features; log_{2}(value)',
-                 self.features,
-                 64, -32, 32)
-            # for bin,ft in enumerate(features):
-            #     self.h_features.GetXaxis().SetBinLabel(bin+1, ft)
-            #     self.h_featuresLog2.GetXaxis().SetBinLabel(bin+1, ft)
-
-        BaseHistos.__init__(self, name, root_file, debug)
-
-    def fill(self, df):
-        fill = df
-        # print(df.fields)
-        for bin,ft in enumerate(self.features):
-            fill[f'{ft}_bin'] = [ft]
-            fill[f'{ft}_log2'] = np.log2(fill[ft])
-
-            bh.fill_2Dhist(self.h_features, fill[f'{ft}_bin'], fill[ft])
-            bh.fill_2Dhist(self.h_featuresLog2, fill[f'{ft}_bin'], fill[f'{ft}_log2'])
 
 
 class DiObjMassHistos(BaseHistos):

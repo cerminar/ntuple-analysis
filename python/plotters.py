@@ -1079,21 +1079,6 @@ class IsoTuplePlotter(BasePlotter):
                                      debug)
 
 
-class QuantizationPlotter(GenericDataFramePlotter):
-# class QuantizationPlotter(GenericDataFrameLazyPlotter):
-    def __init__(self, data_set, data_selections, features):
-        self.features = features
-        super(QuantizationPlotter, self).__init__(histos.QuantizationHistos, data_set, data_selections)
-
-    def book_histos(self):
-        self.data_set.activate()
-        data_name = self.data_set.name
-        for selection in self.data_selections:
-            self.h_set[selection.name] = self.HistoClass(
-                name=f'{data_name}_{selection.name}_nomatch',
-                features=self.features)
-
-
 class CompTuplesPlotter(GenericDataFramePlotter):
     def __init__(self, obj_set, obj_selections=[selections.Selection('all')]):
         super(CompTuplesPlotter, self).__init__(histos.CompTuples, obj_set, obj_selections)
