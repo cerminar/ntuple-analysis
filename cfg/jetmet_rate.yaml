@@ -1,0 +1,16 @@
+
+common:
+  output_dir:
+    default: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
+    triolet: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
+  plot_version: v200A
+  run_clustering: False
+  run_density_computation: False
+  file_label: jetmet_rate
+
+
+met:
+  plotters:
+    - !!python/name:cfg.jetmet_rate.met_plotters
+  # file_label: met
+
