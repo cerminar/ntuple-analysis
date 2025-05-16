@@ -1,8 +1,8 @@
 import cfg.eg_genmatch
 import python.histos as histos
 from python.draw.drawingTools import *
+import python.draw.utilities as draw_utils
 from cfg.eg_genmatch import EGResoHistos
-
 
 
 
@@ -14,10 +14,10 @@ def what(what):
             return [histos.HistoSetEff], 'eff', egmenu_pho_draw
         case 'ctl2_tkem_iso_pho_draw':
             return [histos.HistoSetEff], 'eff', ctl2_tkem_iso_pho_draw
-        case 'ctl2_tkeg_eff', 'ctl2_tkeg':
-            return [histos.HistoSetEff], 'eff_ctl2', ctl2_tkem_draw
+        case 'ctl2_tkeg':
+            return [histos.HistoSetEff], 'ctl2_eg_eff', ctl2_tkem_draw
         case 'ctl2_tkeg_reso':
-            return [EGResoHistos], 'reso_ctl2', ctl2_tkeg_reso_draw
+            return [EGResoHistos], 'ctl2_eg_reso', ctl2_tkeg_reso_draw
 
 
 
@@ -442,7 +442,7 @@ def ctl2_tkeg_reso_draw(hplot, smps, wc):
         (['TkEmL2',],            ['all'],               ['GEN'],            'TkEmL2_all_GEN',        {'y_min': 1E-5}),
         (['TkEmL2',],            ['all'],               ['GENEtaEB'],       'TkEmL2_all_GENEtaEB',   {'y_min': 1E-5}),
         (['TkEmL2',],            ['all'],               ['GENEtaEE'],       'TkEmL2_all_GENEtaEE',   {'y_min': 1E-5}),
-        (['TkEmL2',],            ['all'],               ['GENEtaEE'],       'TkEmL2_all_GENEtaEE',   {'y_min': 1E-5}),
+        # (['TkEmL2',],            ['all'],               ['GENEtaEE'],       'TkEmL2_all_GENEtaEE',   {'y_min': 1E-5}),
 
         # (['TkEleL2',],            ['IDTightE'],         ['GENPt5to15'],  'TkEleL2_IDTightE_GENPt10to15', {}),
         # (['TkEleL2',],            ['all'],              ['GENPt30'],  'TkEleL2_all_GENPt30', {}),
@@ -459,6 +459,28 @@ def ctl2_tkeg_reso_draw(hplot, smps, wc):
     ]
 
     draw_resp_pt(hplot, smps, wc, draw_style=draw_config, configs=ctl2_ptresp_configs)
+
+
+    ctl2_ptrespvspt_configs = [    
+        # (['TkEleL2',],            ['all'],              ['GEN'],            'TkEleL2_all_GEN',       {}),
+        (['TkEleL2',],            ['all'],              ['GENEtaEB'],       'TkEleL2_all_GENEtaEB',  {}),
+        (['TkEleL2',],            ['all'],              ['GENEtaEE'],       'TkEleL2_all_GENEtaEE',  {}),
+        # (['TkEmL2',],            ['all'],               ['GEN'],            'TkEmL2_all_GEN',        {}),
+        (['TkEmL2',],            ['all'],               ['GENEtaEB'],       'TkEmL2_all_GENEtaEB',   {}),
+        (['TkEmL2',],            ['all'],               ['GENEtaEE'],       'TkEmL2_all_GENEtaEE',   {}),
+
+    ]
+
+    draw_resp_ptVpt(hplot, smps, wc, draw_style=draw_config, configs=ctl2_ptrespvspt_configs)
+
+
+    ctl2_ptrespvseta_configs = [    
+        (['TkEleL2',],            ['all'],              ['GENPt30'],            'TkEleL2_all_GENPt30',       {'x_min': 0}),
+        (['TkEmL2',],            ['all'],               ['GENPt30'],            'TkEmL2_all_GENPt30',        {'x_min': 0}),
+
+    ]
+    draw_resp_ptVeta(hplot, smps, wc, draw_style=draw_config, configs=ctl2_ptrespvseta_configs)
+
 
 
 def draw_resp_pt(hplot, smps, wc_eff, draw_style, configs):
@@ -513,15 +535,13 @@ def draw_resp_pt(hplot, smps, wc_eff, draw_style, configs):
         dm.toWeb(name=f'hPtResp_{h_name}', page_creator=wc_eff)
 
 
-
-
-def draw_reso_eta(hplot, smps, wc_eff, draw_style, configs):
+def draw_resp_ptVpt(hplot, smps, wc_eff, draw_style, configs):
     for objs, objs_sel, gen_sel, h_name, opts in configs:
         if len(smps) == 0:
             continue
 
-        dm = DrawMachine(draw_style)
-        dm.config.legend_position = (0.6,0.7)
+        dm1 = DrawMachine(draw_style)
+        dm1.config.legend_position = (0.6,0.6)
 
         hsets, labels, text = hplot.get_histo(
             EGResoHistos, 
@@ -533,10 +553,20 @@ def draw_reso_eta(hplot, smps, wc_eff, draw_style, configs):
         if not hsets:
             print(' -> skip drawing')
             continue
+
+
+
+        width = 3
+        # FIXME: # of bins is hardcoded for now
+        bin_limits=[(i, i+width-1) for i in range(1, 50, width)]
+        for his in hsets:
+            his.h_ptRespVpt_graph('sigma', '#sigma_{eff} [p_{T}^{L1}/p_{T}^{GEN}]', lambda histo: draw_utils.computeResolution_effSigma(histo, bin_limits=bin_limits, draw_bins=False))
+            his.h_ptRespVpt_graph('median', 'median [p_{T}^{L1}/p_{T}^{GEN}]', lambda histo: draw_utils.computeResolution_mean(histo, bin_limits=bin_limits, draw_bins=False))
+
         # print(f"# of hsets: {len(hsets)}")
         # for hset in hsets:
         #     hset.computeEff(rebin=2)
-        dm.addHistos([his.h_etaRes for his in hsets], labels=labels)
+        dm1.addHistos([his.g_ptRespVpt_median for his in hsets], labels=labels)
 
         # for i in range(1,len(hsets)):
             # print(f'add ratio: {i} to 0')
@@ -546,25 +576,271 @@ def draw_reso_eta(hplot, smps, wc_eff, draw_style, configs):
             # dm.addRatioHisto(4,0)
 
 
-        dm.draw(
+        dm1.draw(
             text=text, 
             x_min=opts.get('x_min'), 
             x_max=opts.get('x_max'), 
-            y_min=opts.get('y_min'), 
-            y_max=opts.get('y_max'), 
-            h_lines=opts.get('h_lines', []),
-            norm=opts.get('norm', True),
-            options=opts.get('options', 'hist'),
+            y_min=opts.get('y_min', 0.75), 
+            y_max=opts.get('y_max', 1.5), 
+            h_lines=opts.get('h_lines', [1]),
+            # norm=opts.get('norm', False),
+            options=opts.get('options', ''),
+            do_ratio=opts.get('do_ratio', False),
+            y_min_ratio=opts.get('y_min_ratio', None),
+            y_max_ratio=opts.get('y_max_ratio', None),
+            h_lines_ratio=opts.get('h_lines_ratio', [0.95, 1., 1.05]),
+            y_log=opts.get('y_log', False),
+            # y_axis_label=opts.get('y_axis_label', 'a.u.')
+            x_axis_label=opts.get('x_axis_label', 'p_{T}^{GEN} [GeV]')
+
+        )
+
+        dm1.toWeb(name=f'hMedianPtRespVpt_{h_name}', page_creator=wc_eff)
+
+        dm2 = DrawMachine(draw_style)
+        dm2.config.legend_position = (0.6,0.6)
+
+        # print(f"# of hsets: {len(hsets)}")
+        # for hset in hsets:
+        #     hset.computeEff(rebin=2)
+        dm2.addHistos([his.g_ptRespVpt_sigma for his in hsets], labels=labels)
+
+        # for i in range(1,len(hsets)):
+            # print(f'add ratio: {i} to 0')
+            # dm.addRatioHisto(i,0)
+            # dm.addRatioHisto(2,0)
+            # dm.addRatioHisto(3,0)
+            # dm.addRatioHisto(4,0)
+
+
+        dm2.draw(
+            text=text, 
+            x_min=opts.get('x_min'), 
+            x_max=opts.get('x_max'), 
+            y_min=opts.get('y_min', 0), 
+            y_max=opts.get('y_max', 0.4), 
+            h_lines=opts.get('h_lines', [0]),
+            # norm=opts.get('norm', False),
+            options=opts.get('options', ''),
             do_ratio=opts.get('do_ratio', False),
             y_min_ratio=opts.get('y_min_ratio', 0.9),
             y_max_ratio=opts.get('y_max_ratio', 1.1),
             h_lines_ratio=opts.get('h_lines_ratio', [0.95, 1., 1.05]),
             y_log=opts.get('y_log', False),
-            y_axis_label=opts.get('y_axis_label', 'a.u.')
+            y_axis_label=opts.get('y_axis_label', ''),
+            x_axis_label=opts.get('x_axis_label', 'p_{T}^{GEN} [GeV]')
+
         )
         # dm.write(name='eg_TDRvsSummer20_matchig_eff')
 
-        dm.toWeb(name=f'hEtaRes_{h_name}', page_creator=wc_eff)
+        dm2.toWeb(name=f'hSigmaPtRespVpt_{h_name}', page_creator=wc_eff)
+
+        dm3 = DrawMachine(draw_style)
+        dm3.config.legend_position = (0.6,0.6)
+
+        hsets, labels, text = hplot.get_histo(
+            EGResoHistos, 
+            smps, 
+            ['PU200'], 
+            objs, 
+            objs_sel, 
+            gen_sel, debug=False)
+        if not hsets:
+            print(' -> skip drawing')
+            continue
+
+
+        # print(f"# of hsets: {len(hsets)}")
+        # for hset in hsets:
+        #     hset.computeEff(rebin=2)
+        dm3.addHistos([his.h_ptRespVpt for his in hsets], labels=labels)
+
+        # for i in range(1,len(hsets)):
+            # print(f'add ratio: {i} to 0')
+            # dm.addRatioHisto(i,0)
+            # dm.addRatioHisto(2,0)
+            # dm.addRatioHisto(3,0)
+            # dm.addRatioHisto(4,0)
+
+
+        dm3.draw(
+            text=text, 
+            x_min=opts.get('x_min'), 
+            x_max=opts.get('x_max'), 
+            y_min=opts.get('y_min'), 
+            y_max=opts.get('y_max'), 
+            h_lines=opts.get('h_lines', [1]),
+            # norm=opts.get('norm', False),
+            options=opts.get('options', 'COLZ'),
+            do_profile=True,
+            do_ratio=opts.get('do_ratio', False),
+            y_min_ratio=opts.get('y_min_ratio', None),
+            y_max_ratio=opts.get('y_max_ratio', None),
+            h_lines_ratio=opts.get('h_lines_ratio', [0.95, 1., 1.05]),
+            y_log=opts.get('y_log', False),
+            # y_axis_label=opts.get('y_axis_label', 'a.u.')
+            x_axis_label=opts.get('x_axis_label', 'p_{T}^{GEN} [GeV]')
+
+        )
+
+        dm3.toWeb(name=f'hPtRespVpt_{h_name}', page_creator=wc_eff)
+
+
+def draw_resp_ptVeta(hplot, smps, wc_eff, draw_style, configs):
+    for objs, objs_sel, gen_sel, h_name, opts in configs:
+        if len(smps) == 0:
+            continue
+
+        dm1 = DrawMachine(draw_style)
+        dm1.config.legend_position = (0.6,0.6)
+
+        hsets, labels, text = hplot.get_histo(
+            EGResoHistos, 
+            smps, 
+            ['PU200'], 
+            objs, 
+            objs_sel, 
+            gen_sel, debug=False)
+        if not hsets:
+            print(' -> skip drawing')
+            continue
+
+
+
+        width = 1
+        # FIXME: # of bins is hardcoded for now
+        bin_limits=[(i, i+width-1) for i in range(0, 40, width)]
+        for his in hsets:
+            his.h_ptRespVeta_graph('sigma', '#sigma_{eff} [p_{T}^{L1}/p_{T}^{GEN}]', lambda histo: draw_utils.computeResolution_effSigma(histo, bin_limits=bin_limits, draw_bins=False))
+            his.h_ptRespVeta_graph('median', 'median [p_{T}^{L1}/p_{T}^{GEN}]', lambda histo: draw_utils.computeResolution_mean(histo, bin_limits=bin_limits, draw_bins=False))
+
+        # print(f"# of hsets: {len(hsets)}")
+        # for hset in hsets:
+        #     hset.computeEff(rebin=2)
+        dm1.addHistos([his.g_ptRespVeta_median for his in hsets], labels=labels)
+
+        # for i in range(1,len(hsets)):
+            # print(f'add ratio: {i} to 0')
+            # dm.addRatioHisto(i,0)
+            # dm.addRatioHisto(2,0)
+            # dm.addRatioHisto(3,0)
+            # dm.addRatioHisto(4,0)
+
+
+        dm1.draw(
+            text=text, 
+            x_min=opts.get('x_min', -3.5), 
+            x_max=opts.get('x_max', 3.5), 
+            y_min=opts.get('y_min', 0.75), 
+            y_max=opts.get('y_max', 1.5), 
+            v_lines=opts.get('v_lines', [-3, -2.4, -1.5, 1.5, 2.4, 3]),
+            h_lines=opts.get('h_lines', [1]),
+            # norm=opts.get('norm', False),
+            options=opts.get('options', ''),
+            do_ratio=opts.get('do_ratio', False),
+            y_min_ratio=opts.get('y_min_ratio', None),
+            y_max_ratio=opts.get('y_max_ratio', None),
+            h_lines_ratio=opts.get('h_lines_ratio', [0.95, 1., 1.05]),
+            y_log=opts.get('y_log', False),
+            # y_axis_label=opts.get('y_axis_label', 'a.u.')
+            x_axis_label=opts.get('x_axis_label', '#eta^{GEN}')
+
+        )
+
+        dm1.toWeb(name=f'hMedianPtRespVeta_{h_name}', page_creator=wc_eff)
+
+        dm2 = DrawMachine(draw_style)
+        dm2.config.legend_position = (0.6,0.6)
+
+        # print(f"# of hsets: {len(hsets)}")
+        # for hset in hsets:
+        #     hset.computeEff(rebin=2)
+        dm2.addHistos([his.g_ptRespVeta_sigma for his in hsets], labels=labels)
+
+        # for i in range(1,len(hsets)):
+            # print(f'add ratio: {i} to 0')
+            # dm.addRatioHisto(i,0)
+            # dm.addRatioHisto(2,0)
+            # dm.addRatioHisto(3,0)
+            # dm.addRatioHisto(4,0)
+
+
+        dm2.draw(
+            text=text, 
+            x_min=opts.get('x_min', -3.5), 
+            x_max=opts.get('x_max', 3.5), 
+            y_min=opts.get('y_min', 0), 
+            y_max=opts.get('y_max', 0.4), 
+            v_lines=opts.get('v_lines', [-3, -2.4, -1.5, 1.5, 2.4, 3]),
+            h_lines=opts.get('h_lines', [0]),
+            # norm=opts.get('norm', False),
+            options=opts.get('options', ''),
+            do_ratio=opts.get('do_ratio', False),
+            y_min_ratio=opts.get('y_min_ratio', 0.9),
+            y_max_ratio=opts.get('y_max_ratio', 1.1),
+            h_lines_ratio=opts.get('h_lines_ratio', [0.95, 1., 1.05]),
+            y_log=opts.get('y_log', False),
+            y_axis_label=opts.get('y_axis_label', ''),
+            x_axis_label=opts.get('x_axis_label', '#eta^{GEN}')
+
+        )
+        # dm.write(name='eg_TDRvsSummer20_matchig_eff')
+
+        dm2.toWeb(name=f'hSigmaPtRespVeta_{h_name}', page_creator=wc_eff)
+
+        dm3 = DrawMachine(draw_style)
+        dm3.config.legend_position = (0.6,0.6)
+
+        hsets, labels, text = hplot.get_histo(
+            EGResoHistos, 
+            smps, 
+            ['PU200'], 
+            objs, 
+            objs_sel, 
+            gen_sel, debug=False)
+        if not hsets:
+            print(' -> skip drawing')
+            continue
+
+
+        # print(f"# of hsets: {len(hsets)}")
+        # for hset in hsets:
+        #     hset.computeEff(rebin=2)
+        dm3.addHistos([his.h_ptRespVeta for his in hsets], labels=labels)
+
+        # for i in range(1,len(hsets)):
+            # print(f'add ratio: {i} to 0')
+            # dm.addRatioHisto(i,0)
+            # dm.addRatioHisto(2,0)
+            # dm.addRatioHisto(3,0)
+            # dm.addRatioHisto(4,0)
+
+
+        dm3.draw(
+            text=text, 
+            x_min=opts.get('x_min', -3.5), 
+            x_max=opts.get('x_max', 3.5), 
+            y_min=opts.get('y_min'), 
+            y_max=opts.get('y_max'), 
+            v_lines=opts.get('v_lines', [-3, -2.4, -1.5, 1.5, 2.4, 3]),
+            h_lines=opts.get('h_lines', [1]),
+            # norm=opts.get('norm', False),
+            options=opts.get('options', 'COLZ'),
+            do_profile=True,
+            do_ratio=opts.get('do_ratio', False),
+            y_min_ratio=opts.get('y_min_ratio', None),
+            y_max_ratio=opts.get('y_max_ratio', None),
+            h_lines_ratio=opts.get('h_lines_ratio', [0.95, 1., 1.05]),
+            y_log=opts.get('y_log', False),
+            # y_axis_label=opts.get('y_axis_label', 'a.u.')
+            x_axis_label=opts.get('x_axis_label')
+
+        )
+
+        dm3.toWeb(name=f'hPtRespVeta_{h_name}', page_creator=wc_eff)
+
+
+
 
 
 def draw_reso_eta(hplot, smps, wc_eff, draw_style, configs):
@@ -612,7 +888,9 @@ def draw_reso_eta(hplot, smps, wc_eff, draw_style, configs):
             y_max_ratio=opts.get('y_max_ratio', 1.1),
             h_lines_ratio=opts.get('h_lines_ratio', [0.95, 1., 1.05]),
             y_log=opts.get('y_log', False),
-            y_axis_label=opts.get('y_axis_label', 'a.u.')
+            y_axis_label=opts.get('y_axis_label', 'a.u.'),
+            x_axis_label=opts.get('x_axis_label', '#eta^{L1}-#eta^{GEN}')
+
         )
         # dm.write(name='eg_TDRvsSummer20_matchig_eff')
 
@@ -664,7 +942,8 @@ def draw_reso_phi(hplot, smps, wc_eff, draw_style, configs):
             y_max_ratio=opts.get('y_max_ratio', 1.1),
             h_lines_ratio=opts.get('h_lines_ratio', [0.95, 1., 1.05]),
             y_log=opts.get('y_log', False),
-            y_axis_label=opts.get('y_axis_label', 'a.u.')
+            y_axis_label=opts.get('y_axis_label', 'a.u.'),
+            x_axis_label=opts.get('x_axis_label', '#phi^{L1}-#phi^{GEN}')
         )
         # dm.write(name='eg_TDRvsSummer20_matchig_eff')
 
