@@ -1,4 +1,5 @@
-from python import collections, plotters, selections
+from python import plotters, selections
+import cfg.datasets.fastpuppi_collections as coll
 
 # sim_eg_match_ee_selections = (selections.Selector('^EGq[4-5]$')*('^Pt[1-3][0]$|all'))()
 # gen_ee_tk_selections = (selections.Selector('GEN$')*('Ee$')*('^Eta[A-C]$|EtaBC$|all')+selections.Selector('GEN$')*('Ee$')*('Pt15|Pt30'))()
@@ -26,23 +27,23 @@ double_gen_selections = [
 
 diobj_mass = [
     plotters.DiObjMassPlotter(
-        collections.DoubleTkEleL2,
+        coll.DoubleTkEleL2,
         diobj_eta_selections
     ),
-    plotters.DiObjMassPlotter(
-        collections.DoubleSimEle,
-        double_gen_selections
-    ),
+    # plotters.DiObjMassPlotter(
+    #     coll.DoubleSimEle,
+    #     double_gen_selections
+    # ),
 
 ]
 
 
 
 eg_resotuples_plotters = [
-    plotters.ResoNtupleMatchPlotter(
-        collections.TkEleL2, collections.sim_parts,
-        egid_tkele_selections,
-        gen_selections),
+    # plotters.ResoNtupleMatchPlotter(
+    #     collections.TkEleL2, collections.sim_parts,
+    #     egid_tkele_selections,
+    #     gen_selections),
     # plotters.ResoNtupleMatchPlotter(
     #     collections.egs_brl, collections.gen_parts,
     #     selections.barrel_quality_selections,

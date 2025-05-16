@@ -164,9 +164,9 @@ l1tcorr_input_occ = [
 
 
 l1tcorr_tkcl3dmatch_input_occ = [
-    CorrOccupancyPlotter(
-        coll.tkCl3DMatch,
-        pfin_tkcl3dmatch_selections),
+    # CorrOccupancyPlotter(
+    #     coll.tkCl3DMatch,
+    #     pfin_tkcl3dmatch_selections),
     CorrOccupancyPlotter(
         coll.hgc_cl3d_pfinputs,
         pfin_hgc_tp_selections),

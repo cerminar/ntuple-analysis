@@ -24,3 +24,18 @@ piid:
   plotters:
     - !!python/name:cfg.hgcIdTuples.piid_plotters
   file_label: pi
+
+egid_cl3d:
+  plotters:
+    - !!python/name:cfg.hgcIdTuples.egid_cl3d_plotters
+  file_label: cl3deg
+
+puid_cl3d:
+  plotters:
+    - !!python/name:cfg.hgcIdTuples.pu_cl3d_plotters
+  file_label: cl3dpu
+
+piid_cl3d:
+  plotters:
+    - !!python/name:cfg.hgcIdTuples.piid_cl3d_plotters
+  file_label: cl3dpi

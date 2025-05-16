@@ -2,6 +2,7 @@ from python import plotters, selections, calibrations, histos
 import python.boost_hist as bh
 import cfg.datasets.fastpuppi_collections as coll
 import awkward as ak
+import numpy as np
 import math
 
 # ------ Histogram classes ----------------------------------------------
@@ -22,6 +23,7 @@ class EGHistos(histos.BaseHistos):
 
             self.h_n = bh.TH1F(f'{name}_n', '# objects per event', 100, 0, 100)
             self.h_idScore = bh.TH1F(f'{name}_idScore', 'ID BDT Score', 50, -1, 1)
+            self.h_dEtaVsdPhi = bh.TH2F(f'{name}_dEtaVsdPhi', 'dEta vs dPhi; #Delta#phi; #Delta#eta', 100, -0.5, 0.5, 100, -0.5, 0.5)
 
         histos.BaseHistos.__init__(self, name, root_file, debug)
 
@@ -47,6 +49,9 @@ class EGHistos(histos.BaseHistos):
             bh.fill_1Dhist(hist=self.h_compBdt, array=egs.compBDTScore, weights=weight)
         if 'idScore' in egs.fields:
             bh.fill_1Dhist(hist=self.h_idScore, array=egs.idScore, weights=weight)
+        if 'deta' in egs.fields and 'dphi' in egs.fields:
+            bh.fill_2Dhist(hist=self.h_dEtaVsdPhi, arrayX=egs.dphi, arrayY=egs.deta, weights=weight)
+
         # print(ak.count(egs.pt, axis=1))
         # print(egs.pt.type.show())
         # print(ak.count(egs.pt, axis=1).type.show())
@@ -79,7 +84,7 @@ class EGResoHistos(histos.BaseResoHistos):
             self.h_ptRespVeta = bh.TH2F(
                 f'{name}_ptRespVeta',
                 'EG Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};',
-                50, -4, 4,
+                50, 0, 4,
                 100, 0, 3)
 
             self.h_etaRes = bh.TH1F(
@@ -113,7 +118,7 @@ class EGResoHistos(histos.BaseResoHistos):
         bh.fill_1Dhist(self.h_ptRes, (target.pt-reference.pt)/reference.pt)
         # bh.fill_2Dhist(self.h_ptResVpt, reference.pt, target.pt-reference.pt)
         bh.fill_1Dhist(self.h_ptResp, target.pt/reference.pt)
-        bh.fill_2Dhist(self.h_ptRespVeta, reference.eta, target.pt/reference.pt)
+        bh.fill_2Dhist(self.h_ptRespVeta, np.abs(reference.eta), target.pt/reference.pt)
         bh.fill_2Dhist(self.h_ptRespVpt, reference.pt, target.pt/reference.pt)
         bh.fill_1Dhist(self.h_etaRes, target.eta - reference.eta)
         bh.fill_1Dhist(self.h_phiRes, target.phi - reference.phi)

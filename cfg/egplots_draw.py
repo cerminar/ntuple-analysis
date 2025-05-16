@@ -10,7 +10,7 @@ from python.draw.drawingTools import *
 def what(what):
     match what:
         case 'tkeg_plots':
-            return [EGHistos], 'unmatched', tkeg_plots_draw
+            return [EGHistos], 'eg_unmatched', tkeg_plots_draw
 
 
 

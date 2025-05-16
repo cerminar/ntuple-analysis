@@ -133,7 +133,6 @@ class BaseRateCounter(plotters.BasePlotter):
             # print(f' .  # of read entries: {self.tp_set.new_read_nentries}')
             # print(self.tp_set.df.show())
             # print(self.tp_set.df.pt)
-            # print(self.tp_set.df.rho)
 
             sel_clusters = self.tp_set.df[selection.selection(self.tp_set.df)]
             # print(sel_clusters)

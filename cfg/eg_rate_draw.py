@@ -7,9 +7,9 @@ import tabulate
 def what(what):
     match what:
         case 'ctl2_rate':
-            return [histos.RateHistos], 'ctl2_rate', ctl2_rate_draw
+            return [histos.RateHistos], 'ctl2_eg_rate', ctl2_rate_draw
         case 'menu_rate':
-            return [histos.RateHistos], 'menu_rate', menu_rate_draw
+            return [histos.RateHistos], 'menu_eg_rate', menu_rate_draw
         case 'menu_ratecounter':
             return [SingleObjRateHistoCounter, DoubleObjRateHistoCounter], 'menu_ratecounter', menu_ratecounter_draw
         case 'rate_pho_iso':
@@ -99,10 +99,10 @@ def menu_rate_draw(hplot, smps, wc):
         (['TkEleL2'], ['MenuEleLooseEtaEE'], 'TkEleL2_MenuEleLooseEtaEE', {}),
         (['TkEleL2'], ['MenuEleTightEtaEE'], 'TkEleL2_MenuEleTightEtaEE', {}),
         (['TkEleL2'], ['MenuEleLooseEtaEB'], 'TkEleL2_MenuEleLooseEtaEB', {}),
-        (['TkEleL2'], ['MenuEleTightEtaEB'], 'TkEleL2_MenuEleTightEtaEB', {'x_min': 20, 'x_max': 40, 'y_min_diff': -5, 'y_max_diff': 5, 'v_lines': [29.0]}),
+        (['TkEleL2'], ['MenuEleTightEtaEB'], 'TkEleL2_MenuEleTightEtaEB', {'y_min_diff': -5, 'y_max_diff': 5, 'v_lines': [29.0]}),
         (['TkEleL2'], ['MenuEleIsoLoose'], 'TkEleL2_MenuEleIsoLoose', {}),
         (['TkEleL2'], ['MenuEleIsoTight'], 'TkEleL2_MenuEleIsoTight', {}),
-        (['TkEleL2'], ['MenuEleIsoTightEtaEB'], 'TkEleL2_MenuEleIsoTightEtaEB', {}),
+        (['TkEleL2'], ['MenuEleIsoTightEtaEB'], 'TkEleL2_MenuEleIsoTightEtaEB', {'y_min_diff': 0, 'y_max_diff': 10, 'v_lines': [29.0]}),
         (['TkEleL2'], ['MenuEleIsoTight', 'MenuEleIsoLoose'], 'TkEleL2_MenuEleIso', {}),
         (['TkEmL2'], ['MenuPhoIso'], 'TkEmL2_MenuPhoIso', {}),
         (['TkEmL2'], ['MenuPhoIsoEtaEE'], 'TkEmL2_MenuPhoIsoEtaEE', {}),
