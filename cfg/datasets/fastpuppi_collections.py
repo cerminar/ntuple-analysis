@@ -49,7 +49,7 @@ def cl3d_fixtures(clusters):
     clusters['IDLooseEm'] = np.bitwise_and(clusters.hwQual, mask_loose) > 0
     clusters['eMax'] = clusters.emaxe*clusters.energy
     # clusters['passMcPuId'] = clusters.multiClassPuIdScore < 0.4878136
-    clusters['passMcEmId'] = clusters.multiClassEmIdScore > 0.115991354
+    # clusters['passMcEmId'] = clusters.multiClassEmIdScore > 0.115991354
 
     # clusters['meanz_scaled'] = clusters.meanz-320.
     # clusters['abseta'] =  np.abs(clusters.eta)
@@ -115,8 +115,11 @@ def quality_flags(objs):
     return objs
 
 def quality_ele_fixtures(objs):
-    # print(objs)
+    # print(objs.fields)
     objs['dpt'] = objs.tkPt - objs.pt
+    objs['deta'] = objs.tkEta - objs.caloEta
+    objs['dphi'] = objs.tkPhi - objs.caloPhi
+
     return quality_flags(objs)
 
 def decodedTk_fixtures(objects):
@@ -195,7 +198,10 @@ def diele_fixtures(obj):
     obj['idScore'] = obj.leg0.idScore + obj.leg1.idScore    
     return obj
 
-
+def endcap_decCalo_fixtures(obj):
+    obj['hwAbsetaOffset256'] = obj.hwAbseta - 256
+    obj['hwAbsetaOffset320'] = obj.hwAbseta - 320
+    return obj
 
 def map2pfregions(objects, eta_var, phi_var, fiducial=False):
     for ieta, eta_range in enumerate(pf_regions.regionizer.get_eta_boundaries(fiducial)):
@@ -324,7 +330,7 @@ gen_jet = DFCollection(
     fixture_function=mc_fixtures,
     # print_function=lambda df: df[['pdgid', 'pt', 'eta', 'phi']],
     # print_function=lambda df: df[(df.pdgid==23 | (abs(df.pdgid)==15))],
-    max_print_lines=None,
+    # max_print_lines=None,
     debug=0)
 
 
@@ -389,6 +395,7 @@ TkEmL2 = DFCollection(
     name='TkEmL2', label='TkEm L2',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='TkEmL2', entry_block=entry_block),
+    print_function=lambda df: df[np.abs(df.eta) > 1.479][['pt', 'eta', 'phi']],
     fixture_function=quality_flags,
     debug=0)
 
@@ -427,6 +434,7 @@ DoubleTkEmL2 = DFCollection(
     name='DoubleTkEmL2', label='DoubleTkEm L2',
     filler_function=lambda event, entry_block: build_double_obj(obj=TkEmL2.df),
     fixture_function=double_obj_fixtures,
+    # print_function=lambda df: df[[('leg0', 'pt'), ('leg0', 'eta'), ('leg0', 'phi'), ('leg1', 'pt'), ('leg1', 'eta'), ('leg1', 'phi')]],
     depends_on=[TkEmL2],
     debug=0)
 
@@ -652,13 +660,6 @@ tk_pfinputs = DFCollection(
     depends_on=[tracks],
     debug=0)
 
-pfjets = DFCollection(
-    name='PFJets', label='Ak4 PFJets',
-    filler_function=lambda event, entry_block: event.getDataFrame(
-        prefix='L1PFJets', entry_block=entry_block),
-    print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
-    debug=0)
-
 TkEmL2IsoWP = DFCollection(
     name='TkEmL2IsoWP', label='TkEm L2',
     filler_function=lambda event, entry_block: TkEmL2.df,
@@ -734,15 +735,157 @@ decHadCaloBarrel= DFCollection(
     )
 # decHadCaloBarrel.activate()
 
-decHadCaloEndcap= DFCollection(
-    name='DecHadCaloEndcap', label='DecHadCaloEndcap',
+decHadCaloHgcal= DFCollection(
+    name='decHadCaloHgcal', label='DecHadCaloHGCal',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='DecHadCaloHGCal', entry_block=entry_block),
+    fixture_function=endcap_decCalo_fixtures,
+    # read_entry_block=500,
+    debug=0,
+    # print_function=lambda df: df[['rho', 'eta', 'phi', 'hwQual', 'ptEm', 'egbdtscore', 'pubdtscore', 'egbdtscoreproba', 'pubdtscoreproba', 'pfPuIdScore', 'egEmIdScore']].sort_values(by='rho', ascending=False)
+    # print_function=lambda df: df.columns
+    )
+# decHadCaloHgcal.activate()
+
+decHadCaloHgcalNoTk= DFCollection(
+    name='decHadCaloHgcalNoTk', label='DecHadCaloHGCalNoTK',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='DecHadCaloHGCalNoTK', entry_block=entry_block),
+    fixture_function=endcap_decCalo_fixtures,
+    # read_entry_block=500,
+    debug=0,
+    # print_function=lambda df: df[['rho', 'eta', 'phi', 'hwQual', 'ptEm', 'egbdtscore', 'pubdtscore', 'egbdtscoreproba', 'pubdtscoreproba', 'pfPuIdScore', 'egEmIdScore']].sort_values(by='rho', ascending=False)
+    # print_function=lambda df: df.columns
+    )
+# decHadCaloHgcalNoTk.activate()
+
+decHadCaloEndcap= DFCollection(
+    name='DecHadCaloEndcap', label='DecHadCaloEndcap',
+    filler_function=lambda event, entry_block: merge_collections(decHadCaloHgcal.df, decHadCaloHgcalNoTk.df),
+    fixture_function=endcap_decCalo_fixtures,
+    # read_entry_block=500,
+    debug=0,
+    # print_function=lambda df: df[['rho', 'eta', 'phi', 'hwQual', 'ptEm', 'egbdtscore', 'pubdtscore', 'egbdtscoreproba', 'pubdtscoreproba', 'pfPuIdScore', 'egEmIdScore']].sort_values(by='rho', ascending=False)
+    # print_function=lambda df: df.columns,
+    depends_on=[decHadCaloHgcal, decHadCaloHgcalNoTk]
+    )
+# decHadCaloEndcap.activate()
+
+decEmCaloBarrel= DFCollection(
+    name='DecEmCaloBarrel', label='DecEmCaloBarrel',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='DecEmCaloBarrel', entry_block=entry_block),
     # fixture_function=lambda clusters: cl3d_fixtures(clusters),
     # read_entry_block=500,
     debug=0,
     # print_function=lambda df: df[['rho', 'eta', 'phi', 'hwQual', 'ptEm', 'egbdtscore', 'pubdtscore', 'egbdtscoreproba', 'pubdtscoreproba', 'pfPuIdScore', 'egEmIdScore']].sort_values(by='rho', ascending=False)
     print_function=lambda df: df.columns
     )
-# decHadCaloEndcap.activate()
+# decHadCaloBarrel.activate()
+
+calo_jets = DFCollection(
+    name='CaloJets', label='Ak4 CaloJets',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='L1CaloJets', entry_block=entry_block),
+    print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    debug=0)
+
+pf_jets = DFCollection(
+    name='PFJets', label='Ak4 PFJets',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='L1PFJets', entry_block=entry_block),
+    print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    debug=0)
+
+puppi_jets = DFCollection(
+    name='PuppiJets', label='Ak4 PuppiJets',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='L1PuppiJets', entry_block=entry_block),
+    print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    debug=0)
+
+tk_jets = DFCollection(
+    name='TkJets', label='Ak4 TkJets',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='L1TKJets', entry_block=entry_block),
+    print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    debug=0)
+
+sc_corr_jets = DFCollection(
+    name='scPuppiCorrJets', label='SC Corr. Jets',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='scPuppiCorrJets', entry_block=entry_block),
+    print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    debug=0)
+
+sc_jets = DFCollection(
+    name='scPuppiJets', label='SC Jets',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='scPuppiJets', entry_block=entry_block),
+    print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    debug=0)
+
+sim_sc_jets = DFCollection(
+    name='scPuppiSimJets', label='SC Sim. Jets',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='scPuppiSimJets', entry_block=entry_block),
+    print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    debug=0)
+
+calo_met_central = DFCollection(
+    name='CaloMetCentral', label='Calo Met Central',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='L1CaloMetCentral', entry_block=entry_block),
+    print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    debug=0)
+
+pf_met_central = DFCollection(
+    name='PFMetCentral', label='PF Met Central',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='L1PFMetCentral', entry_block=entry_block),
+    print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    debug=0)
+
+puppi_met_central = DFCollection(
+    name='PuppiMetCentral', label='Puppi Met Central',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='L1PuppiMetCentral', entry_block=entry_block),
+    print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    debug=0)
+
+tk_met_central = DFCollection(
+    name='TkMetCentral', label='Tk Met Central',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='L1TKMetCentral', entry_block=entry_block),
+    print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    debug=0)
+
+calo_met = DFCollection(
+    name='CaloMet', label='Calo Met',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='L1CaloMet', entry_block=entry_block),
+    print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    debug=0)
+
+pf_met = DFCollection(
+    name='PFMet', label='PF Met',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='L1PFMet', entry_block=entry_block),
+    print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    debug=0)
+
+
+puppi_met = DFCollection(
+    name='PuppiMet', label='Puppi Met',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='L1PuppiMet', entry_block=entry_block),
+    print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    debug=0)
+
+tk_met = DFCollection(
+    name='TkMet', label='Tk Met',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='L1TKMet', entry_block=entry_block),
+    print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    debug=0)
 
