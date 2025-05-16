@@ -8,9 +8,9 @@ common:
   run_density_computation: False
 # +AccountingGroup = "group_u_CMS.u_zh.users"
 # +AccountingGroup = "group_u_CMST3.all"
-  file_label: egplots
+  file_label: qt
 
-tkeg_plots:
+hgcid:
   plotters:
-    # - !!python/name:cfg.egplots.l1tc_simple_plotters
-    - !!python/name:cfg.egplots.l1ct_tkegl2_plotters
+    - !!python/name:cfg.quantization.hgcid_plotters
+  file_label: hgcid

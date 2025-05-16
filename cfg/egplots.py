@@ -45,11 +45,6 @@ l1ct_tkegl2_plotters = [
 ]
 
 
-quantization_plotters = [
-    plotters.QuantizationPlotter(coll.hgc_cl3d,  simple_selections, ['pt', 'hoe', 'srrtot', 'meanz_scaled']),
-    plotters.QuantizationPlotter(coll.tracks,  simple_selections, ['nStubs', 'chi2'])
-
-]
 
 # for sel in simple_selections:
 #     print(sel)
