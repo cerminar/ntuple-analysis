@@ -30,7 +30,7 @@ draw_config.additional_text = [(0.13, 0.91, '#scale[1.5]{CMS} #it{#scale[1.]{Pha
 def menu_ratecounter_draw(hplot, smps, wc):
     smp_table = {}
     for smp in smps:
-        smp_table[smp] = []
+        smp_table[smp.type] = []
     
     menu_single = [
         (['TkEleL2'], ['SingleTkEle36', 'SingleTkEle36EtaEB', 'SingleTkEle36EtaEE'], {}),
@@ -51,15 +51,15 @@ def menu_ratecounter_draw(hplot, smps, wc):
 
     for smp in smps:
         for obj, sels, opts in menu_single:
-            singleobjcounter(hplot, smp_table, smp, obj, sels)
+            singleobjcounter(hplot, smp_table, smp.type, obj, sels)
 
     for smp in smps:
         for obj, sels, opts in menu_double:
-            doubleobjcounter(hplot, smp_table, smp, obj, sels)
+            doubleobjcounter(hplot, smp_table, smp.type, obj, sels)
 
     for smp in smps:
-        print(f'--- {smp} ----------------------------------------')
-        print(tabulate.tabulate(smp_table[smp], headers=[
+        print(f'--- {smp.label} ----------------------------------------')
+        print(tabulate.tabulate(smp_table[smp.type], headers=[
             'seed', 
             'rate [kHz]', 
             f'rate EB [kHz]', 
@@ -153,7 +153,7 @@ def draw_rate(hplot, smps, wc, draw_style, configs):
         dm = DrawMachine(draw_style)
         dm.config.legend_position = (0.4, 0.45)
 
-        hsets, labels, text = hplot.get_histo(histos.RateHistos, smps, 'PU200', objs, objs_sel, None)
+        hsets, labels, text = hplot.get_histo(histos.RateHistos, [s.type for s in smps], 'PU200', objs, objs_sel, None)
         if not hsets:
             print(' -> skip draw')
             continue

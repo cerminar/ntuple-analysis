@@ -113,11 +113,11 @@ def draw(
         topic_dir=wc_label, 
         project_dir=project_dir, 
         base_dir=base_dir, 
-        tmp_dir=os.environ['TMPDIR'],
+        tmp_dir=f"{os.environ['TMPDIR']}/tmpdir",
         samples=samples)
     
     # draw_func = getattr(draw_module, f'{what}_draw')
-    draw_func(hplot, smps, wc)
+    draw_func(hplot, samples, wc)
     wc.publish()
 
 

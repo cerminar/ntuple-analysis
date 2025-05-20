@@ -161,7 +161,7 @@ def draw_resp_pt(hplot, smps, wc_eff, draw_style, configs):
 
         hsets, labels, text = hplot.get_histo(
             JetResoHistos, 
-            smps, 
+            [s.type for s in smps], 
             ['PU200'], 
             objs, 
             objs_sel, 
@@ -213,7 +213,7 @@ def draw_resp_ptVpt_median(hplot, smps, wc_eff, draw_style, configs):
 
         hsets, labels, text = hplot.get_histo(
             JetResoHistos, 
-            smps, 
+            [s.type for s in smps], 
             ['PU200'], 
             objs, 
             objs_sel, 
@@ -279,7 +279,7 @@ def draw_resp_ptVpt_sigma(hplot, smps, wc_eff, draw_style, configs):
 
         hsets, labels, text = hplot.get_histo(
             JetResoHistos, 
-            smps, 
+            [s.type for s in smps], 
             ['PU200'], 
             objs, 
             objs_sel, 
@@ -334,7 +334,7 @@ def draw_resp_ptVpt(hplot, smps, wc_eff, draw_style, configs):
 
         hsets, labels, text = hplot.get_histo(
             JetResoHistos, 
-            smps, 
+            [s.type for s in smps], 
             ['PU200'], 
             objs, 
             objs_sel, 
@@ -390,7 +390,7 @@ def draw_resp_ptVeta_median(hplot, smps, wc_eff, draw_style, configs):
 
         hsets, labels, text = hplot.get_histo(
             JetResoHistos, 
-            smps, 
+            [s.type for s in smps], 
             ['PU200'], 
             objs, 
             objs_sel, 
@@ -453,7 +453,7 @@ def draw_resp_ptVeta_sigma(hplot, smps, wc_eff, draw_style, configs):
 
         hsets, labels, text = hplot.get_histo(
             JetResoHistos, 
-            smps, 
+            [s.type for s in smps], 
             ['PU200'], 
             objs, 
             objs_sel, 
@@ -511,7 +511,7 @@ def draw_resp_ptVeta(hplot, smps, wc_eff, draw_style, configs):
 
         hsets, labels, text = hplot.get_histo(
             JetResoHistos, 
-            smps, 
+            [s.type for s in smps], 
             ['PU200'], 
             objs, 
             objs_sel, 
@@ -522,7 +522,7 @@ def draw_resp_ptVeta(hplot, smps, wc_eff, draw_style, configs):
 
         hsets, labels, text = hplot.get_histo(
             JetResoHistos, 
-            smps, 
+            [s.type for s in smps], 
             ['PU200'], 
             objs, 
             objs_sel, 
@@ -582,7 +582,7 @@ def draw_reso_eta(hplot, smps, wc_eff, draw_style, configs):
 
         hsets, labels, text = hplot.get_histo(
             JetResoHistos, 
-            smps, 
+            [s.type for s in smps], 
             ['PU200'], 
             objs, 
             objs_sel, 
@@ -635,7 +635,7 @@ def draw_reso_phi(hplot, smps, wc_eff, draw_style, configs):
 
         hsets, labels, text = hplot.get_histo(
             JetResoHistos, 
-            smps, 
+            [s.type for s in smps], 
             ['PU200'], 
             objs, 
             objs_sel, 
@@ -690,7 +690,7 @@ def draw_reso_caloeta(hplot, smps, wc_eff, draw_style, configs):
 
         hsets, labels, text = hplot.get_histo(
             JetResoHistos, 
-            smps, 
+            [s.type for s in smps], 
             ['PU200'], 
             objs, 
             objs_sel, 
@@ -742,7 +742,7 @@ def draw_reso_calophi(hplot, smps, wc_eff, draw_style, configs):
 
         hsets, labels, text = hplot.get_histo(
             JetResoHistos, 
-            smps, 
+            [s.type for s in smps], 
             ['PU200'], 
             objs, 
             objs_sel, 

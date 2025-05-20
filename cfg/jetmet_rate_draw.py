@@ -46,7 +46,7 @@ def draw_rate(hplot, smps, wc, draw_style, configs):
         dm = DrawMachine(draw_style)
         dm.config.legend_position = (0.4, 0.45)
 
-        hsets, labels, text = hplot.get_histo(METRateHistos, smps, 'PU200', objs, objs_sel, None)
+        hsets, labels, text = hplot.get_histo(METRateHistos, [s.type for s in smps], 'PU200', objs, objs_sel, None)
         if not hsets:
             print(' -> skip draw')
             continue

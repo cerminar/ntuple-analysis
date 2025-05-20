@@ -130,7 +130,7 @@ def draw_nobj(hplot, smps, wc, draw_style, configs):
 
         hsets, labels, text = hplot.get_histo(
             EGHistos, 
-            smps, 
+            [s.type for s in smps], 
             ['PU200'], 
             objs, 
             objs_sel, gen_sel, debug=False)
@@ -174,7 +174,7 @@ def draw_idscore(hplot, smps, wc, draw_style, configs):
 
         hsets, labels, text = hplot.get_histo(
             EGHistos, 
-            smps, 
+            [s.type for s in smps], 
             ['PU200'], 
             objs, 
             objs_sel, gen_sel, debug=False)
@@ -220,7 +220,7 @@ def draw_eta(hplot, smps, wc, draw_style, configs):
 
         hsets, labels, text = hplot.get_histo(
             EGHistos, 
-            smps, 
+            [s.type for s in smps], 
             ['PU200'], 
             objs, 
             objs_sel, gen_sel, debug=False)
@@ -264,7 +264,7 @@ def draw_pt(hplot, smps, wc, draw_style, configs):
 
         hsets, labels, text = hplot.get_histo(
             EGHistos, 
-            smps, 
+            [s.type for s in smps], 
             ['PU200'], 
             objs, 
             objs_sel, gen_sel, debug=False)
