@@ -9,6 +9,8 @@ from python import calibrations
 from python import selections
 from python import utils
 
+from rich import print as pprint
+
 def mc_fixtures(particles):
     particles['abseta'] = np.abs(particles.eta)
     return particles
@@ -114,13 +116,53 @@ def quality_flags(objs):
     objs['IDBrem'] = np.bitwise_and(objs.hwQual, mask_no_brem) == 0
     return objs
 
-def quality_ele_fixtures(objs):
+def tkele_fixtures(objs):
     # print(objs.fields)
     objs['dpt'] = objs.tkPt - objs.pt
     objs['deta'] = objs.tkEta - objs.caloEta
     objs['dphi'] = objs.tkPhi - objs.caloPhi
 
+    compute_scaling(objs, obj_name='TkEleL2', iso=False)
+    compute_scaling(objs, obj_name='TkEleL2', iso=True)
+
     return quality_flags(objs)
+
+
+def tkem_fixtures(objs):
+    # print(objs.fields)
+    
+    compute_scaling(objs, obj_name='TkEmL2', iso=False)
+    compute_scaling(objs, obj_name='TkEmL2', iso=True)
+
+    return quality_flags(objs)
+
+
+def egsta_fixtures(objs):
+    # print(objs.fields)
+    compute_scaling(objs, obj_name='EGSta', iso=False)
+
+    return quality_flags(objs)
+
+
+def compute_scaling(objs, obj_name, iso=False):
+    # print(objs.fields)
+    scaling = calibrations.CalibManager().get_calib('on2off_scaling')[obj_name]   
+    # pprint('scaling', scaling)
+    var_name = 'pt_off'
+    
+    sel_keys = ('EtaEB', 'EtaEE')
+    if iso:
+        var_name = 'pt_off_iso'
+        sel_keys = ('IsoEtaEB', 'IsoEtaEE')
+
+    s_b = scaling[sel_keys[0]]
+    s_e = scaling[sel_keys[1]]
+    barrel_sel = selections.Selector('^EtaEB$').one()
+    objs[var_name] = ak.where(
+        barrel_sel.selection(objs),
+        objs['pt'] * s_b['a'] + s_b['b'],
+        objs['pt'] * s_e['a'] + s_e['b']
+    )
 
 def decodedTk_fixtures(objects):
     # objects['deltaZ0'] = objects.z0 - objects.simz0
@@ -357,7 +399,7 @@ TkEleEE = DFCollection(
     name='TkEleEE', label='TkEle EE',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='TkEleEE', entry_block=entry_block),
-    fixture_function=quality_ele_fixtures,
+    fixture_function=tkele_fixtures,
     print_function=lambda df:df.columns,
     debug=0)
 
@@ -365,14 +407,14 @@ TkEleEB = DFCollection(
     name='TkEleEB', label='TkEle EB',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='TkEleEB', entry_block=entry_block),
-    fixture_function=quality_ele_fixtures,
+    fixture_function=tkele_fixtures,
     debug=0)
 
 TkEleEllEE = DFCollection(
     name='TkEleEllEE', label='TkEle EE (Ell.)',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='TkEleEllEE', entry_block=entry_block),
-    fixture_function=quality_ele_fixtures,
+    fixture_function=tkele_fixtures,
     debug=0)
 
 TkEmEE = DFCollection(
@@ -380,14 +422,14 @@ TkEmEE = DFCollection(
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='TkEmEE', entry_block=entry_block),
     print_function=lambda df: df.loc[(abs(df.eta) > 2.4), ['energy', 'pt', 'eta', 'phi','hwQual']].sort_values(by='pt', ascending=False)[:10],
-    fixture_function=quality_flags,
+    fixture_function=tkem_fixtures,
     debug=0)
 
 TkEmEB = DFCollection(
     name='TkEmEB', label='TkEm EB',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='TkEmEB', entry_block=entry_block),
-    fixture_function=quality_flags,
+    fixture_function=tkem_fixtures,
     # read_entry_block=200,
     debug=0)
 
@@ -395,8 +437,8 @@ TkEmL2 = DFCollection(
     name='TkEmL2', label='TkEm L2',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='TkEmL2', entry_block=entry_block),
-    print_function=lambda df: df[np.abs(df.eta) > 1.479][['pt', 'eta', 'phi']],
-    fixture_function=quality_flags,
+    print_function=lambda df: df[np.abs(df.eta) > 1.479][['pt', 'eta', 'phi', 'pt_off', 'pt_off_iso']],
+    fixture_function=tkem_fixtures,
     debug=0)
 
 # -- FP
@@ -405,7 +447,7 @@ TkEleL2 = DFCollection(
     filler_function=lambda event, entry_block : event.getDataFrame(
         prefix='TkEleL2', entry_block=entry_block, fallback='L2TkEle'),
     print_function=lambda df: df[np.abs(df.eta) < 1.479][['pt', 'eta', 'phi', 'mass', 'hwQual', 'vz', 'caloEta', 'caloPhi']],
-    fixture_function=quality_ele_fixtures,
+    fixture_function=tkele_fixtures,
     debug=0)
 # TkEleL2.activate()
 
@@ -413,14 +455,14 @@ TkEmL2Ell = DFCollection(
     name='TkEmL2Ell', label='TkEm L2 (ell.)',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='L2TkEmEll', entry_block=entry_block),
-    fixture_function=quality_flags,
+    fixture_function=tkem_fixtures,
     debug=0)
 
 TkEleL2Ell = DFCollection(
     name='TkEleL2Ell', label='TkEle L2 (ell.)',
     filler_function=lambda event, entry_block : event.getDataFrame(
         prefix='L2TkEleEll', entry_block=entry_block, fallback='TkEleL2Ell'),
-    fixture_function=quality_ele_fixtures,
+    fixture_function=tkele_fixtures,
     debug=0)
 
 DoubleTkEleL2 = DFCollection(
@@ -444,9 +486,9 @@ EGStaEE = DFCollection(
     name='EGStaEE', label='EG EE',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='EGStaEE', entry_block=entry_block),
-    print_function=lambda df: df.loc[(abs(df.eta) > 2.4), ['energy', 'pt', 'eta', 'phi','hwQual']].sort_values(by='pt', ascending=False)[:10],
+    print_function=lambda df: df.loc[(abs(df.eta) > 2.4), ['pt', 'eta', 'phi','hwQual']].sort_values(by='pt', ascending=False)[:10],
     # fixture_function=mapcalo2pfregions,
-    fixture_function=quality_flags,
+    fixture_function=egsta_fixtures,
     debug=0)
 
 
@@ -454,8 +496,8 @@ EGStaEB = DFCollection(
     name='EGStaEB', label='EG EB',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='EGStaEB', entry_block=entry_block),
-    # print_function=lambda df: df[['energy', 'pt', 'eta', 'hwQual']].sort_values(by='hwQual', ascending=False)[:10],
-    fixture_function=quality_flags,
+    print_function=lambda df: df[['pt', 'eta', 'hwQual', 'IDTightPho', 'IDTightSTA', 'IDTightEle' ]].sort_values(by='pt', ascending=False)[:10],
+    fixture_function=egsta_fixtures,
     # read_entry_block=200,
     debug=0)
 
