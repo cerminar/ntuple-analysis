@@ -7,11 +7,11 @@ import tabulate
 def what(what):
     match what:
         case 'ctl2_rate':
-            return [histos.RateHistos], 'ctl2_eg_rate', ctl2_rate_draw
+            return [histos.RateHistos], 'eg_rate_ctl2', ctl2_rate_draw
         case 'menu_rate':
-            return [histos.RateHistos], 'menu_eg_rate', menu_rate_draw
+            return [histos.RateHistos], 'eg_rate_menu', menu_rate_draw
         case 'menu_ratecounter':
-            return [SingleObjRateHistoCounter, DoubleObjRateHistoCounter], 'menu_ratecounter', menu_ratecounter_draw
+            return [SingleObjRateHistoCounter, DoubleObjRateHistoCounter], 'eg_menu_ratecounter', menu_ratecounter_draw
         case 'rate_pho_iso':
             return [histos.RateHistos], 'rate', rate_pho_iso_draw
 
@@ -35,16 +35,24 @@ def menu_ratecounter_draw(hplot, smps, wc):
     menu_single = [
         (['TkEleL2'], ['SingleTkEle36', 'SingleTkEle36EtaEB', 'SingleTkEle36EtaEE'], {}),
         (['TkEleL2'], ['SingleIsoTkEle28', 'SingleIsoTkEle28EtaEB', 'SingleIsoTkEle28EtaEE'], {}),
-        (['TkEleL2'], ['SingleIsoTkEle28Tight', 'SingleIsoTkEle28TightEtaEB', 'SingleIsoTkEle28TightEtaEE'], {}),
         (['TkEmL2'], ['SingleIsoTkPho36', 'SingleIsoTkPho36EtaEB', 'SingleIsoTkPho36EtaEE'], {}),
         (['EGSta'], ['SingleEGEle51', 'SingleEGEle51EtaEB', 'SingleEGEle51EtaEE'], {}),
+        (['EGSta'], ['SingleEGEle51Fwd', 'SingleEGEle51FwdEtaEB', 'SingleEGEle51FwdEtaEE'], {}),
+        # (['TkEleL2'], ['SingleIsoTkEle28', 'SingleIsoTkEle28EtaEB', 'SingleIsoTkEle28EtaEE'], {}),
 
     ]
     menu_double = [
         (['DoubleTkEleL2'], ['DoubleTkEle25-12'], {}),
         (['DoubleTkEmL2'], ['DoubleIsoTkPho22-12'], {}),
         (['DoubleEGSta'], ['DoubleStaEG37-24'], {}),
+        (['DoubleEGSta'], ['DoubleStaEG37-24Fwd'], {}),
         (['DoubleTkEleEGSta'], ['DoubleIsoTkEleStaEG22-12'], {}),
+        (['DoubleTkEleEGSta'], ['DoubleIsoTkEleStaEG22-12Fwd'], {}),
+
+        # (['DoubleTkEleL2'], ['DoubleTkEle25-12Tight'], {}),
+        # (['DoubleTkEmL2'], ['DoubleIsoTkPho22-12New'], {}),
+        # (['DoubleEGSta'], ['DoubleStaEG37-24New'], {}),
+        # (['DoubleTkEleEGSta'], ['DoubleIsoTkEleStaEG22-12New'], {}),
 
     ]
 
@@ -65,13 +73,36 @@ def menu_ratecounter_draw(hplot, smps, wc):
             f'rate EB [kHz]', 
             f'rate EE [kHz]']))
         print()
+
+    table_by_seed = {}
+    headers = ['seed']
+    for smp in smps:
+        headers.append(smp.label)
+        for row in smp_table[smp.type]:
+            seed = row[0]
+            if seed not in table_by_seed:
+                table_by_seed[seed] = [seed]
+            # print(f'smp: {smp.label}, seed: {seed}, value: {row[1]}')
+            table_by_seed[seed].append(row[1].split('\u00B1')[0].strip())
+
+    values = []
+    for seed, row in table_by_seed.items():
+        values.append(row)
+
+    # pprint(table_by_seed)
+
+    print(tabulate.tabulate(values, headers=headers))
+    print()
+    
     # FXIME: dump to file
 
 
 def doubleobjcounter(hplot, smp_table, smp, obj, sels):
     hsets, labels, text = hplot.get_histo(DoubleObjRateHistoCounter, smp, 'PU200', obj, sels, None)
     row = []
-    row.append(sels[0])
+    # print(sels)
+    # print(labels)
+    row.append(sels[0]) #FIXME: why not labels[0]?
 
     for hs in hsets:
         row.append(f'{round(hs.h_rate.GetBinContent(1), 2)} \u00B1 {round(hs.h_rate.GetBinError(1), 2)}')
@@ -94,24 +125,36 @@ def singleobjcounter(hplot, smp_table, smp, obj, sels):
 
 def menu_rate_draw(hplot, smps, wc):
     menu = [   
+        (['TkEleL2'], ['MenuEle'], 'TkEleL2_MenuEle', {}),
+        (['TkEleL2'], ['MenuEleEtaEB'], 'TkEleL2_MenuEleEtaEB', {}),
+        (['TkEleL2'], ['MenuEleEtaEE'], 'TkEleL2_MenuEleEtaEE', {}),
+
         (['TkEleL2'], ['MenuEleLoose'], 'TkEleL2_MenuEleLoose', {}),
         (['TkEleL2'], ['MenuEleTight'], 'TkEleL2_MenuEleTight', {}),
         (['TkEleL2'], ['MenuEleLooseEtaEE'], 'TkEleL2_MenuEleLooseEtaEE', {}),
         (['TkEleL2'], ['MenuEleTightEtaEE'], 'TkEleL2_MenuEleTightEtaEE', {}),
         (['TkEleL2'], ['MenuEleLooseEtaEB'], 'TkEleL2_MenuEleLooseEtaEB', {}),
         (['TkEleL2'], ['MenuEleTightEtaEB'], 'TkEleL2_MenuEleTightEtaEB', {'y_min_diff': -5, 'y_max_diff': 5, 'v_lines': [29.0]}),
-        (['TkEleL2'], ['MenuEleIsoLoose'], 'TkEleL2_MenuEleIsoLoose', {}),
-        (['TkEleL2'], ['MenuEleIsoTight'], 'TkEleL2_MenuEleIsoTight', {}),
-        (['TkEleL2'], ['MenuEleIsoTightEtaEB'], 'TkEleL2_MenuEleIsoTightEtaEB', {'y_min_diff': 0, 'y_max_diff': 10, 'v_lines': [29.0]}),
-        (['TkEleL2'], ['MenuEleIsoTight', 'MenuEleIsoLoose'], 'TkEleL2_MenuEleIso', {}),
-        (['TkEmL2'], ['MenuPhoIso'], 'TkEmL2_MenuPhoIso', {}),
-        (['TkEmL2'], ['MenuPhoIsoEtaEE'], 'TkEmL2_MenuPhoIsoEtaEE', {}),
-        (['TkEmL2'], ['MenuPhoIsoEtaEB'], 'TkEmL2_MenuPhoIsoEtaEB', {}),
+        (['TkEleL2'], ['MenuEleIsoLoose'], 'TkEleL2_MenuEleIsoLoose', {'is_iso': True}),
+        (['TkEleL2'], ['MenuEleIsoTight'], 'TkEleL2_MenuEleIsoTight', {'is_iso': True}),
+        (['TkEleL2'], ['MenuEleIsoTightEtaEB'], 'TkEleL2_MenuEleIsoTightEtaEB', {'is_iso': True, 'y_min_diff': 0, 'y_max_diff': 10, 'v_lines': [29.0]}),
+        (['TkEleL2'], ['MenuEleIso'], 'TkEleL2_MenuEleIso', {'is_iso': True}),
+        (['TkEleL2'], ['MenuEleIsoEtaEB'], 'TkEleL2_MenuEleIsoEtaEB', {'is_iso': True}),
+        (['TkEleL2'], ['MenuEleIsoEtaEE'], 'TkEleL2_MenuEleIsoEtaEE', {'is_iso': True}),
+        (['TkEleL2'], ['MenuEleIsoLooseEtaEE', 'MenuEleIsoTightEtaEE'], 'TkEleL2_MenuEleIsoAllEtaEE', {'is_iso': True}),
+        (['TkEmL2'], ['MenuPhoIso'], 'TkEmL2_MenuPhoIso', {'is_iso': True}),
+        (['TkEmL2'], ['MenuPhoIsoEtaEE'], 'TkEmL2_MenuPhoIsoEtaEE', {'is_iso': True}),
+        (['TkEmL2'], ['MenuPhoIsoEtaEB'], 'TkEmL2_MenuPhoIsoEtaEB', {'is_iso': True}),
         (['EGStaEE'], ['MenuSta'], 'EGStaEE_MenuSta', {}),
         (['EGStaEB'], ['MenuSta'], 'EGStaEB_MenuSta', {}),
-        (['DoubleTkEmL2'], ['MenuDoubleIsoTkPho22-X'], 'DoubleTkEmL2_DoubleIsoTkPho22-X', {})
+
+        (['DoubleTkEmL2'], ['MenuDoubleIsoTkPho22-X'], 'DoubleTkEmL2_DoubleIsoTkPho22-X', {'is_iso': True}),
+
+
     ]
     draw_rate(hplot, smps, wc, draw_style=draw_config, configs=menu)
+    draw_rate(hplot, smps, wc, draw_style=draw_config, configs=menu, online=False)
+
 
 def ctl2_rate_draw(hplot, smps, wc):
     menu = [
@@ -145,7 +188,7 @@ def rate_pho_iso_draw(hplot, smps, wc):
     draw_rate(hplot, smps, wc, draw_style=draw_config, configs=menu)
 
 
-def draw_rate(hplot, smps, wc, draw_style, configs):
+def draw_rate(hplot, smps, wc, draw_style, configs, online=True):
     for objs, objs_sel, h_name, opts in configs:
         if len(smps) == 0:
             continue
@@ -157,7 +200,16 @@ def draw_rate(hplot, smps, wc, draw_style, configs):
         if not hsets:
             print(' -> skip draw')
             continue
-        dm.addHistos([his.h_pt for his in hsets], labels=labels)
+        basename = 'hRate'
+        if online:
+            dm.addHistos([his.h_pt for his in hsets], labels=labels)
+        else:
+            basename = 'hRateOffline'
+            is_iso = opts.get('is_iso', False)
+            if is_iso:
+                dm.addHistos([his.h_ptIsoOff for his in hsets], labels=labels)
+            else:
+                dm.addHistos([his.h_ptOff for his in hsets], labels=labels)
         # print(hsets[0].h_pt.GetName())
 
         for id in range(1,len(hsets)):
@@ -178,7 +230,7 @@ def draw_rate(hplot, smps, wc, draw_style, configs):
             y_min_ratio=opts.get('y_min_ratio', 0.8), 
             y_max_ratio=opts.get('y_max_ratio', 1.2),
             y_log=opts.get('y_log', True), 
-            x_axis_label=opts.get('x_axis_label', 'online p_{T} thresh. [GeV]'),
+            x_axis_label=opts.get('x_axis_label'),
             v_lines=opts.get('v_lines', []),
             h_lines=opts.get('h_lines', [20,100,1000]),
             h_lines_ratio=opts.get('h_lines_ratio', [0.9, 1, 1.1]),
@@ -186,4 +238,5 @@ def draw_rate(hplot, smps, wc, draw_style, configs):
             y_min_diff=opts.get('y_min_diff', 0.), 
             y_max_diff=opts.get('y_max_diff', 100.),
             do_diff=opts.get('do_diff', True))
-        dm.toWeb(name=f'hRate_{h_name}', page_creator=wc)
+        
+        dm.toWeb(name=f'{basename}_{h_name}', page_creator=wc)

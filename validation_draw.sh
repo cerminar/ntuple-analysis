@@ -13,7 +13,7 @@ if [ -z "$TEST_VERSION" ]; then
   exit 1
 fi
 
-set -x
+# set -x
 
 source scripts/conf_${TEST_VERSION}.sh
 
@@ -36,12 +36,12 @@ should_run() {
 if should_run "eg_reso"; then
   python draw.py -m cfg/eg_genmatch_draw.py \
     --target-dir ${TARGET_DIR} \
-    -w ctl2_tkeg_reso \
+    -w reso_ctl2 \
     --input-files $(IFS=,; echo "${gen_match_ele_files[*]}")
 fi
 
 # Menu rate plots
-if should_run "menu_eg_rate"; then
+if should_run "eg_rate_menu"; then
   python draw.py -m cfg/eg_rate_draw.py \
     --target-dir ${TARGET_DIR} \
     -w menu_rate \
@@ -49,7 +49,7 @@ if should_run "menu_eg_rate"; then
 fi
 
 # Efficiency plots
-if should_run "eg_eff"; then
+if should_run "eg_eff_ctl2"; then
   python draw.py -m cfg/eg_genmatch_draw.py \
     --target-dir ${TARGET_DIR} \
     -w ctl2_tkeg \

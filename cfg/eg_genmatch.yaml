@@ -4,7 +4,7 @@ common:
     # dictionary machine name -> directory to support different paths
     default: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
     triolet: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
-  plot_version: v200C
+  plot_version: v200D
   run_clustering: False
   run_density_computation: False
 # +AccountingGroup = "group_u_CMS.u_zh.users"
@@ -16,9 +16,10 @@ ctl2_tkeg_menu:
   plotters:
     - !!python/name:cfg.eg_genmatch.ctl2_tkeg_menu
 
-ctl2_tkeg_menu_tons:
+menu_tons:
   plotters:
     - !!python/name:cfg.eg_genmatch.ctl2_tkeg_menu_tons
+  file_label: ton
 
 egsta_menu: 
   plotters:

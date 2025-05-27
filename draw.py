@@ -20,7 +20,7 @@ from python.draw.rate_utilities import convertRateToGraph
 # this is needed to get all the labels defined in cfg modules
 # import python.plotters_config 
 # from cfg import eg_genmatch
-
+from cfg.menu import *
 
 # ROOT.enableJSVis()
 
@@ -76,6 +76,8 @@ def draw(
     labels_dict.update(evm.get_labels())
     selm = selections.SelectionManager()
     labels_dict.update(selm.get_labels())
+    # pprint(labels_dict)
+
 
     hplot = HPlot(samples, labels_dict)
     for histo_class in histo_classes:

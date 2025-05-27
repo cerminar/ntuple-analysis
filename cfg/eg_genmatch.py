@@ -352,9 +352,9 @@ egid_menu_sta_selections = (selections.Selector('^MenuSta|all'))()
 
 if do_tons:
     print('Menu Turn-on selections are enabled!')
-    egid_menu_ele_selections.extend((selections.Selector('^MenuEle')*('^Pt[2-4]0$'))())
-    egid_menu_pho_selections.extend((selections.Selector('^MenuPho')*('^Pt[2-4]0$'))())
-    egid_menu_sta_selections.extend((selections.Selector('^MenuSta')*('^Pt[2-4]0$'))())
+    egid_menu_ele_selections.extend((selections.Selector('^MenuEle')*('^Pt[2-5]0$'))())
+    egid_menu_pho_selections.extend((selections.Selector('^MenuPho')*('^Pt[2-5]0$'))())
+    egid_menu_sta_selections.extend((selections.Selector('^MenuSta')*('^Pt[2-5]0$'))())
 
 
 
@@ -378,9 +378,9 @@ egid_menu_ele_ton_selections.extend(egid_menu_ele_selections)
 egid_menu_pho_ton_selections.extend(egid_menu_pho_selections)
 egid_menu_sta_ton_selections.extend(egid_menu_sta_selections)
 
-egid_menu_ele_ton_selections.extend((selections.Selector('^MenuEle')*('^Pt[2-4]0$'))())
-egid_menu_pho_ton_selections.extend((selections.Selector('^MenuPho')*('^Pt[2-4]0$'))())
-egid_menu_sta_ton_selections.extend((selections.Selector('^MenuSta')*('^Pt[2-4]0$'))())
+egid_menu_ele_ton_selections.extend((selections.Selector('^MenuEle')*('^Pt[2-5]0$'))())
+egid_menu_pho_ton_selections.extend((selections.Selector('^MenuPho')*('^Pt[2-5]0$'))())
+egid_menu_sta_ton_selections.extend((selections.Selector('^MenuSta')*('^Pt[2-5]0$'))())
 
 egid_menu_ele_ton_selections = selections.prune(egid_menu_ele_ton_selections)
 egid_menu_pho_ton_selections = selections.prune(egid_menu_pho_ton_selections)

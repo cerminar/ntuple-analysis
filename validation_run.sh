@@ -12,7 +12,8 @@ WHAT="${2:-all}"  # e.g., "menu_rate,met,eff"
 
 if [ -z "$TEST_VERSION" ]; then
   echo "Usage: $0 <TEST_VERSION> [what_to_draw]"
-  echo "  where what_to_draw can be: all or a comma-separated list: eg_genmatch,menu_eg_rate,eg_eff,ctl2_eg_rate,eg_unmatched,counter,met_rate"
+  echo "  where what_to_draw can be: all or a comma-separated list: eg_genmatch,eg_rate_menu
+,eg_eff,eg_rate_ctl2,eg_unmatched,eg_rate_counter,met_rate"
   exit 1
 fi
 
@@ -22,7 +23,7 @@ IFS=',' read -rA WHAT_LIST <<< "$WHAT"
 # Check if a specific task should run
 should_run() {
   if [[ "$WHAT" == "all" ]]; then
-    # [[ "$1" == "counter" ]] && return 1  # exclude 'counter' from 'all'
+    # [[ "$1" == "eg_rate_counter" ]] && return 1  # exclude 'eg_rate_counter' from 'all'
     return 0
   fi
   for item in "${WHAT_LIST[@]}"; do
@@ -32,7 +33,7 @@ should_run() {
 }
 
 
-set -x
+# set -x
 
 # echo $LD_LIBRARY_PATH
 # echo $PYTHONPATH
@@ -46,8 +47,8 @@ if should_run "eg_genmatch"; then
         -p ctl2_tkeg  \
         -s doubleele_flat1to100_PU200 -n -1 -d 0
 
-    cp ${FILE_DIR}/histos_doubleele_flat1to100_PU200_eg_v200C.${TEST_VERSION}i.root \
-        ${FILE_DIR}/histos_doubleele_flat1to100_PU200_eg_v200C.${TEST_VERSION}.root
+    cp -v ${FILE_DIR}/histos_doubleele_flat1to100_PU200_eg_v200D.${TEST_VERSION}i.root \
+        ${FILE_DIR}/histos_doubleele_flat1to100_PU200_eg_v200D.${TEST_VERSION}.root
 fi
 
 if should_run "eg_unmatched"; then
@@ -55,35 +56,35 @@ if should_run "eg_unmatched"; then
         -i cfg/datasets/ntpfp_${TEST_VERSION}.yaml \
         -p tkeg_plots  \
         -s doubleele_flat1to100_PU200 -n -1 -d 0
-    cp ${FILE_DIR}/histos_doubleele_flat1to100_PU200_egplots_v160A.${TEST_VERSION}i.root \
+    cp -v ${FILE_DIR}/histos_doubleele_flat1to100_PU200_egplots_v160A.${TEST_VERSION}i.root \
         ${FILE_DIR}/histos_doubleele_flat1to100_PU200_egplots_v160A.${TEST_VERSION}.root
 fi
 
-if should_run "menu_eg_rate"; then
+if should_run "eg_rate_menu"; then
     python  analyzeNtuples.py -f cfg/eg_rate.yaml \
         -i cfg/datasets/ntpfp_${TEST_VERSION}.yaml \
         -p rate_menu  \
         -s nugun_alleta_pu200 -n 500000 -d 0
-    cp ${FILE_DIR}/histos_nugun_alleta_pu200_egratemenu_v200A.${TEST_VERSION}i.root \
-        ${FILE_DIR}/histos_nugun_alleta_pu200_egratemenu_v200A.${TEST_VERSION}.root
+    cp -v ${FILE_DIR}/histos_nugun_alleta_pu200_egratemenu_v200C.${TEST_VERSION}i.root \
+        ${FILE_DIR}/histos_nugun_alleta_pu200_egratemenu_v200C.${TEST_VERSION}.root
 fi
 
-if should_run "ctl2_eg_rate"; then
+if should_run "eg_rate_ctl2"; then
     python  analyzeNtuples.py -f cfg/eg_rate.yaml \
         -i cfg/datasets/ntpfp_${TEST_VERSION}.yaml \
         -p rate_ctl2  \
         -s nugun_alleta_pu200 -n 500000 -d 0
-    cp ${FILE_DIR}/histos_nugun_alleta_pu200_egrate_v200A.${TEST_VERSION}i.root \
-        ${FILE_DIR}/histos_nugun_alleta_pu200_egrate_v200A.${TEST_VERSION}.root
+    cp -v ${FILE_DIR}/histos_nugun_alleta_pu200_egrate_v200C.${TEST_VERSION}i.root \
+        ${FILE_DIR}/histos_nugun_alleta_pu200_egrate_v200C.${TEST_VERSION}.root
 fi
 
-if should_run "counter"; then
+if should_run "eg_rate_counter"; then
     python  analyzeNtuples.py -f cfg/eg_rate.yaml \
         -i cfg/datasets/ntpfp_${TEST_VERSION}.yaml \
         -p rate_counter_menu  \
         -s nugun_alleta_pu200 -n 500000 -d 0
-    cp ${FILE_DIR}/histos_nugun_alleta_pu200_egratecount_v200A.${TEST_VERSION}i.root \
-        ${FILE_DIR}/histos_nugun_alleta_pu200_egratecount_v200A.${TEST_VERSION}.root
+    cp -v ${FILE_DIR}/histos_nugun_alleta_pu200_egratecount_v200C.${TEST_VERSION}i.root \
+        ${FILE_DIR}/histos_nugun_alleta_pu200_egratecount_v200C.${TEST_VERSION}.root
 fi
 
 if should_run "met_rate"; then
@@ -91,7 +92,7 @@ if should_run "met_rate"; then
         -i cfg/datasets/ntpfp_${TEST_VERSION}.yaml \
         -p met  \
         -s nugun_alleta_pu200 -n 500000 -d 0
-    cp ${FILE_DIR}/histos_nugun_alleta_pu200_jetmet_rate_v200A.${TEST_VERSION}i.root \
+    cp -v ${FILE_DIR}/histos_nugun_alleta_pu200_jetmet_rate_v200A.${TEST_VERSION}i.root \
         ${FILE_DIR}/histos_nugun_alleta_pu200_jetmet_rate_v200A.${TEST_VERSION}.root
 fi
 
@@ -102,6 +103,6 @@ if should_run "jet_reso"; then
         -p jets  \
         -s ttbar_PU200 -n -1 -d 0
 
-    cp ${FILE_DIR}/histos_ttbar_PU200_jets_v200C.${TEST_VERSION}i.root \
+    cp -v ${FILE_DIR}/histos_ttbar_PU200_jets_v200C.${TEST_VERSION}i.root \
         ${FILE_DIR}/histos_ttbar_PU200_jets_v200C.${TEST_VERSION}.root
 fi
