@@ -74,7 +74,7 @@ class JetGenMatchPlotter(plotters.GenericGenMatchPlotter):
                  data_selections=[selections.Selection('all')],
                  gen_selections=[selections.Selection('all')],
                  gen_eta_phi_columns=('eta', 'phi'),
-                 pt_bins=None):
+                 pt_bins=range(0, 500, 5)):
         super(JetGenMatchPlotter, self).__init__(JetHistos, JetResoHistos,
                                                 data_set, gen_set,
                                                 data_selections, gen_selections,
@@ -103,7 +103,7 @@ class EGGenMatchPtWPSPlotter(plotters.GenericGenMatchPlotter):
 
 
 
-gen_selections = (selections.Selector('GENJ$')*('^EtaE[EB]$|all')+selections.Selector('GENJ$')*('Pt30'))()
+gen_selections = (selections.Selector('GENJ$')*('^EtaE[EB]$|^Eta(V)?Fwd$|all')+selections.Selector('GENJ$')*('^Pt(30|100)'))()
 jet_selections = (selections.Selector('all$'))()
 
 

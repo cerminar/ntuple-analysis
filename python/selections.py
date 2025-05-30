@@ -417,7 +417,8 @@ tp_pt_sel_ext = [
     Selection('Pt25', 'p_{T}^{TOBJ} #geq 25 GeV', lambda array: array.pt >= 25),
     Selection('Pt30', 'p_{T}^{TOBJ} #geq 30 GeV', lambda array: array.pt >= 30),
     Selection('Pt40', 'p_{T}^{TOBJ} #geq 40 GeV', lambda array: array.pt >= 40),
-    Selection('Pt50', 'p_{T}^{TOBJ} #geq 50 GeV', lambda array: array.pt >= 50)
+    Selection('Pt50', 'p_{T}^{TOBJ} #geq 50 GeV', lambda array: array.pt >= 50),
+    Selection('Pt100', 'p_{T}^{TOBJ} #geq 100 GeV', lambda array: array.pt >= 100),
 
 ]
 
@@ -503,6 +504,8 @@ eg_eta_sel = [
     Selection('EtaEEb', '1.52 < |#eta^{TOBJ}| <= 2.3', lambda ar: (abs(ar.eta) > 1.52) & (abs(ar.eta) <= 2.3)),
     Selection('EtaEEc', '2.3 < |#eta^{TOBJ}| <= 2.4', lambda ar: (abs(ar.eta) > 2.3) & (abs(ar.eta) <= 2.4)),
     Selection('EtaEEFwd', '1.479 < |#eta^{TOBJ}| <= 3.0', lambda ar: (abs(ar.eta) > 1.479) & (abs(ar.eta) <= 3.0)),
+    Selection('EtaFwd', '2.4 < |#eta^{TOBJ}| <= 3.0', lambda ar: (abs(ar.eta) > 2.4) & (abs(ar.eta) <= 3.0)),
+    Selection('EtaVFwd', '3.0 < |#eta^{TOBJ}| <= 5.0', lambda ar: (abs(ar.eta) > 3.0) & (abs(ar.eta) <= 5.0)),
 
 ]
 
@@ -571,6 +574,17 @@ eg_id_sel = [
     # Selection('IDEleH', 'TkEle ID (H)', ''),
 
     ]
+
+hgc_id_sel = [
+    Selection('IDHgcEGl', 'ID e/g loose', lambda array: np.bitwise_and(array.hwQual, 0b0100) > 0),
+    Selection('IDHgcEGt', 'ID e/g tight', lambda array: np.bitwise_and(array.hwQual, 0b0010) > 0),
+    Selection('IDHgcPFem', 'ID PF EM', lambda array: np.bitwise_and(array.hwQual, 0b0001) > 0),
+    Selection('IDHgcPFpi', 'ID PF #pi', lambda array: np.bitwise_and(array.hwQual, 0b0001) == 0),
+    Selection('IDHgcAgmPu', 'ID Agm PU', lambda array: (array.PuIdProb > array.piIdProb) & (array.PuIdProb > array.EmIdProb)),
+    Selection('IDHgcAgmPi', 'ID Agm #pi', lambda array: (array.piIdProb > array.PuIdProb) & (array.piIdProb > array.EmIdProb)),
+    Selection('IDHgcAgmEm', 'ID Agm EM', lambda array: (array.EmIdProb > array.PuIdProb) & (array.EmIdProb > array.piIdProb)),
+
+]
 
 tp_id_sel = [
     Selection('all'),
@@ -669,6 +683,17 @@ tphgc_pubdt_sel = [
     Selection('IDEmLoose', 'EgID Loose', lambda ar: ar.IDLooseEm),
 ]
 
+pf_sel = [
+    Selection('PFTypeM', 'PF muon', lambda ar: abs(ar.pdgId) == 13),
+    Selection('PFTypeC', 'PF ch. had', lambda ar: abs(ar.pdgId) == 211),
+    Selection('PFTypeN', 'PF neut. had.', lambda ar: abs(ar.pdgId) == 130),
+    Selection('PFTypeE', 'PF ele.', lambda ar: abs(ar.pdgId) == 11),
+    Selection('PFTypeP', 'PF photon', lambda ar: abs(ar.pdgId) == 22),
+    Selection('PFTypeH', 'PF hadron', lambda ar: abs(ar.pdgId) == 211 | abs(ar.pdgId) == 130),
+
+]
+
+
 # print(tphgc_egbdt_sel)
 
 sm = SelectionManager()
@@ -686,6 +711,7 @@ ctl2_sel = [
     ((Selector('^EtaEB')&('^IDTightE$'))|(Selector('^EtaEE$')&('^IDTightP'))).one('L2IDPhoT', 'ID-tight'),
     ((Selector('^EtaEB')&('^IsoPhoEB'))|(Selector('^EtaEE$')&('^IsoPhoEE'))).one('L2Iso', 'iso'),
 ]
+
 
 
 # tp_rate_selections = (Selector('^Em|all')*('^Eta[^DA][BC]*[BCD]$|all'))()

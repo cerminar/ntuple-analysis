@@ -14,6 +14,8 @@ def what(what):
             return [SingleObjRateHistoCounter, DoubleObjRateHistoCounter], 'eg_menu_ratecounter', menu_ratecounter_draw
         case 'rate_pho_iso':
             return [histos.RateHistos], 'rate', rate_pho_iso_draw
+        case _:
+            raise ValueError(f'Unknown what: {what}. Available options: ctl2_rate, menu_rate, menu_ratecounter, rate_pho_iso')
 
 
 

@@ -188,6 +188,6 @@ diobj_legs_sel = [
 # repeat the call: we want the menu selections to be avaialble via the selectors
 Selector.selection_primitives = sm.selections.copy()
 
-selm = SelectionManager()
-pprint(selm.get_labels())
+# selm = SelectionManager()
+# pprint(selm.get_labels())
 

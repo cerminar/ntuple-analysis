@@ -1,20 +1,18 @@
-# import cfg.eg_genmatch
 import python.histos as histos
 from python.draw.drawingTools import *
 import python.draw.utilities as draw_utils
-from cfg.jetmet_genmatch import JetResoHistos
+from cfg.pf_genmatch import PfResoHistos
 from cfg.eg_genmatch_draw import draw_effvseta,draw_effvspt
-
 
 
 def what(what):
     match what:
-        case 'jet_reso':
-            return [JetResoHistos], 'jet_reso', jet_reso_draw
-        case 'jet_eff':
-            return [histos.HistoSetEff], 'jet_eff', jet_eff_draw
+        case 'pf_reso':
+            return [PfResoHistos], 'pf_reso', pf_reso_draw
+        case 'pf_eff':
+            return [histos.HistoSetEff], 'pf_eff', pf_eff_draw
         case _:
-            raise ValueError(f'Unknown draw function: {what}. Available: jet_reso, jet_eff')
+            raise ValueError(f'Unknown draw function: {what}. Available: pf_reso, pf_eff')
 
 
 
@@ -28,54 +26,48 @@ draw_config.additional_text = [(0.13, 0.91, '#scale[1.5]{CMS} #it{#scale[1.]{Pha
                     (0.69, 0.91, '#it{14TeV}, 200 PU')]
 
 
-def jet_eff_draw(hplot, smps, wc):
-    effvseta_configs = [    
-        (['CaloJets',],        ['all'],   ['GENJPt30'],  'CaloJets_all_GENJPt30',        {'x_max': 5., 'y_min': 0.0}),
-        (['TkJets',],          ['all'],   ['GENJPt30'],  'TkJets_all_GENJPt30',          {'x_max': 5., 'y_min': 0.0}),
-        (['PFJets',],          ['all'],   ['GENJPt30'],  'PFJets_all_GENJPt30',          {'x_max': 5., 'y_min': 0.0}),
-        (['PuppiJets',],       ['all'],   ['GENJPt30'],  'PuppiJets_all_GENJPt30',       {'x_max': 5., 'y_min': 0.0}),
-        (['scPuppiJets',],     ['all'],   ['GENJPt30'],  'scPuppiJets_all_GENJPt30',     {'x_max': 5., 'y_min': 0.0}),
-        (['scPuppiCorrJets',], ['all'],   ['GENJPt30'],  'scPuppiCorrJets_all_GENJPt30', {'x_max': 5., 'y_min': 0.0}),
+def pf_eff_draw(hplot, smps, wc):
+    pf_effvseta_configs = [    
+        (['PfCands',],     ['all'],              ['GENPi'],           'PfCands_all_GENPi', {'y_min': 0.0}),
+        (['PfCands',],     ['PFTypeC'],              ['GENPi'],       'PfCands_Pi_GENPi',  {'y_min': 0.0}),
+        (['PfCands',],     ['PFTypeN'],              ['GENPi'],       'PfCands_NH_GENPi',  {'y_min': 0.0}),
+        (['PfCands',],     ['PFTypeE'],              ['GENPi'],       'PfCands_Ele_GENPi', {'y_min': 0.0}),
+
+        (['DecHadCaloEndcap',],  ['IDHgcPFpi', 'IDHgcAgmPi'],       ['GENPi'],   'DecHadCaloEndcap_IDPi_GENPi', {'y_min': 0.0}),
+        (['DecHadCaloEndcap',],  ['IDHgcPFem', 'IDHgcAgmEm'],       ['GENPi'],   'DecHadCaloEndcap_IDEm_GENPi', {'y_min': 0.0}),
+        (['DecHadCaloEndcap',],  ['IDHgcAgmPu'],                    ['GENPi'],   'DecHadCaloEndcap_IDPu_GENPi', {'y_min': 0.0}),
+
     ]
-    draw_effvseta(hplot, smps, wc, draw_style=draw_config, configs=effvseta_configs)
+    draw_effvseta(hplot, smps, wc, draw_style=draw_config, configs=pf_effvseta_configs)
 
-    effvspt_configs = [
-        (['CaloJets',],  ['all'],       ['GENJEtaEB'],  'CaloJets_all_GENEtaEB', {}),
-        (['CaloJets',],  ['all'],       ['GENJEtaEE'],  'CaloJets_all_GENEtaEE', {}),
-        (['TkJets',],    ['all'],       ['GENJEtaEB'],  'TkJets_all_GENEtaEB',   {}),
-        (['TkJets',],    ['all'],       ['GENJEtaEE'],  'TkJets_all_GENEtaEE',   {}),
-        (['PFJets',],    ['all'],       ['GENJEtaEB'],  'PFJets_all_GENEtaEB',   {}),
-        (['PFJets',],    ['all'],       ['GENJEtaEE'],  'PFJets_all_GENEtaEE',   {}),
-        (['PuppiJets',], ['all'],       ['GENJEtaEB'],  'PuppiJets_all_GENEtaEB', {}),
-        (['PuppiJets',], ['all'],       ['GENJEtaEE'],  'PuppiJets_all_GENEtaEE', {}),
-        (['scPuppiJets',], ['all'],     ['GENJEtaEB'],  'scPuppiJets_all_GENEtaEB', {}),
-        (['scPuppiJets',], ['all'],     ['GENJEtaEE'],  'scPuppiJets_all_GENEtaEE', {}),
-        (['scPuppiCorrJets',], ['all'], ['GENJEtaEB'],  'scPuppiCorrJets_all_GENEtaEB', {}),
-        (['scPuppiCorrJets',], ['all'], ['GENJEtaEE'],  'scPuppiCorrJets_all_GENEtaEE', {}),
+    pf_effvspt_configs = [
+        (['PfCands',],  ['PFTypeC'],       ['GENPiEtaEB'],  'PfCands_Pi_GENPiEtaEB', {}),
+        (['PfCands',],  ['PFTypeC'],       ['GENPiEtaEE'],  'PfCands_Pi_GENPiEtaEE', {}),
+        (['PfCands',],  ['PFTypeC'],       ['GENPiEtaFwd'],  'PfCands_Pi_GENPiEtaFwd', {}),
+        (['PfCands',],  ['PFTypeN'],       ['GENPiEtaFwd'],  'PfCands_NH_GENPiEtaFwd', {}),
+
+        (['DecHadCaloEndcap',],  ['IDHgcPFpi', 'IDHgcAgmPi'],       ['GENPiEtaEE'],  'DecHadCaloEndcap_IDPi_GENPiEtaEE', {}),
+        (['DecHadCaloEndcap',],  ['IDHgcPFpi', 'IDHgcAgmPi'],       ['GENPiEtaFwd'],  'DecHadCaloEndcap_IDPi_GENPiEtaFwd', {}),
+        (['DecHadCaloEndcap',],  ['IDHgcPFem', 'IDHgcAgmEm'],       ['GENPiEtaEE'],   'DecHadCaloEndcap_IDEm_GENPiEtaEE', {}),
+        (['DecHadCaloEndcap',],  ['IDHgcPFem', 'IDHgcAgmEm'],       ['GENPiEtaFwd'],  'DecHadCaloEndcap_IDEm_GENPiEtaFwd', {}),
+        (['DecHadCaloEndcap',],  ['IDHgcAgmPu'],       ['GENPiEtaEE'],   'DecHadCaloEndcap_IDPu_GENPiEtaEE', {}),
+        (['DecHadCaloEndcap',],  ['IDHgcAgmPu'],       ['GENPiEtaFwd'],  'DecHadCaloEndcap_IDPu_GENPiEtaFwd', {}),
+
+
     ]
-    draw_effvspt(hplot, smps, wc, draw_style=draw_config, configs=effvspt_configs)
+    draw_effvspt(hplot, smps, wc, draw_style=draw_config, configs=pf_effvspt_configs)
 
 
 
+def pf_reso_draw(hplot, smps, wc):
+    etaphi_reso_configs = [    
+        (['PfCands',],            ['PFTypeC'],              ['GENPiEtaEB'],     'PfCands_Pi_GENEtaEB', {}),
+        (['PfCands',],            ['PFTypeC'],              ['GENPiEtaEE'],    'PfCands_Pi_GENEtaEE', {}),
+        (['PfCands',],            ['PFTypeC'],              ['GENPiEtaFwd'],    'PfCands_Pi_GENEtaFwd', {}),
 
-
-def jet_reso_draw(hplot, smps, wc):
-    jets_etaphi_reso_configs = [    
-        (['CaloJets',],            ['all'],              ['GENJEtaEB'],       'CaloJets_all_GENEtaEB', {}),
-        (['CaloJets',],            ['all'],              ['GENJEtaEE'],       'CaloJets_all_GENEtaEE', {}),
-        (['TkJets',],            ['all'],              ['GENJEtaEB'],       'TkJets_all_GENEtaEB',   {}),
-        (['TkJets',],            ['all'],              ['GENJEtaEE'],       'TkJets_all_GENEtaEE',   {}),
-        (['PFJets',],            ['all'],              ['GENJEtaEB'],       'PFJets_all_GENEtaEB',   {}),
-        (['PFJets',],            ['all'],              ['GENJEtaEE'],       'PFJets_all_GENEtaEE',   {}),
-        (['PuppiJets',],         ['all'],              ['GENJEtaEB'],       'PuppiJets_all_GENEtaEB', {}),
-        (['PuppiJets',],         ['all'],              ['GENJEtaEE'],       'PuppiJets_all_GENEtaEE', {}),
-        (['scPuppiJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiJets_all_GENEtaEB', {}),
-        (['scPuppiJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiJets_all_GENEtaEE', {}),
-        (['scPuppiCorrJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiCorrJets_all_GENEtaEB', {}),
-        (['scPuppiCorrJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiCorrJets_all_GENEtaEE', {}),
     ]
-    draw_reso_eta(hplot, smps, wc, draw_style=draw_config, configs=jets_etaphi_reso_configs)
-    draw_reso_phi(hplot, smps, wc, draw_style=draw_config, configs=jets_etaphi_reso_configs)
+    draw_reso_eta(hplot, smps, wc, draw_style=draw_config, configs=etaphi_reso_configs)
+    draw_reso_phi(hplot, smps, wc, draw_style=draw_config, configs=etaphi_reso_configs)
 
     # ctl2_caloetaphi_reso_configs = [    
 
@@ -87,102 +79,59 @@ def jet_reso_draw(hplot, smps, wc):
     # draw_reso_caloeta(hplot, smps, wc, draw_style=draw_config, configs=ctl2_caloetaphi_reso_configs)
     # draw_reso_calophi(hplot, smps, wc, draw_style=draw_config, configs=ctl2_caloetaphi_reso_configs)
 
-    jet_ptresp_configs = [    
-        (['CaloJets',],            ['all'],              ['GENJEtaEB'],       'CaloJets_all_GENEtaEB', {'y_min': 1E-5}),
-        (['CaloJets',],            ['all'],              ['GENJEtaEE'],       'CaloJets_all_GENEtaEE', {'y_min': 1E-5}),
-        (['TkJets',],            ['all'],              ['GENJEtaEB'],       'TkJets_all_GENEtaEB',   {'y_min': 1E-5}),
-        (['TkJets',],            ['all'],              ['GENJEtaEE'],       'TkJets_all_GENEtaEE',   {'y_min': 1E-5}),
-        (['PFJets',],            ['all'],              ['GENJEtaEB'],       'PFJets_all_GENEtaEB',   {'y_min': 1E-5}),
-        (['PFJets',],            ['all'],              ['GENJEtaEE'],       'PFJets_all_GENEtaEE',   {'y_min': 1E-5}),
-        (['PuppiJets',],         ['all'],              ['GENJEtaEB'],       'PuppiJets_all_GENEtaEB', {'y_min': 1E-5}),
-        (['PuppiJets',],         ['all'],              ['GENJEtaEE'],       'PuppiJets_all_GENEtaEE', {'y_min': 1E-5}),
+    ptresp_configs = [    
+        (['PfCands',],            ['PFTypeC'],              ['GENPiEtaEB'],       'PfCands_Pi_GENPiEtaEB', {}),
+        (['PfCands',],            ['PFTypeC'],              ['GENPiEtaEE'],       'PfCands_Pi_GENPiEtaEE', {}),
+        (['PfCands',],            ['PFTypeC'],              ['GENPiEtaFwd'],      'PfCands_Pi_GENPiEtaFwd', {}),
     ]
 
-    draw_resp_pt(hplot, smps, wc, draw_style=draw_config, configs=jet_ptresp_configs)
+    draw_resp_pt(hplot, smps, wc, draw_style=draw_config, configs=ptresp_configs)
 
 
-    jet_ptrespvspt_configs = [    
-        (['CaloJets',],            ['all'],              ['GENJEtaEB'],       'CaloJets_all_GENEtaEB',  {'y_min': 0}),
-        (['CaloJets',],            ['all'],              ['GENJEtaEE'],       'CaloJets_all_GENEtaEE',  {'y_min': 0}),
-        (['TkJets',],            ['all'],              ['GENJEtaEB'],       'TkJets_all_GENEtaEB',      {'y_min': 0}),
-        (['TkJets',],            ['all'],              ['GENJEtaEE'],       'TkJets_all_GENEtaEE',      {'y_min': 0}),
-        (['PFJets',],            ['all'],              ['GENJEtaEB'],       'PFJets_all_GENEtaEB',      {'y_min': 0}),
-        (['PFJets',],            ['all'],              ['GENJEtaEE'],       'PFJets_all_GENEtaEE',      {'y_min': 0}),
-        (['PuppiJets',],         ['all'],              ['GENJEtaEB'],       'PuppiJets_all_GENEtaEB',   {'y_min': 0}),
-        (['PuppiJets',],         ['all'],              ['GENJEtaEE'],       'PuppiJets_all_GENEtaEE',   {'y_min': 0}),
-        (['scPuppiJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiJets_all_GENEtaEB', {'y_min': 0}),
-        (['scPuppiJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiJets_all_GENEtaEE', {'y_min': 0}),
-        (['scPuppiCorrJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiCorrJets_all_GENEtaEB', {'y_min': 0}),
-        (['scPuppiCorrJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiCorrJets_all_GENEtaEE', {'y_min': 0}),
-
+    ptrespvspt_configs = [    
+        (['PfCands',],            ['PFTypeC'],              ['GENPiEtaEB'],       'PfCands_Pi_GENPiEtaEB',  {'y_min': 0}),
+        (['PfCands',],            ['PFTypeC'],              ['GENPiEtaEE'],       'PfCands_Pi_GENPiEtaEE',  {'y_min': 0}),
+        (['PfCands',],            ['PFTypeC'],              ['GENPiEtaFwd'],      'PfCands_Pi_GENPiEtaFwd',  {'y_min': 0}),
     ]
-    draw_resp_ptVpt_median(hplot, smps, wc, draw_style=draw_config, configs=jet_ptrespvspt_configs)
+    draw_resp_ptVpt_median(hplot, smps, wc, draw_style=draw_config, configs=ptrespvspt_configs)
 
 
-    jet_ptrespvspt_configs = [    
-        (['CaloJets',],            ['all'],              ['GENJEtaEB'],       'CaloJets_all_GENEtaEB',  {'y_min': 0.1, 'y_max': 0.8}),
-        (['CaloJets',],            ['all'],              ['GENJEtaEE'],       'CaloJets_all_GENEtaEE',  {'y_min': 0.1, 'y_max': 0.8}),
-        (['TkJets',],            ['all'],              ['GENJEtaEB'],       'TkJets_all_GENEtaEB',      {'y_min': 0.1, 'y_max': 0.4}),
-        (['TkJets',],            ['all'],              ['GENJEtaEE'],       'TkJets_all_GENEtaEE',      {'y_min': 0.1, 'y_max': 0.4}),
-        (['PFJets',],            ['all'],              ['GENJEtaEB'],       'PFJets_all_GENEtaEB',      {'y_min': 0.1, 'y_max': 0.4}),
-        (['PFJets',],            ['all'],              ['GENJEtaEE'],       'PFJets_all_GENEtaEE',      {'y_min': 0.1, 'y_max': 0.4}),
-        (['PuppiJets',],         ['all'],              ['GENJEtaEB'],       'PuppiJets_all_GENEtaEB',   {'y_min': 0.1, 'y_max': 0.4}),
-        (['PuppiJets',],         ['all'],              ['GENJEtaEE'],       'PuppiJets_all_GENEtaEE',   {'y_min': 0.1, 'y_max': 0.4}),
-        (['scPuppiJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiJets_all_GENEtaEB', {'y_min': 0.1, 'y_max': 0.4}),
-        (['scPuppiJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiJets_all_GENEtaEE', {'y_min': 0.1, 'y_max': 0.4}),
-        (['scPuppiCorrJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiCorrJets_all_GENEtaEB', {'y_min': 0.1, 'y_max': 0.4}),
-        (['scPuppiCorrJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiCorrJets_all_GENEtaEE', {'y_min': 0.1, 'y_max': 0.4}),
+    ptrespvspt_configs = [   
+        (['PfCands',],            ['PFTypeC'],              ['GENPiEtaEB'],       'PfCands_Pi_GENPiEtaEB',  {'y_min': 0}),
+        (['PfCands',],            ['PFTypeC'],              ['GENPiEtaEE'],       'PfCands_Pi_GENPiEtaEE',  {'y_min': 0}),
+        (['PfCands',],            ['PFTypeC'],              ['GENPiEtaFwd'],      'PfCands_Pi_GENPiEtaFwd',  {'y_min': 0}),
     ]
-    draw_resp_ptVpt_sigma(hplot, smps, wc, draw_style=draw_config, configs=jet_ptrespvspt_configs)
+    draw_resp_ptVpt_sigma(hplot, smps, wc, draw_style=draw_config, configs=ptrespvspt_configs)
 
-    jet_ptrespvspt_configs = [    
-        (['CaloJets',],            ['all'],              ['GENJEtaEB'],       'CaloJets_all_GENEtaEB',  {}),
-        (['CaloJets',],            ['all'],              ['GENJEtaEE'],       'CaloJets_all_GENEtaEE',  {}),
-        (['TkJets',],            ['all'],              ['GENJEtaEB'],       'TkJets_all_GENEtaEB',    {}),
-        (['TkJets',],            ['all'],              ['GENJEtaEE'],       'TkJets_all_GENEtaEE',    {}),
-        (['PFJets',],            ['all'],              ['GENJEtaEB'],       'PFJets_all_GENEtaEB',    {}),
-        (['PFJets',],            ['all'],              ['GENJEtaEE'],       'PFJets_all_GENEtaEE',    {}),
-        (['PuppiJets',],         ['all'],              ['GENJEtaEB'],       'PuppiJets_all_GENEtaEB', {}),
-        (['PuppiJets',],         ['all'],              ['GENJEtaEE'],       'PuppiJets_all_GENEtaEE', {}),
-        (['scPuppiJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiJets_all_GENEtaEB', {}),
-        (['scPuppiJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiJets_all_GENEtaEE', {}),
-        (['scPuppiCorrJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiCorrJets_all_GENEtaEB', {}),
-        (['scPuppiCorrJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiCorrJets_all_GENEtaEE', {}),
+    ptrespvspt_configs = [
+        (['PfCands',],            ['PFTypeC'],              ['GENPiEtaEB'],       'PfCands_Pi_GENPiEtaEB',  {'y_min': 0}),
+        (['PfCands',],            ['PFTypeC'],              ['GENPiEtaEE'],       'PfCands_Pi_GENPiEtaEE',  {'y_min': 0}),
+        (['PfCands',],            ['PFTypeC'],              ['GENPiEtaFwd'],      'PfCands_Pi_GENPiEtaFwd',  {'y_min': 0}),
     ]
-    draw_resp_ptVpt(hplot, smps, wc, draw_style=draw_config, configs=jet_ptrespvspt_configs)
+    draw_resp_ptVpt(hplot, smps, wc, draw_style=draw_config, configs=ptrespvspt_configs)
 
 
-
-    jet_ptrespvseta_configs = [    
-        (['CaloJets',],    ['all'],    ['GENJPt30'],      'CaloJets_all_GENPt30',     {'y_min': 0}),
-        (['TkJets',],      ['all'],    ['GENJPt30'],      'TkJets_all_GENPt30',       {'y_min': 0}),
-        (['PFJets',],      ['all'],    ['GENJPt30'],      'PFJets_all_GENPt30',       {'y_min': 0}),
-        (['PuppiJets',],   ['all'],    ['GENJPt30'],      'PuppiJets_all_GENPt30',    {'y_min': 0}),
-        (['scPuppiJets',], ['all'],    ['GENJPt30'],      'scPuppiJets_all_GENPt30',  {'y_min': 0}),
-        (['scPuppiCorrJets',], ['all'],    ['GENJPt30'],      'scPuppiCorrJets_all_GENPt30',  {'y_min': 0}),
+    ptrespvseta_configs = [
+        (['PfCands',],            ['PFTypeC'],              ['GENPiPt30'],       'PfCands_Pi_GENPiPt30',  {'y_min': 0}),
+        (['PfCands',],            ['PFTypeC'],              ['GENPiPt30'],       'PfCands_Pi_GENPiPt30',  {'y_min': 0}),
+        (['PfCands',],            ['PFTypeC'],              ['GENPiPt30'],       'PfCands_Pi_GENPiPt30',  {'y_min': 0}),
     ]
-    draw_resp_ptVeta(hplot, smps, wc, draw_style=draw_config, configs=jet_ptrespvseta_configs)
+    draw_resp_ptVeta(hplot, smps, wc, draw_style=draw_config, configs=ptrespvseta_configs)
 
-    jet_ptrespvseta_configs = [    
-        (['CaloJets',],    ['all'],    ['GENJPt30'],      'CaloJets_all_GENPt30',    {'y_min': 0}),
-        (['TkJets',],      ['all'],    ['GENJPt30'],      'TkJets_all_GENPt30',      {'y_min': 0}),
-        (['PFJets',],      ['all'],    ['GENJPt30'],      'PFJets_all_GENPt30',      {'y_min': 0}),
-        (['PuppiJets',],   ['all'],    ['GENJPt30'],      'PuppiJets_all_GENPt30',   {'y_min': 0}),
-        (['scPuppiJets',], ['all'],    ['GENJPt30'],      'scPuppiJets_all_GENPt30', {'y_min': 0}),
-        (['scPuppiCorrJets',], ['all'],    ['GENJPt30'],      'scPuppiCorrJets_all_GENPt30', {'y_min': 0}),
+    ptrespvseta_configs = [    
+        (['PfCands',],            ['PFTypeC'],              ['GENPiPt30'],       'PfCands_Pi_GENPiPt30',  {'y_min': 0}),
+        (['PfCands',],            ['PFTypeC'],              ['GENPiPt30'],       'PfCands_Pi_GENPiPt30',  {'y_min': 0}),
+        (['PfCands',],            ['PFTypeC'],              ['GENPiPt30'],       'PfCands_Pi_GENPiPt30',  {'y_min': 0}),
     ]
 
-    draw_resp_ptVeta_median(hplot, smps, wc, draw_style=draw_config, configs=jet_ptrespvseta_configs)
+    draw_resp_ptVeta_median(hplot, smps, wc, draw_style=draw_config, configs=ptrespvseta_configs)
 
-    jet_ptrespvseta_configs = [    
-        (['CaloJets',],        ['all'],    ['GENJPt30'],      'CaloJets_all_GENPt30',         {'y_min': 0.15}),
-        (['TkJets',],          ['all'],    ['GENJPt30'],      'TkJets_all_GENPt30',           {'y_min': 0.15}),
-        (['PFJets',],          ['all'],    ['GENJPt30'],      'PFJets_all_GENPt30',           {'y_min': 0.15}),
-        (['PuppiJets',],       ['all'],    ['GENJPt30'],      'PuppiJets_all_GENPt30',        {'y_min': 0.15}),
-        (['scPuppiJets',],     ['all'],    ['GENJPt30'],      'scPuppiJets_all_GENPt30',      {'y_min': 0.15}),
-        (['scPuppiCorrJets',], ['all'],    ['GENJPt30'],      'scPuppiCorrJets_all_GENPt30',  {'y_min': 0.15}),
+    ptrespvseta_configs = [    
+        (['PfCands',],            ['PFTypeC'],              ['GENPiPt30'],       'PfCands_Pi_GENPiPt30',  {'y_min': 0}),
+        (['PfCands',],            ['PFTypeC'],              ['GENPiPt30'],       'PfCands_Pi_GENPiPt30',  {'y_min': 0}),
+        (['PfCands',],            ['PFTypeC'],              ['GENPiPt30'],       'PfCands_Pi_GENPiPt30',  {'y_min': 0}),
     ]
-    draw_resp_ptVeta_sigma(hplot, smps, wc, draw_style=draw_config, configs=jet_ptrespvseta_configs)
+    draw_resp_ptVeta_sigma(hplot, smps, wc, draw_style=draw_config, configs=ptrespvseta_configs)
 
 
 
@@ -195,7 +144,7 @@ def draw_resp_pt(hplot, smps, wc_eff, draw_style, configs):
         dm.config.legend_position = (0.6,0.6)
 
         hsets, labels, text = hplot.get_histo(
-            JetResoHistos, 
+            PfResoHistos, 
             [s.type for s in smps], 
             ['PU200'], 
             objs, 
@@ -247,7 +196,7 @@ def draw_resp_ptVpt_median(hplot, smps, wc_eff, draw_style, configs):
         dm1.config.legend_position = (0.6,0.6)
 
         hsets, labels, text = hplot.get_histo(
-            JetResoHistos, 
+            PfResoHistos, 
             [s.type for s in smps], 
             ['PU200'], 
             objs, 
@@ -313,7 +262,7 @@ def draw_resp_ptVpt_sigma(hplot, smps, wc_eff, draw_style, configs):
         dm2.config.legend_position = (0.6,0.6)
 
         hsets, labels, text = hplot.get_histo(
-            JetResoHistos, 
+            PfResoHistos, 
             [s.type for s in smps], 
             ['PU200'], 
             objs, 
@@ -368,7 +317,7 @@ def draw_resp_ptVpt(hplot, smps, wc_eff, draw_style, configs):
         dm3.config.legend_position = (0.6,0.6)
 
         hsets, labels, text = hplot.get_histo(
-            JetResoHistos, 
+            PfResoHistos, 
             [s.type for s in smps], 
             ['PU200'], 
             objs, 
@@ -424,7 +373,7 @@ def draw_resp_ptVeta_median(hplot, smps, wc_eff, draw_style, configs):
         dm1.config.legend_position = (0.6,0.6)
 
         hsets, labels, text = hplot.get_histo(
-            JetResoHistos, 
+            PfResoHistos, 
             [s.type for s in smps], 
             ['PU200'], 
             objs, 
@@ -487,7 +436,7 @@ def draw_resp_ptVeta_sigma(hplot, smps, wc_eff, draw_style, configs):
         dm2.config.legend_position = (0.6,0.6)
 
         hsets, labels, text = hplot.get_histo(
-            JetResoHistos, 
+            PfResoHistos, 
             [s.type for s in smps], 
             ['PU200'], 
             objs, 
@@ -545,7 +494,7 @@ def draw_resp_ptVeta(hplot, smps, wc_eff, draw_style, configs):
         dm3.config.legend_position = (0.6,0.6)
 
         hsets, labels, text = hplot.get_histo(
-            JetResoHistos, 
+            PfResoHistos, 
             [s.type for s in smps], 
             ['PU200'], 
             objs, 
@@ -556,7 +505,7 @@ def draw_resp_ptVeta(hplot, smps, wc_eff, draw_style, configs):
             continue
 
         hsets, labels, text = hplot.get_histo(
-            JetResoHistos, 
+            PfResoHistos, 
             [s.type for s in smps], 
             ['PU200'], 
             objs, 
@@ -616,7 +565,7 @@ def draw_reso_eta(hplot, smps, wc_eff, draw_style, configs):
         dm.config.legend_position = (0.6,0.7)
 
         hsets, labels, text = hplot.get_histo(
-            JetResoHistos, 
+            PfResoHistos, 
             [s.type for s in smps], 
             ['PU200'], 
             objs, 
@@ -669,7 +618,7 @@ def draw_reso_phi(hplot, smps, wc_eff, draw_style, configs):
         dm.config.legend_position = (0.6,0.7)
 
         hsets, labels, text = hplot.get_histo(
-            JetResoHistos, 
+            PfResoHistos, 
             [s.type for s in smps], 
             ['PU200'], 
             objs, 
@@ -724,7 +673,7 @@ def draw_reso_caloeta(hplot, smps, wc_eff, draw_style, configs):
         dm.config.legend_position = (0.6,0.7)
 
         hsets, labels, text = hplot.get_histo(
-            JetResoHistos, 
+            PfResoHistos, 
             [s.type for s in smps], 
             ['PU200'], 
             objs, 
@@ -776,7 +725,7 @@ def draw_reso_calophi(hplot, smps, wc_eff, draw_style, configs):
         dm.config.legend_position = (0.6,0.7)
 
         hsets, labels, text = hplot.get_histo(
-            JetResoHistos, 
+            PfResoHistos, 
             [s.type for s in smps], 
             ['PU200'], 
             objs, 

@@ -9,7 +9,7 @@ WHAT="${2:-all}"  # e.g., "menu_rate,met,eff"
 
 if [ -z "$TEST_VERSION" ]; then
   echo "Usage: $0 <TEST_VERSION> [what_to_draw]"
-  echo "  where what_to_draw can be: all or a comma-separated list: eg_reso,menu_eg_rate,eg_eff,ctl2_eg_rate,eg_unmatched,counter,met_rate"
+  echo "  where what_to_draw can be: all or a comma-separated list: eg_reso,menu_eg_rate,_ctl2,eg_eff_menu,ctl2_eg_rate,eg_unmatched,counter,met_rate"
   exit 1
 fi
 
@@ -52,9 +52,19 @@ fi
 if should_run "eg_eff_ctl2"; then
   python draw.py -m cfg/eg_genmatch_draw.py \
     --target-dir ${TARGET_DIR} \
-    -w ctl2_tkeg \
+    -w eff_ctl2 \
     --input-files $(IFS=,; echo "${gen_match_ele_files[*]}")
 fi
+
+
+# Efficiency plots
+if should_run "eg_eff_menu"; then
+  python draw.py -m cfg/eg_genmatch_draw.py \
+    --target-dir ${TARGET_DIR} \
+    -w eff_menu_ele \
+    --input-files $(IFS=,; echo "${gen_match_menu_ele_files[*]}")
+fi
+
 
 # CTL2 rate plots
 if should_run "ctl2_eg_rate"; then

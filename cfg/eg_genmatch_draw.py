@@ -437,7 +437,7 @@ def draw_effvspt(hplot, smps, wc_eff, draw_style, configs):
         dm.draw(
             text=text, 
             x_min=opts.get('x_min', 0), 
-            x_max=opts.get('x_max', 100), 
+            x_max=opts.get('x_max'), 
             y_min=opts.get('y_min', 0.0), 
             y_max=opts.get('y_max', 1.1), 
             h_lines=opts.get('h_lines', [1.0, 0.9]),

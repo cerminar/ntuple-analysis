@@ -12,8 +12,8 @@ WHAT="${2:-all}"  # e.g., "menu_rate,met,eff"
 
 if [ -z "$TEST_VERSION" ]; then
   echo "Usage: $0 <TEST_VERSION> [what_to_draw]"
-  echo "  where what_to_draw can be: all or a comma-separated list: eg_genmatch,eg_rate_menu
-,eg_eff,eg_rate_ctl2,eg_unmatched,eg_rate_counter,met_rate"
+  echo "  where what_to_draw can be: all or a comma-separated list: eg_genmatch_ctl2,eg_genmatch_menu,eg_rate_menu
+,eg_eff,eg_rate_ctl2,eg_unmatched,eg_rate_counter,met_rate,jet_genmatch"
   exit 1
 fi
 
@@ -41,7 +41,18 @@ should_run() {
 # TEST_VERSION=131Xv3M
 FILE_DIR=/Users/cerminar/cernbox/hgcal/CMSSW1015/plots
 
-if should_run "eg_genmatch"; then
+if should_run "eg_genmatch_menu"; then
+    python  analyzeNtuples.py -f cfg/eg_genmatch.yaml \
+        -i cfg/datasets/ntpfp_${TEST_VERSION}.yaml  \
+        -p egmenu  \
+        -s doubleele_flat1to100_PU200 -n -1 -d 0
+
+    cp -v ${FILE_DIR}/histos_doubleele_flat1to100_PU200_egmenu_v200D.${TEST_VERSION}i.root \
+        ${FILE_DIR}/histos_doubleele_flat1to100_PU200_egmenu_v200D.${TEST_VERSION}.root
+fi
+
+
+if should_run "eg_genmatch_ctl2"; then
     python  analyzeNtuples.py -f cfg/eg_genmatch.yaml \
         -i cfg/datasets/ntpfp_${TEST_VERSION}.yaml  \
         -p ctl2_tkeg  \
@@ -97,7 +108,7 @@ if should_run "met_rate"; then
 fi
 
 
-if should_run "jet_reso"; then
+if should_run "jet_genmatch"; then
     python  analyzeNtuples.py -f cfg/jetmet_genmatch.yaml \
         -i cfg/datasets/ntpfp_${TEST_VERSION}.yaml \
         -p jets  \

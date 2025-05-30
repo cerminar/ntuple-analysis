@@ -807,7 +807,7 @@ decHadCaloEndcap= DFCollection(
     fixture_function=endcap_decCalo_fixtures,
     # read_entry_block=500,
     debug=0,
-    # print_function=lambda df: df[['rho', 'eta', 'phi', 'hwQual', 'ptEm', 'egbdtscore', 'pubdtscore', 'egbdtscoreproba', 'pubdtscoreproba', 'pfPuIdScore', 'egEmIdScore']].sort_values(by='rho', ascending=False)
+    print_function=lambda df: df[['pt', 'eta', 'phi', 'hwQual', 'PuIdProb', 'piIdProb', 'EmIdProb']].sort_values(by='pt', ascending=False),
     # print_function=lambda df: df.columns,
     depends_on=[decHadCaloHgcal, decHadCaloHgcalNoTk]
     )
@@ -931,3 +931,9 @@ tk_met = DFCollection(
     print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
     debug=0)
 
+pf_cands = DFCollection(
+    name='PfCands', label='PF Cands.',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='L1PFCands', entry_block=entry_block),
+    print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
+    debug=0)

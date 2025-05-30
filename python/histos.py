@@ -390,7 +390,7 @@ class GenParticleHistos(BaseHistos):
     def __init__(self, name, root_file=None, pt_bins=None, debug=False):
         if not root_file:
             self.h_eta = bh.TH1F(f'{name}_eta', 'Gen Part eta; #eta^{GEN};', 50, -3, 3)
-            self.h_abseta = bh.TH1F(f'{name}_abseta', 'Gen Part |eta|; |#eta^{GEN}|;', 40, 0, 4)
+            self.h_abseta = bh.TH1F(f'{name}_abseta', 'Gen Part |eta|; |#eta^{GEN}|;', 50, 0, 5)
 
             if pt_bins is None:
                 self.h_pt = bh.TH1F(f'{name}_pt', 'Gen Part P_{T} (GeV); p_{T}^{GEN} [GeV];', 50, 0, 100)
