@@ -76,7 +76,17 @@ class DecCaloHistos(histos.BaseHistos):
                                  'eta; #eta;', 100, -4, 4)
             self.h_hwQual = bh.TH1F(f'{name}_hwQual',
                                  'hwQual; hwQual;', 10, 0, 10)
-            
+            self.h_puIdProb = bh.TH1F(f'{name}_puIdProb',
+                                 'puIdProb; puIdProb;', 100, 0, 1)
+            self.h_piIdProb = bh.TH1F(f'{name}_piIdProb',
+                                    'piIdProb; piIdProb;', 100, 0, 1)
+            self.h_emIdProb = bh.TH1F(f'{name}_emIdProb',
+                                    'emIdProb; emIdProb;', 100, 0, 1)
+            self.h_puIdProbVeta = bh.TH2F(f'{name}_puIdProbVeta',
+                                    'puIdProbVeta; #eta; puIdProb;', 50, 0, 4, 100, 0, 1)
+            self.h_puIdProbVpt = bh.TH2F(f'{name}_puIdProbVpt',
+                                    'puIdProbVeta; p_{T}; puIdProb;', 100, 0, 500, 100, 0, 1)
+
 
         histos.BaseHistos.__init__(self, name, root_file, debug)
 
@@ -84,6 +94,11 @@ class DecCaloHistos(histos.BaseHistos):
         bh.fill_1Dhist(self.h_pt, tracks.pt)
         bh.fill_1Dhist(self.h_eta, tracks.eta)
         bh.fill_1Dhist(self.h_hwQual, tracks.hwQual)
+        bh.fill_1Dhist(self.h_puIdProb, tracks.PuIdProb)
+        bh.fill_1Dhist(self.h_piIdProb, tracks.piIdProb)
+        bh.fill_1Dhist(self.h_emIdProb, tracks.EmIdProb)
+        bh.fill_2Dhist(self.h_puIdProbVeta, np.abs(tracks.eta), tracks.PuIdProb)
+        bh.fill_2Dhist(self.h_puIdProbVpt, tracks.pt, tracks.PuIdProb)
 
 
 # ------ Plotter classes ------------------------------------------------
@@ -129,37 +144,31 @@ class DecCaloGenMatchPlotter(plotters.GenericGenMatchPlotter):
 #         plotters.GenericGenMatchPlotter.book_histos(self)
 
 
+class DecCaloPlotter(plotters.GenericDataFramePlotter):
+    def __init__(self, eg_set, eg_selections=[selections.Selection('all')]):
+        super(DecCaloPlotter, self).__init__(DecCaloHistos, eg_set, eg_selections)
+
 
 # ------ Plotter instances
 
 
+gen_selections = (selections.Selector('^GENPi$|^GEN$')*('^EtaE[EB]$|^EtaEEFwd$|^EtaFwd|all')+selections.Selector('GENPi$|^GEN$')*('Pt30'))()
 
-gen_selections = (selections.Selector('GENPi$')*('^EtaE[EB]$|^EtaEEFwd$|^EtaFwd|all')+selections.Selector('GENPi$')*('Pt30'))()
-pf_selections = (selections.Selector('^PFType[CNEP]$|all$'))()
+gen_ee_selections = (selections.Selector('GENPi$|^GEN$')*('^EtaE[E]$|^EtaEEFwd$|^EtaFwd|all')+selections.Selector('GENPi$|^GEN$')*('Pt30'))()
+pf_selections = (selections.Selector('^PFType[CNEPH]$|all$'))()
 
 decHad_selections = (selections.Selector('^IDHgc|all$'))()
 pf = [
     PfGenMatchPlotter(
         coll.pf_cands, coll.gen_pi,
         pf_selections, gen_selections),
+]
+
+decoded = [
     DecCaloGenMatchPlotter(
         coll.decHadCaloEndcap, coll.gen_pi,
-        decHad_selections, gen_selections),
-    # JetGenMatchPlotter(
-    #     coll.pf_jets, coll.gen_jet,
-    #     jet_selections, gen_selections),
-    # JetGenMatchPlotter(
-    #     coll.puppi_jets, coll.gen_jet,
-    #     jet_selections, gen_selections),
-    # JetGenMatchPlotter(
-    #     coll.tk_jets, coll.gen_jet,
-    #     jet_selections, gen_selections),
-    # JetGenMatchPlotter(
-    #     coll.sc_corr_jets, coll.gen_jet,
-    #     jet_selections, gen_selections),
-    # JetGenMatchPlotter(
-    #     coll.sc_jets, coll.gen_jet,
-    #     jet_selections, gen_selections),
-
+        decHad_selections, gen_ee_selections),
+    DecCaloPlotter(
+        coll.decHadCaloEndcap, decHad_selections),
 ]
 

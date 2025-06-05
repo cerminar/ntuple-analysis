@@ -213,8 +213,10 @@ l1tc_fw_match_ee_selections = (selections.Selector('^EGq[2,4]or[3,5]$')*('^Pt[1-
 gen_selections = (selections.Selector('GEN$')*('^Eta[F]$|^Eta[AF][ABCD]*[C]$|all')+selections.Selector('GEN$')*('^Pt15|^Pt30'))()
 
 # gen_menu_selections = (selections.Selector('GEN$')*('^EtaE[BE]$|all')+selections.Selector('GEN$')*('^Pt10to25$|^Pt25'))()
-gen_menu_selections = (selections.Selector('GEN$')*('^EtaE[BE]$|^EtaEE[abc]$|all')+selections.Selector('GEN$')*('^Pt15$|^Pt30$|^Pt10to25$'))()
+gen_menu_selections = (selections.Selector('GEN$')*('^EtaE[BE]$|all')+selections.Selector('GEN$')*('^Pt30$|^Pt10to25$'))()
 
+gen_menu_sta_eb_selections = (selections.Selector('GEN$')*('^EtaEB$|all')+selections.Selector('GEN$')*('^Pt30$|^Pt10to25$'))()
+gen_menu_sta_ee_selections = (selections.Selector('GEN$')*('^Eta(EE|EEb|Fwd)$|all')+selections.Selector('GEN$')*('^Pt30$|^Pt10to25$'))()
 # for sels in [gen_selections, selections.gen_selections]:
 #     print('--------------------')
 #     print(f'# of sels: {len(sels)}')
@@ -401,10 +403,10 @@ ctl2_tkeg_menu_tons = [
 egsta_menu = [
     EGGenMatchPlotter(
         coll.EGStaEE, coll.gen,
-        egid_menu_sta_selections, gen_menu_selections),
+        egid_menu_sta_selections, gen_menu_sta_ee_selections),
     EGGenMatchPlotter(
         coll.EGStaEB, coll.gen,
-        egid_menu_sta_selections, gen_menu_selections),
+        egid_menu_sta_selections, gen_menu_sta_eb_selections),
 ]
 
 

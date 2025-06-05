@@ -15,3 +15,7 @@ pf:
   plotters:
     - !!python/name:cfg.pf_genmatch.pf
 
+pf_decoded:
+  plotters:
+    - !!python/name:cfg.pf_genmatch.pf
+    - !!python/name:cfg.pf_genmatch.decoded

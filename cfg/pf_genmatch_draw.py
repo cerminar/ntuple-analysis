@@ -32,26 +32,59 @@ def pf_eff_draw(hplot, smps, wc):
         (['PfCands',],     ['PFTypeC'],              ['GENPi'],       'PfCands_Pi_GENPi',  {'y_min': 0.0}),
         (['PfCands',],     ['PFTypeN'],              ['GENPi'],       'PfCands_NH_GENPi',  {'y_min': 0.0}),
         (['PfCands',],     ['PFTypeE'],              ['GENPi'],       'PfCands_Ele_GENPi', {'y_min': 0.0}),
+        (['PfCands',],     ['PFTypeH'],              ['GENPi'],       'PfCands_Had_GENPi', {'y_min': 0.0}),
 
         (['DecHadCaloEndcap',],  ['IDHgcPFpi', 'IDHgcAgmPi'],       ['GENPi'],   'DecHadCaloEndcap_IDPi_GENPi', {'y_min': 0.0}),
         (['DecHadCaloEndcap',],  ['IDHgcPFem', 'IDHgcAgmEm'],       ['GENPi'],   'DecHadCaloEndcap_IDEm_GENPi', {'y_min': 0.0}),
         (['DecHadCaloEndcap',],  ['IDHgcAgmPu'],                    ['GENPi'],   'DecHadCaloEndcap_IDPu_GENPi', {'y_min': 0.0}),
+
+
+        (['PfCands',],     ['all'],                  ['GEN'],        'PfCands_all_GENEm', {'y_min': 0.0}),
+        (['PfCands',],     ['PFTypeC'],              ['GEN'],       'PfCands_Pi_GENEm',  {'y_min': 0.0}),
+        (['PfCands',],     ['PFTypeN'],              ['GEN'],       'PfCands_NH_GENEm',  {'y_min': 0.0}),
+        (['PfCands',],     ['PFTypeE'],              ['GEN'],       'PfCands_Ele_GENEm', {'y_min': 0.0}),
+        (['PfCands',],     ['PFTypeH'],              ['GEN'],       'PfCands_Had_GENEm', {'y_min': 0.0}),
+
+        (['DecHadCaloEndcap',],  ['IDHgcPFpi', 'IDHgcAgmPi'],       ['GEN'],   'DecHadCaloEndcap_IDPi_GENEm', {'y_min': 0.0}),
+        (['DecHadCaloEndcap',],  ['IDHgcPFem', 'IDHgcAgmEm'],       ['GEN'],   'DecHadCaloEndcap_IDEm_GENEm', {'y_min': 0.0}),
+        (['DecHadCaloEndcap',],  ['IDHgcAgmPu'],                    ['GEN'],   'DecHadCaloEndcap_IDPu_GENEm', {'y_min': 0.0}),
+
 
     ]
     draw_effvseta(hplot, smps, wc, draw_style=draw_config, configs=pf_effvseta_configs)
 
     pf_effvspt_configs = [
         (['PfCands',],  ['PFTypeC'],       ['GENPiEtaEB'],  'PfCands_Pi_GENPiEtaEB', {}),
+        (['PfCands',],  ['PFTypeH'],       ['GENPiEtaEB'],  'PfCands_Had_GENPiEtaEB', {}),
         (['PfCands',],  ['PFTypeC'],       ['GENPiEtaEE'],  'PfCands_Pi_GENPiEtaEE', {}),
+        (['PfCands',],  ['PFTypeH'],       ['GENPiEtaEE'],  'PfCands_Had_GENPiEtaEE', {}),
         (['PfCands',],  ['PFTypeC'],       ['GENPiEtaFwd'],  'PfCands_Pi_GENPiEtaFwd', {}),
         (['PfCands',],  ['PFTypeN'],       ['GENPiEtaFwd'],  'PfCands_NH_GENPiEtaFwd', {}),
+        (['PfCands',],  ['PFTypeH'],       ['GENPiEtaFwd'],  'PfCands_Had_GENPiEtaFwd', {}),
 
-        (['DecHadCaloEndcap',],  ['IDHgcPFpi', 'IDHgcAgmPi'],       ['GENPiEtaEE'],  'DecHadCaloEndcap_IDPi_GENPiEtaEE', {}),
-        (['DecHadCaloEndcap',],  ['IDHgcPFpi', 'IDHgcAgmPi'],       ['GENPiEtaFwd'],  'DecHadCaloEndcap_IDPi_GENPiEtaFwd', {}),
-        (['DecHadCaloEndcap',],  ['IDHgcPFem', 'IDHgcAgmEm'],       ['GENPiEtaEE'],   'DecHadCaloEndcap_IDEm_GENPiEtaEE', {}),
-        (['DecHadCaloEndcap',],  ['IDHgcPFem', 'IDHgcAgmEm'],       ['GENPiEtaFwd'],  'DecHadCaloEndcap_IDEm_GENPiEtaFwd', {}),
-        (['DecHadCaloEndcap',],  ['IDHgcAgmPu'],       ['GENPiEtaEE'],   'DecHadCaloEndcap_IDPu_GENPiEtaEE', {}),
-        (['DecHadCaloEndcap',],  ['IDHgcAgmPu'],       ['GENPiEtaFwd'],  'DecHadCaloEndcap_IDPu_GENPiEtaFwd', {}),
+        (['PfCands',],  ['PFTypeC'],       ['GENEtaEB'],  'PfCands_Pi_GENEmEtaEB', {}),
+        (['PfCands',],  ['PFTypeH'],       ['GENEtaEB'],  'PfCands_Had_GENEmEtaEB', {}),
+        (['PfCands',],  ['PFTypeC'],       ['GENEtaEE'],  'PfCands_Pi_GENEmPiEtaEE', {}),
+        (['PfCands',],  ['PFTypeH'],       ['GENEtaEE'],  'PfCands_Had_GENEmEtaEE', {}),
+        (['PfCands',],  ['PFTypeC'],       ['GENEtaFwd'],  'PfCands_Pi_GENEmEtaFwd', {}),
+        (['PfCands',],  ['PFTypeN'],       ['GENEtaFwd'],  'PfCands_NH_GENEmEtaFwd', {}),
+        (['PfCands',],  ['PFTypeH'],       ['GENEtaFwd'],  'PfCands_Had_GENEmEtaFwd', {}),
+
+
+        (['DecHadCaloEndcap',],  ['IDHgcPFpi', 'IDHgcAgmPi', 'IDHgcAgmPi1', 'IDHgcAgmPi2', 'IDHgcAgmPi3'],       ['GENPiEtaEE'],   'DecHadCaloEndcap_IDPi_GENPiEtaEE', {}),
+        (['DecHadCaloEndcap',],  ['IDHgcPFpi', 'IDHgcAgmPi', 'IDHgcAgmPi1', 'IDHgcAgmPi2', 'IDHgcAgmPi3'],       ['GENPiEtaFwd'],  'DecHadCaloEndcap_IDPi_GENPiEtaFwd', {}),
+        (['DecHadCaloEndcap',],  ['IDHgcPFem', 'IDHgcAgmEm'],                                                    ['GENPiEtaEE'],   'DecHadCaloEndcap_IDEm_GENPiEtaEE', {}),
+        (['DecHadCaloEndcap',],  ['IDHgcPFem', 'IDHgcAgmEm'],                                                    ['GENPiEtaFwd'],  'DecHadCaloEndcap_IDEm_GENPiEtaFwd', {}),
+        (['DecHadCaloEndcap',],  ['IDHgcAgmPu'],                                                                 ['GENPiEtaEE'],   'DecHadCaloEndcap_IDPu_GENPiEtaEE', {}),
+        (['DecHadCaloEndcap',],  ['IDHgcAgmPu'],                                                                 ['GENPiEtaFwd'],  'DecHadCaloEndcap_IDPu_GENPiEtaFwd', {}),
+
+
+        (['DecHadCaloEndcap',],  ['IDHgcPFpi', 'IDHgcAgmPi', 'IDHgcAgmPi1', 'IDHgcAgmPi2', 'IDHgcAgmPi3'],       ['GENEtaEE'],   'DecHadCaloEndcap_IDPi_GENEmEtaEE', {}),
+        (['DecHadCaloEndcap',],  ['IDHgcPFpi', 'IDHgcAgmPi', 'IDHgcAgmPi1', 'IDHgcAgmPi2', 'IDHgcAgmPi3'],       ['GENEtaFwd'],  'DecHadCaloEndcap_IDPi_GENEmEtaFwd', {}),
+        (['DecHadCaloEndcap',],  ['IDHgcPFem', 'IDHgcAgmEm'],                                                    ['GENEtaEE'],   'DecHadCaloEndcap_IDEm_GENEmEtaEE', {}),
+        (['DecHadCaloEndcap',],  ['IDHgcPFem', 'IDHgcAgmEm'],                                                    ['GENEtaFwd'],  'DecHadCaloEndcap_IDEm_GENEmEtaFwd', {}),
+        (['DecHadCaloEndcap',],  ['IDHgcAgmPu'],                                                                 ['GENEtaEE'],   'DecHadCaloEndcap_IDPu_GENEmEtaEE', {}),
+        (['DecHadCaloEndcap',],  ['IDHgcAgmPu'],                                                                 ['GENEtaFwd'],  'DecHadCaloEndcap_IDPu_GENEmEtaFwd', {}),
 
 
     ]

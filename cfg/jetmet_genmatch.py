@@ -120,12 +120,12 @@ jets = [
     JetGenMatchPlotter(
         coll.tk_jets, coll.gen_jet,
         jet_selections, gen_selections),
-    JetGenMatchPlotter(
-        coll.sc_corr_jets, coll.gen_jet,
-        jet_selections, gen_selections),
-    JetGenMatchPlotter(
-        coll.sc_jets, coll.gen_jet,
-        jet_selections, gen_selections),
+    # JetGenMatchPlotter(
+    #     coll.sc_corr_jets, coll.gen_jet,
+    #     jet_selections, gen_selections),
+    # JetGenMatchPlotter(
+    #     coll.sc_jets, coll.gen_jet,
+    #     jet_selections, gen_selections),
 
 ]
 

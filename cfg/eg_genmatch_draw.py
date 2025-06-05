@@ -35,10 +35,14 @@ draw_config.additional_text = [(0.13, 0.91, '#scale[1.5]{CMS} #it{#scale[1.]{Pha
 def egmenu_ele_draw(hplot, smps, wc):
 
     egmenu_configs = [    
-        (['TkEmL2',], ['MenuSta'],      ['GENPt15'],  'TkEmL2_MenuSta_GENPt15_ele', {}),
+        (['TkEmL2',], ['MenuSta'],      ['GENPt10to25'],  'TkEmL2_MenuSta_GENPt10to25_ele', {}),
         (['TkEmL2',], ['MenuSta'],      ['GENPt30'],  'TkEmL2_MenuSta_GENPt30_ele', {}),
+        (['EGStaEB', 'EGStaEE'], ['MenuStaFwd'],      ['GENPt10to25'],  'EGSta_MenuSta_GENPt10to25_ele', {}),
+        (['EGStaEB', 'EGStaEE'], ['MenuStaFwd'],      ['GENPt30'],  'EGSta_MenuSta_GENPt30_ele', {}),
+
+
         (['TkEmL2',], ['MenuPhoIso'],      ['GENPt10to25'],  'TkEmL2_MenuPhoIso_GENPt10to25_ele', {}),
-        (['TkEmL2',], ['MenuPhoIso'],      ['GENPt15'],  'TkEmL2_MenuPhoIso_GENPt15_ele', {}),
+        # (['TkEmL2',], ['MenuPhoIso'],      ['GENPt15'],  'TkEmL2_MenuPhoIso_GENPt15_ele', {}),
         (['TkEmL2',], ['MenuPhoIso'],      ['GENPt30'],  'TkEmL2_MenuPhoIso_GENPt30_ele', {}),
 
         (['TkEmL2',], ['SingleEGEle51'],      ['GEN'],  'TkEmL2_SingleEGEle51_GEN_ele', {}),
@@ -50,18 +54,18 @@ def egmenu_ele_draw(hplot, smps, wc):
         # (smps_pho, ['TkEmL2',], ['MenuPhoIso'],      ['GENPt30'],  'TkEmL2_MenuPhoIso_GENPt30'),
 
         (['TkEleL2',], ['MenuEleLoose'],      ['GENPt10to25'],  'TkEleL2_MenuEleLoose_GENPt10to25', {}),
-        (['TkEleL2',], ['MenuEleLoose'],      ['GENPt15'],  'TkEleL2_MenuEleLoose_GENPt15', {}),
+        # (['TkEleL2',], ['MenuEleLoose'],      ['GENPt15'],  'TkEleL2_MenuEleLoose_GENPt15', {}),
         (['TkEleL2',], ['MenuEleLoose'],      ['GENPt30'],  'TkEleL2_MenuEleLoose_GENPt30', {}),
         (['TkEleL2',], ['MenuEleTight'],      ['GENPt10to25'],  'TkEleL2_MenuEleTight_GENPt10to25', {}),
-        (['TkEleL2',], ['MenuEleTight'],      ['GENPt15'],  'TkEleL2_MenuEleTight_GENPt15', {}),
+        # (['TkEleL2',], ['MenuEleTight'],      ['GENPt15'],  'TkEleL2_MenuEleTight_GENPt15', {}),
         (['TkEleL2',], ['MenuEleTight'],      ['GENPt30'],  'TkEleL2_MenuEleTight_GENPt30', {}),
         (['TkEleL2',], ['MenuEleIso'],      ['GENPt10to25'],  'TkEleL2_MenuEleIso_GENPt10to25', {}),
 
         (['TkEleL2',], ['MenuEleIsoLoose'],      ['GENPt10to25'],  'TkEleL2_MenuEleIsoLoose_GENPt10to25', {}),
-        (['TkEleL2',], ['MenuEleIsoLoose'],      ['GENPt15'],  'TkEleL2_MenuEleIsoLoose_GENPt15', {}),
+        # (['TkEleL2',], ['MenuEleIsoLoose'],      ['GENPt15'],  'TkEleL2_MenuEleIsoLoose_GENPt15', {}),
         (['TkEleL2',], ['MenuEleIsoLoose'],      ['GENPt30'],              'TkEleL2_MenuEleIsoLoose_GENPt30', {}),
         (['TkEleL2',], ['MenuEleIsoTight'],      ['GENPt10to25'],  'TkEleL2_MenuEleIsoTight_GENPt10to25', {}),
-        (['TkEleL2',], ['MenuEleIsoTight'],      ['GENPt15'],  'TkEleL2_MenuEleIsoTight_GENPt15', {}),
+        # (['TkEleL2',], ['MenuEleIsoTight'],      ['GENPt15'],  'TkEleL2_MenuEleIsoTight_GENPt15', {}),
         (['TkEleL2',], ['MenuEleIsoTight'],      ['GENPt30'],  'TkEleL2_MenuEleIsoTight_GENPt30', {}),
 
 
@@ -84,6 +88,7 @@ def egmenu_ele_draw(hplot, smps, wc):
         (['EGStaEB',], ['MenuSta'],      ['GENEtaEB'],    'EGStaEB_MenuSta_GENEtaEB_ele', {}),
         (['EGStaEE',], ['MenuSta'],      ['GENEtaEE'],    'EGStaEE_MenuSta_GENEtaEE_ele', {}),
         (['EGStaEE',], ['MenuSta'],      ['GENEtaEEb'],   'EGStaEE_MenuSta_GENEtaEEb_ele', {}),
+        (['EGStaEE',], ['MenuStaFwd'],      ['GENEtaFwd'],   'EGStaEE_MenuSta_GENEtaFwd_ele', {}),
 
         (['TkEmL2',], ['MenuSta'],      ['GENEtaEB'],    'TkEmL2_MenuSta_GENEtaEB_ele', {}),
         (['TkEmL2',], ['MenuSta'],      ['GENEtaEE'],    'TkEmL2_MenuSta_GENEtaEE_ele', {}),
@@ -92,6 +97,7 @@ def egmenu_ele_draw(hplot, smps, wc):
         (['EGStaEB', 'TkEmL2',], ['MenuSta'],      ['GENEtaEB'],    'StaGCT_MenuSta_GENEtaEB_ele', {}),
         (['EGStaEE', 'TkEmL2',], ['MenuSta'],      ['GENEtaEE'],    'StaGCT_MenuSta_GENEtaEE_ele', {}),
         (['EGStaEE', 'TkEmL2',], ['MenuSta'],      ['GENEtaEEb'],   'StaGCT_MenuSta_GENEtaEEb_ele', {}),
+        # (['EGStaEE', 'TkEmL2',], ['MenuStaFwd'],      ['GENEtaFwd'],   'StaGCT_MenuSta_GENEtaFwd_ele', {}),
 
         (['TkEmL2',], ['MenuPhoIso'],      ['GENEtaEB'],  'TkEmL2_MenuPhoIso_GENEtaEB_ele', {}),
         (['TkEmL2',], ['MenuPhoIso'],      ['GENEtaEE'],  'TkEmL2_MenuPhoIso_GENEtaEE_ele', {}),

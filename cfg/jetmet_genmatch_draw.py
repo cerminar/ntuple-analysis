@@ -36,6 +36,14 @@ def jet_eff_draw(hplot, smps, wc):
         (['PuppiJets',],       ['all'],   ['GENJPt30'],  'PuppiJets_all_GENJPt30',       {'x_max': 5., 'y_min': 0.0}),
         (['scPuppiJets',],     ['all'],   ['GENJPt30'],  'scPuppiJets_all_GENJPt30',     {'x_max': 5., 'y_min': 0.0}),
         (['scPuppiCorrJets',], ['all'],   ['GENJPt30'],  'scPuppiCorrJets_all_GENJPt30', {'x_max': 5., 'y_min': 0.0}),
+
+        (['CaloJets',],        ['all'],   ['GENJPt100'],  'CaloJets_all_GENJPt100',        {'x_max': 5., 'y_min': 0.0}),
+        (['TkJets',],          ['all'],   ['GENJPt100'],  'TkJets_all_GENJPt100',          {'x_max': 5., 'y_min': 0.0}),
+        (['PFJets',],          ['all'],   ['GENJPt100'],  'PFJets_all_GENJPt100',          {'x_max': 5., 'y_min': 0.0}),
+        (['PuppiJets',],       ['all'],   ['GENJPt100'],  'PuppiJets_all_GENJPt100',       {'x_max': 5., 'y_min': 0.0}),
+        (['scPuppiJets',],     ['all'],   ['GENJPt100'],  'scPuppiJets_all_GENJPt100',     {'x_max': 5., 'y_min': 0.0}),
+        (['scPuppiCorrJets',], ['all'],   ['GENJPt100'],  'scPuppiCorrJets_all_GENJPt100', {'x_max': 5., 'y_min': 0.0}),
+
     ]
     draw_effvseta(hplot, smps, wc, draw_style=draw_config, configs=effvseta_configs)
 
@@ -52,6 +60,19 @@ def jet_eff_draw(hplot, smps, wc):
         (['scPuppiJets',], ['all'],     ['GENJEtaEE'],  'scPuppiJets_all_GENEtaEE', {}),
         (['scPuppiCorrJets',], ['all'], ['GENJEtaEB'],  'scPuppiCorrJets_all_GENEtaEB', {}),
         (['scPuppiCorrJets',], ['all'], ['GENJEtaEE'],  'scPuppiCorrJets_all_GENEtaEE', {}),
+
+        (['CaloJets',],  ['all'],       ['GENJEtaFwd'],  'CaloJets_all_GENEtaFwd', {}),
+        (['PFJets',],    ['all'],       ['GENJEtaFwd'],  'PFJets_all_GENEtaFwd',   {}),
+        (['PuppiJets',], ['all'],       ['GENJEtaFwd'],  'PuppiJets_all_GENEtaFwd', {}),
+        (['scPuppiJets',], ['all'],     ['GENJEtaFwd'],  'scPuppiJets_all_GENEtaFwd', {}),
+        (['scPuppiCorrJets',], ['all'], ['GENJEtaFwd'],  'scPuppiCorrJets_all_GENEtaFwd', {}),
+
+        (['CaloJets',],  ['all'],       ['GENJEtaVFwd'],  'CaloJets_all_GENEtaVFwd', {}),
+        (['PFJets',],    ['all'],       ['GENJEtaVFwd'],  'PFJets_all_GENEtaVFwd',   {}),
+        (['PuppiJets',], ['all'],       ['GENJEtaVFwd'],  'PuppiJets_all_GENEtaVFwd', {}),
+        (['scPuppiJets',], ['all'],     ['GENJEtaVFwd'],  'scPuppiJets_all_GENEtaVFwd', {}),
+        (['scPuppiCorrJets',], ['all'], ['GENJEtaVFwd'],  'scPuppiCorrJets_all_GENEtaVFwd', {}),
+
     ]
     draw_effvspt(hplot, smps, wc, draw_style=draw_config, configs=effvspt_configs)
 
@@ -104,16 +125,30 @@ def jet_reso_draw(hplot, smps, wc):
     jet_ptrespvspt_configs = [    
         (['CaloJets',],            ['all'],              ['GENJEtaEB'],       'CaloJets_all_GENEtaEB',  {'y_min': 0}),
         (['CaloJets',],            ['all'],              ['GENJEtaEE'],       'CaloJets_all_GENEtaEE',  {'y_min': 0}),
+        (['CaloJets',],            ['all'],              ['GENJEtaFwd'],       'CaloJets_all_GENEtaFwd',  {'y_min': 0}),
+        (['CaloJets',],            ['all'],              ['GENJEtaVFwd'],       'CaloJets_all_GENEtaVFwd',  {'y_min': 0}),
+
         (['TkJets',],            ['all'],              ['GENJEtaEB'],       'TkJets_all_GENEtaEB',      {'y_min': 0}),
         (['TkJets',],            ['all'],              ['GENJEtaEE'],       'TkJets_all_GENEtaEE',      {'y_min': 0}),
         (['PFJets',],            ['all'],              ['GENJEtaEB'],       'PFJets_all_GENEtaEB',      {'y_min': 0}),
         (['PFJets',],            ['all'],              ['GENJEtaEE'],       'PFJets_all_GENEtaEE',      {'y_min': 0}),
+        (['PFJets',],            ['all'],              ['GENJEtaFwd'],       'PFJets_all_GENEtaFwd',      {'y_min': 0}),
+        (['PFJets',],            ['all'],              ['GENJEtaVFwd'],       'PFJets_all_GENEtaVFwd',      {'y_min': 0}),
+
         (['PuppiJets',],         ['all'],              ['GENJEtaEB'],       'PuppiJets_all_GENEtaEB',   {'y_min': 0}),
         (['PuppiJets',],         ['all'],              ['GENJEtaEE'],       'PuppiJets_all_GENEtaEE',   {'y_min': 0}),
+        (['PuppiJets',],         ['all'],              ['GENJEtaFwd'],       'PuppiJets_all_GENEtaFwd',   {'y_min': 0}),
+        (['PuppiJets',],         ['all'],              ['GENJEtaVFwd'],       'PuppiJets_all_GENEtaVFwd',   {'y_min': 0}),
+
         (['scPuppiJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiJets_all_GENEtaEB', {'y_min': 0}),
         (['scPuppiJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiJets_all_GENEtaEE', {'y_min': 0}),
+        (['scPuppiJets',],    ['all'],              ['GENJEtaFwd'],       'scPuppiJets_all_GENEtaFwd', {'y_min': 0}),
+        (['scPuppiJets',],    ['all'],              ['GENJEtaVFwd'],       'scPuppiJets_all_GENEtaVFwd', {'y_min': 0}),
+
         (['scPuppiCorrJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiCorrJets_all_GENEtaEB', {'y_min': 0}),
         (['scPuppiCorrJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiCorrJets_all_GENEtaEE', {'y_min': 0}),
+        (['scPuppiCorrJets',],    ['all'],              ['GENJEtaFwd'],       'scPuppiCorrJets_all_GENEtaFwd', {'y_min': 0}),
+        (['scPuppiCorrJets',],    ['all'],              ['GENJEtaVFwd'],       'scPuppiCorrJets_all_GENEtaVFwd', {'y_min': 0}),
 
     ]
     draw_resp_ptVpt_median(hplot, smps, wc, draw_style=draw_config, configs=jet_ptrespvspt_configs)

@@ -104,3 +104,12 @@ if should_run "jet_reso"; then
     -w jet_reso \
     --input-files $(IFS=,; echo "${ttbar_jetreso_files[*]}")
 fi
+
+if should_run "jet_eff"; then
+    python draw.py -m cfg/jetmet_genmatch_draw.py \
+    --target-dir ${TARGET_DIR} \
+    -w jet_eff \
+    --input-files  $(IFS=,; echo "${ttbar_jetreso_files[*]}")
+fi
+
+
