@@ -583,6 +583,9 @@ hgc_id_sel = [
     Selection('IDHgcAgmPu', 'ID Agm PU', lambda array: (array.PuIdProb > array.piIdProb) & (array.PuIdProb > array.EmIdProb)),
     Selection('IDHgcAgmPi', 'ID Agm #pi', lambda array: (array.piIdProb > array.PuIdProb) & (array.piIdProb > array.EmIdProb)),
     Selection('IDHgcAgmEm', 'ID Agm EM', lambda array: (array.EmIdProb > array.PuIdProb) & (array.EmIdProb > array.piIdProb)),
+    Selection('IDHgcAgmPi1', 'ID Agm #pi 1', lambda array: (array.piIdProb > array.PuIdProb) & (array.piIdProb > array.EmIdProb) & (array.PuIdProb < 0.4)),
+    Selection('IDHgcAgmPi2', 'ID Agm #pi 2', lambda array: (array.piIdProb > array.PuIdProb) & (array.piIdProb > array.EmIdProb) & (array.PuIdProb < 0.3)),
+    Selection('IDHgcAgmPi3', 'ID Agm #pi 3', lambda array: (array.piIdProb > array.PuIdProb) & (array.piIdProb > array.EmIdProb) & (array.PuIdProb < 0.2)),
 
 ]
 
@@ -689,7 +692,7 @@ pf_sel = [
     Selection('PFTypeN', 'PF neut. had.', lambda ar: abs(ar.pdgId) == 130),
     Selection('PFTypeE', 'PF ele.', lambda ar: abs(ar.pdgId) == 11),
     Selection('PFTypeP', 'PF photon', lambda ar: abs(ar.pdgId) == 22),
-    Selection('PFTypeH', 'PF hadron', lambda ar: abs(ar.pdgId) == 211 | abs(ar.pdgId) == 130),
+    Selection('PFTypeH', 'PF hadron', lambda ar: (abs(ar.pdgId) == 211) | (abs(ar.pdgId) == 130)),
 
 ]
 
