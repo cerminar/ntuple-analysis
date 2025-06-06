@@ -1,17 +1,14 @@
 # 14X v1 validation: Composite ID in EB (tight WP), Multiclass as in DPS + new Composite ID in EE
 dataset:
-  input_dir:  /eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/fp_ntuples/
-  version: 140Xv0E1
+  input_dir:  /Users/cerminar/
+  version: 140Xv0B18
 
   # tree_name: hgcalTriggerNtuplizer/HGCalTriggerNtuple
   tree_name: Events
-  menu: AR2024
 
 
 calibrations:
   rate_pt_wps: data/rate_pt_wps_v152B.90A.json
-  on2off_scaling: data/scalings/scaling_C1.json
-
   # tree_name: l1CaloTriggerNtuplizer/HGCalTriggerNtuple
 
   # doubleele_flat1to100_PU0:
@@ -20,12 +17,22 @@ calibrations:
   #   # gen_selections: !!python/name:python.selections.genpart_photon_selections
 
 samples:
-  doubleele_flat1to100_PU200:
-    input_sample_dir: DoubleElectron_FlatPt-1To100_PU200/FP/140Xv0E1
+  news:
+    input_sample_dir: Downloads/doublele_news/
     events_per_job : 200
 
+
+  olds:
+    input_sample_dir: Downloads/doublele_olds/
+    events_per_job : 200
+
+  oldc:
+    input_sample_dir: Downloads/doublele_oldc/
+    events_per_job : 200
+
+
   doublephoton_flat1to100_PU200:
-    input_sample_dir: DoublePhoton_FlatPt-1To100_PU200/FP/140Xv0E1
+    input_sample_dir: DoublePhoton_FlatPt-1To100_PU200/FP/140Xv0B18
     events_per_job : 200
 
 
@@ -35,14 +42,13 @@ samples:
   # # 
 
   nugun_alleta_pu200:
-    input_sample_dir: NuGunAllEta_PU200/FP/140Xv0E1
+    input_sample_dir: NuGunAllEta_PU200/FP/140Xv0B18
     # input_sample_dir: NuGunAllEta_PU200/NTP/v80A/
     # input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v47/191105_135050/0000/
     events_per_job: 300
   # # 
   ttbar_PU200:
-  ttbar_PU200:
-    input_sample_dir: TT_PU200/FP/140Xv0E1
+    input_sample_dir: TT_PU200/FP/140Xv0B18
     events_per_job: 200
   
   

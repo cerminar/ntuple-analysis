@@ -6,11 +6,15 @@ common:
   plot_version: v200A
   run_clustering: False
   run_density_computation: False
-  file_label: jetmet_rate
+  file_label: jmrate
 
 
 met:
   plotters:
     - !!python/name:cfg.jetmet_rate.met_plotters
-  # file_label: met
+  file_label: met
 
+jets:
+  plotters:
+    - !!python/name:cfg.jetmet_rate.jet_plotters
+  file_label: jets

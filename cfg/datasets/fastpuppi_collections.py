@@ -116,6 +116,14 @@ def quality_flags(objs):
     objs['IDBrem'] = np.bitwise_and(objs.hwQual, mask_no_brem) == 0
     return objs
 
+def puppi_met_fixtures(objs):
+    compute_scaling(objs, obj_name='puppiMET', iso=False)
+    return objs
+
+def jet_fixtures(objs):
+    compute_scaling(objs, obj_name='scCorrJets', iso=False)
+    return objs
+
 def tkele_fixtures(objs):
     # print(objs.fields)
     objs['dpt'] = objs.tkPt - objs.pt
@@ -145,25 +153,36 @@ def egsta_fixtures(objs):
 
 
 def compute_scaling(objs, obj_name, iso=False):
+    # print(obj_name)
     # print(objs.fields)
     scaling = calibrations.CalibManager().get_calib('on2off_scaling')[obj_name]   
     # pprint('scaling', scaling)
     var_name = 'pt_off'
     
-    sel_keys = ('EtaEB', 'EtaEE')
     if iso:
         var_name = 'pt_off_iso'
-        sel_keys = ('IsoEtaEB', 'IsoEtaEE')
 
-    s_b = scaling[sel_keys[0]]
-    s_e = scaling[sel_keys[1]]
-    barrel_sel = selections.Selector('^EtaEB$').one()
-    objs[var_name] = ak.where(
-        barrel_sel.selection(objs),
-        objs['pt'] * s_b['a'] + s_b['b'],
-        objs['pt'] * s_e['a'] + s_e['b']
-    )
+    off_pt = objs.pt
+    for sel_key in scaling.keys():
+        if 'Iso' in sel_key:
+            sel_name = sel_key.replace('Iso', '')
+        else:
+            sel_name = sel_key
+        # print(f'Processing scaling for selection key: {sel_name}')
 
+        sel = selections.Selector(f'^{sel_name}$').one()
+        if sel.all:
+            # print(f'Skipping scaling for selection: {sel_key}, as it matches all objects')
+            off_pt = objs['pt'] * scaling[sel_key]['a'] + scaling[sel_key]['b']
+        else:
+            scalp = scaling[sel_key]
+            mask = sel.selection(objs)
+            # print(f'Applying scaling for selection: {sel_key}, mask: {mask}')
+            # print(objs.eta)
+            off_pt = ak.where(mask, objs['pt'] * scalp['a'] + scalp['b'],  off_pt)
+
+    objs[var_name] = off_pt
+    
 def decodedTk_fixtures(objects):
     # objects['deltaZ0'] = objects.z0 - objects.simz0
     # objects['deltaPt'] = objects.pt - objects.simpt
@@ -813,6 +832,19 @@ decHadCaloEndcap= DFCollection(
     )
 # decHadCaloEndcap.activate()
 
+decHadCaloEndcap_pfinputs= DFCollection(
+    name='DecHadCaloEndcapPFin', label='DecHadCaloEndcap',
+    filler_function=lambda event, entry_block: decHadCaloEndcap.df,
+    fixture_function=mapcalo2pfregions_in,
+    # read_entry_block=500,
+    debug=0,
+    print_function=lambda df: df[['pt', 'eta', 'phi', 'hwQual', 'PuIdProb', 'piIdProb', 'EmIdProb']].sort_values(by='pt', ascending=False),
+    # print_function=lambda df: df.columns,
+    depends_on=[decHadCaloEndcap]
+    )
+# decHadCaloEndcap_pfinput.activate()
+
+
 decEmCaloBarrel= DFCollection(
     name='DecEmCaloBarrel', label='DecEmCaloBarrel',
     filler_function=lambda event, entry_block: event.getDataFrame(
@@ -857,6 +889,7 @@ sc_corr_jets = DFCollection(
     name='scPuppiCorrJets', label='SC Corr. Jets',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='scPuppiCorrJets', entry_block=entry_block),
+    fixture_function=jet_fixtures,
     print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
     debug=0)
 
@@ -921,6 +954,7 @@ puppi_met = DFCollection(
     name='PuppiMet', label='Puppi Met',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='L1PuppiMet', entry_block=entry_block),
+    fixture_function=puppi_met_fixtures,
     print_function=lambda df: df.sort_values(by='pt', ascending=False)[:10],
     debug=0)
 

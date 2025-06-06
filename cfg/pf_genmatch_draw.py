@@ -56,19 +56,30 @@ def pf_eff_draw(hplot, smps, wc):
     pf_effvspt_configs = [
         (['PfCands',],  ['PFTypeC'],       ['GENPiEtaEB'],  'PfCands_Pi_GENPiEtaEB', {}),
         (['PfCands',],  ['PFTypeH'],       ['GENPiEtaEB'],  'PfCands_Had_GENPiEtaEB', {}),
+        (['PfCands',],  ['PFTypeE'],       ['GENPiEtaEB'],  'PfCands_Em_GENPiEtaEB', {}),
+
         (['PfCands',],  ['PFTypeC'],       ['GENPiEtaEE'],  'PfCands_Pi_GENPiEtaEE', {}),
         (['PfCands',],  ['PFTypeH'],       ['GENPiEtaEE'],  'PfCands_Had_GENPiEtaEE', {}),
+        (['PfCands',],  ['PFTypeE'],       ['GENPiEtaEE'],  'PfCands_Em_GENPiEtaEE', {}),
+
         (['PfCands',],  ['PFTypeC'],       ['GENPiEtaFwd'],  'PfCands_Pi_GENPiEtaFwd', {}),
         (['PfCands',],  ['PFTypeN'],       ['GENPiEtaFwd'],  'PfCands_NH_GENPiEtaFwd', {}),
         (['PfCands',],  ['PFTypeH'],       ['GENPiEtaFwd'],  'PfCands_Had_GENPiEtaFwd', {}),
+        (['PfCands',],  ['PFTypeE'],       ['GENPiEtaFwd'],  'PfCands_Em_GENPiEtaFwd', {}),
+
 
         (['PfCands',],  ['PFTypeC'],       ['GENEtaEB'],  'PfCands_Pi_GENEmEtaEB', {}),
         (['PfCands',],  ['PFTypeH'],       ['GENEtaEB'],  'PfCands_Had_GENEmEtaEB', {}),
+        (['PfCands',],  ['PFTypeE'],       ['GENEtaEB'],  'PfCands_Em_GENEmEtaEB', {}),
+   
         (['PfCands',],  ['PFTypeC'],       ['GENEtaEE'],  'PfCands_Pi_GENEmPiEtaEE', {}),
         (['PfCands',],  ['PFTypeH'],       ['GENEtaEE'],  'PfCands_Had_GENEmEtaEE', {}),
+        (['PfCands',],  ['PFTypeE'],       ['GENEtaEE'],  'PfCands_Em_GENEmEtaEE', {}),
+
         (['PfCands',],  ['PFTypeC'],       ['GENEtaFwd'],  'PfCands_Pi_GENEmEtaFwd', {}),
         (['PfCands',],  ['PFTypeN'],       ['GENEtaFwd'],  'PfCands_NH_GENEmEtaFwd', {}),
         (['PfCands',],  ['PFTypeH'],       ['GENEtaFwd'],  'PfCands_Had_GENEmEtaFwd', {}),
+        (['PfCands',],  ['PFTypeE'],       ['GENEtaFwd'],  'PfCands_Em_GENEmEtaFwd', {}),
 
 
         (['DecHadCaloEndcap',],  ['IDHgcPFpi', 'IDHgcAgmPi', 'IDHgcAgmPi1', 'IDHgcAgmPi2', 'IDHgcAgmPi3'],       ['GENPiEtaEE'],   'DecHadCaloEndcap_IDPi_GENPiEtaEE', {}),

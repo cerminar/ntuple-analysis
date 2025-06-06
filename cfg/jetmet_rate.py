@@ -85,31 +85,64 @@ class DoubleObjRateHistoCounter(RateHistoCounter):
         # print(df.groupby(level='entry').filter(DoubleObjRateHistoCounter.has_unique_pairs).index.unique('entry').size)
         RateHistoCounter.fill(self, ak.sum(ak.any(df.leg0.pt, axis=1)*1))
 
-
-class METRateHistos(histos.RateHistos):
+class JetRateHistos(histos.RateHistos):
     def __init__(self, name, root_file=None, debug=False):
         histos.RateHistos.__init__(self, name, bin_range=(0, 500), root_file=root_file, debug=debug)
 
-    def fill(self, data):
-        if self.var == 'pt':
-            pt_max = data.pt
-        else:
-            pt_max = data[self.var]
-        for thr,bin_center in zip(self.h_pt.axes[0].edges, self.h_pt.axes[0].centers, strict=False):
-        # for thr,bin_center in zip(self.h_pt.axes[0].edges[1:], self.h_pt.axes[0].centers):
-            self.h_pt.fill(bin_center, weight=ak.sum(pt_max>=thr))
 
-
-class RatePlotter(plotters.BasePlotter):
+class JetRatePlotter(plotters.BasePlotter):
     def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
         self.h_rate = {}
-        super(RatePlotter, self).__init__(tp_set, tp_selections)
+        super(JetRatePlotter, self).__init__(tp_set, tp_selections)
 
     def book_histos(self):
         self.tp_set.activate()
         tp_name = self.tp_set.name
         for selection in self.tp_selections:
-            self.h_rate[selection.name] = METRateHistos(name=f'{tp_name}_{selection.name}')
+            self.h_rate[selection.name] = JetRateHistos(name=f'{tp_name}_{selection.name}')
+
+    def fill_histos(self, debug=0):
+        # print '------------------'
+        # print self.tp_set.name
+        for selection in self.tp_selections:
+            sel_objs = self.tp_set.df
+            if not selection.all:
+                # print(selection)
+                sel_objs = self.tp_set.df[selection.selection(self.tp_set.df)]
+            # max_pt_index = ak.argmax(sel_clusters.pt, axis=1, keepdims=True)
+            # max_pt_per_event = sel_clusters[max_pt_index]
+            self.h_rate[selection.name].fill(sel_objs)
+            self.h_rate[selection.name].fill_norm(self.tp_set.new_read_nentries)
+
+
+class MetRateHistos(histos.RateHistos):
+    def __init__(self, name, root_file=None, debug=False):
+        histos.RateHistos.__init__(self, name, bin_range=(0, 500), root_file=root_file, debug=debug)
+
+    def fill(self, data):
+        self.fill_rate(data, self.var, self.h_pt)
+        if self.var_off in data.fields:
+            self.fill_rate(data, self.var_off, self.h_ptOff)
+        if 'pt_off_iso' in data.fields:
+            self.fill_rate(data, 'pt_off_iso', self.h_ptIsoOff)
+
+    def fill_rate(self, data, var, histo):
+        pt_max = data[self.var]
+        for thr,bin_center in zip(histo.axes[0].edges, histo.axes[0].centers, strict=False):
+        # for thr,bin_center in zip(histo.axes[0].edges[1:], histo.axes[0].centers):
+            histo.fill(bin_center, weight=ak.sum(pt_max>=thr))
+
+
+class MetRatePlotter(plotters.BasePlotter):
+    def __init__(self, tp_set, tp_selections=[selections.Selection('all')]):
+        self.h_rate = {}
+        super(MetRatePlotter, self).__init__(tp_set, tp_selections)
+
+    def book_histos(self):
+        self.tp_set.activate()
+        tp_name = self.tp_set.name
+        for selection in self.tp_selections:
+            self.h_rate[selection.name] = MetRateHistos(name=f'{tp_name}_{selection.name}')
 
     def fill_histos(self, debug=0):
         # print '------------------'
@@ -167,27 +200,40 @@ class DoubleObjRateCounter(BaseRateCounter):
 
 
 met_selections = (selections.Selector('all'))()
+jet_selections = (selections.Selector('all|^Eta(E[EB]$|Fwd$|VFwd$)'))()
 
 # for sel in egid_iso_etatk_selections:
 #     print(sel)
 met_plotters = [
-    RatePlotter(
+    MetRatePlotter(
         coll.calo_met, met_selections),
-    RatePlotter(
+    MetRatePlotter(
         coll.pf_met, met_selections),
-    RatePlotter(
+    MetRatePlotter(
         coll.puppi_met, met_selections),
-    RatePlotter(
+    MetRatePlotter(
         coll.tk_met, met_selections),
-    RatePlotter(
+    MetRatePlotter(
         coll.calo_met_central, met_selections),
-    RatePlotter(
+    MetRatePlotter(
         coll.pf_met_central, met_selections),
-    RatePlotter(
+    MetRatePlotter(
         coll.puppi_met_central, met_selections),
-    RatePlotter(
+    MetRatePlotter(
         coll.tk_met_central, met_selections),
-
 ]
 
-
+jet_plotters = [
+    JetRatePlotter(
+        coll.calo_jets, jet_selections),
+    JetRatePlotter(
+        coll.pf_jets, jet_selections),
+    JetRatePlotter(
+        coll.puppi_jets, jet_selections),
+    JetRatePlotter(
+        coll.tk_jets, jet_selections),
+    JetRatePlotter(
+        coll.sc_corr_jets, jet_selections),
+    JetRatePlotter(
+        coll.sc_jets, jet_selections),
+]

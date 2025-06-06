@@ -151,23 +151,32 @@ class DecCaloPlotter(plotters.GenericDataFramePlotter):
 
 # ------ Plotter instances
 
+gen_em_selections = (selections.Selector('^GEN$')*('^EtaE[EB]$|^EtaEEFwd$|^EtaFwd|all')+selections.Selector('^GEN$')*('Pt30'))()
+gen_em_ee_selections = (selections.Selector('^GEN$')*('^EtaE[E]$|^EtaEEFwd$|^EtaFwd|all')+selections.Selector('^GEN$')*('Pt30'))()
 
-gen_selections = (selections.Selector('^GENPi$|^GEN$')*('^EtaE[EB]$|^EtaEEFwd$|^EtaFwd|all')+selections.Selector('GENPi$|^GEN$')*('Pt30'))()
+gen_pi_selections = (selections.Selector('^GENPi$')*('^EtaE[EB]$|^EtaEEFwd$|^EtaFwd|all')+selections.Selector('GENPi$')*('Pt30'))()
+gen_pi_ee_selections = (selections.Selector('GENPi$')*('^EtaE[E]$|^EtaEEFwd$|^EtaFwd|all')+selections.Selector('GENPi$')*('Pt30'))()
 
-gen_ee_selections = (selections.Selector('GENPi$|^GEN$')*('^EtaE[E]$|^EtaEEFwd$|^EtaFwd|all')+selections.Selector('GENPi$|^GEN$')*('Pt30'))()
 pf_selections = (selections.Selector('^PFType[CNEPH]$|all$'))()
-
 decHad_selections = (selections.Selector('^IDHgc|all$'))()
+
 pf = [
     PfGenMatchPlotter(
         coll.pf_cands, coll.gen_pi,
-        pf_selections, gen_selections),
+        pf_selections, gen_pi_selections),
+    PfGenMatchPlotter(
+        coll.pf_cands, coll.gen,
+        pf_selections, gen_em_selections),
+    
 ]
 
 decoded = [
     DecCaloGenMatchPlotter(
         coll.decHadCaloEndcap, coll.gen_pi,
-        decHad_selections, gen_ee_selections),
+        decHad_selections, gen_pi_ee_selections),
+    DecCaloGenMatchPlotter(
+        coll.decHadCaloEndcap, coll.gen,
+        decHad_selections, gen_em_ee_selections),
     DecCaloPlotter(
         coll.decHadCaloEndcap, decHad_selections),
 ]
