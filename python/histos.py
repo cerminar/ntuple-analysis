@@ -269,8 +269,10 @@ class RateHistos(BaseHistos):
             print(f'normalize # ev {nev} to {norm}')
             self.h_norm.Scale(norm/nev)
             self.h_pt.Scale(norm/nev)
-            self.h_ptOff.Scale(norm/nev)
-            self.h_ptIsoOff.Scale(norm/nev)
+            if hasattr(self, 'h_ptOff'):
+                self.h_ptOff.Scale(norm/nev)
+            if hasattr(self, 'h_ptIsoOff'):
+                self.h_ptIsoOff.Scale(norm/nev)
             # self.h_ptVabseta.Scale(norm/nev)
 
 

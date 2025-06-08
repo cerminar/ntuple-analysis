@@ -506,7 +506,7 @@ eg_eta_sel = [
     Selection('EtaEEFwd', '1.479 < |#eta^{TOBJ}| <= 3.0', lambda ar: (abs(ar.eta) > 1.479) & (abs(ar.eta) <= 3.0)),
     Selection('EtaFwd', '2.4 < |#eta^{TOBJ}| <= 3.0', lambda ar: (abs(ar.eta) > 2.4) & (abs(ar.eta) <= 3.0)),
     Selection('EtaVFwd', '3.0 < |#eta^{TOBJ}| <= 5.0', lambda ar: (abs(ar.eta) > 3.0) & (abs(ar.eta) <= 5.0)),
-
+    Selection('EtaAFwd', '2.4 < |#eta^{TOBJ}| <= 5.0', lambda ar: (abs(ar.eta) > 2.4) & (abs(ar.eta) <= 5.0)),
 ]
 
 pfinput_regions = [

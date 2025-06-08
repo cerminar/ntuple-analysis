@@ -9,7 +9,7 @@ WHAT="${2:-all}"  # e.g., "menu_rate,met,eff"
 
 if [ -z "$TEST_VERSION" ]; then
   echo "Usage: $0 <TEST_VERSION> [what_to_draw]"
-  echo "  where what_to_draw can be: all or a comma-separated list: eg_reso,menu_eg_rate,_ctl2,eg_eff_menu,ctl2_eg_rate,eg_unmatched,counter,met_rate"
+  echo "  where what_to_draw can be: all or a comma-separated list: eg_reso,menu_eg_rate,_ctl2,eg_eff_menu,ctl2_eg_rate,eg_unmatched,counter,met_rate,jet_rate"
   exit 1
 fi
 
@@ -96,6 +96,14 @@ if should_run "met_rate"; then
     --target-dir ${TARGET_DIR} \
     -w met \
     --input-files $(IFS=,; echo "${nugun_metrate_files[*]}")
+fi
+
+# Jet rate plots
+if should_run "jet_rate"; then
+  python draw.py -m cfg/jetmet_rate_draw.py \
+    --target-dir ${TARGET_DIR} \
+    -w jets \
+    --input-files $(IFS=,; echo "${nugun_jetrate_files[*]}")
 fi
 
 if should_run "jet_reso"; then
