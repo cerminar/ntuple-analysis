@@ -90,7 +90,6 @@ GROUPS = {
     "jetmet": ["met_rate", "jet_genmatch", "jet_rate"],
 }
 
-FILE_DIR = "/Users/cerminar/cernbox/hgcal/CMSSW1015/plots"
 
 def expand_tasks(what):
     """Expand group names to their tasks, remove duplicates, preserve order."""
@@ -125,6 +124,8 @@ def main():
     parser.add_argument("test_version", help="Test version string (e.g. 140Xv0B10)")
     parser.add_argument("what", nargs="?", default="all", help="Comma-separated list of tasks or groups (default: all)")
     parser.add_argument("--workers", type=int, default=2, help="Number of parallel workers (default: 2)")
+    parser.add_argument("--file-dir", default='./plots/', help="Directory for input files (default: ./plots/)")
+
     args = parser.parse_args()
 
     what_list = [w.strip() for w in args.what.split(",")]
@@ -138,7 +139,7 @@ def main():
     success, failed = [], []
 
     with ThreadPoolExecutor(max_workers=args.workers) as executor:
-        futures = {executor.submit(run_task, t, args.test_version, FILE_DIR): t for t in tasks_to_run}
+        futures = {executor.submit(run_task, t, args.test_version, args.file_dir): t for t in tasks_to_run}
         for future in as_completed(futures):
             taskname, rc = future.result()
             if rc == 0:
