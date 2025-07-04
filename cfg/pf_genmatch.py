@@ -1,0 +1,183 @@
+from python import plotters, selections, calibrations, histos
+import python.boost_hist as bh
+import cfg.datasets.fastpuppi_collections as coll
+import awkward as ak
+import numpy as np
+import math
+
+# ------ Histogram classes ----------------------------------------------
+
+class PfResoHistos(histos.BaseResoHistos):
+    def __init__(self, name, root_file=None, debug=False):
+        if not root_file:
+            self.h_ptResp = bh.TH1F(
+                f'{name}_ptResp',
+                'Track Pt resp.; p_{T}^{L1}/p_{T}^{GEN}',
+                100, 0, 3)
+            self.h_ptRespVpt = bh.TH2F(
+                f'{name}_ptRespVpt',
+                'Track Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
+                50, 0, 100, 100, 0, 3)
+            self.h_ptRespVeta = bh.TH2F(
+                f'{name}_ptRespVeta',
+                'Track Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};',
+                50, 0, 4, 100, 0, 3)
+            self.h_etaRes = bh.TH1F(
+                f'{name}_etaRes',
+                'Track eta reso',
+                100, -0.4, 0.4)
+            self.h_phiRes = bh.TH1F(
+                f'{name}_phiRes',
+                'Track phi reso',
+                100, -0.4, 0.4)
+            self.h_drRes = bh.TH1F(
+                f'{name}_drRes',
+                'Track DR reso',
+                100, 0, 0.4)
+            self.h_nMatch = bh.TH1F(
+                f'{name}_nMatch',
+                '# matches',
+                100, 0, 100)
+
+        histos.BaseResoHistos.__init__(self, name, root_file, debug)
+
+    def fill(self, reference, target):
+        bh.fill_1Dhist(self.h_ptResp, target.pt/reference.pt)
+        bh.fill_2Dhist(self.h_ptRespVeta, reference.eta, target.pt/reference.pt)
+        bh.fill_2Dhist(self.h_ptRespVpt, reference.pt, target.pt/reference.pt)
+        bh.fill_1Dhist(self.h_etaRes, (target.eta - reference.eta))
+        bh.fill_1Dhist(self.h_phiRes, (target.phi - reference.phi))
+        bh.fill_1Dhist(self.h_drRes, np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))
+
+    def fill_nMatch(self, n_matches):
+        self.h_nMatch.Fill(n_matches)
+
+
+class PfHistos(histos.BaseHistos):
+    def __init__(self, name, root_file=None, debug=False):
+        if not root_file:
+            self.h_pt = bh.TH1F(f'{name}_pt',
+                                'Pt (GeV); p_{T} [GeV]', 100, 0, 500)
+            self.h_eta = bh.TH1F(f'{name}_eta',
+                                 'eta; #eta;', 100, -4, 4)
+
+        histos.BaseHistos.__init__(self, name, root_file, debug)
+
+    def fill(self, tracks):
+        bh.fill_1Dhist(self.h_pt, tracks.pt)
+        bh.fill_1Dhist(self.h_eta, tracks.eta)
+
+class DecCaloHistos(histos.BaseHistos):
+    def __init__(self, name, root_file=None, debug=False):
+        if not root_file:
+            self.h_pt = bh.TH1F(f'{name}_pt',
+                                'Pt (GeV); p_{T} [GeV]', 100, 0, 500)
+            self.h_eta = bh.TH1F(f'{name}_eta',
+                                 'eta; #eta;', 100, -4, 4)
+            self.h_hwQual = bh.TH1F(f'{name}_hwQual',
+                                 'hwQual; hwQual;', 10, 0, 10)
+            self.h_puIdProb = bh.TH1F(f'{name}_puIdProb',
+                                 'puIdProb; puIdProb;', 100, 0, 1)
+            self.h_piIdProb = bh.TH1F(f'{name}_piIdProb',
+                                    'piIdProb; piIdProb;', 100, 0, 1)
+            self.h_emIdProb = bh.TH1F(f'{name}_emIdProb',
+                                    'emIdProb; emIdProb;', 100, 0, 1)
+            self.h_puIdProbVeta = bh.TH2F(f'{name}_puIdProbVeta',
+                                    'puIdProbVeta; #eta; puIdProb;', 50, 0, 4, 100, 0, 1)
+            self.h_puIdProbVpt = bh.TH2F(f'{name}_puIdProbVpt',
+                                    'puIdProbVeta; p_{T}; puIdProb;', 100, 0, 500, 100, 0, 1)
+
+
+        histos.BaseHistos.__init__(self, name, root_file, debug)
+
+    def fill(self, tracks):
+        bh.fill_1Dhist(self.h_pt, tracks.pt)
+        bh.fill_1Dhist(self.h_eta, tracks.eta)
+        bh.fill_1Dhist(self.h_hwQual, tracks.hwQual)
+        bh.fill_1Dhist(self.h_puIdProb, tracks.PuIdProb)
+        bh.fill_1Dhist(self.h_piIdProb, tracks.piIdProb)
+        bh.fill_1Dhist(self.h_emIdProb, tracks.EmIdProb)
+        bh.fill_2Dhist(self.h_puIdProbVeta, np.abs(tracks.eta), tracks.PuIdProb)
+        bh.fill_2Dhist(self.h_puIdProbVpt, tracks.pt, tracks.PuIdProb)
+
+
+# ------ Plotter classes ------------------------------------------------
+
+class PfGenMatchPlotter(plotters.GenericGenMatchPlotter):
+    def __init__(self, data_set, gen_set,
+                 data_selections=[selections.Selection('all')],
+                 gen_selections=[selections.Selection('all')],
+                 gen_eta_phi_columns=('eta', 'phi'),
+                 pt_bins=None):
+        super(PfGenMatchPlotter, self).__init__(PfHistos, PfResoHistos,
+                                                data_set, gen_set,
+                                                data_selections, gen_selections,
+                                                gen_eta_phi_columns=gen_eta_phi_columns,
+                                                pt_bins=pt_bins,
+                                                drcut=0.1)
+
+class DecCaloGenMatchPlotter(plotters.GenericGenMatchPlotter):
+    def __init__(self, data_set, gen_set,
+                 data_selections=[selections.Selection('all')],
+                 gen_selections=[selections.Selection('all')],
+                 gen_eta_phi_columns=('caloeta', 'calophi'),
+                 pt_bins=None):
+        super(DecCaloGenMatchPlotter, self).__init__(DecCaloHistos, PfResoHistos,
+                                                data_set, gen_set,
+                                                data_selections, gen_selections,
+                                                gen_eta_phi_columns=gen_eta_phi_columns,
+                                                pt_bins=pt_bins,
+                                                drcut=0.1)
+
+# class EGGenMatchPtWPSPlotter(plotters.GenericGenMatchPlotter):
+#     def __init__(self, data_set, gen_set, gen_selections):
+#         super(EGGenMatchPtWPSPlotter, self).__init__(
+#             JetHistos, EGResoHistos,
+#             data_set, gen_set,
+#             [], gen_selections)
+
+#     def book_histos(self):
+#         calib_mgr = calibrations.CalibManager()
+#         rate_pt_wps = calib_mgr.get_calib('rate_pt_wps')
+#         self.data_selections = selections.rate_pt_wps_selections(
+#             rate_pt_wps, self.data_set.name)
+#         plotters.GenericGenMatchPlotter.book_histos(self)
+
+
+class DecCaloPlotter(plotters.GenericDataFramePlotter):
+    def __init__(self, eg_set, eg_selections=[selections.Selection('all')]):
+        super(DecCaloPlotter, self).__init__(DecCaloHistos, eg_set, eg_selections)
+
+
+# ------ Plotter instances
+
+gen_em_selections = (selections.Selector('^GEN$')*('^EtaE[EB]$|^EtaEEFwd$|^EtaFwd|all')+selections.Selector('^GEN$')*('Pt30'))()
+gen_em_ee_selections = (selections.Selector('^GEN$')*('^EtaE[E]$|^EtaEEFwd$|^EtaFwd|all')+selections.Selector('^GEN$')*('Pt30'))()
+
+gen_pi_selections = (selections.Selector('^GENPi$')*('^EtaE[EB]$|^EtaEEFwd$|^EtaFwd|all')+selections.Selector('GENPi$')*('Pt30'))()
+gen_pi_ee_selections = (selections.Selector('GENPi$')*('^EtaE[E]$|^EtaEEFwd$|^EtaFwd|all')+selections.Selector('GENPi$')*('Pt30'))()
+
+pf_selections = (selections.Selector('^PFType[CNEPH]$|all$'))()
+decHad_selections = (selections.Selector('^IDHgc|all$'))()
+
+pf = [
+    PfGenMatchPlotter(
+        coll.pf_cands, coll.gen_pi,
+        pf_selections, gen_pi_selections),
+    PfGenMatchPlotter(
+        coll.pf_cands, coll.gen,
+        pf_selections, gen_em_selections),
+    
+]
+
+decoded = [
+    DecCaloGenMatchPlotter(
+        coll.decHadCaloEndcap, coll.gen_pi,
+        decHad_selections, gen_pi_ee_selections),
+    DecCaloGenMatchPlotter(
+        coll.decHadCaloEndcap, coll.gen,
+        decHad_selections, gen_em_ee_selections),
+    DecCaloPlotter(
+        coll.decHadCaloEndcap, decHad_selections),
+]
+

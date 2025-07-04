@@ -129,12 +129,12 @@ class CorrOccupancyPlotter(plotters.BasePlotter):
 # ------ Plotter instances
 sm = selections.SelectionManager()
 
-multiclassID_sel = [
-    selections.Selection('IDPuVetoMC', 'Pass MC PU veto',  lambda ar: ar.multiClassPuIdScore < 0.4878136),
-    selections.Selection('IDEmMC', 'Pass MC EM ID',  lambda ar: ar.multiClassEmIdScore > 0.115991354),
+# multiclassID_sel = [
+#     selections.Selection('IDPuVetoMC', 'Pass MC PU veto',  lambda ar: ar.multiClassPuIdScore < 0.4878136),
+#     selections.Selection('IDEmMC', 'Pass MC EM ID',  lambda ar: ar.multiClassEmIdScore > 0.115991354),
 
-]
-selections.Selector.selection_primitives = sm.selections.copy()
+# ]
+# selections.Selector.selection_primitives = sm.selections.copy()
 
 
 pfin_hgc_tp_selections = (selections.Selector('^IDEm*|all')*('IDPuVeto*|all')*('^Pt[1,2,5]$|all'))()
@@ -146,6 +146,7 @@ pfin_tk_selections = (selections.Selector('^TkPt'))()
 # pfeg_tp_input_selections = (Selector('^PFinH')*('^Pt[1,2,5]$|all')*('^Em$|all'))()
 # pfeg_ee_input_selections = (Selector('^PFinH')*('^Pt[1,2,5]$|all')*('^EGq[1]$|all'))()
 # pftkinput_selections = (Selector('^PFinBRL|^PFinHGC$')*('^TkPt'))()
+decHad_selections = (selections.Selector('^IDHgc|all$')*('^Pt[1,2,5]$|all'))()
 
 
 
@@ -153,6 +154,10 @@ l1tcorr_input_occ = [
     CorrOccupancyPlotter(
         coll.hgc_cl3d_pfinputs,
         pfin_hgc_tp_selections),
+    CorrOccupancyPlotter(
+        coll.decHadCaloEndcap_pfinputs,
+        decHad_selections),
+    
     # CorrOccupancyPlotter(
     #     coll.EGStaEB_pfinputs,
     #     pfin_eb_selections),
@@ -164,9 +169,9 @@ l1tcorr_input_occ = [
 
 
 l1tcorr_tkcl3dmatch_input_occ = [
-    CorrOccupancyPlotter(
-        coll.tkCl3DMatch,
-        pfin_tkcl3dmatch_selections),
+    # CorrOccupancyPlotter(
+    #     coll.tkCl3DMatch,
+    #     pfin_tkcl3dmatch_selections),
     CorrOccupancyPlotter(
         coll.hgc_cl3d_pfinputs,
         pfin_hgc_tp_selections),

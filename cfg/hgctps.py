@@ -218,9 +218,9 @@ hgc_tp_rate_pt_wps = [
 #     print(sel)
 
 hgc_tp_tkmatch_genmatched = [
-    Cl3DGenMatchPlotter(
-        coll.tkCl3DMatch, coll.gen,
-        tkcl3dmatch_selections, gen_ee_selections)
+    # Cl3DGenMatchPlotter(
+    #     coll.tkCl3DMatch, coll.gen,
+    #     tkcl3dmatch_selections, gen_ee_selections)
 ]
 
 

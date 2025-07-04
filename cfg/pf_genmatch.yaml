@@ -1,0 +1,21 @@
+
+common:
+  output_dir:
+    # dictionary machine name -> directory to support different paths
+    default: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
+    triolet: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
+  plot_version: v0
+  run_clustering: False
+  run_density_computation: False
+# +AccountingGroup = "group_u_CMS.u_zh.users"
+# +AccountingGroup = "group_u_CMST3.all"
+
+  file_label: pf
+pf:
+  plotters:
+    - !!python/name:cfg.pf_genmatch.pf
+
+pf_decoded:
+  plotters:
+    - !!python/name:cfg.pf_genmatch.pf
+    - !!python/name:cfg.pf_genmatch.decoded

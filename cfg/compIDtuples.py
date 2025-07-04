@@ -6,8 +6,8 @@ comp_selections = (selections.Selector('^Pt15|all')&('^EtaABC$|^EtaBC$|all'))()
 sim_selections = (selections.Selector('^GEN$')&('^Ee$|all')&('^Pt15|all')&('^EtaABC$|^EtaBC$|all'))()
 
 compid_plotters = [
-    plotters.CompTuplesPlotter(collections.TkEleEE, comp_selections),
-    plotters.CompCatTuplePlotter(collections.TkEleEE, collections.sim_parts, comp_selections, sim_selections)
+    # plotters.CompTuplesPlotter(collections.TkEleEE, comp_selections),
+    # plotters.CompCatTuplePlotter(collections.TkEleEE, collections.sim_parts, comp_selections, sim_selections)
 ]
 
 # for sel in sim_selections:

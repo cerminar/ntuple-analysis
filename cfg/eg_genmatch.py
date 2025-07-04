@@ -2,6 +2,7 @@ from python import plotters, selections, calibrations, histos
 import python.boost_hist as bh
 import cfg.datasets.fastpuppi_collections as coll
 import awkward as ak
+import numpy as np
 import math
 
 # ------ Histogram classes ----------------------------------------------
@@ -22,6 +23,7 @@ class EGHistos(histos.BaseHistos):
 
             self.h_n = bh.TH1F(f'{name}_n', '# objects per event', 100, 0, 100)
             self.h_idScore = bh.TH1F(f'{name}_idScore', 'ID BDT Score', 50, -1, 1)
+            self.h_dEtaVsdPhi = bh.TH2F(f'{name}_dEtaVsdPhi', 'dEta vs dPhi; #Delta#phi; #Delta#eta', 100, -0.5, 0.5, 100, -0.5, 0.5)
 
         histos.BaseHistos.__init__(self, name, root_file, debug)
 
@@ -47,6 +49,9 @@ class EGHistos(histos.BaseHistos):
             bh.fill_1Dhist(hist=self.h_compBdt, array=egs.compBDTScore, weights=weight)
         if 'idScore' in egs.fields:
             bh.fill_1Dhist(hist=self.h_idScore, array=egs.idScore, weights=weight)
+        if 'deta' in egs.fields and 'dphi' in egs.fields:
+            bh.fill_2Dhist(hist=self.h_dEtaVsdPhi, arrayX=egs.dphi, arrayY=egs.deta, weights=weight)
+
         # print(ak.count(egs.pt, axis=1))
         # print(egs.pt.type.show())
         # print(ak.count(egs.pt, axis=1).type.show())
@@ -57,7 +62,7 @@ class EGHistos(histos.BaseHistos):
 class EGResoHistos(histos.BaseResoHistos):
     def __init__(self, name, root_file=None, debug=False):
         if not root_file:
-
+            eta_phi_lsb = math.pi / (2*360.)
             self.h_ptResVpt = bh.TH2F(
                 f'{name}_ptResVpt',
                 'EG Pt reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}-p_{T}^{GEN} [GeV];',
@@ -79,17 +84,17 @@ class EGResoHistos(histos.BaseResoHistos):
             self.h_ptRespVeta = bh.TH2F(
                 f'{name}_ptRespVeta',
                 'EG Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};',
-                50, -4, 4,
+                50, 0, 4,
                 100, 0, 3)
 
             self.h_etaRes = bh.TH1F(
                 f'{name}_etaRes',
                 'EG eta reso; #eta^{L1}-#eta^{GEN}',
-                100, -0.1, 0.1)
+                50, -25*eta_phi_lsb, 25*eta_phi_lsb)
             self.h_phiRes = bh.TH1F(
                 f'{name}_phiRes',
                 'EG phi reso; #phi^{L1}-#phi^{GEN}',
-                100, -0.1, 0.1)
+                50, -25*eta_phi_lsb, 25*eta_phi_lsb)
 
             self.h_exetaRes = bh.TH1F(
                 f'{name}_exetaRes',
@@ -111,9 +116,9 @@ class EGResoHistos(histos.BaseResoHistos):
         # FIXME: weights
 
         bh.fill_1Dhist(self.h_ptRes, (target.pt-reference.pt)/reference.pt)
-        bh.fill_2Dhist(self.h_ptResVpt, reference.pt, target.pt-reference.pt)
+        # bh.fill_2Dhist(self.h_ptResVpt, reference.pt, target.pt-reference.pt)
         bh.fill_1Dhist(self.h_ptResp, target.pt/reference.pt)
-        bh.fill_2Dhist(self.h_ptRespVeta, reference.eta, target.pt/reference.pt)
+        bh.fill_2Dhist(self.h_ptRespVeta, np.abs(reference.eta), target.pt/reference.pt)
         bh.fill_2Dhist(self.h_ptRespVpt, reference.pt, target.pt/reference.pt)
         bh.fill_1Dhist(self.h_etaRes, target.eta - reference.eta)
         bh.fill_1Dhist(self.h_phiRes, target.phi - reference.phi)
@@ -208,8 +213,10 @@ l1tc_fw_match_ee_selections = (selections.Selector('^EGq[2,4]or[3,5]$')*('^Pt[1-
 gen_selections = (selections.Selector('GEN$')*('^Eta[F]$|^Eta[AF][ABCD]*[C]$|all')+selections.Selector('GEN$')*('^Pt15|^Pt30'))()
 
 # gen_menu_selections = (selections.Selector('GEN$')*('^EtaE[BE]$|all')+selections.Selector('GEN$')*('^Pt10to25$|^Pt25'))()
-gen_menu_selections = (selections.Selector('GEN$')*('^EtaE[BE]$|^EtaEE[abc]$|all')+selections.Selector('GEN$')*('^Pt15$|^Pt30$|^Pt10to25$'))()
+gen_menu_selections = (selections.Selector('GEN$')*('^EtaE[BE]$|all')+selections.Selector('GEN$')*('^Pt30$|^Pt10to25$'))()
 
+gen_menu_sta_eb_selections = (selections.Selector('GEN$')*('^EtaEB$|all')+selections.Selector('GEN$')*('^Pt30$|^Pt10to25$'))()
+gen_menu_sta_ee_selections = (selections.Selector('GEN$')*('^Eta(EE|EEb|Fwd)$|all')+selections.Selector('GEN$')*('^Pt30$|^Pt10to25$'))()
 # for sels in [gen_selections, selections.gen_selections]:
 #     print('--------------------')
 #     print(f'# of sels: {len(sels)}')
@@ -347,9 +354,9 @@ egid_menu_sta_selections = (selections.Selector('^MenuSta|all'))()
 
 if do_tons:
     print('Menu Turn-on selections are enabled!')
-    egid_menu_ele_selections.extend((selections.Selector('^MenuEle')*('^Pt[2-4]0$'))())
-    egid_menu_pho_selections.extend((selections.Selector('^MenuPho')*('^Pt[2-4]0$'))())
-    egid_menu_sta_selections.extend((selections.Selector('^MenuSta')*('^Pt[2-4]0$'))())
+    egid_menu_ele_selections.extend((selections.Selector('^MenuEle')*('^Pt[2-5]0$'))())
+    egid_menu_pho_selections.extend((selections.Selector('^MenuPho')*('^Pt[2-5]0$'))())
+    egid_menu_sta_selections.extend((selections.Selector('^MenuSta')*('^Pt[2-5]0$'))())
 
 
 
@@ -373,9 +380,9 @@ egid_menu_ele_ton_selections.extend(egid_menu_ele_selections)
 egid_menu_pho_ton_selections.extend(egid_menu_pho_selections)
 egid_menu_sta_ton_selections.extend(egid_menu_sta_selections)
 
-egid_menu_ele_ton_selections.extend((selections.Selector('^MenuEle')*('^Pt[2-4]0$'))())
-egid_menu_pho_ton_selections.extend((selections.Selector('^MenuPho')*('^Pt[2-4]0$'))())
-egid_menu_sta_ton_selections.extend((selections.Selector('^MenuSta')*('^Pt[2-4]0$'))())
+egid_menu_ele_ton_selections.extend((selections.Selector('^MenuEle')*('^Pt[2-5]0$'))())
+egid_menu_pho_ton_selections.extend((selections.Selector('^MenuPho')*('^Pt[2-5]0$'))())
+egid_menu_sta_ton_selections.extend((selections.Selector('^MenuSta')*('^Pt[2-5]0$'))())
 
 egid_menu_ele_ton_selections = selections.prune(egid_menu_ele_ton_selections)
 egid_menu_pho_ton_selections = selections.prune(egid_menu_pho_ton_selections)
@@ -396,10 +403,10 @@ ctl2_tkeg_menu_tons = [
 egsta_menu = [
     EGGenMatchPlotter(
         coll.EGStaEE, coll.gen,
-        egid_menu_sta_selections, gen_menu_selections),
+        egid_menu_sta_selections, gen_menu_sta_ee_selections),
     EGGenMatchPlotter(
         coll.EGStaEB, coll.gen,
-        egid_menu_sta_selections, gen_menu_selections),
+        egid_menu_sta_selections, gen_menu_sta_eb_selections),
 ]
 
 

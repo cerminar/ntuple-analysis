@@ -662,11 +662,11 @@ class DrawMachine(object):
 
             self.canvas.cd(pad_idx[hidx])    
             d_hist = hist
-            if norm:
+            if norm and not hist.Integral() == 0:
                 d_hist = hist.DrawNormalized(opt, 1.)
             else:
                 d_hist.Draw(opt)
-
+            p_idx = 0
             if do_profile:
                 p_idx += 1
                 prof = d_hist.ProfileX(d_hist.GetName()+'_prof_'+str(p_idx),
@@ -1070,16 +1070,16 @@ class HPlot:
         field_counts = histo_df.apply(lambda x: len(x.unique()))
         label_fields = []
         text_fields = []
-        # print field_counts
+        # print(field_counts)
         for field in six.iteritems(field_counts):
             if(field[1] > 1 and field[0] != 'histo'):
                 label_fields.append(field[0])
-            if(field[1] == 1 and field[0] != 'histo' and field[0] != 'classtype' and field[0] != 'sample'):
+            if(field[1] == 1 and field[0] != 'histo' and field[0] != 'classtype'):
                 if(gen_sel is None and field[0] == 'gen_sel'):
                     continue
                 text_fields.append(field[0])
-#         print 'label fields: {}'.format(label_fields)
-#         print 'text fields: {}'.format(text_fields)
+        # print ('label fields: {}'.format(label_fields))
+        # print ('text fields: {}'.format(text_fields))
 
         for item in histo_df[label_fields].iterrows():
             # print (item)

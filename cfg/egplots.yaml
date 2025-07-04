@@ -14,7 +14,3 @@ tkeg_plots:
   plotters:
     # - !!python/name:cfg.egplots.l1tc_simple_plotters
     - !!python/name:cfg.egplots.l1ct_tkegl2_plotters
-
-quantization_plots:
-  plotters:
-    - !!python/name:cfg.egplots.quantization_plotters

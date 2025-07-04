@@ -209,18 +209,30 @@ class BaseUpTuples(BaseHistos):
 
 
 class RateHistos(BaseHistos):
-    def __init__(self, name, var='pt', root_file=None, debug=False):
+    def __init__(self, name, var='pt', var_off='pt_off', bin_range=(0, 100), root_file=None, debug=False):
         if not root_file:
             self.h_norm = bh.TH1F(
                 f'{name}_norm', 
                 '# of events', 
                 1, 1, 2)
+            n_bins = int((bin_range[1] - bin_range[0]) / 1)
             self.h_pt = bh.TH1F(
                 f'{name}_pt', 
-                'rate above p_{T} thresh.; p_{T} [GeV]; rate [kHz];', 
-                100, 0, 100)
+                'rate above p_{T} thresh.; online p_{T} [GeV]; rate [kHz];', 
+                n_bins, bin_range[0], bin_range[1])
+            self.h_ptOff = bh.TH1F(
+                f'{name}_ptOff', 
+                'rate above p_{T} thresh.; offline p_{T} [GeV]; rate [kHz];', 
+                n_bins, bin_range[0], bin_range[1])
+            self.h_ptIsoOff = bh.TH1F(
+                f'{name}_ptIsoOff', 
+                'rate above p_{T} thresh.; offline p_{T} [GeV]; rate [kHz];', 
+                n_bins, bin_range[0], bin_range[1])
+
             # self.h_ptVabseta = bh.TH2F(name+'_ptVabseta', 'Candidate p_{T} vs |#eta|; |#eta|; p_{T} [GeV];', 34, 1.4, 3.1, 100, 0, 100)
         self.var = var
+        self.var_off = var_off
+
 
         BaseHistos.__init__(self, name, root_file, debug)
 
@@ -234,17 +246,18 @@ class RateHistos(BaseHistos):
 
     def fill(self, data):
         # print(self.h_pt.axes[0])
-        if self.var == 'pt':
-            pt_max = ak.max(data.pt, axis=1)
-        else:
-            pt_max = ak.max(data[self.var], axis=1)
-        for thr,bin_center in zip(self.h_pt.axes[0].edges, self.h_pt.axes[0].centers, strict=False):
-        # for thr,bin_center in zip(self.h_pt.axes[0].edges[1:], self.h_pt.axes[0].centers):
-            self.h_pt.fill(bin_center, weight=ak.sum(pt_max>=thr))
+        self.fill_rate(data, self.var, self.h_pt)
+        if self.var_off in data.fields:
+            self.fill_rate(data, self.var_off, self.h_ptOff)
+        if 'pt_off_iso' in data.fields:
+            self.fill_rate(data, 'pt_off_iso', self.h_ptIsoOff)
 
-        # for ptf in range(0, int(pt)+1):
-        #     self.h_pt.Fill(ptf)
-        # self.h_ptVabseta.Fill(abs(eta), pt)
+    def fill_rate(self, data, var, histo):
+        pt_max = ak.max(data[var], axis=1)
+        for thr,bin_center in zip(histo.axes[0].edges, histo.axes[0].centers, strict=False):
+        # for thr,bin_center in zip(self.h_pt.axes[0].edges[1:], self.h_pt.axes[0].centers):
+            histo.fill(bin_center, weight=ak.sum(pt_max>=thr))
+
 
     def fill_norm(self, many=1):
         # print (f' fill rate norm: {many}')
@@ -256,6 +269,10 @@ class RateHistos(BaseHistos):
             print(f'normalize # ev {nev} to {norm}')
             self.h_norm.Scale(norm/nev)
             self.h_pt.Scale(norm/nev)
+            if hasattr(self, 'h_ptOff'):
+                self.h_ptOff.Scale(norm/nev)
+            if hasattr(self, 'h_ptIsoOff'):
+                self.h_ptIsoOff.Scale(norm/nev)
             # self.h_ptVabseta.Scale(norm/nev)
 
 
@@ -375,7 +392,7 @@ class GenParticleHistos(BaseHistos):
     def __init__(self, name, root_file=None, pt_bins=None, debug=False):
         if not root_file:
             self.h_eta = bh.TH1F(f'{name}_eta', 'Gen Part eta; #eta^{GEN};', 50, -3, 3)
-            self.h_abseta = bh.TH1F(f'{name}_abseta', 'Gen Part |eta|; |#eta^{GEN}|;', 40, 0, 4)
+            self.h_abseta = bh.TH1F(f'{name}_abseta', 'Gen Part |eta|; |#eta^{GEN}|;', 50, 0, 5)
 
             if pt_bins is None:
                 self.h_pt = bh.TH1F(f'{name}_pt', 'Gen Part P_{T} (GeV); p_{T}^{GEN} [GeV];', 50, 0, 100)
@@ -1193,38 +1210,6 @@ class TCClusterMatchHistos(BaseHistos):
         rnp.fill_hist(self.h_dtVdu, tcs[['dt', 'du']])
         rnp.fill_hist(self.h_dtVdu2, tcs[['dt', 'du']], tcs['ef'])
         # self.h_fbremVabseta.Fill(cluster.abseta, cluster.fbrem)
-
-
-
-class QuantizationHistos(BaseHistos):
-    def __init__(self, name, features=None, root_file=None, debug=False):
-        if not root_file:
-            self.features = features
-            self.h_features = bh.TH2F_category(
-                f'{name}_features',
-                'features; feature; value',
-                 self.features,
-                 1000, -1000, 1000)
-            self.h_featuresLog2 = bh.TH2F_category(
-                f'{name}_featuresLog2',
-                'featuresLog2; features; log_{2}(value)',
-                 self.features,
-                 64, -32, 32)
-            # for bin,ft in enumerate(features):
-            #     self.h_features.GetXaxis().SetBinLabel(bin+1, ft)
-            #     self.h_featuresLog2.GetXaxis().SetBinLabel(bin+1, ft)
-
-        BaseHistos.__init__(self, name, root_file, debug)
-
-    def fill(self, df):
-        fill = df
-        # print(df.fields)
-        for bin,ft in enumerate(self.features):
-            fill[f'{ft}_bin'] = [ft]
-            fill[f'{ft}_log2'] = np.log2(fill[ft])
-
-            bh.fill_2Dhist(self.h_features, fill[f'{ft}_bin'], fill[ft])
-            bh.fill_2Dhist(self.h_featuresLog2, fill[f'{ft}_bin'], fill[f'{ft}_log2'])
 
 
 class DiObjMassHistos(BaseHistos):

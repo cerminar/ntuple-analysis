@@ -65,13 +65,18 @@ def analyzeNtuples(  # noqa: PLR0913
 
     cfgfile = {}
 
+    cfgfile.update(parse_yaml(datasetfile))
+    menu_module = pathlib.Path(f'cfg/menu/menu_{cfgfile["dataset"]["menu"]}')
+    formatted_path = '.'.join(menu_module.with_suffix('').parts)
+    sys.modules[formatted_path] = importlib.import_module(formatted_path)
+
     # we load the python module with the same name as the yaml file
     pymoudule_path = pathlib.Path(configfile.split('.yaml')[0])
     formatted_path = '.'.join(pymoudule_path.with_suffix('').parts)
     sys.modules[formatted_path] = importlib.import_module(formatted_path)
+    
 
     cfgfile.update(parse_yaml(configfile))
-    cfgfile.update(parse_yaml(datasetfile))
 
     opt = Parameters(
         {

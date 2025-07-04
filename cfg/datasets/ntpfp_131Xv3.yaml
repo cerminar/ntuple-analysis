@@ -9,8 +9,9 @@ dataset:
 calibrations:
   hgc_empt_calib: data/calibrations/calib-v134C.json
   rate_pt_wps: data/rate_pt_wps_v152B.90A.json
-#  iso_flateff_wps: data/iso/iso_wp_flateff_v0.json
-
+  iso_flateff_wps: data/iso/iso_wp_flateff_v0.json
+  on2off_scaling: data/scalings/scaling_ARv38.json
+  
 samples:
   doubleele_flat1to100_PU200:
     input_sample_dir: DoubleElectron_FlatPt-1To100_PU200/FP/v131Xv3I

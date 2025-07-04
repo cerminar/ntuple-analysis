@@ -1,0 +1,16 @@
+
+common:
+  output_dir:
+    default: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
+    triolet: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
+  plot_version: v160A
+  run_clustering: False
+  run_density_computation: False
+# +AccountingGroup = "group_u_CMS.u_zh.users"
+# +AccountingGroup = "group_u_CMST3.all"
+  file_label: qt
+
+hgcid:
+  plotters:
+    - !!python/name:cfg.quantization.hgcid_plotters
+  file_label: hgcid
