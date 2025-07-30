@@ -16,14 +16,14 @@ You can create a venv with different procedures, using explicitly `venv` (see pa
 
 This step is `lxplus` specific, givin access to a more recent `python` (>= 3.10) and `ROOT` version.
 Edit/skip it accordingly for your specific system.
-The current configuration has been tested only on `el7` and `el8`.
+The current configuration has been tested only on `el8`.
 
 `source setup_lxplus.sh`
 
 ### 2. Setup `venv`
 
 ```bash
-python3.10 -m venv <venvname>
+python3 -m venv <venvname>
 source <venvname>/bin/activate
 pip install -r requirements.txt
 ```
