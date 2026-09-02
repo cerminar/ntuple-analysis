@@ -104,6 +104,15 @@ def histo_medianAndEffSigma(histo):
     return (median, eff_sigma)
 
 
+def histo_medianAndRelEffSigma(histo):
+    prob = np.array([0.5])
+    q = np.array([0.])
+    y = histo.GetQuantiles(1, q, prob)
+    median = q[0]
+    eff_sigma = effSigma(histo)
+    return (median, eff_sigma/median if median != 0 else 0)
+
+
 def quantiles(yswz, zeroSuppress=True):
     ys = [y for y in yswz if y > 0] if zeroSuppress else yswz[:]
     if len(ys) < 3:
@@ -350,6 +359,18 @@ def computeResolution_effSigma(histo2d,
                              draw_bins = draw_bins,
                              cache = cache)
 
+def computeResolution_relEffSigma(histo2d,
+                               bin_limits=[(3, 6), (7, 12), (13, 23), (24, 34), (35, 49), (50, 100)],
+                               draw_bins=False,
+                               cache=None):
+
+    return computeResolution(histo2d,
+                             bin_limits,
+                             y_axis_range = (0,3),
+                             fit_function = histo_medianAndRelEffSigma,    
+                             result_index = 1,
+                             draw_bins = draw_bins,
+                             cache = cache)
 
 
 def computeEResolution(h2d_orig,
@@ -432,3 +453,13 @@ def get_gauss_avg_sigma(ys):
         avg = sum(truncated)/len(truncated)
         rms2 = 2*math.sqrt(sum((t-avg)**2 for t in truncated)/(len(truncated)-1))
     return avg, rms2/2
+
+
+def make_bin_groups(regions):
+    groups = []
+    for start, end, width in regions:
+        groups.extend(
+            (i, min(i + width - 1, end))
+            for i in range(start, end + 1, width)
+        )
+    return groups

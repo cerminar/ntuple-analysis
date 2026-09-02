@@ -393,6 +393,7 @@ class GenParticleHistos(BaseHistos):
         if not root_file:
             self.h_eta = bh.TH1F(f'{name}_eta', 'Gen Part eta; #eta^{GEN};', 50, -3, 3)
             self.h_abseta = bh.TH1F(f'{name}_abseta', 'Gen Part |eta|; |#eta^{GEN}|;', 50, 0, 5)
+            self.h_phi = bh.TH1F(f'{name}_phi', 'Gen Part phi; #phi^{GEN};', 50, -3.2, 3.2)
 
             if pt_bins is None:
                 self.h_pt = bh.TH1F(f'{name}_pt', 'Gen Part P_{T} (GeV); p_{T}^{GEN} [GeV];', 50, 0, 100)
@@ -419,6 +420,8 @@ class GenParticleHistos(BaseHistos):
                        array=particles.abseta)
         bh.fill_1Dhist(hist=self.h_pt,
                        array=particles.pt)
+        bh.fill_1Dhist(hist=self.h_phi,
+                       array=particles.phi)
 
 
 class GenParticleExtraHistos(GenParticleHistos):

@@ -1,0 +1,262 @@
+vars:
+  # TARGET_VERSION: 140Xv0E6
+
+# Where plots will be published
+target_dir: "/Users/cerminar/CERNbox/www/plots/CTL1_valid_${TARGET_VERSION}/"
+
+# Optional text override for draw_config.additional_text.
+# Format: [x_ndc, y_ndc, text]
+# Can also be overridden per input definition under inputs.<name>.additional_text.
+additional_text:
+  - [0.13, 0.91, "#scale[1.5]{CMS} #it{#scale[1.]{Phase-2 Simulation}}"]
+  - [0.69, 0.91, "#it{14TeV}, ${TARGET_LABEL}"]
+
+# Combined version→label sets for clarity
+sets:
+  validation_151X:
+    # "140Xv0D0": "151X-vanilla"
+    # "140Xv0E8": "151X-AR2025"
+    # "140Xv0F0": "151Xpre4"
+    # "140Xv0F4": "l1ct-151x-v1.4.2"
+    "140Xv1F5": "l1ct-151x-v1.4.3"
+    "${TARGET_VERSION}": "${TARGET_LABEL}"
+  # validation_151X:
+  #   # "140Xv0E8": "151X-AR2025"
+  #   "140Xv0F1": "l1ct-151x-v1.3-oldIN"
+  #   "${TARGET_VERSION}": "${TARGET_LABEL}"
+
+  new_only:
+    # "140Xv0D0": "151X-vanilla"
+    # "140Xv0E8": "151X-AR2025"
+    # "140Xv0F0": "151Xpre4"
+    # "140Xv0F4": "l1ct-151x-v1.4.2"
+    "${TARGET_VERSION}": "${TARGET_LABEL}"
+
+
+# Reusable input lists (filename.root:Label)
+inputs:
+  nomatch_ele_files:
+    template: "plots/histos_doubleele_flat1to100_PU200_egplots_v160A.${VERSION}.root"
+    set_ref: validation_151X
+
+  gen_match_ele_files:
+    template: "plots/histos_doubleele_flat1to100_PU200_eg_v200D.${VERSION}.root"
+    set_ref: validation_151X
+
+  gen_match_menu_ele_files:
+    template: "plots/histos_doubleele_flat1to100_PU200_egmenu_v200D.${VERSION}.root"
+    set_ref: validation_151X
+
+  gen_match_menu_ele_ton_files:
+    template: "plots/histos_doubleele_flat1to100_PU200_egton_v200D.${VERSION}.root"
+    set_ref: validation_151X
+
+  gen_match_menu_pho_ton_files:
+    template: "plots/histos_doublephoton_flat1to100_PU200_egton_v200D.${VERSION}.root"
+    set_ref: validation_151X
+
+  nugun_ratemenu_files:
+    template: "plots/histos_nugun_alleta_pu200_egratemenu_v200C.${VERSION}.root"
+    set_ref: validation_151X
+
+  nugun_egratecount_files:
+    template: "plots/histos_nugun_alleta_pu200_egratecount_v200C.${VERSION}.root"
+    set_ref: validation_151X
+
+  nugun_ratectl2_files:
+    template: "plots/histos_nugun_alleta_pu200_egratecount_v200C.${VERSION}.root"
+    set_ref: validation_151X
+    # 151X-vanilla: "plots/histos_nugun_alleta_pu200_egrate_v200A.140Xv0D0.root"
+    # 151X-AR2025: "plots/histos_nugun_alleta_pu200_egrate_v200C.140Xv0E8.root"
+    # 151Xpre4: "plots/histos_nugun_alleta_pu200_egrate_v200C.140Xv0F0.root"
+    # "${TARGET_VERSION}": "plots/histos_nugun_alleta_pu200_egrate_v200C.${TARGET_VERSION}.root"
+    # # template: "plots/histos_nugun_alleta_pu200_egrate_v200C.${VERSION}.root"
+    # # set_ref: validation_151X
+
+  nugun_metrate_files:
+    template: "plots/histos_nugun_alleta_pu200_jmratemet_v200A.${VERSION}.root"
+    set_ref: validation_151X
+
+  nugun_jetrate_files:
+    template: "plots/histos_nugun_alleta_pu200_jmratejets_v200A.${VERSION}.root"
+    set_ref: validation_151X
+
+  ttbar_jetreso_pu0_files:
+    template: "plots/histos_ttbar_PU0_jets_v200C.${VERSION}.root"
+    set_ref: validation_151X
+    additional_text:
+      - [0.13, 0.91, "ttbar"]
+      - [0.69, 0.91, "#it{14TeV}, 0 PU"]
+
+  ttbar_jetreso_files:
+    template: "plots/histos_ttbar_PU200_jets_v200C.${VERSION}.root"
+    set_ref: validation_151X
+    additional_text:
+      - [0.13, 0.91, "ttbar"]
+      - [0.69, 0.91, "#it{14TeV}, 200 PU"]
+
+  ttbar_decoded_files:
+    template: "plots/histos_ttbar_PU200_decoded_v0.${VERSION}.root"
+    set_ref: validation_151X
+    additional_text:
+      - [0.13, 0.91, "ttbar"]
+      - [0.69, 0.91, "#it{14TeV}, 200 PU"]
+
+  singlepipu0_decoded_files:
+    template: "plots/histos_SinglePi_PU0_decodedpi_v0.${VERSION}.root"
+    set_ref: validation_151X
+    additional_text:
+      - [0.13, 0.91, "Single pion gun"]
+      - [0.69, 0.91, "#it{14TeV}, 0 PU"]
+
+  singlepipu200_decoded_files:
+    template: "plots/histos_SinglePi_PU200_decodedpi_v0.${VERSION}.root"
+    set_ref: validation_151X
+    additional_text:
+      - [0.13, 0.91, "Single pion gun"]
+      - [0.69, 0.91, "#it{14TeV}, 200 PU"]
+
+  singlephoton_decoded_files:
+    template: "plots/histos_doublephoton_flat1to100_PU200_decodedem_v0.${VERSION}.root"
+    set_ref: validation_151X  
+    additional_text:
+      - [0.13, 0.91, "Single photon gun"]
+      - [0.69, 0.91, "#it{14TeV}, 200 PU"]
+
+# Tasks replicate the old shell logic
+tasks:
+  eg_reso:
+    module: cfg/eg_genmatch_draw.py
+    what: reso_ctl2
+    inputs_ref: gen_match_ele_files
+
+  eg_rate_menu:
+    module: cfg/eg_rate_draw.py
+    what: menu_rate
+    inputs_ref: nugun_ratemenu_files
+
+  eg_eff_ctl2:
+    module: cfg/eg_genmatch_draw.py
+    what: eff_ctl2
+    inputs_ref: gen_match_ele_files
+
+  eg_eff_menu:
+    module: cfg/eg_genmatch_draw.py
+    what: eff_menu_ele
+    inputs_ref: gen_match_menu_ele_files
+
+  ctl2_eg_rate:
+    module: cfg/eg_rate_draw.py
+    what: ctl2_rate
+    inputs_ref: nugun_ratectl2_files
+
+  eg_unmatched:
+    module: cfg/egplots_draw.py
+    what: tkeg_plots
+    inputs_ref: nomatch_ele_files
+
+  counter:
+    module: cfg/eg_rate_draw.py
+    what: menu_ratecounter
+    inputs_ref: nugun_egratecount_files
+    exclude_from_all: true  # mimic shell exclusion of 'counter' from 'all'
+
+  met_rate:
+    module: cfg/jetmet_rate_draw.py
+    what: met
+    inputs_ref: nugun_metrate_files
+
+  jet_rate:
+    module: cfg/jetmet_rate_draw.py
+    what: jets
+    inputs_ref: nugun_jetrate_files
+
+  jet_reso:
+    module: cfg/jetmet_genmatch_draw.py
+    what: jet_reso
+    inputs_ref: ttbar_jetreso_files
+
+  jet_reso_pu0:
+    module: cfg/jetmet_genmatch_draw.py
+    what: jet_reso
+    inputs_ref: ttbar_jetreso_pu0_files
+
+  jet_eff:
+    module: cfg/jetmet_genmatch_draw.py
+    what: jet_eff
+    inputs_ref: ttbar_jetreso_files
+
+  decoded_unmatched:
+    module: cfg/decoded_in_draw.py
+    what: decoded_calo
+    inputs_ref: ttbar_decoded_files
+  
+  decoded_reso:
+    module: cfg/decoded_in_draw.py
+    what: decoded_calo_reso
+    inputs_ref: ttbar_decoded_files
+
+  decoded_calo_pi_pu0_reso:
+    module: cfg/decoded_in_draw.py
+    what: decoded_calo_reso_pi
+    inputs_ref: singlepipu0_decoded_files
+
+  decoded_calo_pi_reso:
+    module: cfg/decoded_in_draw.py
+    what: decoded_calo_reso_pi
+    inputs_ref: singlepipu200_decoded_files
+
+  decoded_calo_em_reso:
+    module: cfg/decoded_in_draw.py
+    what: decoded_calo_reso_em
+    inputs_ref: singlephoton_decoded_files
+
+  eg_ton_ele:
+    module: cfg/eg_genmatch_draw.py
+    what: compute_ton_ele
+    inputs_ref: gen_match_menu_ele_ton_files
+  
+  eg_ton_pho:
+    module: cfg/eg_genmatch_draw.py
+    what: compute_ton_pho
+    inputs_ref: gen_match_menu_pho_ton_files
+
+groups:
+  eg_genmatch:
+    - eg_reso
+    - eg_eff_ctl2
+    - eg_eff_menu
+    - eg_ton_ele
+    - eg_ton_pho
+
+  eg_rate:
+    - eg_rate_menu
+    - ctl2_eg_rate
+    - counter
+
+  eg_all:
+    - eg_reso
+    - eg_rate_menu
+    - eg_eff_ctl2
+    - eg_eff_menu
+    - ctl2_eg_rate
+    - eg_unmatched
+    - counter
+    - eg_ton_ele
+    - eg_ton_pho
+
+  jetmet:
+    - met_rate
+    - jet_rate
+    - jet_reso
+    - jet_eff
+
+  decoded_calo:
+    - decoded_unmatched
+    - decoded_calo_pi_pu0_reso
+    - decoded_calo_pi_reso
+    - decoded_calo_em_reso
+
+  jetreso:
+    - jet_reso
+    - jet_reso_pu0

@@ -1,14 +1,28 @@
 import datetime
 import gc
+import os
 import resource
+import subprocess
 
 import awkward as ak
 import vector
 
 vector.register_awkward()
 
+
+def get_current_rss_mb():
+    """Return current process RSS in MB, or None if unavailable."""
+    try:
+        rss_kb = subprocess.check_output(
+            ['ps', '-o', 'rss=', '-p', str(os.getpid())],
+            text=True,
+        ).strip()
+        return float(rss_kb) / 1024.0 if rss_kb else None
+    except Exception:
+        return None
+
 class TreeReader:
-    def __init__(self, entry_range, max_events):
+    def __init__(self, entry_range, max_events, progress_every=10000):
         self.tree = None
         self._branches = []
         # this is the gloabl "entry" across files
@@ -17,6 +31,7 @@ class TreeReader:
         self.file_entry = -1
         self.max_events = max_events
         self.entry_range = entry_range
+        self.progress_every = progress_every
 
         self.n_tot_entries = 0
 
@@ -43,15 +58,18 @@ class TreeReader:
 
         if self.max_events != -1:
             if self.n_tot_entries == self.max_events:
-                print('END loop for max_event!')
+                if debug >= 1:
+                    print('END loop for max_event!')
                 # we processed the max # of events
                 return False
         if self.entry_range[1] != -1:
             if self.global_entry == self.entry_range[1]:
-                print('END loop for entry_range')
+                if debug >= 1:
+                    print('END loop for entry_range')
                 return False
         if self.file_entry == self.tree.num_entries-1:
-            print('END loop for end_of_file')
+            if debug >= 1:
+                print('END loop for end_of_file')
             return False
 
         if self.global_entry == -1:
@@ -62,17 +80,36 @@ class TreeReader:
             self.global_entry += 1
 
         # entry is the cursor in the file: when we open a new one (not the first) needs to be set to 0 again
-        if debug >= 2 or self.global_entry % 1000 == 0:
-            self.printEntry()
+        if debug >= 2:
+            self.printEntry(include_event_id=True)
+        elif self.progress_every > 0 and self.global_entry % self.progress_every == 0:
+            self.printEntry(include_event_id=False)
 
         self.n_tot_entries += 1
         return True
 
-    def printEntry(self):
-        evtIndex = self.tree.arrays(['run', 'luminosityBlock', 'event'], library='pd', entry_start=self.file_entry, entry_stop=self.file_entry+1)
-        row = evtIndex.iloc[0]
+    def printEntry(self, include_event_id=False):
+        msg = (
+            f'--- File entry: {self.file_entry}, glb. entry: {self.global_entry}, '
+            f'tot evts.: {self.n_tot_entries}'
+        )
 
-        print(f'--- File entry: {self.file_entry}, glb. entry: {self.global_entry}, tot evts.: {self.n_tot_entries} (e:{row["event"]} l:{row["luminosityBlock"]} r:{row["run"]}) @ {datetime.datetime.now().replace(microsecond=0)}, MaxRSS {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000000.0:.2f} Mb')
+        if include_event_id:
+            evtIndex = self.tree.arrays(
+                ['run', 'luminosityBlock', 'event'],
+                library='pd',
+                entry_start=self.file_entry,
+                entry_stop=self.file_entry+1,
+            )
+            row = evtIndex.iloc[0]
+            msg += f' (e:{row["event"]} l:{row["luminosityBlock"]} r:{row["run"]})'
+
+        max_rss_mb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000000.0
+        curr_rss_mb = get_current_rss_mb()
+        msg += f' @ {datetime.datetime.now().replace(microsecond=0)}, MaxRSS {max_rss_mb:.2f} Mb'
+        if curr_rss_mb is not None:
+            msg += f', CurrRSS {curr_rss_mb:.2f} Mb'
+        print(msg)
         # print(self.tree.keys())
         # print(f"run={row['run']}, lumi={row['luminosityBlock']}, event={row['event']}")
         # print(.to_dict())

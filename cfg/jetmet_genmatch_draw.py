@@ -109,120 +109,208 @@ def jet_reso_draw(hplot, smps, wc):
     # draw_reso_calophi(hplot, smps, wc, draw_style=draw_config, configs=ctl2_caloetaphi_reso_configs)
 
     jet_ptresp_configs = [    
-        (['CaloJets',],            ['all'],              ['GENJEtaEB'],       'CaloJets_all_GENEtaEB', {'y_min': 1E-5}),
-        (['CaloJets',],            ['all'],              ['GENJEtaEE'],       'CaloJets_all_GENEtaEE', {'y_min': 1E-5}),
-        (['TkJets',],            ['all'],              ['GENJEtaEB'],       'TkJets_all_GENEtaEB',   {'y_min': 1E-5}),
-        (['TkJets',],            ['all'],              ['GENJEtaEE'],       'TkJets_all_GENEtaEE',   {'y_min': 1E-5}),
-        (['PFJets',],            ['all'],              ['GENJEtaEB'],       'PFJets_all_GENEtaEB',   {'y_min': 1E-5}),
-        (['PFJets',],            ['all'],              ['GENJEtaEE'],       'PFJets_all_GENEtaEE',   {'y_min': 1E-5}),
-        (['PuppiJets',],         ['all'],              ['GENJEtaEB'],       'PuppiJets_all_GENEtaEB', {'y_min': 1E-5}),
-        (['PuppiJets',],         ['all'],              ['GENJEtaEE'],       'PuppiJets_all_GENEtaEE', {'y_min': 1E-5}),
+        (['PU200'], ['CaloJets',],            ['all'],              ['GENJEtaEB'],       'CaloJets_all_GENEtaEB', {'y_min': 1E-5}),
+        (['PU200'], ['CaloJets',],            ['all'],              ['GENJEtaEE'],       'CaloJets_all_GENEtaEE', {'y_min': 1E-5}),
+        (['PU200'], ['TkJets',],            ['all'],              ['GENJEtaEB'],       'TkJets_all_GENEtaEB',   {'y_min': 1E-5}),
+        (['PU200'], ['TkJets',],            ['all'],              ['GENJEtaEE'],       'TkJets_all_GENEtaEE',   {'y_min': 1E-5}),
+        (['PU200'], ['PFJets',],            ['all'],              ['GENJEtaEB'],       'PFJets_all_GENEtaEB',   {'y_min': 1E-5}),
+        (['PU200'], ['PFJets',],            ['all'],              ['GENJEtaEE'],       'PFJets_all_GENEtaEE',   {'y_min': 1E-5}),
+        (['PU200'], ['PuppiJets',],         ['all'],              ['GENJEtaEB'],       'PuppiJets_all_GENEtaEB', {'y_min': 1E-5}),
+        (['PU200'], ['PuppiJets',],         ['all'],              ['GENJEtaEE'],       'PuppiJets_all_GENEtaEE', {'y_min': 1E-5}),
+
+        (['PU0'], ['CaloJets',],            ['all'],              ['GENJEtaEB'],       'CaloJets_all_GENEtaEB_PU0', {'y_min': 1E-5}),
+        (['PU0'], ['CaloJets',],            ['all'],              ['GENJEtaEE'],       'CaloJets_all_GENEtaEE_PU0', {'y_min': 1E-5}),
+        (['PU0'], ['TkJets',],            ['all'],              ['GENJEtaEB'],       'TkJets_all_GENEtaEB_PU0',   {'y_min': 1E-5}),
+        (['PU0'], ['TkJets',],            ['all'],              ['GENJEtaEE'],       'TkJets_all_GENEtaEE_PU0',   {'y_min': 1E-5}),
+        (['PU0'], ['PFJets',],            ['all'],              ['GENJEtaEB'],       'PFJets_all_GENEtaEB_PU0',   {'y_min': 1E-5}),
+        (['PU0'], ['PFJets',],            ['all'],              ['GENJEtaEE'],       'PFJets_all_GENEtaEE_PU0',   {'y_min': 1E-5}),
+        (['PU0'], ['PuppiJets',],         ['all'],              ['GENJEtaEB'],       'PuppiJets_all_GENEtaEB_PU0', {'y_min': 1E-5}),
+        (['PU0'], ['PuppiJets',],         ['all'],              ['GENJEtaEE'],       'PuppiJets_all_GENEtaEE_PU0', {'y_min': 1E-5}),
+
     ]
 
     draw_resp_pt(hplot, smps, wc, draw_style=draw_config, configs=jet_ptresp_configs)
 
 
     jet_ptrespvspt_configs = [    
-        (['CaloJets',],            ['all'],              ['GENJEtaEB'],       'CaloJets_all_GENEtaEB',  {'y_min': 0}),
-        (['CaloJets',],            ['all'],              ['GENJEtaEE'],       'CaloJets_all_GENEtaEE',  {'y_min': 0}),
-        (['CaloJets',],            ['all'],              ['GENJEtaFwd'],       'CaloJets_all_GENEtaFwd',  {'y_min': 0}),
-        (['CaloJets',],            ['all'],              ['GENJEtaVFwd'],       'CaloJets_all_GENEtaVFwd',  {'y_min': 0}),
+        (['PU200'], ['CaloJets',],            ['all'],              ['GENJEtaEB'],       'CaloJets_all_GENEtaEB',  {'y_min': 0}),
+        (['PU200'], ['CaloJets',],            ['all'],              ['GENJEtaEE'],       'CaloJets_all_GENEtaEE',  {'y_min': 0}),
+        (['PU200'], ['CaloJets',],            ['all'],              ['GENJEtaFwd'],       'CaloJets_all_GENEtaFwd',  {'y_min': 0}),
+        (['PU200'], ['CaloJets',],            ['all'],              ['GENJEtaVFwd'],       'CaloJets_all_GENEtaVFwd',  {'y_min': 0}),
 
-        (['TkJets',],            ['all'],              ['GENJEtaEB'],       'TkJets_all_GENEtaEB',      {'y_min': 0}),
-        (['TkJets',],            ['all'],              ['GENJEtaEE'],       'TkJets_all_GENEtaEE',      {'y_min': 0}),
-        (['PFJets',],            ['all'],              ['GENJEtaEB'],       'PFJets_all_GENEtaEB',      {'y_min': 0}),
-        (['PFJets',],            ['all'],              ['GENJEtaEE'],       'PFJets_all_GENEtaEE',      {'y_min': 0}),
-        (['PFJets',],            ['all'],              ['GENJEtaFwd'],       'PFJets_all_GENEtaFwd',      {'y_min': 0}),
-        (['PFJets',],            ['all'],              ['GENJEtaVFwd'],       'PFJets_all_GENEtaVFwd',      {'y_min': 0}),
+        (['PU200'], ['TkJets',],            ['all'],              ['GENJEtaEB'],       'TkJets_all_GENEtaEB',      {'y_min': 0}),
+        (['PU200'], ['TkJets',],            ['all'],              ['GENJEtaEE'],       'TkJets_all_GENEtaEE',      {'y_min': 0}),
+        (['PU200'], ['PFJets',],            ['all'],              ['GENJEtaEB'],       'PFJets_all_GENEtaEB',      {'y_min': 0}),
+        (['PU200'], ['PFJets',],            ['all'],              ['GENJEtaEE'],       'PFJets_all_GENEtaEE',      {'y_min': 0}),
+        (['PU200'], ['PFJets',],            ['all'],              ['GENJEtaFwd'],       'PFJets_all_GENEtaFwd',      {'y_min': 0}),
+        (['PU200'], ['PFJets',],            ['all'],              ['GENJEtaVFwd'],       'PFJets_all_GENEtaVFwd',      {'y_min': 0}),
 
-        (['PuppiJets',],         ['all'],              ['GENJEtaEB'],       'PuppiJets_all_GENEtaEB',   {'y_min': 0}),
-        (['PuppiJets',],         ['all'],              ['GENJEtaEE'],       'PuppiJets_all_GENEtaEE',   {'y_min': 0}),
-        (['PuppiJets',],         ['all'],              ['GENJEtaFwd'],       'PuppiJets_all_GENEtaFwd',   {'y_min': 0}),
-        (['PuppiJets',],         ['all'],              ['GENJEtaVFwd'],       'PuppiJets_all_GENEtaVFwd',   {'y_min': 0}),
+        (['PU200'], ['PuppiJets',],         ['all'],              ['GENJEtaEB'],       'PuppiJets_all_GENEtaEB',   {'y_min': 0}),
+        (['PU200'], ['PuppiJets',],         ['all'],              ['GENJEtaEE'],       'PuppiJets_all_GENEtaEE',   {'y_min': 0}),
+        (['PU200'], ['PuppiJets',],         ['all'],              ['GENJEtaFwd'],       'PuppiJets_all_GENEtaFwd',   {'y_min': 0}),
+        (['PU200'], ['PuppiJets',],         ['all'],              ['GENJEtaVFwd'],       'PuppiJets_all_GENEtaVFwd',   {'y_min': 0}),
 
-        (['scPuppiJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiJets_all_GENEtaEB', {'y_min': 0}),
-        (['scPuppiJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiJets_all_GENEtaEE', {'y_min': 0}),
-        (['scPuppiJets',],    ['all'],              ['GENJEtaFwd'],       'scPuppiJets_all_GENEtaFwd', {'y_min': 0}),
-        (['scPuppiJets',],    ['all'],              ['GENJEtaVFwd'],       'scPuppiJets_all_GENEtaVFwd', {'y_min': 0}),
+        (['PU200'], ['scPuppiJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiJets_all_GENEtaEB', {'y_min': 0}),
+        (['PU200'], ['scPuppiJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiJets_all_GENEtaEE', {'y_min': 0}),
+        (['PU200'], ['scPuppiJets',],    ['all'],              ['GENJEtaFwd'],       'scPuppiJets_all_GENEtaFwd', {'y_min': 0}),
+        (['PU200'], ['scPuppiJets',],    ['all'],              ['GENJEtaVFwd'],       'scPuppiJets_all_GENEtaVFwd', {'y_min': 0}),
 
-        (['scPuppiCorrJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiCorrJets_all_GENEtaEB', {'y_min': 0}),
-        (['scPuppiCorrJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiCorrJets_all_GENEtaEE', {'y_min': 0}),
-        (['scPuppiCorrJets',],    ['all'],              ['GENJEtaFwd'],       'scPuppiCorrJets_all_GENEtaFwd', {'y_min': 0}),
-        (['scPuppiCorrJets',],    ['all'],              ['GENJEtaVFwd'],       'scPuppiCorrJets_all_GENEtaVFwd', {'y_min': 0}),
+        (['PU200'], ['scPuppiCorrJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiCorrJets_all_GENEtaEB', {'y_min': 0}),
+        (['PU200'], ['scPuppiCorrJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiCorrJets_all_GENEtaEE', {'y_min': 0}),
+        (['PU200'], ['scPuppiCorrJets',],    ['all'],              ['GENJEtaFwd'],       'scPuppiCorrJets_all_GENEtaFwd', {'y_min': 0}),
+        (['PU200'], ['scPuppiCorrJets',],    ['all'],              ['GENJEtaVFwd'],       'scPuppiCorrJets_all_GENEtaVFwd', {'y_min': 0}),
+
+        (['PU0'], ['CaloJets',],            ['all'],              ['GENJEtaEB'],       'CaloJets_all_GENEtaEB_PU0',  {'y_min': 0}),
+        (['PU0'], ['CaloJets',],            ['all'],              ['GENJEtaEE'],       'CaloJets_all_GENEtaEE_PU0',  {'y_min': 0}),
+        (['PU0'], ['CaloJets',],            ['all'],              ['GENJEtaFwd'],       'CaloJets_all_GENEtaFwd_PU0',  {'y_min': 0}),
+        (['PU0'], ['CaloJets',],            ['all'],              ['GENJEtaVFwd'],       'CaloJets_all_GENEtaVFwd_PU0',  {'y_min': 0}),
+
+        (['PU0'], ['TkJets',],            ['all'],              ['GENJEtaEB'],       'TkJets_all_GENEtaEB_PU0',      {'y_min': 0}),
+        (['PU0'], ['TkJets',],            ['all'],              ['GENJEtaEE'],       'TkJets_all_GENEtaEE_PU0',      {'y_min': 0}),
+        (['PU0'], ['PFJets',],            ['all'],              ['GENJEtaEB'],       'PFJets_all_GENEtaEB_PU0',      {'y_min': 0}),
+        (['PU0'], ['PFJets',],            ['all'],              ['GENJEtaEE'],       'PFJets_all_GENEtaEE_PU0',      {'y_min': 0}),
+        (['PU0'], ['PFJets',],            ['all'],              ['GENJEtaFwd'],       'PFJets_all_GENEtaFwd_PU0',      {'y_min': 0}),
+        (['PU0'], ['PFJets',],            ['all'],              ['GENJEtaVFwd'],       'PFJets_all_GENEtaVFwd_PU0',      {'y_min': 0}),
+
+        (['PU0'], ['PuppiJets',],         ['all'],              ['GENJEtaEB'],       'PuppiJets_all_GENEtaEB_PU0',   {'y_min': 0}),
+        (['PU0'], ['PuppiJets',],         ['all'],              ['GENJEtaEE'],       'PuppiJets_all_GENEtaEE_PU0',   {'y_min': 0}),
+        (['PU0'], ['PuppiJets',],         ['all'],              ['GENJEtaFwd'],       'PuppiJets_all_GENEtaFwd_PU0',   {'y_min': 0}),
+        (['PU0'], ['PuppiJets',],         ['all'],              ['GENJEtaVFwd'],       'PuppiJets_all_GENEtaVFwd_PU0',   {'y_min': 0}),
+
+        (['PU0'], ['scPuppiJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiJets_all_GENEtaEB_PU0', {'y_min': 0}),
+        (['PU0'], ['scPuppiJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiJets_all_GENEtaEE_PU0', {'y_min': 0}),
+        (['PU0'], ['scPuppiJets',],    ['all'],              ['GENJEtaFwd'],       'scPuppiJets_all_GENEtaFwd_PU0', {'y_min': 0}),
+        (['PU0'], ['scPuppiJets',],    ['all'],              ['GENJEtaVFwd'],       'scPuppiJets_all_GENEtaVFwd_PU0', {'y_min': 0}),
+
+        (['PU0'], ['scPuppiCorrJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiCorrJets_all_GENEtaEB_PU0', {'y_min': 0}),
+        (['PU0'], ['scPuppiCorrJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiCorrJets_all_GENEtaEE_PU0', {'y_min': 0}),
+        (['PU0'], ['scPuppiCorrJets',],    ['all'],              ['GENJEtaFwd'],       'scPuppiCorrJets_all_GENEtaFwd_PU0', {'y_min': 0}),
+        (['PU0'], ['scPuppiCorrJets',],    ['all'],              ['GENJEtaVFwd'],       'scPuppiCorrJets_all_GENEtaVFwd_PU0', {'y_min': 0}),
 
     ]
     draw_resp_ptVpt_median(hplot, smps, wc, draw_style=draw_config, configs=jet_ptrespvspt_configs)
 
 
     jet_ptrespvspt_configs = [    
-        (['CaloJets',],            ['all'],              ['GENJEtaEB'],       'CaloJets_all_GENEtaEB',  {'y_min': 0.1, 'y_max': 0.8}),
-        (['CaloJets',],            ['all'],              ['GENJEtaEE'],       'CaloJets_all_GENEtaEE',  {'y_min': 0.1, 'y_max': 0.8}),
-        (['TkJets',],            ['all'],              ['GENJEtaEB'],       'TkJets_all_GENEtaEB',      {'y_min': 0.1, 'y_max': 0.4}),
-        (['TkJets',],            ['all'],              ['GENJEtaEE'],       'TkJets_all_GENEtaEE',      {'y_min': 0.1, 'y_max': 0.4}),
-        (['PFJets',],            ['all'],              ['GENJEtaEB'],       'PFJets_all_GENEtaEB',      {'y_min': 0.1, 'y_max': 0.4}),
-        (['PFJets',],            ['all'],              ['GENJEtaEE'],       'PFJets_all_GENEtaEE',      {'y_min': 0.1, 'y_max': 0.4}),
-        (['PuppiJets',],         ['all'],              ['GENJEtaEB'],       'PuppiJets_all_GENEtaEB',   {'y_min': 0.1, 'y_max': 0.4}),
-        (['PuppiJets',],         ['all'],              ['GENJEtaEE'],       'PuppiJets_all_GENEtaEE',   {'y_min': 0.1, 'y_max': 0.4}),
-        (['scPuppiJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiJets_all_GENEtaEB', {'y_min': 0.1, 'y_max': 0.4}),
-        (['scPuppiJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiJets_all_GENEtaEE', {'y_min': 0.1, 'y_max': 0.4}),
-        (['scPuppiCorrJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiCorrJets_all_GENEtaEB', {'y_min': 0.1, 'y_max': 0.4}),
-        (['scPuppiCorrJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiCorrJets_all_GENEtaEE', {'y_min': 0.1, 'y_max': 0.4}),
+        (['PU200'], ['CaloJets',],            ['all'],              ['GENJEtaEB'],       'CaloJets_all_GENEtaEB',  {'y_min': 0.1, 'y_max': 0.8}),
+        (['PU200'], ['CaloJets',],            ['all'],              ['GENJEtaEE'],       'CaloJets_all_GENEtaEE',  {'y_min': 0.1, 'y_max': 0.8}),
+        (['PU200'], ['TkJets',],            ['all'],              ['GENJEtaEB'],       'TkJets_all_GENEtaEB',      {'y_min': 0.1, 'y_max': 0.4}),
+        (['PU200'], ['TkJets',],            ['all'],              ['GENJEtaEE'],       'TkJets_all_GENEtaEE',      {'y_min': 0.1, 'y_max': 0.4}),
+        (['PU200'], ['PFJets',],            ['all'],              ['GENJEtaEB'],       'PFJets_all_GENEtaEB',      {'y_min': 0.1, 'y_max': 0.4}),
+        (['PU200'], ['PFJets',],            ['all'],              ['GENJEtaEE'],       'PFJets_all_GENEtaEE',      {'y_min': 0.1, 'y_max': 0.4}),
+        (['PU200'], ['PuppiJets',],         ['all'],              ['GENJEtaEB'],       'PuppiJets_all_GENEtaEB',   {'y_min': 0.1, 'y_max': 0.4}),
+        (['PU200'], ['PuppiJets',],         ['all'],              ['GENJEtaEE'],       'PuppiJets_all_GENEtaEE',   {'y_min': 0.1, 'y_max': 0.4}),
+        (['PU200'], ['scPuppiJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiJets_all_GENEtaEB', {'y_min': 0.1, 'y_max': 0.4}),
+        (['PU200'], ['scPuppiJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiJets_all_GENEtaEE', {'y_min': 0.1, 'y_max': 0.4}),
+        (['PU200'], ['scPuppiCorrJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiCorrJets_all_GENEtaEB', {'y_min': 0.1, 'y_max': 0.4}),
+        (['PU200'], ['scPuppiCorrJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiCorrJets_all_GENEtaEE', {'y_min': 0.1, 'y_max': 0.4}),
+
+        (['PU0'], ['CaloJets',],            ['all'],              ['GENJEtaEB'],       'CaloJets_all_GENEtaEB_PU0',  {'y_min': 0.1, 'y_max': 0.8}),
+        (['PU0'], ['CaloJets',],            ['all'],              ['GENJEtaEE'],       'CaloJets_all_GENEtaEE_PU0',  {'y_min': 0.1, 'y_max': 0.8}),
+        (['PU0'], ['TkJets',],            ['all'],              ['GENJEtaEB'],       'TkJets_all_GENEtaEB_PU0',      {'y_min': 0.1, 'y_max': 0.4}),
+        (['PU0'], ['TkJets',],            ['all'],              ['GENJEtaEE'],       'TkJets_all_GENEtaEE_PU0',      {'y_min': 0.1, 'y_max': 0.4}),
+        (['PU0'], ['PFJets',],            ['all'],              ['GENJEtaEB'],       'PFJets_all_GENEtaEB_PU0',      {'y_min': 0.1, 'y_max': 0.4}),
+        (['PU0'], ['PFJets',],            ['all'],              ['GENJEtaEE'],       'PFJets_all_GENEtaEE_PU0',      {'y_min': 0.1, 'y_max': 0.4}),
+        (['PU0'], ['PuppiJets',],         ['all'],              ['GENJEtaEB'],       'PuppiJets_all_GENEtaEB_PU0',   {'y_min': 0.1, 'y_max': 0.4}),
+        (['PU0'], ['PuppiJets',],         ['all'],              ['GENJEtaEE'],       'PuppiJets_all_GENEtaEE_PU0',   {'y_min': 0.1, 'y_max': 0.4}),
+        (['PU0'], ['scPuppiJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiJets_all_GENEtaEB_PU0', {'y_min': 0.1, 'y_max': 0.4}),
+        (['PU0'], ['scPuppiJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiJets_all_GENEtaEE_PU0', {'y_min': 0.1, 'y_max': 0.4}),
+        (['PU0'], ['scPuppiCorrJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiCorrJets_all_GENEtaEB_PU0', {'y_min': 0.1, 'y_max': 0.4}),
+        (['PU0'], ['scPuppiCorrJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiCorrJets_all_GENEtaEE_PU0', {'y_min': 0.1, 'y_max': 0.4}),
+
     ]
     draw_resp_ptVpt_sigma(hplot, smps, wc, draw_style=draw_config, configs=jet_ptrespvspt_configs)
 
     jet_ptrespvspt_configs = [    
-        (['CaloJets',],            ['all'],              ['GENJEtaEB'],       'CaloJets_all_GENEtaEB',  {}),
-        (['CaloJets',],            ['all'],              ['GENJEtaEE'],       'CaloJets_all_GENEtaEE',  {}),
-        (['TkJets',],            ['all'],              ['GENJEtaEB'],       'TkJets_all_GENEtaEB',    {}),
-        (['TkJets',],            ['all'],              ['GENJEtaEE'],       'TkJets_all_GENEtaEE',    {}),
-        (['PFJets',],            ['all'],              ['GENJEtaEB'],       'PFJets_all_GENEtaEB',    {}),
-        (['PFJets',],            ['all'],              ['GENJEtaEE'],       'PFJets_all_GENEtaEE',    {}),
-        (['PuppiJets',],         ['all'],              ['GENJEtaEB'],       'PuppiJets_all_GENEtaEB', {}),
-        (['PuppiJets',],         ['all'],              ['GENJEtaEE'],       'PuppiJets_all_GENEtaEE', {}),
-        (['scPuppiJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiJets_all_GENEtaEB', {}),
-        (['scPuppiJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiJets_all_GENEtaEE', {}),
-        (['scPuppiCorrJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiCorrJets_all_GENEtaEB', {}),
-        (['scPuppiCorrJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiCorrJets_all_GENEtaEE', {}),
+        (['PU200'], ['CaloJets',],            ['all'],              ['GENJEtaEB'],       'CaloJets_all_GENEtaEB',  {}),
+        (['PU200'], ['CaloJets',],            ['all'],              ['GENJEtaEE'],       'CaloJets_all_GENEtaEE',  {}),
+        (['PU200'], ['TkJets',],            ['all'],              ['GENJEtaEB'],       'TkJets_all_GENEtaEB',    {}),
+        (['PU200'], ['TkJets',],            ['all'],              ['GENJEtaEE'],       'TkJets_all_GENEtaEE',    {}),
+        (['PU200'], ['PFJets',],            ['all'],              ['GENJEtaEB'],       'PFJets_all_GENEtaEB',    {}),
+        (['PU200'], ['PFJets',],            ['all'],              ['GENJEtaEE'],       'PFJets_all_GENEtaEE',    {}),
+        (['PU200'], ['PuppiJets',],         ['all'],              ['GENJEtaEB'],       'PuppiJets_all_GENEtaEB', {}),
+        (['PU200'], ['PuppiJets',],         ['all'],              ['GENJEtaEE'],       'PuppiJets_all_GENEtaEE', {}),
+        (['PU200'], ['scPuppiJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiJets_all_GENEtaEB', {}),
+        (['PU200'], ['scPuppiJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiJets_all_GENEtaEE', {}),
+        (['PU200'], ['scPuppiCorrJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiCorrJets_all_GENEtaEB', {}),
+        (['PU200'], ['scPuppiCorrJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiCorrJets_all_GENEtaEE', {}),
+
+        (['PU0'], ['CaloJets',],            ['all'],              ['GENJEtaEB'],       'CaloJets_all_GENEtaEB_PU0',  {}),
+        (['PU0'], ['CaloJets',],            ['all'],              ['GENJEtaEE'],       'CaloJets_all_GENEtaEE_PU0',  {}),
+        (['PU0'], ['TkJets',],            ['all'],              ['GENJEtaEB'],       'TkJets_all_GENEtaEB_PU0',    {}),
+        (['PU0'], ['TkJets',],            ['all'],              ['GENJEtaEE'],       'TkJets_all_GENEtaEE_PU0',    {}),
+        (['PU0'], ['PFJets',],            ['all'],              ['GENJEtaEB'],       'PFJets_all_GENEtaEB_PU0',    {}),
+        (['PU0'], ['PFJets',],            ['all'],              ['GENJEtaEE'],       'PFJets_all_GENEtaEE_PU0',    {}),
+        (['PU0'], ['PuppiJets',],         ['all'],              ['GENJEtaEB'],       'PuppiJets_all_GENEtaEB_PU0', {}),
+        (['PU0'], ['PuppiJets',],         ['all'],              ['GENJEtaEE'],       'PuppiJets_all_GENEtaEE_PU0', {}),
+        (['PU0'], ['scPuppiJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiJets_all_GENEtaEB_PU0', {}),
+        (['PU0'], ['scPuppiJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiJets_all_GENEtaEE_PU0', {}),
+        (['PU0'], ['scPuppiCorrJets',],    ['all'],              ['GENJEtaEB'],       'scPuppiCorrJets_all_GENEtaEB_PU0', {}),
+        (['PU0'], ['scPuppiCorrJets',],    ['all'],              ['GENJEtaEE'],       'scPuppiCorrJets_all_GENEtaEE_PU0', {}),
+
     ]
     draw_resp_ptVpt(hplot, smps, wc, draw_style=draw_config, configs=jet_ptrespvspt_configs)
 
 
 
     jet_ptrespvseta_configs = [    
-        (['CaloJets',],    ['all'],    ['GENJPt30'],      'CaloJets_all_GENPt30',     {'y_min': 0}),
-        (['TkJets',],      ['all'],    ['GENJPt30'],      'TkJets_all_GENPt30',       {'y_min': 0}),
-        (['PFJets',],      ['all'],    ['GENJPt30'],      'PFJets_all_GENPt30',       {'y_min': 0}),
-        (['PuppiJets',],   ['all'],    ['GENJPt30'],      'PuppiJets_all_GENPt30',    {'y_min': 0}),
-        (['scPuppiJets',], ['all'],    ['GENJPt30'],      'scPuppiJets_all_GENPt30',  {'y_min': 0}),
-        (['scPuppiCorrJets',], ['all'],    ['GENJPt30'],      'scPuppiCorrJets_all_GENPt30',  {'y_min': 0}),
+        (['PU200'], ['CaloJets',],    ['all'],    ['GENJPt30'],      'CaloJets_all_GENPt30',     {'y_min': 0}),
+        (['PU200'], ['TkJets',],      ['all'],    ['GENJPt30'],      'TkJets_all_GENPt30',       {'y_min': 0}),
+        (['PU200'], ['PFJets',],      ['all'],    ['GENJPt30'],      'PFJets_all_GENPt30',       {'y_min': 0}),
+        (['PU200'], ['PuppiJets',],   ['all'],    ['GENJPt30'],      'PuppiJets_all_GENPt30',    {'y_min': 0}),
+        (['PU200'], ['scPuppiJets',], ['all'],    ['GENJPt30'],      'scPuppiJets_all_GENPt30',  {'y_min': 0}),
+        (['PU200'], ['scPuppiCorrJets',], ['all'],    ['GENJPt30'],      'scPuppiCorrJets_all_GENPt30',  {'y_min': 0}),
+
+        (['PU0'], ['CaloJets',],    ['all'],    ['GENJPt30'],      'CaloJets_all_GENPt30_PU0',     {'y_min': 0}),
+        (['PU0'], ['TkJets',],      ['all'],    ['GENJPt30'],      'TkJets_all_GENPt30_PU0',       {'y_min': 0}),
+        (['PU0'], ['PFJets',],      ['all'],    ['GENJPt30'],      'PFJets_all_GENPt30_PU0',       {'y_min': 0}),
+        (['PU0'], ['PuppiJets',],   ['all'],    ['GENJPt30'],      'PuppiJets_all_GENPt30_PU0',    {'y_min': 0}),
+        (['PU0'], ['scPuppiJets',], ['all'],    ['GENJPt30'],      'scPuppiJets_all_GENPt30_PU0',  {'y_min': 0}),
+        (['PU0'], ['scPuppiCorrJets',], ['all'],    ['GENJPt30'],      'scPuppiCorrJets_all_GENPt30_PU0',  {'y_min': 0}),
+
     ]
     draw_resp_ptVeta(hplot, smps, wc, draw_style=draw_config, configs=jet_ptrespvseta_configs)
 
     jet_ptrespvseta_configs = [    
-        (['CaloJets',],    ['all'],    ['GENJPt30'],      'CaloJets_all_GENPt30',    {'y_min': 0}),
-        (['TkJets',],      ['all'],    ['GENJPt30'],      'TkJets_all_GENPt30',      {'y_min': 0}),
-        (['PFJets',],      ['all'],    ['GENJPt30'],      'PFJets_all_GENPt30',      {'y_min': 0}),
-        (['PuppiJets',],   ['all'],    ['GENJPt30'],      'PuppiJets_all_GENPt30',   {'y_min': 0}),
-        (['scPuppiJets',], ['all'],    ['GENJPt30'],      'scPuppiJets_all_GENPt30', {'y_min': 0}),
-        (['scPuppiCorrJets',], ['all'],    ['GENJPt30'],      'scPuppiCorrJets_all_GENPt30', {'y_min': 0}),
+        (['PU200'], ['CaloJets',],    ['all'],    ['GENJPt30'],      'CaloJets_all_GENPt30',    {'y_min': 0}),
+        (['PU200'], ['TkJets',],      ['all'],    ['GENJPt30'],      'TkJets_all_GENPt30',      {'y_min': 0}),
+        (['PU200'], ['PFJets',],      ['all'],    ['GENJPt30'],      'PFJets_all_GENPt30',      {'y_min': 0}),
+        (['PU200'], ['PuppiJets',],   ['all'],    ['GENJPt30'],      'PuppiJets_all_GENPt30',   {'y_min': 0}),
+        (['PU200'], ['scPuppiJets',], ['all'],    ['GENJPt30'],      'scPuppiJets_all_GENPt30', {'y_min': 0}),
+        (['PU200'], ['scPuppiCorrJets',], ['all'],    ['GENJPt30'],      'scPuppiCorrJets_all_GENPt30', {'y_min': 0}),
+
+        (['PU0'], ['CaloJets',],    ['all'],    ['GENJPt30'],      'CaloJets_all_GENPt30_PU0',    {'y_min': 0}),
+        (['PU0'], ['TkJets',],      ['all'],    ['GENJPt30'],      'TkJets_all_GENPt30_PU0',      {'y_min': 0}),
+        (['PU0'], ['PFJets',],      ['all'],    ['GENJPt30'],      'PFJets_all_GENPt30_PU0',      {'y_min': 0}),
+        (['PU0'], ['PuppiJets',],   ['all'],    ['GENJPt30'],      'PuppiJets_all_GENPt30_PU0',   {'y_min': 0}),
+        (['PU0'], ['scPuppiJets',], ['all'],    ['GENJPt30'],      'scPuppiJets_all_GENPt30_PU0', {'y_min': 0}),
+        (['PU0'], ['scPuppiCorrJets',], ['all'],    ['GENJPt30'],      'scPuppiCorrJets_all_GENPt30_PU0', {'y_min': 0}),
     ]
 
     draw_resp_ptVeta_median(hplot, smps, wc, draw_style=draw_config, configs=jet_ptrespvseta_configs)
 
     jet_ptrespvseta_configs = [    
-        (['CaloJets',],        ['all'],    ['GENJPt30'],      'CaloJets_all_GENPt30',         {'y_min': 0.15}),
-        (['TkJets',],          ['all'],    ['GENJPt30'],      'TkJets_all_GENPt30',           {'y_min': 0.15}),
-        (['PFJets',],          ['all'],    ['GENJPt30'],      'PFJets_all_GENPt30',           {'y_min': 0.15}),
-        (['PuppiJets',],       ['all'],    ['GENJPt30'],      'PuppiJets_all_GENPt30',        {'y_min': 0.15}),
-        (['scPuppiJets',],     ['all'],    ['GENJPt30'],      'scPuppiJets_all_GENPt30',      {'y_min': 0.15}),
-        (['scPuppiCorrJets',], ['all'],    ['GENJPt30'],      'scPuppiCorrJets_all_GENPt30',  {'y_min': 0.15}),
+        (['PU200'], ['CaloJets',],        ['all'],    ['GENJPt30'],      'CaloJets_all_GENPt30',         {'y_min': 0.15}),
+        (['PU200'], ['TkJets',],          ['all'],    ['GENJPt30'],      'TkJets_all_GENPt30',           {'y_min': 0.15}),
+        (['PU200'], ['PFJets',],          ['all'],    ['GENJPt30'],      'PFJets_all_GENPt30',           {'y_min': 0.15}),
+        (['PU200'], ['PuppiJets',],       ['all'],    ['GENJPt30'],      'PuppiJets_all_GENPt30',        {'y_min': 0.15}),
+        (['PU200'], ['scPuppiJets',],     ['all'],    ['GENJPt30'],      'scPuppiJets_all_GENPt30',      {'y_min': 0.15}),
+        (['PU200'], ['scPuppiCorrJets',], ['all'],    ['GENJPt30'],      'scPuppiCorrJets_all_GENPt30',  {'y_min': 0.15}),
+
+        (['PU0'], ['CaloJets',],        ['all'],    ['GENJPt30'],      'CaloJets_all_GENPt30_PU0',         {'y_min': 0.15}),
+        (['PU0'], ['TkJets',],          ['all'],    ['GENJPt30'],      'TkJets_all_GENPt30_PU0',           {'y_min': 0.15}),
+        (['PU0'], ['PFJets',],          ['all'],    ['GENJPt30'],      'PFJets_all_GENPt30_PU0',           {'y_min': 0.15}),
+        (['PU0'], ['PuppiJets',],       ['all'],    ['GENJPt30'],      'PuppiJets_all_GENPt30_PU0',        {'y_min': 0.15}),
+        (['PU0'], ['scPuppiJets',],     ['all'],    ['GENJPt30'],      'scPuppiJets_all_GENPt30_PU0',      {'y_min': 0.15}),
+        (['PU0'], ['scPuppiCorrJets',], ['all'],    ['GENJPt30'],      'scPuppiCorrJets_all_GENPt30_PU0',  {'y_min': 0.15}),
+
     ]
     draw_resp_ptVeta_sigma(hplot, smps, wc, draw_style=draw_config, configs=jet_ptrespvseta_configs)
 
 
 
 def draw_resp_pt(hplot, smps, wc_eff, draw_style, configs):
-    for objs, objs_sel, gen_sel, h_name, opts in configs:
+    for pu, objs, objs_sel, gen_sel, h_name, opts in configs:
         if len(smps) == 0:
             continue
 
@@ -232,7 +320,7 @@ def draw_resp_pt(hplot, smps, wc_eff, draw_style, configs):
         hsets, labels, text = hplot.get_histo(
             JetResoHistos, 
             [s.type for s in smps], 
-            ['PU200'], 
+            pu, 
             objs, 
             objs_sel, 
             gen_sel, debug=False)
@@ -274,7 +362,7 @@ def draw_resp_pt(hplot, smps, wc_eff, draw_style, configs):
 
 
 def draw_resp_ptVpt_median(hplot, smps, wc_eff, draw_style, configs):
-    for objs, objs_sel, gen_sel, h_name, opts in configs:
+    for pu, objs, objs_sel, gen_sel, h_name, opts in configs:
         if len(smps) == 0:
             continue
 
@@ -284,7 +372,7 @@ def draw_resp_ptVpt_median(hplot, smps, wc_eff, draw_style, configs):
         hsets, labels, text = hplot.get_histo(
             JetResoHistos, 
             [s.type for s in smps], 
-            ['PU200'], 
+            pu, 
             objs, 
             objs_sel, 
             gen_sel, debug=False)
@@ -292,15 +380,10 @@ def draw_resp_ptVpt_median(hplot, smps, wc_eff, draw_style, configs):
             print(' -> skip drawing')
             continue
 
-
-
-        width = 1
-        # FIXME: # of bins is hardcoded for now
-        bin_limits_low=[(i, i+width-1) for i in range(1, 50, width)]
-        width = 3
-        bin_limits_high=[(i, i+width-1) for i in range(50, 100, width)]
-        bin_limits = bin_limits_low + bin_limits_high
+        
+        bin_limits = draw_utils.make_bin_groups([(1, 25, 1), (25, 50, 5), (50, 100, 10)])
         for his in hsets:
+            his.h_ptRespVpt_graph('relSigma', '#sigma_{eff}/median [p_{T}^{L1}/p_{T}^{GEN}]', lambda histo: draw_utils.computeResolution_relEffSigma(histo, bin_limits=bin_limits, draw_bins=False))
             his.h_ptRespVpt_graph('sigma', '#sigma_{eff} [p_{T}^{L1}/p_{T}^{GEN}]', lambda histo: draw_utils.computeResolution_effSigma(histo, bin_limits=bin_limits, draw_bins=False))
             his.h_ptRespVpt_graph('median', 'median [p_{T}^{L1}/p_{T}^{GEN}]', lambda histo: draw_utils.computeResolution_mean(histo, bin_limits=bin_limits, draw_bins=False))
 
@@ -340,23 +423,24 @@ def draw_resp_ptVpt_median(hplot, smps, wc_eff, draw_style, configs):
 
 
 def draw_resp_ptVpt_sigma(hplot, smps, wc_eff, draw_style, configs):
-    for objs, objs_sel, gen_sel, h_name, opts in configs:
+    for pu, objs, objs_sel, gen_sel, h_name, opts in configs:
         if len(smps) == 0:
             continue
 
-        dm2 = DrawMachine(draw_style)
-        dm2.config.legend_position = (0.6,0.6)
 
         hsets, labels, text = hplot.get_histo(
             JetResoHistos, 
             [s.type for s in smps], 
-            ['PU200'], 
+            pu, 
             objs, 
             objs_sel, 
             gen_sel, debug=False)
         if not hsets:
             print(' -> skip drawing')
             continue
+
+        dm2 = DrawMachine(draw_style)
+        dm2.config.legend_position = (0.6,0.6)
 
         # print(f"# of hsets: {len(hsets)}")
         # for hset in hsets:
@@ -393,9 +477,44 @@ def draw_resp_ptVpt_sigma(hplot, smps, wc_eff, draw_style, configs):
         dm2.toWeb(name=f'hSigmaPtRespVpt_{h_name}', page_creator=wc_eff)
 
 
+        dm3 = DrawMachine(draw_style)
+        dm3.config.legend_position = (0.6,0.6)
+
+        # print(f"# of hsets: {len(hsets)}")
+        # for hset in hsets:
+        #     hset.computeEff(rebin=2)
+        dm3.addHistos([his.g_ptRespVpt_relSigma for his in hsets], labels=labels)
+
+        # for i in range(1,len(hsets)):
+            # print(f'add ratio: {i} to 0')
+            # dm.addRatioHisto(i,0)
+            # dm.addRatioHisto(2,0)
+            # dm.addRatioHisto(3,0)
+            # dm.addRatioHisto(4,0)
+        dm3.draw(
+            text=text, 
+            x_min=opts.get('x_min'), 
+            x_max=opts.get('x_max'), 
+            y_min=opts.get('y_min', 0), 
+            y_max=opts.get('y_max', 0.4), 
+            h_lines=opts.get('h_lines', [0]),
+            # norm=opts.get('norm', False),
+            options=opts.get('options', ''),
+            do_ratio=opts.get('do_ratio', False),
+            y_min_ratio=opts.get('y_min_ratio', 0.9),
+            y_max_ratio=opts.get('y_max_ratio', 1.1),
+            h_lines_ratio=opts.get('h_lines_ratio', [0.95, 1., 1.05]),
+            y_log=opts.get('y_log', False),
+            y_axis_label=opts.get('y_axis_label', ''),
+            x_axis_label=opts.get('x_axis_label', 'p_{T}^{GEN} [GeV]')
+
+        )
+        # dm.write(name='eg_TDRvsSummer20_matchig_eff')
+        dm3.toWeb(name=f'hRelSigmaPtRespVpt_{h_name}', page_creator=wc_eff)
+
 
 def draw_resp_ptVpt(hplot, smps, wc_eff, draw_style, configs):
-    for objs, objs_sel, gen_sel, h_name, opts in configs:
+    for pu, objs, objs_sel, gen_sel, h_name, opts in configs:
         if len(smps) == 0:
             continue
 
@@ -405,7 +524,7 @@ def draw_resp_ptVpt(hplot, smps, wc_eff, draw_style, configs):
         hsets, labels, text = hplot.get_histo(
             JetResoHistos, 
             [s.type for s in smps], 
-            ['PU200'], 
+            pu, 
             objs, 
             objs_sel, 
             gen_sel, debug=False)
@@ -451,7 +570,7 @@ def draw_resp_ptVpt(hplot, smps, wc_eff, draw_style, configs):
 
 
 def draw_resp_ptVeta_median(hplot, smps, wc_eff, draw_style, configs):
-    for objs, objs_sel, gen_sel, h_name, opts in configs:
+    for pu, objs, objs_sel, gen_sel, h_name, opts in configs:
         if len(smps) == 0:
             continue
 
@@ -461,7 +580,7 @@ def draw_resp_ptVeta_median(hplot, smps, wc_eff, draw_style, configs):
         hsets, labels, text = hplot.get_histo(
             JetResoHistos, 
             [s.type for s in smps], 
-            ['PU200'], 
+            pu, 
             objs, 
             objs_sel, 
             gen_sel, debug=False)
@@ -514,7 +633,7 @@ def draw_resp_ptVeta_median(hplot, smps, wc_eff, draw_style, configs):
         dm1.toWeb(name=f'hMedianPtRespVeta_{h_name}', page_creator=wc_eff)
 
 def draw_resp_ptVeta_sigma(hplot, smps, wc_eff, draw_style, configs):
-    for objs, objs_sel, gen_sel, h_name, opts in configs:
+    for pu, objs, objs_sel, gen_sel, h_name, opts in configs:
         if len(smps) == 0:
             continue
 
@@ -524,7 +643,7 @@ def draw_resp_ptVeta_sigma(hplot, smps, wc_eff, draw_style, configs):
         hsets, labels, text = hplot.get_histo(
             JetResoHistos, 
             [s.type for s in smps], 
-            ['PU200'], 
+            pu, 
             objs, 
             objs_sel, 
             gen_sel, debug=False)
@@ -572,7 +691,7 @@ def draw_resp_ptVeta_sigma(hplot, smps, wc_eff, draw_style, configs):
 
 def draw_resp_ptVeta(hplot, smps, wc_eff, draw_style, configs):
 
-    for objs, objs_sel, gen_sel, h_name, opts in configs:
+    for pu, objs, objs_sel, gen_sel, h_name, opts in configs:
         if len(smps) == 0:
             continue
 
@@ -582,7 +701,7 @@ def draw_resp_ptVeta(hplot, smps, wc_eff, draw_style, configs):
         hsets, labels, text = hplot.get_histo(
             JetResoHistos, 
             [s.type for s in smps], 
-            ['PU200'], 
+            pu, 
             objs, 
             objs_sel, 
             gen_sel, debug=False)
@@ -593,7 +712,7 @@ def draw_resp_ptVeta(hplot, smps, wc_eff, draw_style, configs):
         hsets, labels, text = hplot.get_histo(
             JetResoHistos, 
             [s.type for s in smps], 
-            ['PU200'], 
+            pu, 
             objs, 
             objs_sel, 
             gen_sel, debug=False)

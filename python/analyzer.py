@@ -75,15 +75,15 @@ def analyze(params, batch_idx=-1):
 
     tree_reader = treereader.TreeReader(range_ev, params.maxEvents)
     pprint('')
+    pprint(f'tree name: {params.tree_name}')
     pprint(f"{'events_per_job':<15}: {params.events_per_job}")
     pprint(f"{'maxEvents':<15}: {params.maxEvents}")
     pprint(f"{'range_ev':<15}: {range_ev}")
     pprint('')
 
     for tree_file_name in files_with_protocol:
-        tree_file = up.open(tree_file_name, num_workers=1)
+        tree_file = up.open(tree_file_name, num_workers=2)
         pprint(f'opening file: {tree_file_name}')
-        pprint(f' . tree name: {params.tree_name}')
 
         ttree = tree_file[params.tree_name]
 

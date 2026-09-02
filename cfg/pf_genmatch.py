@@ -154,6 +154,9 @@ class DecCaloPlotter(plotters.GenericDataFramePlotter):
 gen_em_selections = (selections.Selector('^GEN$')*('^EtaE[EB]$|^EtaEEFwd$|^EtaFwd|all')+selections.Selector('^GEN$')*('Pt30'))()
 gen_em_ee_selections = (selections.Selector('^GEN$')*('^EtaE[E]$|^EtaEEFwd$|^EtaFwd|all')+selections.Selector('^GEN$')*('Pt30'))()
 
+
+gen_selections = (selections.Selector('^EtaE[EB]$|^EtaEEFwd$|^EtaFwd|all')+selections.Selector('Pt30'))()
+
 gen_pi_selections = (selections.Selector('^GENPi$')*('^EtaE[EB]$|^EtaEEFwd$|^EtaFwd|all')+selections.Selector('GENPi$')*('Pt30'))()
 gen_pi_ee_selections = (selections.Selector('GENPi$')*('^EtaE[E]$|^EtaEEFwd$|^EtaFwd|all')+selections.Selector('GENPi$')*('Pt30'))()
 
@@ -163,10 +166,18 @@ decHad_selections = (selections.Selector('^IDHgc|all$'))()
 pf = [
     PfGenMatchPlotter(
         coll.pf_cands, coll.gen_pi,
-        pf_selections, gen_pi_selections),
+        pf_selections, gen_selections),
     PfGenMatchPlotter(
-        coll.pf_cands, coll.gen,
-        pf_selections, gen_em_selections),
+        coll.pf_cands, coll.gen_pho,
+        pf_selections, gen_selections),
+    PfGenMatchPlotter(
+        coll.pf_cands, coll.gen_ele,
+        pf_selections, gen_selections),
+    PfGenMatchPlotter(
+        coll.pf_cands, coll.gen_k,
+        pf_selections, gen_selections),
+
+
     
 ]
 

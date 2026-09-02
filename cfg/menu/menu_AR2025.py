@@ -15,8 +15,8 @@ menu_obj_sel = [
     ((Selector('^EtaEB$')&('^IDTightE$'))|(Selector('^EtaEE$')&('^IDTightE$'))).one('MenuEleTight', 'TightID'),
     ((Selector('^EtaEB$')&('^IDTightE$$'))|(Selector('^EtaEE$'))).one('MenuEleLoose', 'LooseID'),
     # ---------- Photons -
-    ((Selector('^EtaEB$')&('^IDTightP$'))|(Selector('^EtaEE$')&('^IDTightP'))).one('MenuPho', 'no-iso'),
-    ((Selector('^EtaEB$')&('^IsoPhoEB')&('^IDTightP$'))|(Selector('^EtaEE$')&('^IsoPhoEE')&('^IDTightP'))).one('MenuPhoIso', 'Iso'),
+    ((Selector('^EtaEB$')&('^IDTightP$'))|(Selector('^EtaEE$')&('^IDTightP$'))).one('MenuPho', 'no-iso'),
+    ((Selector('^EtaEB$')&('^IsoPhoEB')&('^IDTightP$'))|(Selector('^EtaEE$')&('^IsoPhoEE')&('^IDTightP$'))).one('MenuPhoIso', 'Iso'),
 
 ]
 

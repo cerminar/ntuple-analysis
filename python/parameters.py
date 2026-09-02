@@ -45,6 +45,7 @@ class Parameters(dict):
 def get_collection_parameters(opt, cfgfile):
     outdir = cfgfile['common']['output_dir']['default']
     hostname = socket.gethostname()
+    print(f"Hostname: {hostname} default output dir: {outdir}")
     for machine, odir in cfgfile['common']['output_dir'].items():
         if machine in hostname:
             outdir = odir

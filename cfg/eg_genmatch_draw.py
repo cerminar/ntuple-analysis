@@ -3,7 +3,7 @@ import python.histos as histos
 from python.draw.drawingTools import *
 import python.draw.utilities as draw_utils
 from cfg.eg_genmatch import EGResoHistos
-
+from python.draw.ton_utils import draw_ton_scaling
 
 
 def what(what):
@@ -18,7 +18,13 @@ def what(what):
             return [histos.HistoSetEff], 'eg_eff_ctl2', ctl2_tkem_draw
         case 'reso_ctl2':
             return [EGResoHistos], 'eg_reso_ctl2', ctl2_tkeg_reso_draw
-
+        case 'compute_ton_ele':
+            return [histos.HistoSetEff], 'eg_ton_menu', egmenu_ele_ton_draw
+        case 'compute_ton_pho':
+            return [histos.HistoSetEff], 'eg_ton_menu', egmenu_pho_ton_draw
+        case _:
+            raise ValueError(f'Unknown draw function {what}')
+    
 
 
 
@@ -594,8 +600,6 @@ def draw_resp_ptVpt(hplot, smps, wc_eff, draw_style, configs):
         if len(smps) == 0:
             continue
 
-        dm1 = DrawMachine(draw_style)
-        dm1.config.legend_position = (0.6,0.6)
 
         hsets, labels, text = hplot.get_histo(
             EGResoHistos, 
@@ -608,28 +612,18 @@ def draw_resp_ptVpt(hplot, smps, wc_eff, draw_style, configs):
             print(' -> skip drawing')
             continue
 
-
-
-        width = 3
-        # FIXME: # of bins is hardcoded for now
-        bin_limits=[(i, i+width-1) for i in range(1, 50, width)]
+        bin_limits=draw_utils.make_bin_groups([(1, 50, 3)])
         for his in hsets:
+            his.h_ptRespVpt_graph('relSigma', '#sigma_{eff}/median [p_{T}^{L1}/p_{T}^{GEN}]', lambda histo: draw_utils.computeResolution_relEffSigma(histo, bin_limits=bin_limits, draw_bins=False))
             his.h_ptRespVpt_graph('sigma', '#sigma_{eff} [p_{T}^{L1}/p_{T}^{GEN}]', lambda histo: draw_utils.computeResolution_effSigma(histo, bin_limits=bin_limits, draw_bins=False))
             his.h_ptRespVpt_graph('median', 'median [p_{T}^{L1}/p_{T}^{GEN}]', lambda histo: draw_utils.computeResolution_mean(histo, bin_limits=bin_limits, draw_bins=False))
 
-        # print(f"# of hsets: {len(hsets)}")
-        # for hset in hsets:
-        #     hset.computeEff(rebin=2)
+
+        dm1 = DrawMachine(draw_style)
+        dm1.config.legend_position = (0.6,0.6)
         dm1.addHistos([his.g_ptRespVpt_median for his in hsets], labels=labels)
-
-        # for i in range(1,len(hsets)):
-            # print(f'add ratio: {i} to 0')
-            # dm.addRatioHisto(i,0)
-            # dm.addRatioHisto(2,0)
-            # dm.addRatioHisto(3,0)
-            # dm.addRatioHisto(4,0)
-
-
+        for i in range(1,len(hsets)):
+            dm1.addRatioHisto(i,0)
         dm1.draw(
             text=text, 
             x_min=opts.get('x_min'), 
@@ -639,7 +633,7 @@ def draw_resp_ptVpt(hplot, smps, wc_eff, draw_style, configs):
             h_lines=opts.get('h_lines', [1]),
             # norm=opts.get('norm', False),
             options=opts.get('options', ''),
-            do_ratio=opts.get('do_ratio', False),
+            do_ratio=opts.get('do_ratio', True),
             y_min_ratio=opts.get('y_min_ratio', None),
             y_max_ratio=opts.get('y_max_ratio', None),
             h_lines_ratio=opts.get('h_lines_ratio', [0.95, 1., 1.05]),
@@ -648,25 +642,15 @@ def draw_resp_ptVpt(hplot, smps, wc_eff, draw_style, configs):
             x_axis_label=opts.get('x_axis_label', 'p_{T}^{GEN} [GeV]')
 
         )
-
         dm1.toWeb(name=f'hMedianPtRespVpt_{h_name}', page_creator=wc_eff)
+
+
 
         dm2 = DrawMachine(draw_style)
         dm2.config.legend_position = (0.6,0.6)
-
-        # print(f"# of hsets: {len(hsets)}")
-        # for hset in hsets:
-        #     hset.computeEff(rebin=2)
         dm2.addHistos([his.g_ptRespVpt_sigma for his in hsets], labels=labels)
-
-        # for i in range(1,len(hsets)):
-            # print(f'add ratio: {i} to 0')
-            # dm.addRatioHisto(i,0)
-            # dm.addRatioHisto(2,0)
-            # dm.addRatioHisto(3,0)
-            # dm.addRatioHisto(4,0)
-
-
+        for i in range(1,len(hsets)):
+            dm2.addRatioHisto(i,0)
         dm2.draw(
             text=text, 
             x_min=opts.get('x_min'), 
@@ -676,7 +660,7 @@ def draw_resp_ptVpt(hplot, smps, wc_eff, draw_style, configs):
             h_lines=opts.get('h_lines', [0]),
             # norm=opts.get('norm', False),
             options=opts.get('options', ''),
-            do_ratio=opts.get('do_ratio', False),
+            do_ratio=opts.get('do_ratio', True),
             y_min_ratio=opts.get('y_min_ratio', 0.9),
             y_max_ratio=opts.get('y_max_ratio', 1.1),
             h_lines_ratio=opts.get('h_lines_ratio', [0.95, 1., 1.05]),
@@ -685,38 +669,21 @@ def draw_resp_ptVpt(hplot, smps, wc_eff, draw_style, configs):
             x_axis_label=opts.get('x_axis_label', 'p_{T}^{GEN} [GeV]')
 
         )
-        # dm.write(name='eg_TDRvsSummer20_matchig_eff')
-
         dm2.toWeb(name=f'hSigmaPtRespVpt_{h_name}', page_creator=wc_eff)
+
 
         dm3 = DrawMachine(draw_style)
         dm3.config.legend_position = (0.6,0.6)
-
-        hsets, labels, text = hplot.get_histo(
-            EGResoHistos, 
-            smps, 
-            ['PU200'], 
-            objs, 
-            objs_sel, 
-            gen_sel, debug=False)
-        if not hsets:
-            print(' -> skip drawing')
-            continue
-
-
         # print(f"# of hsets: {len(hsets)}")
         # for hset in hsets:
         #     hset.computeEff(rebin=2)
         dm3.addHistos([his.h_ptRespVpt for his in hsets], labels=labels)
-
         # for i in range(1,len(hsets)):
             # print(f'add ratio: {i} to 0')
             # dm.addRatioHisto(i,0)
             # dm.addRatioHisto(2,0)
             # dm.addRatioHisto(3,0)
             # dm.addRatioHisto(4,0)
-
-
         dm3.draw(
             text=text, 
             x_min=opts.get('x_min'), 
@@ -733,11 +700,36 @@ def draw_resp_ptVpt(hplot, smps, wc_eff, draw_style, configs):
             h_lines_ratio=opts.get('h_lines_ratio', [0.95, 1., 1.05]),
             y_log=opts.get('y_log', False),
             # y_axis_label=opts.get('y_axis_label', 'a.u.')
+            x_axis_label=opts.get('x_axis_label', 'p_{T}^{GEN} [GeV]'))
+        dm3.toWeb(name=f'hPtRespVpt_{h_name}', page_creator=wc_eff)
+
+        dm4 = DrawMachine(draw_style)
+        dm4.config.legend_position = (0.6,0.6)
+        dm4.addHistos([his.g_ptRespVpt_relSigma for his in hsets], labels=labels)
+        for i in range(1,len(hsets)):
+            dm4.addRatioHisto(i,0)
+        dm4.draw(
+            text=text, 
+            x_min=opts.get('x_min'), 
+            x_max=opts.get('x_max'), 
+            y_min=opts.get('y_min', 0), 
+            y_max=opts.get('y_max', 0.4), 
+            h_lines=opts.get('h_lines', [0]),
+            # norm=opts.get('norm', False),
+            options=opts.get('options', ''),
+            do_ratio=opts.get('do_ratio', True),
+            y_min_ratio=opts.get('y_min_ratio', 0.9),
+            y_max_ratio=opts.get('y_max_ratio', 1.1),
+            h_lines_ratio=opts.get('h_lines_ratio', [0.95, 1., 1.05]),
+            y_log=opts.get('y_log', False),
+            y_axis_label=opts.get('y_axis_label', ''),
             x_axis_label=opts.get('x_axis_label', 'p_{T}^{GEN} [GeV]')
 
         )
+        dm4.toWeb(name=f'hRelSigmaPtRespVpt_{h_name}', page_creator=wc_eff)
 
-        dm3.toWeb(name=f'hPtRespVpt_{h_name}', page_creator=wc_eff)
+
+
 
 
 def draw_resp_ptVeta(hplot, smps, wc_eff, draw_style, configs):
@@ -1107,3 +1099,60 @@ def draw_reso_calophi(hplot, smps, wc_eff, draw_style, configs):
         # dm.write(name='eg_TDRvsSummer20_matchig_eff')
 
         dm.toWeb(name=f'hCaloPhiRes_{h_name}', page_creator=wc_eff)
+
+
+
+def egmenu_ele_ton_draw(hplot, smps, wc_eff):
+    egmenu_ton_draw(hplot, smps, wc_eff, ele=True)
+    
+
+def egmenu_pho_ton_draw(hplot, smps, wc_eff):
+    egmenu_ton_draw(hplot, smps, wc_eff, ele=False)
+
+
+def egmenu_ton_draw(hplot, smps, wc_eff, ele=True):
+    configs = []
+
+
+    configs_ele = [
+        # (['TkEleL2',], ['MenuEle'], ['GENEtaEB'], '', { 'n_fit_workers': 8}),
+        # (['TkEleL2',], ['MenuEle'], ['GENEtaEB'], 'cov', { 'n_fit_workers': 8, 'x95_error_method': 'covariance'}),
+        (['TkEleL2',], ['MenuEle'], ['GENEtaEB'], '', { 'n_fit_workers': 8, 'x95_error_method': 'toys', 'x95_error_toys': 500,}),
+        (['TkEleL2',], ['MenuEle'], ['GENEtaEE'], '', { 'n_fit_workers': 8, 'x95_error_method': 'toys', 'x95_error_toys': 500,}),
+        (['TkEleL2',], ['MenuEleIso'], ['GENEtaEB'], '', { 'n_fit_workers': 8, 'x95_error_method': 'toys', 'x95_error_toys': 500,}),
+        (['TkEleL2',], ['MenuEleIso'], ['GENEtaEE'], '', { 'n_fit_workers': 8, 'x95_error_method': 'toys', 'x95_error_toys': 500,}),
+
+        (['TkEleL2',], ['MenuEleTight'], ['GENEtaEB'], '', { 'n_fit_workers': 8, 'x95_error_method': 'toys', 'x95_error_toys': 500,}),
+        (['TkEleL2',], ['MenuEleTight'], ['GENEtaEE'], '', { 'n_fit_workers': 8, 'x95_error_method': 'toys', 'x95_error_toys': 500,}),
+        (['TkEleL2',], ['MenuEleIsoTight'], ['GENEtaEB'], '', { 'n_fit_workers': 8, 'x95_error_method': 'toys', 'x95_error_toys': 500,}),
+        (['TkEleL2',], ['MenuEleIsoTight'], ['GENEtaEE'], '', { 'n_fit_workers': 8, 'x95_error_method': 'toys', 'x95_error_toys': 500,}),
+
+        (['TkEmL2',], ['MenuPho'], ['GENEtaEB'],    'ele', { 'n_fit_workers': 8, 'x95_error_method': 'toys', 'x95_error_toys': 500,}),
+        (['TkEmL2',], ['MenuPho'], ['GENEtaEE'],    'ele', { 'n_fit_workers': 8, 'x95_error_method': 'toys', 'x95_error_toys': 500,}),
+        (['TkEmL2',], ['MenuPhoIso'], ['GENEtaEB'], 'ele', { 'n_fit_workers': 8, 'x95_error_method': 'toys', 'x95_error_toys': 500,}),
+        (['TkEmL2',], ['MenuPhoIso'], ['GENEtaEE'], 'ele', { 'n_fit_workers': 8, 'x95_error_method': 'toys', 'x95_error_toys': 500,}),
+
+        (['EGStaEB'], ['MenuSta'], ['GENEtaEB'], 'ele', { 'n_fit_workers': 8, 'x95_error_method': 'toys', 'x95_error_toys': 500,}),
+        (['EGStaEE'], ['MenuSta'], ['GENEtaEE'], 'ele', { 'n_fit_workers': 8, 'x95_error_method': 'toys', 'x95_error_toys': 500,}),
+    ]
+
+    configs_pho = [
+        (['TkEmL2',], ['MenuPho'], ['GENEtaEB'],    'pho', { 'n_fit_workers': 8, 'x95_error_method': 'toys', 'x95_error_toys': 500,}),
+        (['TkEmL2',], ['MenuPho'], ['GENEtaEE'],    'pho', { 'n_fit_workers': 8, 'x95_error_method': 'toys', 'x95_error_toys': 500,}),
+        (['TkEmL2',], ['MenuPhoIso'], ['GENEtaEB'], 'pho', { 'n_fit_workers': 8, 'x95_error_method': 'toys', 'x95_error_toys': 500,}),
+        (['TkEmL2',], ['MenuPhoIso'], ['GENEtaEE'], 'pho', { 'n_fit_workers': 8, 'x95_error_method': 'toys', 'x95_error_toys': 500,}),
+
+        (['EGStaEB'], ['MenuSta'], ['GENEtaEB'], 'pho', { 'n_fit_workers': 8, 'x95_error_method': 'toys', 'x95_error_toys': 500,}),
+        (['EGStaEE'], ['MenuSta'], ['GENEtaEE'], 'pho', { 'n_fit_workers': 8, 'x95_error_method': 'toys', 'x95_error_toys': 500,}),
+
+    ]
+
+    if ele:
+        configs.extend(configs_ele)
+    else:
+        configs.extend(configs_pho)
+
+
+    draw_ton_scaling(hplot, smps, wc_eff, draw_style=draw_config, configs=configs)  
+
+
