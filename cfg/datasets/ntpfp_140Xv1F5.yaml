@@ -1,14 +1,24 @@
-# 14X v1 validation: Composite ID in EB (tight WP), Multiclass as in DPS + new Composite ID in EE
+# ## 140Xv1F5
+#    * directory: `/afs/cern.ch/user/c/cerminar/afsworkspace/egml1/dev/el8/l1_devel/CMSSW_15_1_0_pre4/src/submission`
+#    * CMSSW version: `CMSSW_15_1_0_pre4`
+#    * CMSSW git branch: `L1PF_15_1_X` (`8b25169`)
+#    * `FastPUPPI` git branch: `15_1_X`
+#    * config file: `../FastPUPPI/NtupleProducer/python/runPerformanceNTuple.py` mode: `FP`%
+#    * Comment: After merge of MET PR
+
 dataset:
   input_dir:  /eos/cms/store/cmst3/group/l1tr/cerminar/l1teg/fp_ntuples/
-  version: 140Xv0B4
+  version: 140Xv1F5
 
   # tree_name: hgcalTriggerNtuplizer/HGCalTriggerNtuple
   tree_name: Events
+  menu: AR2025
 
 
 calibrations:
   rate_pt_wps: data/rate_pt_wps_v152B.90A.json
+  on2off_scaling: data/scalings/scaling_C1.json
+
   # tree_name: l1CaloTriggerNtuplizer/HGCalTriggerNtuple
 
   # doubleele_flat1to100_PU0:
@@ -18,8 +28,13 @@ calibrations:
 
 samples:
   doubleele_flat1to100_PU200:
-    input_sample_dir: DoubleElectron_FlatPt-1To100_PU200/FP/140Xv0B4
+    input_sample_dir: DoubleElectron_FlatPt-1To100_PU200/FP/140Xv1F5_merged
     events_per_job : 200
+
+  doublephoton_flat1to100_PU200:
+    input_sample_dir: DoublePhoton_FlatPt-1To100_PU200/FP/140Xv1F5_merged
+    events_per_job : 200
+
 
   # zprime_m6000_pu200:
   #   input_sample_dir: ZprimeToEE_M-6000_PU200/FP/v102D/
@@ -27,16 +42,29 @@ samples:
   # # 
 
   nugun_alleta_pu200:
-    input_sample_dir: NuGunAllEta_PU200/FP/140Xv0B4
+    input_sample_dir: NuGunAllEta_PU200/FP/140Xv1F5
     # input_sample_dir: NuGunAllEta_PU200/NTP/v80A/
     # input_sample_dir: NeutrinoGun_E_10GeV/NuGunAllEta_PU200_v47/191105_135050/0000/
     events_per_job: 300
   # # 
-  # ttbar_PU200:
-  #   input_sample_dir: TT_PU200/FP/v131Xv3L
-  #   events_per_job: 200
+  ttbar_PU0:
+    input_sample_dir: TT_PU0/FP/140Xv1F9_merged/
+    events_per_job: 200
+
+  ttbar_PU200:
+    input_sample_dir: TT_PU200/FP/140Xv1F6_merged/
+    events_per_job: 200
   
-  
+  SinglePi_PU0:
+    input_sample_dir: SinglePi_PU0/FP/140Xv1F9
+    events_per_job: 200
+
+  SinglePi_PU200:
+    input_sample_dir: SinglePi_PU200/FP/140Xv1F9
+    events_per_job: 200
+
+
+
   # dyll_PU200:
   #   input_sample_dir: DYToLL_M-50_PU200/FP/v102D/
   #   events_per_job: 200

@@ -246,6 +246,23 @@ python  analyzeNtuples.py -f cfg/jets.yaml -i cfg/datasets/ntpfp_131Xv3.yaml -p 
 python draw.py -m cfg/jets_draw.py  --target-dir /Users/cerminar/CERNbox/www/plots/tj  -w eff --input-files /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/histos_ttbar_PU200_jets_v200A.131Xv3i.root:test
 ```
 
+
+## Run validation sets:
+
+Produce the plots for the version that needs validation:
+
+```bash
+ python validation_run.py --config cfg/validation_tasks.yaml  140Xv1F5  eg_menu --workers=6
+ ```
+
+Draw the plots against a ref version:
+
+ ```bash
+ python validation_draw.py  -c cfg/draw/validation_draw_151X_regression.yaml   --target  140Xv1N0:170X-regression --what eg_all  --force
+```
+
+*NOTE*: you will need to modify the `target_dir` in the yaml file.
+
 ## HELP
 
 I can't figure out how to do some manipulation using the `awkward array` or `uproot`....you can take a look at examples and play witht the arrays in:

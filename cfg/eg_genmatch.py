@@ -4,6 +4,7 @@ import cfg.datasets.fastpuppi_collections as coll
 import awkward as ak
 import numpy as np
 import math
+import re
 
 # ------ Histogram classes ----------------------------------------------
 
@@ -212,11 +213,17 @@ l1tc_fw_match_ee_selections = (selections.Selector('^EGq[2,4]or[3,5]$')*('^Pt[1-
 
 gen_selections = (selections.Selector('GEN$')*('^Eta[F]$|^Eta[AF][ABCD]*[C]$|all')+selections.Selector('GEN$')*('^Pt15|^Pt30'))()
 
+
+
 # gen_menu_selections = (selections.Selector('GEN$')*('^EtaE[BE]$|all')+selections.Selector('GEN$')*('^Pt10to25$|^Pt25'))()
 gen_menu_selections = (selections.Selector('GEN$')*('^EtaE[BE]$|all')+selections.Selector('GEN$')*('^Pt30$|^Pt10to25$'))()
-
+gen_menu_ton_selections = (selections.Selector('GEN$')*('^EtaE[BE]$|all'))()
+                           
 gen_menu_sta_eb_selections = (selections.Selector('GEN$')*('^EtaEB$|all')+selections.Selector('GEN$')*('^Pt30$|^Pt10to25$'))()
 gen_menu_sta_ee_selections = (selections.Selector('GEN$')*('^Eta(EE|EEb|Fwd)$|all')+selections.Selector('GEN$')*('^Pt30$|^Pt10to25$'))()
+gen_menu_sta_eb_ton_selections = (selections.Selector('GEN$')*('^EtaEB$|all'))()
+gen_menu_sta_ee_ton_selections = (selections.Selector('GEN$')*('^Eta(EE|EEb|Fwd)$|all'))()
+
 # for sels in [gen_selections, selections.gen_selections]:
 #     print('--------------------')
 #     print(f'# of sels: {len(sels)}')
@@ -354,9 +361,9 @@ egid_menu_sta_selections = (selections.Selector('^MenuSta|all'))()
 
 if do_tons:
     print('Menu Turn-on selections are enabled!')
-    egid_menu_ele_selections.extend((selections.Selector('^MenuEle')*('^Pt[2-5]0$'))())
-    egid_menu_pho_selections.extend((selections.Selector('^MenuPho')*('^Pt[2-5]0$'))())
-    egid_menu_sta_selections.extend((selections.Selector('^MenuSta')*('^Pt[2-5]0$'))())
+    egid_menu_ele_selections.extend((selections.Selector('^MenuEle')*('^Pt[1-5][0,5]$'))())
+    egid_menu_pho_selections.extend((selections.Selector('^MenuPho')*('^Pt[1-5][0,5]$'))())
+    egid_menu_sta_selections.extend((selections.Selector('^MenuSta')*('^Pt[1-5][0,5]$'))())
 
 
 
@@ -380,24 +387,46 @@ egid_menu_ele_ton_selections.extend(egid_menu_ele_selections)
 egid_menu_pho_ton_selections.extend(egid_menu_pho_selections)
 egid_menu_sta_ton_selections.extend(egid_menu_sta_selections)
 
-egid_menu_ele_ton_selections.extend((selections.Selector('^MenuEle')*('^Pt[2-5]0$'))())
-egid_menu_pho_ton_selections.extend((selections.Selector('^MenuPho')*('^Pt[2-5]0$'))())
-egid_menu_sta_ton_selections.extend((selections.Selector('^MenuSta')*('^Pt[2-5]0$'))())
+egid_menu_ele_ton_selections.extend((selections.Selector('^MenuEle')*('^Pt[1-5][0,5]$'))())
+egid_menu_pho_ton_selections.extend((selections.Selector('^MenuPho')*('^Pt[1-5][0,5]$'))())
+egid_menu_sta_ton_selections.extend((selections.Selector('^MenuSta')*('^Pt[1-5][0,5]$'))())
 
 egid_menu_ele_ton_selections = selections.prune(egid_menu_ele_ton_selections)
 egid_menu_pho_ton_selections = selections.prune(egid_menu_pho_ton_selections)
 egid_menu_sta_ton_selections = selections.prune(egid_menu_sta_ton_selections)
 
+def prune_ton_selections(selections_list):
+    pruned = []
+    for sel in selections_list:
+        pts = re.findall(r'Pt', sel.name)
+        pt_nums = re.findall(r'Pt\d+', sel.name)
+        match = len(pts) == 2 and len(pt_nums) == 1
+        # print(f'{sel.name}: pts: {pts}, pt_nums: {pt_nums}, match={match}')
+        if not match:
+            pruned.append(sel)
+    return pruned
+
+
+egid_menu_ele_ton_selections = prune_ton_selections(egid_menu_ele_ton_selections)
+egid_menu_pho_ton_selections = prune_ton_selections(egid_menu_pho_ton_selections)
+egid_menu_sta_ton_selections = prune_ton_selections(egid_menu_sta_ton_selections)
 
 ctl2_tkeg_menu_tons = [    
     EGGenMatchPlotter(
         coll.TkEmL2, coll.gen,
-        egid_menu_pho_ton_selections, gen_menu_selections),
+        egid_menu_pho_ton_selections, gen_menu_ton_selections),
     EGGenMatchPlotter(
         coll.TkEleL2, coll.gen,
-        egid_menu_ele_ton_selections, gen_menu_selections, 
+        egid_menu_ele_ton_selections, gen_menu_ton_selections, 
         gen_eta_phi_columns=('eta', 'phi')
         ),
+    EGGenMatchPlotter(
+        coll.EGStaEE, coll.gen,
+        egid_menu_sta_ton_selections, gen_menu_sta_ee_ton_selections),
+    EGGenMatchPlotter(
+        coll.EGStaEB, coll.gen,
+        egid_menu_sta_ton_selections, gen_menu_sta_eb_ton_selections),
+    
 ]
 
 egsta_menu = [

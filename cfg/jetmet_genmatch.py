@@ -18,6 +18,12 @@ class JetResoHistos(histos.BaseResoHistos):
                 f'{name}_ptRespVpt',
                 'Track Pt resp. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1}/p_{T}^{GEN};',
                 100, 0, 500, 100, 0, 3)
+
+            # self.h_ptResoVpt = bh.TH2F(
+            #     f'{name}_ptResoVpt',
+            #     'Track Pt reso. vs pt (GeV); p_{T}^{GEN} [GeV]; p_{T}^{L1} - p_{T}^{GEN};',
+            #     100, 0, 500, 400, -100, 100)
+            
             self.h_ptRespVeta = bh.TH2F(
                 f'{name}_ptRespVeta',
                 'Track Pt resp. vs #eta; #eta^{GEN}; p_{T}^{L1}/p_{T}^{GEN};',
@@ -45,6 +51,8 @@ class JetResoHistos(histos.BaseResoHistos):
         bh.fill_1Dhist(self.h_ptResp, target.pt/reference.pt)
         bh.fill_2Dhist(self.h_ptRespVeta, reference.eta, target.pt/reference.pt)
         bh.fill_2Dhist(self.h_ptRespVpt, reference.pt, target.pt/reference.pt)
+        # bh.fill_2Dhist(self.h_ptResoVpt, reference.pt, target.pt - reference.pt)
+
         bh.fill_1Dhist(self.h_etaRes, (target.eta - reference.eta))
         bh.fill_1Dhist(self.h_phiRes, (target.phi - reference.phi))
         bh.fill_1Dhist(self.h_drRes, np.sqrt((reference.phi-target.phi)**2+(reference.eta-target.eta)**2))

@@ -3,6 +3,17 @@ import subprocess
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+from rich import print as rich_print
+import yaml
+
+
+def _out(text, style=None):
+    if not style:
+        print(text)
+        return
+    rich_print(f"[{style}]{text}[/{style}]")
+
+
 sys_env = os.environ.copy()
 librarypath_cmd = ""
 # We've used os.environ.copy() so we can make mods
@@ -16,104 +27,55 @@ if sys.platform == 'darwin':
         librarypath_cmd = f"export DYLD_LIBRARY_PATH={sys_env['DYLD_LIBRARY_PATH']} && {librarypath_cmd}"
 
 print(librarypath_cmd)
-# Define all tasks and their shell commands
-TASKS = {
-    "eg_genmatch_menu": (
-        librarypath_cmd +
-        "python analyzeNtuples.py -f cfg/eg_genmatch.yaml "
-        "-i cfg/datasets/ntpfp_{ver}.yaml -p egmenu -s doubleele_flat1to100_PU200 -n -1 -d 0 && "
-        "cp -v {file_dir}/histos_doubleele_flat1to100_PU200_egmenu_v200D.{ver}i.root "
-        "{file_dir}/histos_doubleele_flat1to100_PU200_egmenu_v200D.{ver}.root"
-    ),
-    "eg_genmatch_ctl2": (
-        librarypath_cmd +
-        "python analyzeNtuples.py -f cfg/eg_genmatch.yaml "
-        "-i cfg/datasets/ntpfp_{ver}.yaml -p ctl2_tkeg -s doubleele_flat1to100_PU200 -n -1 -d 0 && "
-        "cp -v {file_dir}/histos_doubleele_flat1to100_PU200_eg_v200D.{ver}i.root "
-        "{file_dir}/histos_doubleele_flat1to100_PU200_eg_v200D.{ver}.root"
-    ),
-    "eg_unmatched": (
-        librarypath_cmd +
-        "python analyzeNtuples.py -f cfg/egplots.yaml "
-        "-i cfg/datasets/ntpfp_{ver}.yaml -p tkeg_plots -s doubleele_flat1to100_PU200 -n -1 -d 0 && "
-        "cp -v {file_dir}/histos_doubleele_flat1to100_PU200_egplots_v160A.{ver}i.root "
-        "{file_dir}/histos_doubleele_flat1to100_PU200_egplots_v160A.{ver}.root"
-    ),
-    "eg_rate_menu": (
-        librarypath_cmd +
-        "python analyzeNtuples.py -f cfg/eg_rate.yaml "
-        "-i cfg/datasets/ntpfp_{ver}.yaml -p rate_menu -s nugun_alleta_pu200 -n 500000 -d 0 && "
-        "cp -v {file_dir}/histos_nugun_alleta_pu200_egratemenu_v200C.{ver}i.root "
-        "{file_dir}/histos_nugun_alleta_pu200_egratemenu_v200C.{ver}.root"
-    ),
-    "eg_rate_ctl2": (
-        librarypath_cmd +
-        "python analyzeNtuples.py -f cfg/eg_rate.yaml "
-        "-i cfg/datasets/ntpfp_{ver}.yaml -p rate_ctl2 -s nugun_alleta_pu200 -n 500000 -d 0 && "
-        "cp -v {file_dir}/histos_nugun_alleta_pu200_egrate_v200C.{ver}i.root "
-        "{file_dir}/histos_nugun_alleta_pu200_egrate_v200C.{ver}.root"
-    ),
-    "eg_rate_counter": (
-        librarypath_cmd +
-        "python analyzeNtuples.py -f cfg/eg_rate.yaml "
-        "-i cfg/datasets/ntpfp_{ver}.yaml -p rate_counter_menu -s nugun_alleta_pu200 -n 500000 -d 0 && "
-        "cp -v {file_dir}/histos_nugun_alleta_pu200_egratecount_v200C.{ver}i.root "
-        "{file_dir}/histos_nugun_alleta_pu200_egratecount_v200C.{ver}.root"
-    ),
-    "met_rate": (
-        librarypath_cmd +
-        "python analyzeNtuples.py -f cfg/jetmet_rate.yaml "
-        "-i cfg/datasets/ntpfp_{ver}.yaml -p met -s nugun_alleta_pu200 -n 500000 -d 0 && "
-        "cp -v {file_dir}/histos_nugun_alleta_pu200_jmratemet_v200A.{ver}i.root "
-        "{file_dir}/histos_nugun_alleta_pu200_jmratemet_v200A.{ver}.root"
-    ),
-    "jet_rate": (
-        librarypath_cmd +
-        "python analyzeNtuples.py -f cfg/jetmet_rate.yaml "
-        "-i cfg/datasets/ntpfp_{ver}.yaml -p jets -s nugun_alleta_pu200 -n 500000 -d 0 && "
-        "cp -v {file_dir}/histos_nugun_alleta_pu200_jmratejets_v200A.{ver}i.root "
-        "{file_dir}/histos_nugun_alleta_pu200_jmratejets_v200A.{ver}.root"
-    ),
-    "jet_genmatch": (
-        librarypath_cmd +
-        "python analyzeNtuples.py -f cfg/jetmet_genmatch.yaml "
-        "-i cfg/datasets/ntpfp_{ver}.yaml -p jets -s ttbar_PU200 -n -1 -d 0 && "
-        "cp -v {file_dir}/histos_ttbar_PU200_jets_v200C.{ver}i.root "
-        "{file_dir}/histos_ttbar_PU200_jets_v200C.{ver}.root"
-    ),
-}
-
-# Define groups
-GROUPS = {
-    "eg_all": ["eg_genmatch_menu", "eg_genmatch_ctl2", "eg_unmatched"],
-    "eg_rate": ["eg_rate_menu", "eg_rate_ctl2", "eg_rate_counter"],
-    "jetmet": ["met_rate", "jet_genmatch", "jet_rate"],
-}
+DEFAULT_CONFIG_FILE = "cfg/validation_tasks.yaml"
 
 
-def expand_tasks(what):
+def load_config(config_path):
+    with open(config_path, "r", encoding="utf-8") as handle:
+        config = yaml.safe_load(handle) or {}
+
+    tasks = config.get("tasks", {})
+    groups = config.get("groups", {})
+
+    if not isinstance(tasks, dict):
+        raise ValueError("Config key 'tasks' must be a dictionary.")
+    if not isinstance(groups, dict):
+        raise ValueError("Config key 'groups' must be a dictionary.")
+
+    for task_name, command in tasks.items():
+        if not isinstance(command, str):
+            raise ValueError(f"Task '{task_name}' must map to a command string.")
+
+    for group_name, group_tasks in groups.items():
+        if not isinstance(group_tasks, list) or not all(isinstance(t, str) for t in group_tasks):
+            raise ValueError(f"Group '{group_name}' must map to a list of task names.")
+
+    return tasks, groups
+
+
+def expand_tasks(what, tasks, groups):
     """Expand group names to their tasks, remove duplicates, preserve order."""
     result = []
     seen = set()
     for item in what:
-        if item in GROUPS:
-            for t in GROUPS[item]:
+        if item in groups:
+            for t in groups[item]:
                 if t not in seen:
                     result.append(t)
                     seen.add(t)
-        elif item in TASKS:
+        elif item in tasks:
             if item not in seen:
                 result.append(item)
                 seen.add(item)
         elif item == "all":
-            for t in TASKS:
+            for t in tasks:
                 if t not in seen:
                     result.append(t)
                     seen.add(t)
     return result
 
-def run_task(taskname, ver, file_dir):
-    cmd = TASKS[taskname].format(ver=ver, file_dir=file_dir)
+def run_task(taskname, ver, file_dir, tasks):
+    cmd = librarypath_cmd + tasks[taskname].format(ver=ver, file_dir=file_dir)
     print(f"Running: {taskname}")
     result = subprocess.run(cmd, shell=True)
     return (taskname, result.returncode)
@@ -125,11 +87,18 @@ def main():
     parser.add_argument("what", nargs="?", default="all", help="Comma-separated list of tasks or groups (default: all)")
     parser.add_argument("--workers", type=int, default=2, help="Number of parallel workers (default: 2)")
     parser.add_argument("--file-dir", default='./plots/', help="Directory for input files (default: ./plots/)")
+    parser.add_argument("--config", default=DEFAULT_CONFIG_FILE, help=f"Path to YAML config file (default: {DEFAULT_CONFIG_FILE})")
 
     args = parser.parse_args()
 
+    try:
+        tasks, groups = load_config(args.config)
+    except (OSError, yaml.YAMLError, ValueError) as exc:
+        print(f"Failed to load config '{args.config}': {exc}")
+        sys.exit(1)
+
     what_list = [w.strip() for w in args.what.split(",")]
-    tasks_to_run = expand_tasks(what_list)
+    tasks_to_run = expand_tasks(what_list, tasks, groups)
 
     if not tasks_to_run:
         print("No valid tasks to run.")
@@ -139,7 +108,7 @@ def main():
     success, failed = [], []
 
     with ThreadPoolExecutor(max_workers=args.workers) as executor:
-        futures = {executor.submit(run_task, t, args.test_version, args.file_dir): t for t in tasks_to_run}
+        futures = {executor.submit(run_task, t, args.test_version, args.file_dir, tasks): t for t in tasks_to_run}
         for future in as_completed(futures):
             taskname, rc = future.result()
             if rc == 0:
@@ -147,21 +116,21 @@ def main():
             else:
                 failed.append(taskname)
 
-    print("\n========== SUMMARY ==========")
+    _out("\n========== SUMMARY ==========" , "bold")
     if success:
-        print("Successful tasks:")
+        _out("Successful tasks:", "green")
         for t in success:
-            print(f"  {t}")
+            _out(f"  {t}", "green")
     else:
-        print("No successful tasks.")
+        _out("No successful tasks.", "yellow")
 
     if failed:
-        print("Failed tasks:")
+        _out("Failed tasks:", "red")
         for t in failed:
-            print(f"  {t}")
+            _out(f"  {t}", "red")
     else:
-        print("No failed tasks.")
-    print("=============================")
+        _out("No failed tasks.", "green")
+    _out("=============================", "bold")
 
 if __name__ == "__main__":
     main()

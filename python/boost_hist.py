@@ -2,6 +2,12 @@ import awkward as ak
 import hist
 from hist import Hist
 
+def TH1F_binned(name, title, nbits, bin_low, bin_high):
+    range = bin_high - bin_low
+    nbins = 2**nbits
+    lsb = range/nbins
+    return TH1F(name, title, nbins, bin_low-0.5*lsb, bin_high+0.5*lsb)
+
 
 def TH1F(name, title, nbins, bin_low, bin_high):
     b_axis_name = 'X'
@@ -16,6 +22,25 @@ def TH1F(name, title, nbins, bin_low, bin_high):
         name=b_name,
         storage=hist.storage.Weight()
         )
+
+def TH1F_category(name, title, categories):
+    b_x_axis_name = 'X'
+    b_y_axis_name = 'Y'
+    title_split = title.split(';')
+    if len(title_split) > 1:
+        b_x_axis_name = title_split[1]
+    if len(title_split) > 2:
+        b_y_axis_name = title_split[2]
+    b_name = title_split[0]
+    b_label = name
+    return Hist(
+        hist.axis.StrCategory(categories, name=b_x_axis_name),
+        label=b_label,
+        name=b_name,
+        storage=hist.storage.Weight()
+        )
+
+
 
 def TH2F(name, title, x_nbins, x_bin_low, x_bin_high, y_nbins, y_bin_low, y_bin_high):
     b_x_axis_name = 'X'
@@ -53,7 +78,6 @@ def TH2F_category(name, title, x_categories, y_nbins, y_bin_low, y_bin_high):
         name=b_name,
         storage=hist.storage.Weight()
         )
-
 
 def fill_1Dhist(hist, array, weights=None):
     flar = ak.drop_none(ak.flatten(array))

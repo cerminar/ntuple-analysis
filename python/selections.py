@@ -475,7 +475,10 @@ gen_pid_sel = [
     Selection('GEN', '', 
             lambda ar: ((np.abs(ar.pdgid) == PID.electron ) | (np.abs(ar.pdgid) == PID.photon)) & (ar.prompt >= 2)),
     Selection('GENPi', '', 
-            lambda ar: ((np.abs(ar.pdgid) == PID.pion )) & (ar.prompt >= 2))
+            lambda ar: ((np.abs(ar.pdgid) == PID.pion )) & (ar.prompt >= 2)),
+    Selection('GENPiAll', '', 
+            lambda ar: ((np.abs(ar.pdgid) == PID.pion )))
+
 ]
 
 gen_jet_sel = [
@@ -499,6 +502,10 @@ eg_eta_eb_sel = [
 eg_eta_sel = [
     Selection('all'),
     Selection('EtaEB', '|#eta^{TOBJ}| <= 1.479', lambda ar: abs(ar.eta) <= 1.479),
+    Selection('EtaEBa', '|#eta^{TOBJ}| <= 0.7', lambda ar: abs(ar.eta) <= 0.7),
+    Selection('EtaEBb', '0.7 < |#eta^{TOBJ}| <= 1.2', lambda ar: (abs(ar.eta) > 0.7) & (abs(ar.eta) <= 1.2)),
+    Selection('EtaEBc', '1.2 < |#eta^{TOBJ}| <= 1.479', lambda ar: (abs(ar.eta) > 1.2) & (abs(ar.eta) <= 1.479)),
+
     Selection('EtaEE', '1.479 < |#eta^{TOBJ}| <= 2.4', lambda ar: (abs(ar.eta) > 1.479) & (abs(ar.eta) <= 2.4)),
     Selection('EtaEEa', '1.479 < |#eta^{TOBJ}| <= 1.52', lambda ar: (abs(ar.eta) > 1.479) & (abs(ar.eta) <= 1.52)),
     Selection('EtaEEb', '1.52 < |#eta^{TOBJ}| <= 2.3', lambda ar: (abs(ar.eta) > 1.52) & (abs(ar.eta) <= 2.3)),
@@ -507,6 +514,11 @@ eg_eta_sel = [
     Selection('EtaFwd', '2.4 < |#eta^{TOBJ}| <= 3.0', lambda ar: (abs(ar.eta) > 2.4) & (abs(ar.eta) <= 3.0)),
     Selection('EtaVFwd', '3.0 < |#eta^{TOBJ}| <= 5.0', lambda ar: (abs(ar.eta) > 3.0) & (abs(ar.eta) <= 5.0)),
     Selection('EtaAFwd', '2.4 < |#eta^{TOBJ}| <= 5.0', lambda ar: (abs(ar.eta) > 2.4) & (abs(ar.eta) <= 5.0)),
+]
+
+eta_plusminus = [
+    Selection('EtaPos', '#eta^{TOBJ} > 0', lambda ar: ar.eta > 0),
+    Selection('EtaNeg', '#eta^{TOBJ} < 0', lambda ar: ar.eta < 0)
 ]
 
 pfinput_regions = [
@@ -710,9 +722,9 @@ digen_sele = [
 
 ctl2_sel = [
     
-    ((Selector('^EtaEB')&('^IDTightE$'))|(Selector('^EtaEE$'))).one('L2IDPhoL', 'ID-loose'),
-    ((Selector('^EtaEB')&('^IDTightE$'))|(Selector('^EtaEE$')&('^IDTightP'))).one('L2IDPhoT', 'ID-tight'),
-    ((Selector('^EtaEB')&('^IsoPhoEB'))|(Selector('^EtaEE$')&('^IsoPhoEE'))).one('L2Iso', 'iso'),
+    ((Selector('^EtaEB$')&('^IDTightE$'))|(Selector('^EtaEE$'))).one('L2IDPhoL', 'ID-loose'),
+    ((Selector('^EtaEB$')&('^IDTightE$'))|(Selector('^EtaEE$')&('^IDTightP'))).one('L2IDPhoT', 'ID-tight'),
+    ((Selector('^EtaEB$')&('^IsoPhoEB'))|(Selector('^EtaEE$')&('^IsoPhoEE'))).one('L2Iso', 'iso'),
 ]
 
 

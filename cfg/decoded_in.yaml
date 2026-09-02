@@ -1,0 +1,26 @@
+
+common:
+  output_dir:
+    # dictionary machine name -> directory to support different paths
+    default: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
+    triolet: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
+  plot_version: v0
+  run_clustering: False
+  run_density_computation: False
+# +AccountingGroup = "group_u_CMS.u_zh.users"
+# +AccountingGroup = "group_u_CMST3.all"
+
+  file_label: decoded
+decoded:
+  plotters:
+    - !!python/name:cfg.decoded_in.decoded
+
+decoded_pi:
+  plotters:
+    - !!python/name:cfg.decoded_in.decoded_pi
+  file_label: pi
+
+decoded_em:
+  plotters:
+    - !!python/name:cfg.decoded_in.decoded_em
+  file_label: em

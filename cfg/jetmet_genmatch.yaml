@@ -2,7 +2,7 @@
 common:
   output_dir:
     # dictionary machine name -> directory to support different paths
-    default: /eos/user/c/cerminar/hgcal/CMSSW1015/plots/
+    default: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
     triolet: /Users/cerminar/cernbox/hgcal/CMSSW1015/plots/
   plot_version: v200C
   run_clustering: False

@@ -16,11 +16,12 @@ def confirm():
 
 
 class WebPageCreator(object):
-    def __init__(self, topic_dir, project_dir, base_dir='~/CERNbox/www/plots', tmp_dir='/tmp', samples=None) -> None:
+    def __init__(self, topic_dir, project_dir, base_dir='~/CERNbox/www/plots', tmp_dir='/tmp', samples=None, skip_confirm=False) -> None:
         self.base_dir = base_dir
         self.tmp_path = os.path.join(tmp_dir, project_dir, topic_dir)
         self.project_path = os.path.join(base_dir, project_dir)
         self.topic_path = os.path.join(base_dir, project_dir, topic_dir)
+        self.skip_confirm = skip_confirm
         os.makedirs(self.tmp_path, exist_ok=True)
         self.sample_file = None
         if samples:
@@ -52,8 +53,9 @@ class WebPageCreator(object):
             
         if os.path.exists(self.topic_path):
             print(f'WARNING: directory: {self.topic_path} already exists. Content might be overwritten?')
-            if not confirm():
-                return
+            if not self.skip_confirm:
+                if not confirm():
+                    return
         else:
             os.mkdir(self.topic_path)
             if os.path.exists(os.path.join(self.base_dir, 'index.php')):

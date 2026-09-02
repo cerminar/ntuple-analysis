@@ -37,6 +37,10 @@ def highest_pt(objs, num=2):
     # print (ak.local_index(array))
     return array[ak.local_index(array.pt, axis=1)<num]
 
+def gctem_fixtures(clusters):
+    return quality_flags(clusters)
+
+
 
 def cl3d_fixtures(clusters):
     # print(clusters.show())
@@ -260,8 +264,8 @@ def diele_fixtures(obj):
     return obj
 
 def endcap_decCalo_fixtures(obj):
-    obj['hwAbsetaOffset256'] = obj.hwAbseta - 256
-    obj['hwAbsetaOffset320'] = obj.hwAbseta - 320
+    # obj['hwAbsetaOffset256'] = obj.hwAbseta - 256
+    # obj['hwAbsetaOffset320'] = obj.hwAbseta - 320
     return obj
 
 def map2pfregions(objects, eta_var, phi_var, fiducial=False):
@@ -371,6 +375,17 @@ gen_pi = DFCollection(
     max_print_lines=None,
     debug=0)
 
+gen_k = DFCollection(
+    name='GEN', label='GEN particles (K)',
+    filler_function=lambda event, entry_block: event.getDataFrame(
+        prefix='Gen', entry_block=entry_block),
+    # fixture_function=pi_mc_fixtures,
+    # print_function=lambda df: df[['pdgid', 'pt', 'eta', 'phi']],
+    print_function=lambda df: df,
+    # print_function=lambda df: df[(df.pdgid==23 | (abs(df.pdgid)==15))],
+    max_print_lines=None,
+    debug=4)
+# gen_k.activate()
 
 gen = DFCollection(
     name='GEN', label='GEN particles',
@@ -849,7 +864,7 @@ decEmCaloBarrel= DFCollection(
     name='DecEmCaloBarrel', label='DecEmCaloBarrel',
     filler_function=lambda event, entry_block: event.getDataFrame(
         prefix='DecEmCaloBarrel', entry_block=entry_block),
-    # fixture_function=lambda clusters: cl3d_fixtures(clusters),
+    fixture_function=lambda clusters: gctem_fixtures(clusters),
     # read_entry_block=500,
     debug=0,
     # print_function=lambda df: df[['rho', 'eta', 'phi', 'hwQual', 'ptEm', 'egbdtscore', 'pubdtscore', 'egbdtscoreproba', 'pubdtscoreproba', 'pfPuIdScore', 'egEmIdScore']].sort_values(by='rho', ascending=False)

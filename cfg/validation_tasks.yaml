@@ -1,0 +1,81 @@
+tasks:
+  eg_genmatch_menu: >-
+    python analyzeNtuples.py -f cfg/eg_genmatch.yaml -i cfg/datasets/ntpfp_{ver}.yaml -p egmenu -s doubleele_flat1to100_PU200 -n -1 -d 0 && cp -v {file_dir}/histos_doubleele_flat1to100_PU200_egmenu_v200D.{ver}i.root {file_dir}/histos_doubleele_flat1to100_PU200_egmenu_v200D.{ver}.root
+
+  eg_genmatch_ctl2: >-
+    python analyzeNtuples.py -f cfg/eg_genmatch.yaml -i cfg/datasets/ntpfp_{ver}.yaml -p ctl2_tkeg -s doubleele_flat1to100_PU200 -n -1 -d 0 && cp -v {file_dir}/histos_doubleele_flat1to100_PU200_eg_v200D.{ver}i.root {file_dir}/histos_doubleele_flat1to100_PU200_eg_v200D.{ver}.root
+
+  eg_unmatched: >-
+    python analyzeNtuples.py -f cfg/egplots.yaml -i cfg/datasets/ntpfp_{ver}.yaml -p tkeg_plots -s doubleele_flat1to100_PU200 -n -1 -d 0 && cp -v {file_dir}/histos_doubleele_flat1to100_PU200_egplots_v160A.{ver}i.root {file_dir}/histos_doubleele_flat1to100_PU200_egplots_v160A.{ver}.root
+
+  eg_rate_menu: >-
+    python analyzeNtuples.py -f cfg/eg_rate.yaml -i cfg/datasets/ntpfp_{ver}.yaml -p rate_menu -s nugun_alleta_pu200 -n 500000 -d 0 && cp -v {file_dir}/histos_nugun_alleta_pu200_egratemenu_v200C.{ver}i.root {file_dir}/histos_nugun_alleta_pu200_egratemenu_v200C.{ver}.root
+
+  eg_rate_ctl2: >-
+    python analyzeNtuples.py -f cfg/eg_rate.yaml -i cfg/datasets/ntpfp_{ver}.yaml -p rate_ctl2 -s nugun_alleta_pu200 -n 500000 -d 0 && cp -v {file_dir}/histos_nugun_alleta_pu200_egrate_v200C.{ver}i.root {file_dir}/histos_nugun_alleta_pu200_egrate_v200C.{ver}.root
+
+  eg_rate_counter: >-
+    python analyzeNtuples.py -f cfg/eg_rate.yaml -i cfg/datasets/ntpfp_{ver}.yaml -p rate_counter_menu -s nugun_alleta_pu200 -n 500000 -d 0 && cp -v {file_dir}/histos_nugun_alleta_pu200_egratecount_v200C.{ver}i.root {file_dir}/histos_nugun_alleta_pu200_egratecount_v200C.{ver}.root
+
+  met_rate: >-
+    python analyzeNtuples.py -f cfg/jetmet_rate.yaml -i cfg/datasets/ntpfp_{ver}.yaml -p met -s nugun_alleta_pu200 -n 500000 -d 0 && cp -v {file_dir}/histos_nugun_alleta_pu200_jmratemet_v200A.{ver}i.root {file_dir}/histos_nugun_alleta_pu200_jmratemet_v200A.{ver}.root
+
+  jet_rate: >-
+    python analyzeNtuples.py -f cfg/jetmet_rate.yaml -i cfg/datasets/ntpfp_{ver}.yaml -p jets -s nugun_alleta_pu200 -n 500000 -d 0 && cp -v {file_dir}/histos_nugun_alleta_pu200_jmratejets_v200A.{ver}i.root {file_dir}/histos_nugun_alleta_pu200_jmratejets_v200A.{ver}.root
+
+  jet_genmatch: >-
+    python analyzeNtuples.py -f cfg/jetmet_genmatch.yaml -i cfg/datasets/ntpfp_{ver}.yaml -p jets -s ttbar_PU200 -n -1 -d 0 && cp -v {file_dir}/histos_ttbar_PU200_jets_v200C.{ver}i.root {file_dir}/histos_ttbar_PU200_jets_v200C.{ver}.root
+
+  jet_genmatch_pu0: >-
+    python analyzeNtuples.py -f cfg/jetmet_genmatch.yaml -i cfg/datasets/ntpfp_{ver}.yaml -p jets -s ttbar_PU0 -n -1 -d 0 && cp -v {file_dir}/histos_ttbar_PU0_jets_v200C.{ver}i.root {file_dir}/histos_ttbar_PU0_jets_v200C.{ver}.root
+
+  decoded_calo_unmatched: >-
+    python analyzeNtuples.py -f cfg/decoded_in.yaml -i cfg/datasets/ntpfp_{ver}.yaml -p decoded -s ttbar_PU200 -n -1 -d 0 && cp -v {file_dir}/histos_ttbar_PU200_decoded_v0.{ver}i.root {file_dir}/histos_ttbar_PU200_decoded_v0.{ver}.root
+
+  decoded_calo_em: >-
+    python analyzeNtuples.py -f cfg/decoded_in.yaml -i cfg/datasets/ntpfp_{ver}.yaml -p decoded_em -s doublephoton_flat1to100_PU200 -n -1 -d 0 && cp -v {file_dir}/histos_doublephoton_flat1to100_PU200_decodedem_v0.{ver}i.root {file_dir}/histos_doublephoton_flat1to100_PU200_decodedem_v0.{ver}.root
+
+  decoded_calo_pi: >-
+    python analyzeNtuples.py -f cfg/decoded_in.yaml -i cfg/datasets/ntpfp_{ver}.yaml -p decoded_pi -s SinglePi_PU200 -n -1 -d 0 && cp -v {file_dir}/histos_SinglePi_PU200_decodedpi_v0.{ver}i.root {file_dir}/histos_SinglePi_PU200_decodedpi_v0.{ver}.root
+
+  decoded_calo_pi_pu0: >-
+    python analyzeNtuples.py -f cfg/decoded_in.yaml -i cfg/datasets/ntpfp_{ver}.yaml -p decoded_pi -s SinglePi_PU0 -n -1 -d 0 && cp -v {file_dir}/histos_SinglePi_PU0_decodedpi_v0.{ver}i.root {file_dir}/histos_SinglePi_PU0_decodedpi_v0.{ver}.root
+
+  eg_menu_tons_ele: >-
+    python analyzeNtuples.py -f cfg/eg_genmatch.yaml -i cfg/datasets/ntpfp_{ver}.yaml -p menu_tons -s doubleele_flat1to100_PU200 -n -1 -d 0 && cp -v {file_dir}/histos_doubleele_flat1to100_PU200_egton_v200D.{ver}i.root {file_dir}/histos_doubleele_flat1to100_PU200_egton_v200D.{ver}.root
+
+  eg_menu_tons_pho: >-
+    python analyzeNtuples.py -f cfg/eg_genmatch.yaml -i cfg/datasets/ntpfp_{ver}.yaml -p menu_tons -s doublephoton_flat1to100_PU200 -n -1 -d 0 && cp -v {file_dir}/histos_doublephoton_flat1to100_PU200_egton_v200D.{ver}i.root {file_dir}/histos_doublephoton_flat1to100_PU200_egton_v200D.{ver}.root
+
+groups:
+  decoded_calo:
+    - decoded_calo_unmatched
+    - decoded_calo_em
+    - decoded_calo_pi
+    - decoded_calo_pi_pu0
+  
+  eg_menu:
+    - eg_genmatch_ctl2
+    - eg_genmatch_menu
+    - eg_rate_menu
+    - eg_menu_tons_ele
+
+
+  eg_all:
+    - eg_genmatch_menu
+    - eg_genmatch_ctl2
+    - eg_unmatched
+
+  eg_rate:
+    - eg_rate_menu
+    - eg_rate_ctl2
+    - eg_rate_counter
+
+  jetmet:
+    - met_rate
+    - jet_genmatch
+    - jet_rate
+
+  jetreso:
+    - jet_genmatch
+    - jet_genmatch_pu0

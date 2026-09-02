@@ -343,7 +343,7 @@ class DrawMachine(object):
     def formatHisto(self, hidx, hist, options=''):
         histo_class = hist.ClassName()
         hist.UseCurrentStyle()
-        # print (f'format histo of class {histo_class}')
+        print (f'format histo of class {histo_class}, overlay: {self.overlay}, options: {options}')
         if 'TGraph' in histo_class:
             hist.SetMarkerSize(self.config.marker_size)
             hist.SetMarkerStyle(self.config.marker_styles[hidx])
@@ -496,7 +496,8 @@ class DrawMachine(object):
              y_axis_label_diff=None,
              ratio_histos_manipulator=None,
              histos_manipulator=None,
-             diff_histos_manipulator=None):
+             diff_histos_manipulator=None,
+             do_legend=False):
 
         global p_idx
         global stuff
@@ -522,7 +523,7 @@ class DrawMachine(object):
         if histos_manipulator:
             histos_manipulator(drawn_histos)
 
-        if self.legend is not None and len(self.histos) > 1:
+        if self.legend is not None and (len(self.histos) > 1 or do_legend):
             self.legend.Draw("same")
 
         self.drawText(pad_idx, text)

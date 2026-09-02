@@ -1,3 +1,7 @@
+import os
+os.environ['DYLD_LIBRARY_PATH'] = "/opt/local/lib:" + os.environ.get('DYLD_LIBRARY_PATH', '')
+os.environ['XRD_PLUGIN_PATH'] = "/opt/local/lib"
+
 import sys
 
 import typer
@@ -7,11 +11,15 @@ import pathlib
 
 from rich import print as pprint
 
+
 from python.parameters import Parameters, get_collection_parameters
 from python.analyzer import analyze
 from python.submission import to_HTCondor
 from python.timecounter import print_stats
 import ROOT
+
+
+
 
 description = """
 Main script for L1 TP analysis.
